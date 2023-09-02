@@ -11,7 +11,17 @@ export default async function (req: Request, res: Response, next: NextFunction) 
 		return next(new APIError(API_ERRORS.USER_ERRORS.USER_NOT_FOUND_ERROR));
 	}
 
-	const saved_contacts = req.query.saved_contacts === 'true';
+	const options = {
+		all_contacts: true,
+		saved_contacts: true,
+	};
+	if (req.query.saved_contacts) {
+		options.all_contacts = false;
+		options.saved_contacts = true;
+	} else if (req.query.non_saved_contacts) {
+		options.all_contacts = false;
+		options.saved_contacts = false;
+	}
 
 	try {
 		const contacts = (await whatsapp.getContacts())
@@ -19,12 +29,16 @@ export default async function (req: Request, res: Response, next: NextFunction) 
 				if (!contact.isWAContact || contact.isMe || contact.isGroup) {
 					return false;
 				}
-				if (saved_contacts && !contact.isMyContact) {
-					return false;
-				} else if (!saved_contacts && contact.isMyContact) {
-					return false;
+				if (options.all_contacts) {
+					return true;
 				}
-				return true;
+				if (options.saved_contacts && contact.isMyContact) {
+					return true;
+				}
+				if (!options.saved_contacts && !contact.isMyContact) {
+					return true;
+				}
+				return false;
 			})
 
 			.map((contact) => ({
