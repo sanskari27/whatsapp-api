@@ -1,5 +1,5 @@
 import express from 'express';
-import { getContacts, getGroups } from '../controller';
+import { getContacts, getGroups, getLabels } from '../controller';
 
 const router = express.Router();
 
@@ -11,5 +11,6 @@ const router = express.Router();
 
 router.get('/:client_id/contacts', getContacts);
 router.get('/:client_id/groups', getGroups);
+router.get('/:client_id/labels', getLabels);
 
 export default router;
