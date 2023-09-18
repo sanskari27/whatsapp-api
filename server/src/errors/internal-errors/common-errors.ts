@@ -6,6 +6,11 @@ const COMMON_ERRORS = {
 		TITLE: 'NOT_FOUND',
 		MESSAGE: 'The requested resource was not found.',
 	},
+	INVALID_FIELD: {
+		STATUS: 400,
+		TITLE: 'INVALID_FIELD',
+		MESSAGE: 'The request contains an invalid field.',
+	},
 } satisfies {
 	[error: string]: ServerError;
 };

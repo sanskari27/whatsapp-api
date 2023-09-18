@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import { IS_PRODUCTION } from '../config/const';
+import { Types } from 'mongoose';
+import { z } from 'zod';
 type ResponseData = {
 	res: Response;
 	status: 200 | 201 | 400 | 401 | 403 | 404 | 500;
@@ -43,4 +45,19 @@ export const getRequestIP = (req: Request) => {
 
 export function generateClientID() {
 	return crypto.randomUUID();
+}
+
+type IDValidatorResult = [true, Types.ObjectId] | [false, undefined];
+export function idValidator(id: string): IDValidatorResult {
+	const validator = z
+		.string()
+		.refine((value) => Types.ObjectId.isValid(value))
+		.transform((value) => new Types.ObjectId(value));
+
+	const result = validator.safeParse(id);
+	if (result.success === false) {
+		return [false, undefined];
+	} else {
+		return [true, result.data];
+	}
 }

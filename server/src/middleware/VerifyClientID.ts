@@ -11,7 +11,7 @@ export default async function VerifyClientID(req: Request, res: Response, next: 
 	}
 
 	try {
-		const [isValidAuth] = await UserService.isValidAuth(client_id);
+		const [isValidAuth, _, user] = await UserService.isValidAuth(client_id);
 
 		if (!isValidAuth) {
 			// WhatsappProvider.removeClient(client_id);
@@ -20,6 +20,7 @@ export default async function VerifyClientID(req: Request, res: Response, next: 
 
 		req.locals = {
 			client_id,
+			user,
 		} as Locals;
 
 		res.locals = {

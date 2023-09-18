@@ -30,3 +30,5 @@ export enum WALLET_TRANSACTION_STATUS {
 	PENDING = 'pending',
 	CANCELLED = 'cancelled',
 }
+
+export const TAX = 0.18;

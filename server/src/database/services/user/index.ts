@@ -78,6 +78,14 @@ export default class UserService {
 			return [false, null] as [boolean, null];
 		}
 
-		return [true, auth.revoke_at] as [boolean, Date];
+		return [true, auth.revoke_at, auth.user] as [boolean, Date, IUser];
+	}
+
+	static async getUser(phone: string) {
+		const user = await UserDB.findOne({ phone });
+		if (user === null) {
+			throw new InternalError(INTERNAL_ERRORS.USER_ERRORS.NOT_FOUND);
+		}
+		return user;
 	}
 }
