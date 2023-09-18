@@ -1,10 +1,11 @@
 import { NextFunction, Request, Response } from 'express';
-import { SocketServerProvider } from '../../socket';
-import APIError, { API_ERRORS } from '../../errors/api-errors';
-import { Respond } from '../../utils/ExpressUtils';
+import { SocketServerProvider } from '../../../socket';
+import APIError, { API_ERRORS } from '../../../errors/api-errors';
+import { COUNTRIES } from '../../../config/const';
+import { Respond } from '../../../utils/ExpressUtils';
 
-export default async function (req: Request, res: Response, next: NextFunction) {
-	const { client_id } = req.params;
+async function contacts(req: Request, res: Response, next: NextFunction) {
+	const client_id = req.locals.client_id;
 
 	const whatsapp = SocketServerProvider.getWhatsappClient(client_id);
 	if (!whatsapp) {
@@ -35,23 +36,32 @@ export default async function (req: Request, res: Response, next: NextFunction) 
 				if (options.saved_contacts && contact.isMyContact) {
 					return true;
 				}
-				if (!options.saved_contacts && !contact.isMyContact) {
-					return true;
-				}
 				return false;
 			})
 
-			.map((contact) => ({
-				name: contact.name,
-				number: contact.number,
-			}));
+			.map(async (contact) => {
+				const country_code = await contact.getCountryCode();
+				const country = COUNTRIES[country_code as string];
+				return {
+					name: contact.name,
+					number: contact.number,
+					isBusiness: contact.isBusiness,
+					country,
+				};
+			});
 
 		return Respond({
 			res,
 			status: 200,
-			data: { contacts },
+			data: { contacts: await Promise.all(contacts) },
 		});
 	} catch (err) {
 		return next(new APIError(API_ERRORS.USER_ERRORS.USER_NOT_FOUND_ERROR));
 	}
 }
+
+const ContactsController = {
+	getContacts: contacts,
+};
+
+export default ContactsController;

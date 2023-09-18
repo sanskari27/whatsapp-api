@@ -1,16 +1,19 @@
 import express from 'express';
-import { getContacts, getGroups, getLabels } from '../controller';
+import ContactsRoute from './contacts';
+import GroupsRoute from './groups';
+import LabelsRoute from './labels';
+import CouponRoute from './token';
+import { VerifyClientID } from '../../middleware';
 
 const router = express.Router();
 
-/**
- * Creates a router for all the routes in version 1 of the API
- *
- * @returns the router
- */
+router.use('/token', CouponRoute);
 
-router.get('/:client_id/contacts', getContacts);
-router.get('/:client_id/groups', getGroups);
-router.get('/:client_id/labels', getLabels);
+// Next routes will be protected by VerifyClientID middleware
+router.use(VerifyClientID);
+
+router.use('/contacts', ContactsRoute);
+router.use('/groups', GroupsRoute);
+router.use('/labels', LabelsRoute);
 
 export default router;

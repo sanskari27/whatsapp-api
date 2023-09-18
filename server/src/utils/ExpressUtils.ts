@@ -3,10 +3,10 @@ import { IS_PRODUCTION } from '../config/const';
 type ResponseData = {
 	res: Response;
 	status: 200 | 201 | 400 | 401 | 403 | 404 | 500;
-	data: object;
+	data?: object;
 };
 
-export const Respond = ({ res, status, data }: ResponseData) => {
+export const Respond = ({ res, status, data = {} }: ResponseData) => {
 	if (status === 200 || status === 201) {
 		const auth_token = res.locals.auth_token;
 		const refresh_token = res.locals.refresh_token;
@@ -40,3 +40,7 @@ export const parseAmount = (amount: number) => {
 export const getRequestIP = (req: Request) => {
 	return (req.headers['x-real-ip'] ?? req.socket.remoteAddress)?.toString();
 };
+
+export function generateClientID() {
+	return crypto.randomUUID();
+}

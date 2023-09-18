@@ -1,3 +1,5 @@
-export { default as getContacts } from './contacts';
-export { default as getGroups } from './groups';
-export { default as getLabels } from './labels';
+export { default as ContactsController } from './whatsapp/contacts';
+export { default as GroupsController } from './whatsapp/groups';
+export { default as LabelsController } from './whatsapp/labels';
+export { default as TokenController } from './token';
+export { default as AuthController } from './auth';

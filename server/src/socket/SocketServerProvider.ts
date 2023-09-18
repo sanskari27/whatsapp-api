@@ -1,9 +1,10 @@
 import { Server as SocketServer, Socket } from 'socket.io';
-import { WhatsappProvider } from '../provider/WhatsappProvider';
+import { WhatsappProvider } from '../provider/whatsapp_provider';
 import { Client as WhatsappClient } from 'whatsapp-web.js';
 import QRCode from 'qrcode';
 import * as http from 'http';
 import { SOCKET_EVENTS, SOCKET_RESPONSES } from '../config/const';
+import { UserService } from '../database/services';
 
 type WhatsappClientID = string;
 type SocketClientEntry = {
@@ -56,8 +57,10 @@ export default class SocketServerProvider {
 
 	private attachWhatsappListeners(clientId: WhatsappClientID) {
 		const entry = SocketServerProvider.clientsMap.get(clientId);
+
 		if (!entry) return;
 		const { whatsappClient: whatsapp } = entry;
+
 		whatsapp.on('qr', async (qrCode) => {
 			try {
 				const qrCodeBase64 = await QRCode.toDataURL(qrCode);
@@ -70,12 +73,50 @@ export default class SocketServerProvider {
 				console.log(err);
 			}
 		});
+		whatsapp.on('authenticated', async () => {
+			this.sendToClient({
+				clientId,
+				event: SOCKET_RESPONSES.WHATSAPP_AUTHENTICATED,
+				data: null,
+			});
+		});
+
 		whatsapp.on('ready', () => {
+			const number = whatsapp.info.wid.user;
+
 			this.sendToClient({
 				clientId,
 				event: SOCKET_RESPONSES.WHATSAPP_READY,
 				data: null,
 			});
+
+			UserService.createUser(number)
+				.then((service) => {
+					service
+						.login(clientId)
+						.then(() => {})
+						.catch(() => {});
+				})
+				.catch(() => {});
+		});
+
+		whatsapp.on('disconnected', () => {
+			this.sendToClient({
+				clientId,
+				event: SOCKET_RESPONSES.WHATSAPP_CLOSED,
+				data: null,
+			});
+
+			const number = whatsapp.info.wid.user;
+			UserService.getService(number)
+				.then((service) => {
+					service
+						.logout(clientId)
+						.then(() => {})
+						.catch(() => {});
+				})
+				.catch(() => {});
+			WhatsappProvider.removeClient(clientId);
 		});
 	}
 

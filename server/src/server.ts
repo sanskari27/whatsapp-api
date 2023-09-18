@@ -10,11 +10,23 @@ import Date from './utils/DateUtils';
 import logger from './config/Logger';
 import ErrorReporter from './utils/ErrorReporter';
 import { SocketServerProvider } from './socket';
+import connectDB from './config/DB';
 
 //  ------------------------- Setup Variables
 const app = express();
 
 configServer(app);
+
+connectDB()
+	.then(() => {
+		logger.info('Database connected');
+	})
+	.catch((err) => {
+		logger.error(err.message, {
+			label: 'Running Status - Database Connection Failed',
+		});
+		process.exit();
+	});
 
 const server = app.listen(PORT, async () => {
 	SocketServerProvider.getInstance(server);

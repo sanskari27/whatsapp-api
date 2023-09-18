@@ -11,6 +11,11 @@ const USER_ERRORS = {
 		TITLE: 'USER_NOT_FOUND_ERROR',
 		MESSAGE: 'The user was not found. Please try again later.',
 	},
+	SESSION_INVALIDATED: {
+		STATUS: 404,
+		TITLE: 'SESSION_INVALIDATED',
+		MESSAGE: 'The session was invalidated. Please login again.',
+	},
 } satisfies {
 	[error: string]: APIError;
 };
