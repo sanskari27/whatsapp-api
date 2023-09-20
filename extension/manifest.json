@@ -1,10 +1,35 @@
 {
-	"name": "Hello Extensions",
-	"description": "Base Level Extension",
-	"version": "1.0",
-	"manifest_version": 3,
-	"action": {
-		"default_popup": "index.html",
-		"default_icon": "whatsapp.png"
-	}
+    "version": "1.0.1",
+    "manifest_version": 3,
+    "name": "test",
+    "description": "whatsapp test",
+    "icons": {
+        "16": "icon.png",
+        "48": "icon.png",
+        "128": "icon.png"
+    },
+    "permissions": ["tabs", "storage", "scripting", "webNavigation"],
+    "host_permissions": [
+        "https://*.facebook.com/*",
+        "https://twitter.com/*",
+        "https://*.reddit.com/*",
+        "https://*.youtube.com/*"
+    ],
+    // "background": {
+    //     "service_worker": "background.js"
+    // },
+    "action": {
+        "default_popup": "index.html",
+        "default_title": "React Chrome Extension"
+    }
+    // "content_scripts": [
+    //     {
+    //         "matches": [
+    //             "<all_urls>"
+    //         ],
+    //         "js": [
+    //             "contentScript.js"
+    //         ]
+    //     }
+    // ]
 }
