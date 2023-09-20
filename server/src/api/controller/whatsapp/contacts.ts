@@ -60,8 +60,62 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 	}
 }
 
+async function countContacts(req: Request, res: Response, next: NextFunction) {
+	const client_id = req.locals.client_id;
+
+	const whatsapp = SocketServerProvider.getWhatsappClient(client_id);
+	if (!whatsapp) {
+		return next(new APIError(API_ERRORS.USER_ERRORS.USER_NOT_FOUND_ERROR));
+	}
+
+	const options = {
+		all_contacts: true,
+		saved_contacts: true,
+	};
+	if (req.query.saved_contacts) {
+		options.all_contacts = false;
+		options.saved_contacts = true;
+	} else if (req.query.non_saved_contacts) {
+		options.all_contacts = false;
+		options.saved_contacts = false;
+	}
+
+	try {
+		const contacts = (await whatsapp.getContacts()).reduce(
+			(acc, contact) => {
+				if (!contact.isWAContact || contact.isMe || contact.isGroup) {
+					return acc;
+				}
+				if (contact.isMyContact) {
+					acc.saved_contacts += 1;
+				} else {
+					acc.non_saved_contacts += 1;
+				}
+				return acc;
+			},
+			{
+				saved_contacts: 0,
+				non_saved_contacts: 0,
+			}
+		);
+
+		return Respond({
+			res,
+			status: 200,
+			data: {
+				saved_contacts: contacts.saved_contacts,
+				non_saved_contacts: contacts.non_saved_contacts,
+				total_contacts: contacts.saved_contacts + contacts.non_saved_contacts,
+			},
+		});
+	} catch (err) {
+		return next(new APIError(API_ERRORS.USER_ERRORS.USER_NOT_FOUND_ERROR));
+	}
+}
+
 const ContactsController = {
 	getContacts: contacts,
+	countContacts,
 };
 
 export default ContactsController;

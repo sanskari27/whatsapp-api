@@ -20,7 +20,7 @@ export class WhatsappProvider {
 		const clientId = cid || generateClientID();
 		const client = new Client({
 			puppeteer: {
-				headless: false,
+				headless: true,
 				args: ['--no-sandbox', '--disable-setuid-sandbox', '--unhandled-rejections=strict'],
 			},
 			authStrategy: new LocalAuth({ clientId }),
