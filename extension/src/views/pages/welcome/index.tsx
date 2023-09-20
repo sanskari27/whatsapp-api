@@ -34,7 +34,7 @@ export default function Welcome() {
 				<Text className='text-black dark:text-white' flexGrow={1} fontSize={'lg'} fontWeight='bold'>
 					Whatsapp Help
 				</Text>
-				<Image src={SETTINGS} width={4} height={4} />
+				<Image src={SETTINGS} width={4} height={4} className='invert dark:invert-0' />
 			</Box>
 
 			<Box
