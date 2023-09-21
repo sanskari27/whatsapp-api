@@ -12,6 +12,9 @@ export default function useToken() {
 				setTokenVerified(res);
 				if (!res) {
 					cb(true);
+					localStorage.removeItem('token');
+				} else {
+					localStorage.setItem('token', token);
 				}
 			})
 			.catch(() => {

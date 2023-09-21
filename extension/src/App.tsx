@@ -5,6 +5,7 @@ import ExtensionWrapper from './views/components/extension-wrapper';
 import Welcome from './views/pages/welcome';
 import useToken from './hooks/useToken';
 import { useEffect } from 'react';
+import Home from './views/pages/home';
 
 function App() {
 	const { tokenVerified } = useToken();
@@ -18,7 +19,7 @@ function App() {
 	}, []);
 
 	if (tokenVerified) {
-		return <Navigate to={NAVIGATION.HOME} />;
+		// return <Navigate to={NAVIGATION.HOME} />;
 	}
 
 	return (
@@ -26,7 +27,7 @@ function App() {
 			<Router>
 				<Routes>
 					<Route path={NAVIGATION.WELCOME} element={<Welcome />} />
-					<Route path={NAVIGATION.HOME} element={<>Home</>} />
+					<Route path={NAVIGATION.HOME} element={<Home />} />
 
 					<Route path='*' element={<Navigate to={NAVIGATION.WELCOME} />} />
 				</Routes>

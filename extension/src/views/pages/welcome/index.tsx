@@ -1,10 +1,11 @@
 import { Box, Button, Image, Input, Text } from '@chakra-ui/react';
-import { GREEN_SHADOW, LOGO, SETTINGS, WELCOME_TYPING } from '../../../assets/Images';
+import { GREEN_SHADOW, WELCOME_TYPING } from '../../../assets/Images';
 import { CheckIcon, ChevronRightIcon, InfoOutlineIcon } from '@chakra-ui/icons';
 import useToken from '../../../hooks/useToken';
 import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { NAVIGATION } from '../../../config/const';
+import Header from '../../components/header';
 
 export default function Welcome() {
 	const { verifyToken, isLoading, tokenVerified } = useToken();
@@ -29,13 +30,7 @@ export default function Welcome() {
 
 	return (
 		<Box width='full' py={'1rem'} px={'1.5rem'}>
-			<Box width='full' height='full' display='flex' gap={'1rem'} alignItems='center'>
-				<Image src={LOGO} width={9} />
-				<Text className='text-black dark:text-white' flexGrow={1} fontSize={'lg'} fontWeight='bold'>
-					Whatsapp Help
-				</Text>
-				<Image src={SETTINGS} width={4} height={4} className='invert dark:invert-0' />
-			</Box>
+			<Header />
 
 			<Box
 				width='full'
@@ -51,7 +46,7 @@ export default function Welcome() {
 				backgroundSize={'contain'}
 				backgroundImage={`url(${GREEN_SHADOW})`}
 			>
-				<Image src={WELCOME_TYPING} className='filter-none' width={'60%'} />
+				<Image src={WELCOME_TYPING} className='filter-none' width={'60%'} />H
 			</Box>
 			<Box
 				width='full'
