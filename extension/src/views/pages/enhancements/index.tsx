@@ -63,7 +63,7 @@ const ENHANCEMENT = () => {
 				</Text>
 			</Flex>
 			<Box backgroundColor='#535353' p={'0.5rem'} borderRadius={'20px'}>
-				<Flex flexDirection='column' gap={'0.25rem'}>
+				<Flex flexDirection='column' gap={'0.5rem'}>
 					<CheckButton
 						name={PRIVACY_TYPE.RECENT}
 						label='Blur Recent Messages'

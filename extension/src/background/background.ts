@@ -25,6 +25,7 @@ chrome.tabs.onActivated.addListener(async (activeInfo: any) => {
 	];
 	const [recent, name, photo, conversation] = await Promise.all(promises);
 	hideRecentCSSGenerator(activeInfo.tabId, recent);
+	hideConversationCSSGenerator(activeInfo.tabId, conversation);
 });
 
 chrome.runtime.onMessage.addListener(
@@ -38,9 +39,18 @@ chrome.runtime.onMessage.addListener(
 			if (type === PRIVACY_TYPE.RECENT) {
 				saveChromeData(PRIVACY_TYPE.RECENT, value);
 				hideRecentCSSGenerator(tabId, value);
+			} else if (type === PRIVACY_TYPE.CONVERSATION) {
+				saveChromeData(PRIVACY_TYPE.CONVERSATION, value);
+				hideConversationCSSGenerator(tabId, value);
+			} else if (type === PRIVACY_TYPE.PHOTO) {
+				saveChromeData(PRIVACY_TYPE.PHOTO, value);
+				hidePhotoCSSGenerator(tabId, value);
+			} else if (type === PRIVACY_TYPE.NAME) {
+				saveChromeData(PRIVACY_TYPE.NAME, value);
+				hideNameCSSGenerator(tabId, value);
+			} else {
+				return;
 			}
-
-			saveChromeData(type, value);
 			sendResponse({ success: true });
 		}
 	}
@@ -51,5 +61,39 @@ function hideRecentCSSGenerator(tabID: string, blurred: boolean) {
 	chrome.scripting.insertCSS({
 		target: { tabId: tabID },
 		css: css,
+	});
+}
+
+function hideConversationCSSGenerator(tabID: string, blurred: boolean) {
+	const css = `div[class*="CzM4m"] {filter:blur(${blurred ? '10px' : '0px'})!important;}`;
+	chrome.scripting.insertCSS({
+		target: { tabId: tabID },
+		css: css,
+	});
+}
+
+function hidePhotoCSSGenerator(tabID: string, blurred: boolean) {
+	const css = `div[class*="_1AHcd"] {filter:blur(${blurred ? '10px' : '0px'})!important;}`;
+	const css_header = `div[class*="_2pr2H"] {filter:blur(${blurred ? '10px' : '0px'})!important;}`;
+	chrome.scripting.insertCSS({
+		target: { tabId: tabID },
+		css: css,
+	});
+	chrome.scripting.insertCSS({
+		target: { tabId: tabID },
+		css: css_header,
+	});
+}
+
+function hideNameCSSGenerator(tabID: string, blurred: boolean) {
+	const css = `div[class*="_21S-L"] {filter:blur(${blurred ? '10px' : '0px'})!important;}`;
+	const css_header = `div[class*="_2au8k"] {filter:blur(${blurred ? '10px' : '0px'})!important;}`;
+	chrome.scripting.insertCSS({
+		target: { tabId: tabID },
+		css: css,
+	});
+	chrome.scripting.insertCSS({
+		target: { tabId: tabID },
+		css: css_header,
 	});
 }
