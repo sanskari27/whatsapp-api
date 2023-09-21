@@ -7,16 +7,7 @@ const autoprefixer = require("autoprefixer");
 module.exports = {
     entry: {
         index: "./src/index.tsx",
-        // welcome: "./src/components/WelcomePage.tsx",
-        // facebook: "./src/components/Facebook.tsx",
-        // youtube: "./src/components/Youtube.tsx",
-        // navbar: "./src/components/Navbar.tsx",
-        // reddit: "./src/components/Reddit.tsx",
-        // twitter: "./src/components/Twitter.tsx",
-        // explicit: "./src/components/Explicit.tsx",
-        // settings: "./src/components/Settings.tsx",
         background: "./src/background/background.ts",
-        // contentScript: "./src/contentScript/contentScript.ts",
     },
 
     mode: "production",
@@ -75,14 +66,6 @@ module.exports = {
         }),
         ...getHtmlPlugins([
             "index",
-            // "welcome",
-            // "facebook",
-            // "youtube",
-            // "navbar",
-            // "reddit",
-            // "twitter",
-            // "explicit",
-            // "settings",
         ]),
     ],
     resolve: {

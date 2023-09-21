@@ -1,51 +1,55 @@
-import jsonData from "./const.json";
+import { CHROME_ACTION, PRIVACY_TYPE } from '../config/const';
+import { getChromeData, resetChromeData, saveChromeData } from '../utils/ChromeUtils';
 
 declare const chrome: any;
 
+export type MessageProps = {
+	action: string;
+	url: string;
+	tabId: string;
+	data: {
+		[key: string]: any;
+	};
+};
+
 chrome.runtime.onInstalled.addListener((details: any) => {
-    // Set the predefined data (array of JSON objects) to Chrome Extension storage
-    chrome.storage.sync.set({ privacy: jsonData });
+	resetChromeData();
+});
+
+chrome.tabs.onActivated.addListener(async (activeInfo: any) => {
+	const promises = [
+		getChromeData(PRIVACY_TYPE.RECENT),
+		getChromeData(PRIVACY_TYPE.NAME),
+		getChromeData(PRIVACY_TYPE.PHOTO),
+		getChromeData(PRIVACY_TYPE.CONVERSATION),
+	];
+	const [recent, name, photo, conversation] = await Promise.all(promises);
+	hideRecentCSSGenerator(activeInfo.tabId, recent);
 });
 
 chrome.runtime.onMessage.addListener(
-    async (message: any, sender: any, sendResponse: any) => {
-        if (message.action === "storeData") {
-            chrome.storage.sync.set({ siteData: message.data.siteData });
-            sendResponse({ success: true });
-        }
-    }
+	async (message: MessageProps, sender: any, sendResponse: any) => {
+		if (message.url !== 'https://web.whatsapp.com/') {
+			return;
+		}
+		if (message.action === CHROME_ACTION.PRIVACY_UPDATED) {
+			const { type, value } = message.data;
+			const tabId = message.tabId;
+			if (type === PRIVACY_TYPE.RECENT) {
+				saveChromeData(PRIVACY_TYPE.RECENT, value);
+				hideRecentCSSGenerator(tabId, value);
+			}
+
+			saveChromeData(type, value);
+			sendResponse({ success: true });
+		}
+	}
 );
 
-function getSyncData(key: string) {
-    return new Promise((resolve, reject) => {
-        chrome.storage.sync.get(key, (data: any) => {
-            if (chrome.runtime.lastError) {
-                reject(chrome.runtime.lastError);
-            } else {
-                resolve(data);
-            }
-        });
-    });
+function hideRecentCSSGenerator(tabID: string, blurred: boolean) {
+	const css = `div[class="_2KKXC"] {filter:blur(${blurred ? '5px' : '0px'})!important;}`;
+	chrome.scripting.insertCSS({
+		target: { tabId: tabID },
+		css: css,
+	});
 }
-
-// chrome.tabs.onActivated.addListener(async (activeInfo: any) => {
-//     const siteData: any = await getSyncData("siteData");
-
-// })
-
-chrome.runtime.onMessage.addListener(
-    async (message: any, sender: any, sendResponse: any) => {
-        if (message.url == "https://web.whatsapp.com/") {
-            if (message.action === "recent") {
-                const hideRecent=toggleRecent(message.data)
-                chrome.scripting.insertCSS({
-                    target: { tabId: message.tabId },
-                    css: hideRecent,
-                });
-                sendResponse({ status: true });
-            }
-        }
-    })
-
-const toggleRecent = (toggle: boolean) =>
-    `div[class="_2KKXC"] {filter:blur(${toggle ? "100px" : "0px"})!important;}`;

@@ -3,3 +3,14 @@ export const NAVIGATION = {
 	WELCOME: '/welcome',
 	HOME: '/home',
 };
+
+export enum CHROME_ACTION {
+	PRIVACY_UPDATED = 'PRIVACY_UPDATED',
+}
+
+export enum PRIVACY_TYPE {
+	RECENT = 'RECENT',
+	NAME = 'NAME',
+	PHOTO = 'PHOTO',
+	CONVERSATION = 'CONVERSATION',
+}
