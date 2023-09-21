@@ -15,7 +15,7 @@ module.exports = {
         // twitter: "./src/components/Twitter.tsx",
         // explicit: "./src/components/Explicit.tsx",
         // settings: "./src/components/Settings.tsx",
-        // background: "./src/background/background.ts",
+        background: "./src/background/background.ts",
         // contentScript: "./src/contentScript/contentScript.ts",
     },
 

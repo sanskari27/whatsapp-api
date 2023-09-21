@@ -1,5 +1,5 @@
 import { Box, Flex, Image, Text } from '@chakra-ui/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PRIVACY } from '../../../assets/Images';
 import { CheckButton } from './components';
 
@@ -8,7 +8,6 @@ const ENHANCEMENT = () => {
 	const [name, setName] = useState(false);
 	const [photo, setPhoto] = useState(false);
 	const [conversation, setConversation] = useState(false);
-	const [everything, setEverything] = useState(false);
 	return (
 		<Flex direction={'column'} gap={'0.5rem'}>
 			<Flex alignItems='center' gap={'0.5rem'} mt={'1.5rem'}>
@@ -27,7 +26,6 @@ const ENHANCEMENT = () => {
 						value={conversation}
 						setValue={setConversation}
 					/>
-					<CheckButton label='Blur Everything' value={everything} setValue={setEverything} />
 				</Flex>
 			</Box>
 		</Flex>
