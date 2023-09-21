@@ -60,44 +60,44 @@ const ENHANCEMENT = () => {
         }));
     };
 
-    return (
-        <Flex direction={"column"} gap={"0.5rem"}>
-            <Flex alignItems="center" gap={"0.5rem"} mt={"1.5rem"}>
-                <Image src={PRIVACY} width={4} />
-                <Text color="white" fontSize="md">
-                    Privacy
-                </Text>
-            </Flex>
-            <Box backgroundColor="#535353" p={"0.5rem"} borderRadius={"20px"}>
-                <Flex flexDirection="column" gap={"0.25rem"}>
-                    <CheckButton
-                        name={PRIVACY_TYPE.RECENT}
-                        label="Blur Recent Messages"
-                        value={RECENT}
-                        onChange={handleChange}
-                    />
-                    <CheckButton
-                        name={PRIVACY_TYPE.NAME}
-                        label="Blur Contact Name"
-                        value={NAME}
-                        onChange={handleChange}
-                    />
-                    <CheckButton
-                        name={PRIVACY_TYPE.PHOTO}
-                        label="Blur Contact Photos"
-                        value={PHOTO}
-                        onChange={handleChange}
-                    />
-                    <CheckButton
-                        name={PRIVACY_TYPE.CONVERSATION}
-                        label="Blur Conversation Message"
-                        value={CONVERSATION}
-                        onChange={handleChange}
-                    />
-                </Flex>
-            </Box>
-        </Flex>
-    );
+	return (
+		<Flex direction={'column'} gap={'0.5rem'}>
+			<Flex alignItems='center' gap={'0.5rem'} mt={'1.5rem'}>
+				<Image src={PRIVACY} width={4} />
+				<Text color='white' fontSize='md'>
+					Privacy
+				</Text>
+			</Flex>
+			<Box backgroundColor='#535353' p={'0.5rem'} borderRadius={'20px'}>
+				<Flex flexDirection='column' gap={'0.5rem'}>
+					<CheckButton
+						name={PRIVACY_TYPE.RECENT}
+						label='Blur Recent Messages'
+						value={RECENT}
+						onChange={handleChange}
+					/>
+					<CheckButton
+						name={PRIVACY_TYPE.NAME}
+						label='Blur Contact Name'
+						value={NAME}
+						onChange={handleChange}
+					/>
+					<CheckButton
+						name={PRIVACY_TYPE.PHOTO}
+						label='Blur Contact Photos'
+						value={PHOTO}
+						onChange={handleChange}
+					/>
+					<CheckButton
+						name={PRIVACY_TYPE.CONVERSATION}
+						label='Blur Conversation Message'
+						value={CONVERSATION}
+						onChange={handleChange}
+					/>
+				</Flex>
+			</Box>
+		</Flex>
+	);
 };
 
 export default ENHANCEMENT;
