@@ -2,20 +2,12 @@ import { CheckIcon } from "@chakra-ui/icons";
 import { Flex, IconButton, Text } from "@chakra-ui/react";
 
 type CheckButtonType = {
-    name: string;
     label: string;
     value: boolean;
-    onChange: ({ name, value }: { name: string; value: boolean }) => void;
+    setValue: (e: boolean) => void;
 };
 
-const CheckButton = ({ name, label, onChange, value }: CheckButtonType) => {
-    const handleChange = (e: boolean) => {
-        onChange({
-            name: name,
-            value: e,
-        });
-    };
-
+const CheckButton = ({ label, setValue, value }: CheckButtonType) => {
     return (
         <Flex gap={6}>
             <IconButton
@@ -26,7 +18,7 @@ const CheckButton = ({ name, label, onChange, value }: CheckButtonType) => {
                 icon={value ? <CheckIcon color="white" /> : <></>}
                 backgroundColor={value ? "green.500" : "#252525"}
                 onClick={() => {
-                    handleChange(!value);
+                    setValue(!value);
                 }}
                 _hover={{ backgroundColor: "green.600" }}
             />
