@@ -24,8 +24,14 @@ chrome.tabs.onActivated.addListener(async (activeInfo: any) => {
 		getChromeData(PRIVACY_TYPE.CONVERSATION),
 	];
 	const [recent, name, photo, conversation] = await Promise.all(promises);
-	hideRecentCSSGenerator(activeInfo.tabId, recent);
-	hideConversationCSSGenerator(activeInfo.tabId, conversation);
+	chrome.tabs.get(activeInfo.tabId, function (tab: any) {
+		if (tab.url === 'https://web.whatsapp.com/') {
+			hideRecentCSSGenerator(activeInfo.tabId, recent);
+			hideConversationCSSGenerator(activeInfo.tabId, conversation);
+			hidePhotoCSSGenerator(activeInfo.tabId, photo);
+			hideNameCSSGenerator(activeInfo.tabId, name);
+		}
+	});
 });
 
 chrome.runtime.onMessage.addListener(
@@ -65,7 +71,7 @@ function hideRecentCSSGenerator(tabID: string, blurred: boolean) {
 }
 
 function hideConversationCSSGenerator(tabID: string, blurred: boolean) {
-	const css = `div[class*="CzM4m"] {filter:blur(${blurred ? '10px' : '0px'})!important;}`;
+	const css = `div[class*="CzM4m"] {filter:blur(${blurred ? '5px' : '0px'})!important;}`;
 	chrome.scripting.insertCSS({
 		target: { tabId: tabID },
 		css: css,
@@ -73,8 +79,8 @@ function hideConversationCSSGenerator(tabID: string, blurred: boolean) {
 }
 
 function hidePhotoCSSGenerator(tabID: string, blurred: boolean) {
-	const css = `div[class*="_1AHcd"] {filter:blur(${blurred ? '10px' : '0px'})!important;}`;
-	const css_header = `div[class*="_2pr2H"] {filter:blur(${blurred ? '10px' : '0px'})!important;}`;
+	const css = `div[class*="_1AHcd"] {filter:blur(${blurred ? '5px' : '0px'})!important;}`;
+	const css_header = `div[class*="_2pr2H"] {filter:blur(${blurred ? '5px' : '0px'})!important;}`;
 	chrome.scripting.insertCSS({
 		target: { tabId: tabID },
 		css: css,
@@ -86,8 +92,8 @@ function hidePhotoCSSGenerator(tabID: string, blurred: boolean) {
 }
 
 function hideNameCSSGenerator(tabID: string, blurred: boolean) {
-	const css = `div[class*="_21S-L"] {filter:blur(${blurred ? '10px' : '0px'})!important;}`;
-	const css_header = `div[class*="_2au8k"] {filter:blur(${blurred ? '10px' : '0px'})!important;}`;
+	const css = `div[class*="_21S-L"] {filter:blur(${blurred ? '5px' : '0px'})!important;}`;
+	const css_header = `div[class*="_2au8k"] {filter:blur(${blurred ? '5px' : '0px'})!important;}`;
 	chrome.scripting.insertCSS({
 		target: { tabId: tabID },
 		css: css,

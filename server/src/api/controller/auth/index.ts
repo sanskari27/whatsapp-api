@@ -5,7 +5,7 @@ import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 import { UserService } from '../../../database/services';
 
 async function validateClientID(req: Request, res: Response, next: NextFunction) {
-	const client_id = req.locals.client_id;
+	const client_id = req.headers['client-id'] as string;
 
 	const [isValidAuth, revoke_at] = await UserService.isValidAuth(client_id);
 
