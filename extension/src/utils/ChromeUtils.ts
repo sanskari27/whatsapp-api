@@ -20,7 +20,7 @@ export function resetChromeData() {
 	});
 }
 
-export function saveChromeData(key: keyof typeof PRIVACY_TYPE, data: boolean) {
+export function saveChromeData(key: keyof typeof PRIVACY_TYPE|string, data: boolean) {
 	chrome.storage.sync.set({
 		[key]: data,
 	});

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { PRIVACY } from '../../../assets/Images';
 import { CheckButton } from './components';
 import { CHROME_ACTION, PRIVACY_TYPE } from '../../../config/const';
-import { getActiveTabURL, getChromeData } from '../../../utils/ChromeUtils';
+import { getActiveTabURL, getChromeData, saveChromeData } from '../../../utils/ChromeUtils';
 import { MessageProps } from '../../../background/background';
 
 const ENHANCEMENT = () => {
@@ -47,6 +47,7 @@ const ENHANCEMENT = () => {
 				value,
 			},
 		};
+		saveChromeData(name,value)
 		await chrome.runtime.sendMessage(message);
 		setPrivacy((prevState) => ({
 			...prevState,
