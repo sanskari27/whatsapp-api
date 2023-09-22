@@ -9,6 +9,7 @@ import "./App.css";
 import { NAVIGATION } from "./config/const";
 import useToken from "./hooks/useToken";
 import ExtensionWrapper from "./views/components/extension-wrapper";
+import CheckoutPage from "./views/pages/checkout";
 import Home from "./views/pages/home";
 import Welcome from "./views/pages/welcome";
 
@@ -33,7 +34,10 @@ function App() {
                 <Routes>
                     <Route path={NAVIGATION.WELCOME} element={<Welcome />} />
                     <Route path={NAVIGATION.HOME} element={<Home />} />
-
+                    <Route
+                        path={NAVIGATION.CHECKOUT}
+                        element={<CheckoutPage />}
+                    />
                     <Route
                         path="*"
                         element={<Navigate to={NAVIGATION.HOME} />}
