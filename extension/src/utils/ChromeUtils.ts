@@ -26,6 +26,24 @@ export function saveChromeData(key: keyof typeof PRIVACY_TYPE, data: boolean) {
 	});
 }
 
+export function saveClientID(data: string) {
+	chrome.storage.sync.set({
+		client_id: data,
+	});
+}
+
+export function getClientID() {
+	return new Promise((resolve: (id: string) => void, reject) => {
+		chrome.storage.sync.get('client_id', (data: any) => {
+			if (chrome.runtime.lastError) {
+				return resolve('');
+			} else {
+				return resolve(data.client_id as string);
+			}
+		});
+	});
+}
+
 export function getChromeData(key: keyof typeof PRIVACY_TYPE) {
 	return new Promise((resolve: (hidden: boolean) => void, reject) => {
 		chrome.storage.sync.get(key, (data: any) => {

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { SERVER_URL } from './const';
+import { getChromeData, getClientID } from '../utils/ChromeUtils';
 
 const APIInstance = axios.create({
 	baseURL: SERVER_URL,
@@ -10,7 +11,7 @@ const APIInstance = axios.create({
 });
 
 APIInstance.interceptors.request.use(async (request) => {
-	const client_id = localStorage.getItem('client_id');
+	const client_id = await getClientID();
 	if (client_id) {
 		request.headers['client-id'] = client_id;
 	}

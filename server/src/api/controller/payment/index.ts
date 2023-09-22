@@ -5,6 +5,14 @@ import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 import { PaymentService } from '../../../database/services';
 
+async function isPaymentValid(req: Request, res: Response, next: NextFunction) {
+	return Respond({
+		res,
+		status: 200,
+		data: {},
+	});
+}
+
 async function initiatePaymentTransaction(req: Request, res: Response, next: NextFunction) {
 	const amountValidator = z.object({
 		amount: z.number().min(1).positive(),
@@ -141,6 +149,7 @@ async function confirmTransaction(req: Request, res: Response, next: NextFunctio
 }
 
 const TokenController = {
+	isPaymentValid,
 	initiatePaymentTransaction,
 	applyCoupon,
 	initializeRazorpayPayment,

@@ -19,9 +19,19 @@ export class WhatsappProvider {
 
 		const clientId = cid || generateClientID();
 		const client = new Client({
+			restartOnAuthFail: true,
 			puppeteer: {
 				headless: true,
-				args: ['--no-sandbox', '--disable-setuid-sandbox', '--unhandled-rejections=strict'],
+				args: [
+					'--no-sandbox',
+					'--disable-setuid-sandbox',
+					'--disable-dev-shm-usage',
+					'--disable-accelerated-2d-canvas',
+					'--no-first-run',
+					'--no-zygote',
+					'--single-process', // <- this one doesn't works in Windows
+					'--disable-gpu',
+				],
 			},
 			authStrategy: new LocalAuth({ clientId }),
 		});
@@ -34,7 +44,11 @@ export class WhatsappProvider {
 	static async removeClient(cid: ClientID) {
 		const client = WhatsappProvider.clientsMap.get(cid);
 		if (!client) return;
-		await client.logout();
+		try {
+			await client.logout();
+		} catch (e) {
+			//ignore
+		}
 		WhatsappProvider.clientsMap.delete(cid);
 	}
 

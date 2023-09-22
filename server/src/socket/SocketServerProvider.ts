@@ -19,7 +19,11 @@ export default class SocketServerProvider {
 	private static clientsMap = new Map<WhatsappClientID, SocketClientEntry>();
 
 	private constructor(server: http.Server) {
-		this.io = new SocketServer(server);
+		this.io = new SocketServer(server, {
+			cors: {
+				origin: '*',
+			},
+		});
 		this.attachListeners();
 	}
 
@@ -35,6 +39,15 @@ export default class SocketServerProvider {
 		this.io.on('connection', (socket) => {
 			socket.on(SOCKET_EVENTS.INITIALIZE, (clientId: string | undefined) => {
 				this.initializeWhatsappClient(socket, clientId);
+			});
+			socket.on('disconnect', () => {
+				const clientId = SocketServerProvider.getClientId(socket);
+				if (!clientId) return;
+				const entry = SocketServerProvider.clientsMap.get(clientId);
+				if (!entry) return;
+				const { whatsappClient } = entry;
+				whatsappClient.destroy();
+				SocketServerProvider.clientsMap.delete(clientId);
 			});
 		});
 	}
@@ -53,6 +66,15 @@ export default class SocketServerProvider {
 			event: SOCKET_RESPONSES.INITIALIZED,
 			data: clientId,
 		});
+	}
+
+	private static getClientId(socket: Socket) {
+		for (const [clientId, entry] of SocketServerProvider.clientsMap) {
+			if (entry.socketClient === socket) {
+				return clientId;
+			}
+		}
+		return null;
 	}
 
 	private attachWhatsappListeners(clientId: WhatsappClientID) {
