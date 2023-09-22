@@ -24,13 +24,14 @@ const CheckButton = ({ name, label, onChange, value }: CheckButtonType) => {
                 aria-label="Done"
                 size="xs"
                 icon={value ? <CheckIcon color="white" /> : <></>}
-                backgroundColor={value ? "green.500" : "#252525"}
                 onClick={() => {
                     handleChange(!value);
                 }}
-                _hover={{ backgroundColor: "green.600" }}
+                className={`${
+                    value ? "!bg-[#4CB072]" : "!bg-[#A6A6A6] dark:!bg-[#252525]"
+                } hover:!bg-green-700`}
             />
-            <Text color="white" fontSize="sm">
+            <Text className="text-black dark:text-white" fontSize="sm">
                 {label}
             </Text>
         </Flex>
