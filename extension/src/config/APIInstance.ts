@@ -9,6 +9,13 @@ const APIInstance = axios.create({
 	},
 });
 
+APIInstance.interceptors.request.use(async (request) => {
+	const client_id = localStorage.getItem('client_id');
+	if (client_id) {
+		request.headers['client-id'] = client_id;
+	}
+	return request;
+});
 APIInstance.interceptors.response.use(
 	async (response) => response,
 	async (error) => {

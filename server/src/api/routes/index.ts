@@ -4,11 +4,14 @@ import GroupsRoute from './groups';
 import LabelsRoute from './labels';
 import CouponRoute from './token';
 import PaymentRoute from './payment';
+import AuthRoute from './auth';
 import { VerifyClientID } from '../../middleware';
 
 const router = express.Router();
 
 router.use('/token', CouponRoute);
+
+router.use('/auth', AuthRoute);
 
 // Next routes will be protected by VerifyClientID middleware
 router.use(VerifyClientID);
