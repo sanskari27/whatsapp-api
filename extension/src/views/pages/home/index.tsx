@@ -68,9 +68,9 @@ export default function Home() {
 
             <Tabs index={tabIndex} onChange={setTabIndex} pt={"1rem"}>
                 <TabList
-                    backgroundColor={"#3C3C3C"}
-                    borderColor={"#3C3C3C"}
+                    className="bg-[#ECECEC] border-[#ECECEC] dark:bg-[#3c3c3c] dark:!border-[#3c3c3c]"
                     rounded={"lg"}
+                    padding={"0.25rem"}
                 >
                     {TABS.map((tab, index) => (
                         <Tab

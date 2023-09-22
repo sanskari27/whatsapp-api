@@ -22,17 +22,17 @@ const Exports = () => {
         <Flex direction={"column"} gap={"0.5rem"}>
             <Flex alignItems="center" gap={"0.5rem"} mt={"1.5rem"}>
                 <Image src={EXPORT_GREEN} width={4} alt="" />
-                <Text color="white" fontSize="md">
+                <Text className="text-black dark:text-white" fontSize="md">
                     Exports
                 </Text>
             </Flex>
             <Box
-                backgroundColor="#535353"
+                className="bg-[#ECECEC] dark:bg-[#535353]"
                 p={"0.5rem"}
                 borderRadius={"20px"}
                 mb={"1.5rem"}
             >
-                <Flex flexDirection={"column"} gap={"0.25rem"} width={"full"}>
+                <Flex flexDirection={"column"} gap={"0.5rem"} width={"full"}>
                     <CheckButton
                         label="All Chat Contacts"
                         value={all}
@@ -58,19 +58,26 @@ const Exports = () => {
                             onClick={() => {
                                 setGroup(!group);
                             }}
-                            backgroundColor={group ? "green.500" : "#252525"}
-                            _hover={{ backgroundColor: "green.600" }}
+                            className={`${
+                                group
+                                    ? "!bg-[#4CB072]"
+                                    : "!bg-[#A6A6A6] dark:!bg-[#252525]"
+                            } hover:!bg-green-700`}
                         />
                         <Box width={"full"}>
-                            <Text color="white" fontSize="sm" pb={3}>
+                            <Text
+                                className="text-black dark:text-white"
+                                fontSize="sm"
+                                pb={3}
+                            >
                                 Group Contacts
                             </Text>
                             <Select
                                 size="sm"
                                 width={"full"}
-                                background={"#252525"}
                                 color={"white"}
                                 border={"none"}
+                                className="!bg-[#A6A6A6] dark:!bg-[#252525]"
                                 borderRadius={"10px"}
                             >
                                 <option
@@ -118,17 +125,24 @@ const Exports = () => {
                             onClick={() => {
                                 setLabel(!label);
                             }}
-                            backgroundColor={label ? "green.500" : "#252525"}
-                            _hover={{ backgroundColor: "green.600" }}
+                            className={`${
+                                label
+                                    ? "!bg-[#4CB072]"
+                                    : "!bg-[#A6A6A6] dark:!bg-[#252525]"
+                            } hover:!bg-green-700`}
                         />
                         <Box width={"full"}>
-                            <Text color="white" fontSize="sm" pb={3}>
+                            <Text
+                                className="text-black dark:text-white"
+                                fontSize="sm"
+                                pb={3}
+                            >
                                 Labels
                             </Text>
                             <Select
                                 size="sm"
                                 width={"full"}
-                                background={"#252525"}
+                                className="!bg-[#A6A6A6] dark:!bg-[#252525]"
                                 color={"white"}
                                 border={"none"}
                                 borderRadius={"10px"}
