@@ -237,8 +237,17 @@ const Exports = () => {
 						_hover={{
 							bgColor: 'green.400',
 						}}
-						width={'45%'}
+						width={'30%'}
 						onClick={exportExcel}
+					>
+						<Text color={'white'}>EXCEL</Text>
+					</Button>
+					<Button
+						bgColor={'green.300'}
+						_hover={{
+							bgColor: 'green.400',
+						}}
+						width={'30%'}
 					>
 						<Text color={'white'}>CSV</Text>
 					</Button>
@@ -247,7 +256,7 @@ const Exports = () => {
 						_hover={{
 							bgColor: 'green.400',
 						}}
-						width={'45%'}
+						width={'30%'}
 					>
 						<Text color={'white'}>VCF</Text>
 					</Button>
