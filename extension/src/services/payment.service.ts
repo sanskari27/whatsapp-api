@@ -57,4 +57,29 @@ export default class PaymentService {
 			return null;
 		}
 	}
+	static async initiateRazorpay(transaction_id: string) {
+		try {
+			const { data } = await APIInstance.post(`/payment/${transaction_id}/initiate-razorpay`);
+			return {
+				transaction_id: data.transaction_id as string,
+				order_id: data.order_id as string,
+				razorpay_options: data.razorpay_options as {
+					description: string;
+					currency: string;
+					amount: number;
+					name: string;
+					order_id: string;
+					prefill: {
+						contact: string;
+					};
+					key: string;
+					theme: {
+						color: string;
+					};
+				},
+			};
+		} catch (err) {
+			return null;
+		}
+	}
 }

@@ -7,6 +7,7 @@ import DateUtils from '../../../utils/DateUtils';
 import RazorpayProvider from '../../../provider/razorpay';
 import { Types } from 'mongoose';
 import CouponDB from '../../repository/coupon';
+import { RAZORPAY_API_KEY } from '../../../provider/razorpay/config/const';
 
 export default class PaymentService {
 	private user: IUser;
@@ -120,14 +121,14 @@ export default class PaymentService {
 				description: 'Subscription',
 				currency: order.currency,
 				amount: order.amount * 100,
-				name: 'Maze',
+				name: 'Whatsapp Helper',
 				order_id: order.id,
 				prefill: {
 					contact: this.user.phone,
 				},
-				key: '',
+				key: RAZORPAY_API_KEY,
 				theme: {
-					color: '#FFC371',
+					color: '#4CB072',
 				},
 			},
 		};
