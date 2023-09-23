@@ -4,13 +4,15 @@ import { useEffect, useRef, useState } from 'react';
 import { startAuth, useAuth } from '../../../hooks/useAuth';
 import { EXPORT_GREEN, EXPORT_WHITE } from '../../../assets/Images';
 import CheckButton from '../../components/check-button';
-import { EXPORTS_TYPE } from '../../../config/const';
+import { EXPORTS_TYPE, NAVIGATION } from '../../../config/const';
 import LoginModal, { LoginHandle } from '../../components/login';
 import ContactService from '../../../services/contact.service';
 import GroupService from '../../../services/group.service';
 import PaymentService from '../../../services/payment.service';
+import { useNavigate } from 'react-router-dom';
 
 const Exports = () => {
+	const navigate = useNavigate();
 	const loginModelRef = useRef<LoginHandle>(null);
 	const [export_criteria, setExportCriteria] = useState({
 		[EXPORTS_TYPE.ALL]: false,
@@ -198,6 +200,7 @@ const Exports = () => {
 					_hover={{
 						bgColor: 'yellow.500',
 					}}
+					onClick={() => navigate(NAVIGATION.CHECKOUT)}
 				>
 					<Flex gap={'0.5rem'}>
 						<Text color={'white'}>Subscribe</Text>

@@ -10,7 +10,7 @@ async function groups(req: Request, res: Response, next: NextFunction) {
 
 	const whatsapp = SocketServerProvider.getWhatsappClient(client_id);
 	if (!whatsapp) {
-		return next(new APIError(API_ERRORS.USER_ERRORS.USER_NOT_FOUND_ERROR));
+		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
 
 	try {
@@ -30,7 +30,7 @@ async function groups(req: Request, res: Response, next: NextFunction) {
 			data: { groups },
 		});
 	} catch (err) {
-		return next(new APIError(API_ERRORS.USER_ERRORS.USER_NOT_FOUND_ERROR));
+		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
 }
 
@@ -40,7 +40,7 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 
 	const whatsapp = SocketServerProvider.getWhatsappClient(client_id);
 	if (!whatsapp) {
-		return next(new APIError(API_ERRORS.USER_ERRORS.USER_NOT_FOUND_ERROR));
+		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
 
 	try {
@@ -76,7 +76,7 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 			},
 		});
 	} catch (err) {
-		return next(new APIError(API_ERRORS.USER_ERRORS.USER_NOT_FOUND_ERROR));
+		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
 }
 

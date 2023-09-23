@@ -45,27 +45,36 @@ export default class SocketServerProvider {
 				if (!clientId) return;
 				const entry = SocketServerProvider.clientsMap.get(clientId);
 				if (!entry) return;
-				const { whatsappClient } = entry;
-				whatsappClient.destroy();
-				SocketServerProvider.clientsMap.delete(clientId);
+				// const { whatsappClient } = entry;
+				// whatsappClient.destroy();
+				//SocketServerProvider.clientsMap.delete(clientId);
 			});
 		});
 	}
 
 	private initializeWhatsappClient(socketClient: Socket, cid: string | undefined) {
-		const [clientId, client] = WhatsappProvider.getWhatsappClient(cid);
-		client.initialize();
+		const [clientId, client, sessionActive] = WhatsappProvider.getWhatsappClient(cid);
+
 		const entry: SocketClientEntry = {
 			socketClient: socketClient,
 			whatsappClient: client,
 		};
 		SocketServerProvider.clientsMap.set(clientId, entry);
-		this.attachWhatsappListeners(clientId);
 		this.sendToClient({
 			clientId,
 			event: SOCKET_RESPONSES.INITIALIZED,
 			data: clientId,
 		});
+		if (sessionActive) {
+			this.sendToClient({
+				clientId,
+				event: SOCKET_RESPONSES.WHATSAPP_READY,
+				data: clientId,
+			});
+		} else {
+			client.initialize();
+			this.attachWhatsappListeners(clientId);
+		}
 	}
 
 	private static getClientId(socket: Socket) {
@@ -144,6 +153,7 @@ export default class SocketServerProvider {
 
 	public static getWhatsappClient(clientId: WhatsappClientID) {
 		const entry = SocketServerProvider.clientsMap.get(clientId);
+
 		if (!entry) return null;
 		return entry.whatsappClient;
 	}

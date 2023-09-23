@@ -47,10 +47,13 @@ export const setAuth = (data: Partial<typeof initStatus>) =>
 	globalSet((prev: any) => ({ ...prev, ...data }));
 
 socket.on(SOCKET_EVENT.INITIALIZED, (...args) => {
+	console.log('SOCKET_EVENT.INITIALIZED', args);
+
 	saveClientID(args[0]);
 });
 
 socket.on(SOCKET_EVENT.WHATSAPP_READY, () => {
+	console.log('SOCKET_EVENT.WHATSAPP_READY');
 	setAuth({
 		isAuthenticated: true,
 		isAuthenticating: false,
@@ -61,11 +64,13 @@ socket.on(SOCKET_EVENT.WHATSAPP_READY, () => {
 });
 
 socket.on(SOCKET_EVENT.WHATSAPP_CLOSED, () => {
+	console.log('SOCKET_EVENT.WHATSAPP_CLOSED');
 	setAuth({ isAuthenticated: false, isAuthenticating: false, qrCode: '', qrGenerated: false });
 	saveClientID('');
 });
 
 socket.on(SOCKET_EVENT.QR_GENERATED, (...args) => {
+	console.log('SOCKET_EVENT.QR_GENERATED', args);
 	setAuth({
 		qrCode: args[0],
 		isAuthenticating: true,
@@ -76,6 +81,8 @@ socket.on(SOCKET_EVENT.QR_GENERATED, (...args) => {
 });
 
 export const startAuth = async () => {
+	console.log('startAuth');
+
 	setAuth({
 		isAuthenticating: true,
 		qrGenerated: false,
@@ -84,5 +91,7 @@ export const startAuth = async () => {
 		qrCode: '',
 	});
 	const client_id = await getClientID();
+	console.log('client_id', client_id);
+
 	socket.emit(SOCKET_EVENT.INITIALIZE, client_id);
 };

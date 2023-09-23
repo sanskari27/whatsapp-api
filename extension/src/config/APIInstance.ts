@@ -12,6 +12,8 @@ const APIInstance = axios.create({
 
 APIInstance.interceptors.request.use(async (request) => {
 	const client_id = await getClientID();
+	console.log("client_id",client_id);
+
 	if (client_id) {
 		request.headers['client-id'] = client_id;
 	}
