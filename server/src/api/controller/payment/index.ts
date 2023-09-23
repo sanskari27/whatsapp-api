@@ -4,6 +4,7 @@ import { z } from 'zod';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 import { PaymentService } from '../../../database/services';
+import { BASE_AMOUNT } from '../../../config/const';
 
 async function isPaymentValid(req: Request, res: Response, next: NextFunction) {
 	return Respond({
@@ -14,21 +15,9 @@ async function isPaymentValid(req: Request, res: Response, next: NextFunction) {
 }
 
 async function initiatePaymentTransaction(req: Request, res: Response, next: NextFunction) {
-	const amountValidator = z.object({
-		amount: z.number().min(1).positive(),
-	});
-
-	const validationResult = amountValidator.safeParse(req.body);
-
-	if (!validationResult.success) {
-		return next(new APIError(INTERNAL_ERRORS.COMMON_ERRORS.INVALID_FIELD));
-	}
-
-	const amount = validationResult.data.amount;
-
 	const paymentService = new PaymentService(req.locals.user);
 
-	const transactionDetails = await paymentService.initializePayment(amount);
+	const transactionDetails = await paymentService.initializePayment(BASE_AMOUNT);
 
 	return Respond({
 		res,
@@ -60,6 +49,43 @@ async function applyCoupon(req: Request, res: Response, next: NextFunction) {
 	const paymentService = new PaymentService(req.locals.user);
 	try {
 		const transactionDetails = await paymentService.applyCoupon(transaction_id, couponCode);
+
+		return Respond({
+			res,
+			status: 200,
+			data: {
+				transaction_id: transactionDetails.transaction_id,
+				gross_amount: transactionDetails.gross_amount,
+				tax: transactionDetails.tax,
+				discount: transactionDetails.discount,
+				total_amount: transactionDetails.total_amount,
+			},
+		});
+	} catch (err) {
+		console.log(err);
+
+		if (err instanceof InternalError) {
+			if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND)) {
+				return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_NOT_FOUND));
+			} else if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.COUPON_NOT_FOUND)) {
+				return next(new APIError(API_ERRORS.PAYMENT_ERRORS.COUPON_NOT_FOUND));
+			} else if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.COUPON_EXPIRED)) {
+				return next(new APIError(API_ERRORS.PAYMENT_ERRORS.COUPON_EXPIRED));
+			}
+		}
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
+	}
+}
+async function removeCoupon(req: Request, res: Response, next: NextFunction) {
+	const [isIDValid, transaction_id] = idValidator(req.params.transaction_id);
+
+	if (!isIDValid) {
+		return next(new APIError(INTERNAL_ERRORS.COMMON_ERRORS.INVALID_FIELD));
+	}
+
+	const paymentService = new PaymentService(req.locals.user);
+	try {
+		const transactionDetails = await paymentService.removeCoupon(transaction_id);
 
 		return Respond({
 			res,
@@ -152,6 +178,7 @@ const TokenController = {
 	isPaymentValid,
 	initiatePaymentTransaction,
 	applyCoupon,
+	removeCoupon,
 	initializeRazorpayPayment,
 	confirmTransaction,
 };

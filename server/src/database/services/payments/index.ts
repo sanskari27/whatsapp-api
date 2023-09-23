@@ -64,11 +64,31 @@ export default class PaymentService {
 			throw new InternalError(INTERNAL_ERRORS.PAYMENT_ERROR.COUPON_EXPIRED);
 		}
 
-		walletTransaction.discount = couponDetails.discount_amount;
+		walletTransaction.discount = couponDetails.discount_percentage * walletTransaction.gross_amount;
 		couponDetails.available_coupons -= 1;
 
 		await walletTransaction.save();
 		await couponDetails.save();
+		console.log(walletTransaction);
+
+		return {
+			transaction_id: walletTransaction._id,
+			gross_amount: walletTransaction.gross_amount,
+			tax: walletTransaction.tax,
+			discount: walletTransaction.discount,
+			total_amount: walletTransaction.total_amount,
+		};
+	}
+
+	async removeCoupon(id: Types.ObjectId) {
+		const walletTransaction = await PaymentDB.findById(id);
+
+		if (walletTransaction === null) {
+			throw new InternalError(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND);
+		}
+
+		walletTransaction.discount = 0;
+		await walletTransaction.save();
 
 		return {
 			transaction_id: walletTransaction._id,

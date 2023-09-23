@@ -6,5 +6,5 @@ export default interface ICoupon extends Document {
 	available_coupons: number;
 	total_coupons: number;
 	no_of_coupons_per_user: number;
-	discount_amount: number;
+	discount_percentage: number;
 }

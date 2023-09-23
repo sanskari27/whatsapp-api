@@ -31,4 +31,5 @@ export enum WALLET_TRANSACTION_STATUS {
 	CANCELLED = 'cancelled',
 }
 
-export const TAX = 0.18;
+export const TAX = 0;
+export const BASE_AMOUNT = 2500;

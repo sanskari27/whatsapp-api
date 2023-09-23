@@ -200,7 +200,7 @@ const Exports = () => {
 					_hover={{
 						bgColor: 'yellow.500',
 					}}
-					onClick={() => navigate(NAVIGATION.CHECKOUT)}
+					onClick={() => navigate(NAVIGATION.FEATURES)}
 				>
 					<Flex gap={'0.5rem'}>
 						<Text color={'white'}>Subscribe</Text>
