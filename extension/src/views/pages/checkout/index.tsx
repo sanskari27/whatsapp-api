@@ -7,76 +7,59 @@ import {
     Image,
     Input,
     Text,
-    VStack,
-    useRadioGroup,
 } from "@chakra-ui/react";
-import { COUPON, TICK } from "../../../assets/Images";
+import { useState } from "react";
+import { COUPON, CROSS, TICK } from "../../../assets/Images";
+import { COUPON_STATUS } from "../../../config/const";
+import BackButton from "../../components/back-button";
 import CouponBanner from "./components/couponBanner";
 
 const CheckoutPage = () => {
-    const { getRootProps, getRadioProps } = useRadioGroup({
-        name: "framework",
-        defaultValue: "react",
-        onChange: console.log,
+    const [coupon, setCoupon] = useState({
+        [COUPON_STATUS.CODE]: "",
     });
 
-    const group = getRootProps();
+    const { CODE } = coupon;
 
-    const radio = getRadioProps({ value: "Welcome - 40% off" } as any);
+    const [couponStatus, setCouponStatus] = useState({
+        [COUPON_STATUS.VALID]: false,
+    });
+
+    const { VALID } = couponStatus;
+
+    const [loading, setLoading] = useState(false);
+    const [status, setStatus] = useState("");
+
+    const checkCoupon = () => {
+        setLoading(true);
+        setTimeout(() => {
+            setLoading(false);
+            setCouponStatus({ ...couponStatus, [COUPON_STATUS.VALID]: false });
+            if (VALID) {
+                setStatus("Coupon Applied");
+            } else {
+                setStatus("Invalid Coupon");
+            }
+        }, 1000);
+    };
+
+    const handleChange = async ({
+        name,
+        value,
+    }: {
+        name: string;
+        value: string;
+    }) => {
+        setCoupon((prevState) => ({
+            ...prevState,
+            [name]: value,
+        }));
+        checkCoupon();
+    };
 
     return (
         <Flex direction={"column"} padding={"1rem"}>
-            <Flex>
-                <Text
-                    fontSize={"lg"}
-                    fontWeight={"semibold"}
-                    className="text-[#4CB072]"
-                    mr={"0.5rem"}
-                >
-                    Pay
-                </Text>
-                <Text
-                    fontSize={"lg"}
-                    fontWeight={"semibold"}
-                    className="text-black dark:text-white"
-                >
-                    To Use The Feature
-                </Text>
-            </Flex>
-            <Text
-                className="text-black dark:text-white"
-                mt={"0.5rem"}
-                fontSize={"lg"}
-            >
-                Features Included In
-            </Text>
-            <Text className="text-black dark:text-white" fontSize={"lg"}>
-                The Package
-            </Text>
-            <Flex alignItems={"center"} mt={"0.5rem"}>
-                <Box
-                    as="span"
-                    height={"2px"}
-                    width={"20px"}
-                    backgroundColor={"#4CB072"}
-                    mr={"0.5rem"}
-                />
-                <Text className="text-black dark:text-white" fontSize={"md"}>
-                    80% customers don't save you number
-                </Text>
-            </Flex>
-            <Flex alignItems={"center"}>
-                <Box
-                    as="span"
-                    height={"2px"}
-                    width={"20px"}
-                    backgroundColor={"#4CB072"}
-                    mr={"0.5rem"}
-                />
-                <Text className="text-black dark:text-white" fontSize={"md"}>
-                    Find unsaved Client to Grow your Business
-                </Text>
-            </Flex>
+            <BackButton />
             <Text
                 className="text-[#4CB072]"
                 fontWeight={"semibold"}
@@ -89,16 +72,38 @@ const CheckoutPage = () => {
                 backgroundColor={"#4CB072"}
                 rounded={"md"}
                 py={"0.5rem"}
-                px={"1rem"}
+                pl={"1rem"}
                 mt={"1rem"}
             >
                 <Image src={COUPON} alt="" />
-                <Input variant={"unstyled"} textColor={"white"} />
-                <Image src={TICK} alt="" width={"15px"} />
+                <Input
+                    variant={"unstyled"}
+                    textColor={"white"}
+                    textAlign={"center"}
+                    value={CODE}
+                    onChange={(e) => {
+                        setCoupon({
+                            ...coupon,
+                            [COUPON_STATUS.CODE]: e.target.value,
+                        });
+                    }}
+                />
+                <Button
+                    variant={"link"}
+                    onClick={checkCoupon}
+                    isLoading={loading}
+                >
+                    {VALID ? (
+                        <Image src={TICK} alt="" width={"15px"} />
+                    ) : (
+                        <Image src={CROSS} alt="" />
+                    )}
+                    {/* <Image src={TICK} alt="" width={"15px"} /> */}
+                </Button>
             </HStack>
-            <VStack {...group} mt={"1rem"}>
-                <CouponBanner {...radio}>Welcome - 40% off</CouponBanner>
-            </VStack>
+            <CouponBanner isChecked={VALID} onClick={handleChange}>
+                Welcome - 40% off
+            </CouponBanner>
             <Text
                 className="text-[#4CB072]"
                 fontWeight={"semibold"}
@@ -106,7 +111,7 @@ const CheckoutPage = () => {
                 mt={"0.5rem"}
                 alignSelf={"flex-end"}
             >
-                Coupon Applied
+                {status}
             </Text>
             <Box
                 className="bg-[#ECECEC] dark:bg-[#535353]"
