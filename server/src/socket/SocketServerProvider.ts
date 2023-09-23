@@ -100,9 +100,7 @@ export default class SocketServerProvider {
 					event: SOCKET_RESPONSES.QR_GENERATED,
 					data: qrCodeBase64,
 				});
-			} catch (err) {
-				console.log(err);
-			}
+			} catch (err) {}
 		});
 		whatsapp.on('authenticated', async () => {
 			this.sendToClient({

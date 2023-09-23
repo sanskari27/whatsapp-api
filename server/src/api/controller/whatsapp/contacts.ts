@@ -14,12 +14,12 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 
 	const options = {
 		all_contacts: true,
-		saved_contacts: true,
+		saved_contacts: false,
 	};
-	if (req.query.saved_contacts) {
+	if (req.query.saved_contacts && req.query.saved_contacts === 'true') {
 		options.all_contacts = false;
 		options.saved_contacts = true;
-	} else if (req.query.non_saved_contacts) {
+	} else if (req.query.non_saved_contacts && req.query.non_saved_contacts === 'true') {
 		options.all_contacts = false;
 		options.saved_contacts = false;
 	}
@@ -34,6 +34,9 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 					return true;
 				}
 				if (options.saved_contacts && contact.isMyContact) {
+					return true;
+				}
+				if (!options.saved_contacts && !contact.isMyContact) {
 					return true;
 				}
 				return false;
@@ -109,8 +112,6 @@ async function countContacts(req: Request, res: Response, next: NextFunction) {
 			},
 		});
 	} catch (err) {
-		console.log(err);
-
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
 }

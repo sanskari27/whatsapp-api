@@ -62,8 +62,6 @@ async function applyCoupon(req: Request, res: Response, next: NextFunction) {
 			},
 		});
 	} catch (err) {
-		console.log(err);
-
 		if (err instanceof InternalError) {
 			if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND)) {
 				return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_NOT_FOUND));
@@ -99,8 +97,6 @@ async function removeCoupon(req: Request, res: Response, next: NextFunction) {
 			},
 		});
 	} catch (err) {
-		console.log(err);
-
 		if (err instanceof InternalError) {
 			if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND)) {
 				return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_NOT_FOUND));

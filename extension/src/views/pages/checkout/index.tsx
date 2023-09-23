@@ -73,7 +73,6 @@ const CheckoutPage = () => {
 						}));
 						return;
 					}
-					console.log(res);
 
 					setTransaction((prevState) => ({
 						...prevState,

@@ -69,7 +69,6 @@ export default class PaymentService {
 
 		await walletTransaction.save();
 		await couponDetails.save();
-		console.log(walletTransaction);
 
 		return {
 			transaction_id: walletTransaction._id,

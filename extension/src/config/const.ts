@@ -46,3 +46,4 @@ export enum SOCKET_EVENT {
 	WHATSAPP_READY = 'whatsapp-ready',
 	WHATSAPP_CLOSED = 'whatsapp-closed',
 }
+

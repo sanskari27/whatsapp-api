@@ -86,7 +86,7 @@ async function exportLabels(req: Request, res: Response, next: NextFunction) {
 		return Respond({
 			res,
 			status: 200,
-			data: { entries },
+			data: { name: label.name, entries },
 		});
 	} catch (err) {
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));

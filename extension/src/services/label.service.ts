@@ -1,9 +1,9 @@
 import APIInstance from '../config/APIInstance';
 
-export default class GroupService {
-	static async listGroups() {
+export default class LabelService {
+	static async listLabels() {
 		try {
-			const { data } = await APIInstance.get(`/groups`);
+			const { data } = await APIInstance.get(`/labels`);
 			return data.groups as {
 				id: string;
 				name: string;
@@ -12,18 +12,17 @@ export default class GroupService {
 			return [];
 		}
 	}
-	static async fetchGroup(id: string) {
+	static async fetchLabel(id: string) {
 		try {
-			const { data } = await APIInstance.get(`/groups/${id}`);
+			const { data } = await APIInstance.get(`/labels/${id}`);
 			return {
-				id: data.id as string,
 				name: data.name as string,
-				participants: data.participants as {
+				entries: data.entries as {
 					name: string;
 					number: string;
 					country: string;
 					isBusiness: string;
-					user_type: string;
+					label: string;
 					group_name: string;
 				}[],
 			};

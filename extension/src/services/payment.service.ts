@@ -22,12 +22,6 @@ export default class PaymentService {
 				total_amount: data.total_amount,
 			};
 		} catch (err) {
-			if (axios.isAxiosError(err)) {
-				console.log((err as AxiosError).response?.data);
-			} else {
-				console.log(err);
-			}
-
 			return null;
 		}
 	}

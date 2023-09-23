@@ -10,6 +10,7 @@ import ContactService from '../../../services/contact.service';
 import GroupService from '../../../services/group.service';
 import PaymentService from '../../../services/payment.service';
 import { useNavigate } from 'react-router-dom';
+import ExportsService from '../../../services/exports.service';
 
 const Exports = () => {
 	const navigate = useNavigate();
@@ -46,16 +47,26 @@ const Exports = () => {
 
 	const [groups, setGroups] = useState([
 		{
-			id: 'INVALID',
+			id: '',
 			name: 'No Group Selected!',
 		},
 	]);
 	const [labels, setLabels] = useState([
 		{
-			id: 'INVALID',
+			id: '',
 			name: 'No Label Selected!',
 		},
 	]);
+
+	const exportExcel = () => {
+		ExportsService.exportContacts({
+			allContacts: ALL,
+			savedContacts: SAVED,
+			unsavedContacts: UNSAVED,
+			groupID: selectedGroup,
+			labelID: selectedLabel,
+		});
+	};
 
 	useEffect(() => {
 		if (!isAuthenticated) return;
@@ -227,6 +238,7 @@ const Exports = () => {
 							bgColor: 'green.400',
 						}}
 						width={'45%'}
+						onClick={exportExcel}
 					>
 						<Text color={'white'}>CSV</Text>
 					</Button>

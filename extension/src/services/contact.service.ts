@@ -17,4 +17,21 @@ export default class ContactService {
 			};
 		}
 	}
+	static async contacts({ saved_contacts = false, non_saved_contacts = false }) {
+		try {
+			const { data } = await APIInstance.get(
+				`/contacts?saved_contacts=${saved_contacts ? 'true' : 'false'}&non_saved_contacts=${
+					non_saved_contacts ? 'true' : 'false'
+				}`
+			);
+			return data.contacts as {
+				name: string;
+				number: string;
+				isBusiness: string;
+				country: string;
+			}[];
+		} catch (err) {
+			return null;
+		}
+	}
 }
