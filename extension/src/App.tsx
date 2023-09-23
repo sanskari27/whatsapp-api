@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import {
     Navigate,
@@ -14,20 +15,21 @@ import Features from "./views/pages/features";
 import Home from "./views/pages/home";
 import Welcome from "./views/pages/welcome";
 
+
 function App() {
-    const { tokenVerified } = useToken();
+	const { tokenVerified } = useToken();
 
-    useEffect(() => {
-        if (!window.matchMedia("(prefers-color-scheme: dark)").matches) {
-            document.documentElement.classList.add("dark");
-        } else {
-            document.documentElement.classList.remove("dark");
-        }
-    }, []);
+	useEffect(() => {
+		if (!window.matchMedia('(prefers-color-scheme: dark)').matches) {
+			document.documentElement.classList.add('dark');
+		} else {
+			document.documentElement.classList.remove('dark');
+		}
+	}, []);
 
-    if (tokenVerified) {
-        // return <Navigate to={NAVIGATION.HOME} />;
-    }
+	if (tokenVerified) {
+		// return <Navigate to={NAVIGATION.HOME} />;
+	}
 
     return (
         <ExtensionWrapper>

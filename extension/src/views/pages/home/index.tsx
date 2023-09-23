@@ -22,12 +22,13 @@ const TABS = [
 		disabled: false,
 	},
 	{
-		name: 'Reports',
-		icon: REPORT,
-		selectedIcon: REPORT,
-		component: <div>Report</div>,
-		disabled: true,
+		name: 'Exports',
+		icon: EXPORT,
+		selectedIcon: EXPORT_SELECTED,
+		component: <Exports />,
+		disabled: false,
 	},
+
 	{
 		name: 'Message',
 		icon: MESSAGE,
@@ -43,16 +44,16 @@ const TABS = [
 		disabled: true,
 	},
 	{
-		name: 'Exports',
-		icon: EXPORT,
-		selectedIcon: EXPORT_SELECTED,
-		component: <Exports />,
-		disabled: false,
+		name: 'Reports',
+		icon: REPORT,
+		selectedIcon: REPORT,
+		component: <div>Report</div>,
+		disabled: true,
 	},
 ];
 
 export default function Home() {
-	const [tabIndex, setTabIndex] = useState(4);
+	const [tabIndex, setTabIndex] = useState(0);
 	return (
 		<Box width='full' py={'1rem'} px={'1rem'}>
 			<Header />

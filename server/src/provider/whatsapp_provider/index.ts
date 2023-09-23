@@ -9,12 +9,18 @@ type MappedContacts = {
 	[number: string]: IContact;
 };
 
+const SESSION_ACTIVE = true;
+
 export class WhatsappProvider {
 	private static clientsMap = new Map<ClientID, Client>();
 
 	static getWhatsappClient(cid?: ClientID) {
 		if (cid && WhatsappProvider.clientsMap.has(cid)) {
-			return [cid, WhatsappProvider.clientsMap.get(cid)!] as [ClientID, Client];
+			return [cid, WhatsappProvider.clientsMap.get(cid)!, SESSION_ACTIVE] as [
+				ClientID,
+				Client,
+				boolean
+			];
 		}
 
 		const clientId = cid || generateClientID();
@@ -22,23 +28,14 @@ export class WhatsappProvider {
 			restartOnAuthFail: true,
 			puppeteer: {
 				headless: true,
-				args: [
-					'--no-sandbox',
-					'--disable-setuid-sandbox',
-					'--disable-dev-shm-usage',
-					'--disable-accelerated-2d-canvas',
-					'--no-first-run',
-					'--no-zygote',
-					'--single-process', // <- this one doesn't works in Windows
-					'--disable-gpu',
-				],
+				args: ['--no-sandbox', '--disable-setuid-sandbox', '--unhandled-rejections=strict'],
 			},
 			authStrategy: new LocalAuth({ clientId }),
 		});
 
 		WhatsappProvider.clientsMap.set(clientId, client);
 
-		return [clientId, client] as [ClientID, Client];
+		return [clientId, client, !SESSION_ACTIVE] as [ClientID, Client, boolean];
 	}
 
 	static async removeClient(cid: ClientID) {
