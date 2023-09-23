@@ -31,7 +31,7 @@ const authDetailSchema = new mongoose.Schema<IAuthDetail>(
 
 authDetailSchema.pre<IAuthDetail>('save', function (next) {
 	if (!this.revoke_at) {
-		this.revoke_at = DateUtils.getMomentNow().add(1, 'month').toDate();
+		this.revoke_at = DateUtils.getMomentNow().add(1, 'day').toDate();
 	}
 	next();
 });

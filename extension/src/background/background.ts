@@ -34,26 +34,50 @@ chrome.tabs.onActivated.addListener(async (activeInfo: any) => {
 	});
 });
 
+chrome.tabs.onUpdated.addListener(async (tabId: any, changeInfo: any, tab: any) => {
+	if (changeInfo.status !== 'loading' || tab.url !== 'https://web.whatsapp.com/') {
+		return;
+	}
+	const promises = [
+		getChromeData(PRIVACY_TYPE.RECENT),
+		getChromeData(PRIVACY_TYPE.NAME),
+		getChromeData(PRIVACY_TYPE.PHOTO),
+		getChromeData(PRIVACY_TYPE.CONVERSATION),
+	];
+	const [recent, name, photo, conversation] = await Promise.all(promises);
+	hideRecentCSSGenerator(tab.id, recent);
+	hideConversationCSSGenerator(tab.id, conversation);
+	hidePhotoCSSGenerator(tab.id, photo);
+	hideNameCSSGenerator(tab.id, name);
+});
+
 chrome.runtime.onMessage.addListener(
 	async (message: MessageProps, sender: any, sendResponse: any) => {
-		if (message.url !== 'https://web.whatsapp.com/') {
-			return;
-		}
+		const isWhatsappUrl = message.url === 'https://web.whatsapp.com/';
+
 		if (message.action === CHROME_ACTION.PRIVACY_UPDATED) {
 			const { type, value } = message.data;
 			const tabId = message.tabId;
 			if (type === PRIVACY_TYPE.RECENT) {
 				saveChromeData(PRIVACY_TYPE.RECENT, value);
-				hideRecentCSSGenerator(tabId, value);
+				if (isWhatsappUrl) {
+					hideRecentCSSGenerator(tabId, value);
+				}
 			} else if (type === PRIVACY_TYPE.CONVERSATION) {
 				saveChromeData(PRIVACY_TYPE.CONVERSATION, value);
-				hideConversationCSSGenerator(tabId, value);
+				if (isWhatsappUrl) {
+					hideConversationCSSGenerator(tabId, value);
+				}
 			} else if (type === PRIVACY_TYPE.PHOTO) {
 				saveChromeData(PRIVACY_TYPE.PHOTO, value);
-				hidePhotoCSSGenerator(tabId, value);
+				if (isWhatsappUrl) {
+					hidePhotoCSSGenerator(tabId, value);
+				}
 			} else if (type === PRIVACY_TYPE.NAME) {
 				saveChromeData(PRIVACY_TYPE.NAME, value);
-				hideNameCSSGenerator(tabId, value);
+				if (isWhatsappUrl) {
+					hideNameCSSGenerator(tabId, value);
+				}
 			} else {
 				return;
 			}
