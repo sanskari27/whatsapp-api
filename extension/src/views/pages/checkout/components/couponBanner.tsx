@@ -1,30 +1,24 @@
-import {
-    Box,
-    Flex,
-    HTMLChakraProps,
-    Image,
-    Radio,
-    UseRadioProps,
-    useRadio,
-} from "@chakra-ui/react";
+import { Box, Flex, Image, Radio } from "@chakra-ui/react";
 import { COUPON_BANNER } from "../../../../assets/Images";
+import { COUPON_STATUS } from "../../../../config/const";
 
-type CouponBannerProps = UseRadioProps &
-    HTMLChakraProps<any> & {
-        children?: React.ReactNode;
+type CouponBannerProps = {
+    isChecked: boolean;
+    onClick: ({ name, value }: { name: string; value: string }) => void;
+    children: React.ReactNode;
+};
+
+const CouponBanner = ({ isChecked, onClick, children }: CouponBannerProps) => {
+    const handleChange = (code: string) => {
+        onClick({
+            name: COUPON_STATUS.CODE,
+            value: code,
+        });
     };
-
-const CouponBanner = (props: CouponBannerProps) => {
-    const { getInputProps, getRadioProps } = useRadio(props);
-
-    const input = getInputProps();
-    const checkbox = getRadioProps();
 
     return (
         <Box as="label" width={"full"}>
-            <input {...input} />
             <Flex
-                {...checkbox}
                 cursor="pointer"
                 borderWidth="1px"
                 borderRadius="md"
@@ -37,7 +31,7 @@ const CouponBanner = (props: CouponBannerProps) => {
                 alignItems={"center"}
                 fontSize={"md"}
                 onClick={() => {
-                    console.log(props);
+                    handleChange("WELCOME");
                 }}
                 px={"1rem"}
                 textColor={"#4CB072"}
@@ -50,9 +44,9 @@ const CouponBanner = (props: CouponBannerProps) => {
                     fontSize={"lg"}
                     fontWeight={"semibold"}
                 >
-                    {props.children}
+                    {children}
                 </Box>
-                <Radio colorScheme="#4CB072" isChecked={props.isChecked} />
+                <Radio colorScheme="#4CB072" isChecked={isChecked} />
             </Flex>
         </Box>
     );
