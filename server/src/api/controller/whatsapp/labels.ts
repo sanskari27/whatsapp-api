@@ -5,6 +5,7 @@ import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import { Respond } from '../../../utils/ExpressUtils';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 import { GroupChat } from 'whatsapp-web.js';
+import { COUNTRIES } from '../../../config/const';
 
 type Chat = IContact & {
 	group_name?: string;
@@ -66,9 +67,28 @@ async function exportLabels(req: Request, res: Response, next: NextFunction) {
 							continue;
 						}
 						const contact = contacts[participant.id.user];
+						let name = contact ? contact.name : undefined;
+						let number = contact ? contact.number : undefined;
+						let country = contact ? contact.country : undefined;
+						let isBusiness = contact ? contact.isBusiness : undefined;
+						let public_name = contact ? contact.public_name : undefined;
+
+						if (!contact) {
+							const contact = await whatsapp.getContactById(participant.id._serialized);
+							const country_code = await contact.getCountryCode();
+							name = contact.name;
+							number = contact.number;
+							country = COUNTRIES[country_code as string];
+							isBusiness = contact.isBusiness;
+							public_name = contact.pushname;
+						}
 
 						entries[participant.id.user] = {
-							...contact,
+							name: name ?? '',
+							number: number ?? '',
+							country: country ?? '',
+							isBusiness: isBusiness ?? false,
+							public_name: public_name ?? '',
 							group_name: chat.name,
 							label: label.name,
 						};
@@ -91,9 +111,11 @@ async function exportLabels(req: Request, res: Response, next: NextFunction) {
 		return Respond({
 			res,
 			status: 200,
-			data: { entries },
+			data: { entries: Object.values(entries) },
 		});
 	} catch (err) {
+		console.log(err);
+
 		return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
 	}
 }

@@ -69,44 +69,17 @@ async function countContacts(req: Request, res: Response, next: NextFunction) {
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
 
-	const options = {
-		all_contacts: true,
-		saved_contacts: true,
-	};
-	if (req.query.saved_contacts) {
-		options.all_contacts = false;
-		options.saved_contacts = true;
-	} else if (req.query.non_saved_contacts) {
-		options.all_contacts = false;
-		options.saved_contacts = false;
-	}
-
 	try {
-		const contacts = (await whatsapp.getContacts()).reduce(
-			(acc, contact) => {
-				if (!contact.isWAContact || contact.isMe || contact.isGroup) {
-					return acc;
-				}
-				if (contact.isMyContact) {
-					acc.saved_contacts += 1;
-				} else {
-					acc.non_saved_contacts += 1;
-				}
-				return acc;
-			},
-			{
-				saved_contacts: 0,
-				non_saved_contacts: 0,
-			}
-		);
+		const saved = await WhatsappProvider.getSavedContacts(whatsapp);
+		const non_saved = await WhatsappProvider.getNonSavedContacts(whatsapp);
 
 		return Respond({
 			res,
 			status: 200,
 			data: {
-				saved_contacts: contacts.saved_contacts,
-				non_saved_contacts: contacts.non_saved_contacts,
-				total_contacts: contacts.saved_contacts + contacts.non_saved_contacts,
+				saved_contacts: saved.length,
+				non_saved_contacts: non_saved.length,
+				total_contacts: saved.length + non_saved.length,
 			},
 		});
 	} catch (err) {
