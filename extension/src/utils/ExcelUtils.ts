@@ -1,4 +1,3 @@
-import xlsx from 'json-as-xlsx';
 import { json2csv } from 'json-2-csv';
 
 type TContact = {
