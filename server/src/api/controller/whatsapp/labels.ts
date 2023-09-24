@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from 'express';
-import IContact from '../../../types/whatsapp/contact';
 import { SocketServerProvider } from '../../../socket';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import { Respond } from '../../../utils/ExpressUtils';
@@ -7,7 +6,12 @@ import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 import { GroupChat } from 'whatsapp-web.js';
 import { COUNTRIES } from '../../../config/const';
 
-type Chat = IContact & {
+type Chat = {
+	name: string;
+	number: string;
+	country: string;
+	isBusiness: string;
+	public_name: string;
 	group_name?: string;
 	label?: string;
 };
@@ -87,7 +91,7 @@ async function exportLabels(req: Request, res: Response, next: NextFunction) {
 							name: name ?? '',
 							number: number ?? '',
 							country: country ?? '',
-							isBusiness: isBusiness ?? false,
+							isBusiness: isBusiness ? 'Business' : 'Personal',
 							public_name: public_name ?? '',
 							group_name: chat.name,
 							label: label.name,
@@ -101,6 +105,7 @@ async function exportLabels(req: Request, res: Response, next: NextFunction) {
 
 					entries[chat.id.user] = {
 						...contact,
+						isBusiness: contact.isBusiness ? 'Business' : 'Personal',
 						group_name: '',
 						label: label.name,
 					};

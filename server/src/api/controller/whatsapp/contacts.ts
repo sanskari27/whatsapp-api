@@ -45,7 +45,7 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 			return {
 				name: contact.name,
 				number: contact.number,
-				isBusiness: contact.isBusiness,
+				isBusiness: contact.isBusiness ? 'Business' : 'Personal',
 				country,
 				public_name: contact.pushname ?? '',
 			};

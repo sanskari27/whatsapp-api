@@ -89,7 +89,7 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 					name: name,
 					number: participant.id.user,
 					country: country,
-					isBusiness: isBusiness,
+					isBusiness: isBusiness ? 'Business' : 'Personal',
 					user_type: participant.isSuperAdmin ? 'CREATOR' : participant.isAdmin ? 'ADMIN' : 'USER',
 					group_name: groupChat.name,
 					public_name: public_name,

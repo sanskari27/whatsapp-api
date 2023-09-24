@@ -87,10 +87,9 @@ export default class SocketServerProvider {
 	}
 
 	private attachWhatsappListeners(clientId: WhatsappClientID) {
-		const entry = SocketServerProvider.clientsMap.get(clientId);
+		const whatsapp = SocketServerProvider.getWhatsappClient(clientId);
 
-		if (!entry) return;
-		const { whatsappClient: whatsapp } = entry;
+		if (!whatsapp) return;
 
 		whatsapp.on('qr', async (qrCode) => {
 			try {
