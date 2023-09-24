@@ -69,7 +69,7 @@ const Exports = () => {
 			...prevState,
 			CSV: true,
 		}));
-		ExportsService.exportContacts({
+		ExportsService.exportContactsExcel({
 			allContacts: ALL,
 			savedContacts: SAVED,
 			unsavedContacts: UNSAVED,
@@ -79,6 +79,26 @@ const Exports = () => {
 			setExporting((prevState) => ({
 				...prevState,
 				CSV: false,
+			}));
+			setExportClicked(false);
+		});
+	};
+
+	const exportVCF = () => {
+		setExporting((prevState) => ({
+			...prevState,
+			VCF: true,
+		}));
+		ExportsService.exportContactsVCF({
+			allContacts: ALL,
+			savedContacts: SAVED,
+			unsavedContacts: UNSAVED,
+			groupIDs: selectedGroup.length > 0 ? selectedGroup : undefined,
+			labelIDs: selectedLabel.length > 0 ? selectedLabel : undefined,
+		}).finally(() => {
+			setExporting((prevState) => ({
+				...prevState,
+				VCF: false,
 			}));
 			setExportClicked(false);
 		});
@@ -273,6 +293,7 @@ const Exports = () => {
 						}}
 						width={'48%'}
 						isLoading={exporting.VCF}
+						onClick={exportVCF}
 					>
 						<Text color={'white'}>VCF</Text>
 					</Button>
