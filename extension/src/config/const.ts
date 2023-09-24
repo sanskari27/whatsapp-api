@@ -1,4 +1,5 @@
 export const SERVER_URL = 'http://localhost:8282/';
+export const WEBPAGE_URL = 'http://localhost:5173/';
 export const NAVIGATION = {
 	WELCOME: '/welcome',
 	HOME: '/home',
@@ -8,6 +9,7 @@ export const NAVIGATION = {
 
 export enum CHROME_ACTION {
 	PRIVACY_UPDATED = 'PRIVACY_UPDATED',
+	OPEN_URL = 'OPEN_URL',
 }
 
 export enum PRIVACY_TYPE {
@@ -35,7 +37,7 @@ export enum TRANSACTION_STATUS {
 	TAX = 'TAX',
 	DISCOUNT = 'DISCOUNT',
 	TOTAL_AMOUNT = 'TOTAL_AMOUNT',
-	PREDEFINED_CODE = 'PREDEFINED_CODE',
+	TRANSACTION_ERROR = 'TRANSACTION_ERROR',
 }
 
 export enum SOCKET_EVENT {
@@ -46,4 +48,3 @@ export enum SOCKET_EVENT {
 	WHATSAPP_READY = 'whatsapp-ready',
 	WHATSAPP_CLOSED = 'whatsapp-closed',
 }
-

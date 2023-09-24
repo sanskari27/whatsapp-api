@@ -82,6 +82,9 @@ chrome.runtime.onMessage.addListener(
 				return;
 			}
 			sendResponse({ success: true });
+		} else if (message.action === CHROME_ACTION.OPEN_URL) {
+			chrome.tabs.create({ url: message.data.url });
+			sendResponse({ success: true });
 		}
 	}
 );
