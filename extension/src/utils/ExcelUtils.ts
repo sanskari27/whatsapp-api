@@ -18,7 +18,7 @@ type TLabelParticipant = TContact & {
 	label: string;
 };
 
-export default class ExportsService {
+export default class ExcelUtils {
 	static async exportContacts(contacts: TContact[], sheetName: string) {
 		const keys = [
 			{

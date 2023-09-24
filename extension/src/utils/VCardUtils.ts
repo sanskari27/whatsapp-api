@@ -1,5 +1,3 @@
-import { json2csv } from 'json-2-csv';
-
 type TContact = {
 	name: string;
 	number: string;
@@ -18,139 +16,59 @@ type TLabelParticipant = TContact & {
 	label: string;
 };
 
+export default class VCardUtils {
+	static async exportContacts(contacts: TContact[], filename: string) {
+		const vCardString = contacts.reduce((acc, contact) => {
+			const text = `BEGIN:VCARD\r\nVERSION:3.0\r\nFN:${
+				contact.name ?? contact.public_name
+			}\r\nTEL;TYPE=CELL:${contact.number}\r\nEND:VCARD\r\n`;
+			return acc + text;
+		}, '');
 
-export default class ExportsService {
-	static async exportContacts(contacts: TContact[], sheetName: string) {
-		const keys = [
-			{
-				field: 'public_name',
-				title: 'Public Name',
-			},
-			{
-				field: 'name',
-				title: 'Name',
-			},
-			{
-				field: 'number',
-				title: 'Number',
-			},
-			{
-				field: 'isBusiness',
-				title: 'Is Business',
-			},
-			{
-				field: 'country',
-				title: 'Country',
-			},
-		];
-
-		const csv = await json2csv(contacts, {
-			keys: keys,
-			emptyFieldValue: '',
-		});
-
-		const blob = new Blob([csv], { type: 'text/csv' });
+		const blob = new Blob([vCardString], { type: 'text/vcf' });
 		const url = window.URL.createObjectURL(blob);
 		const a = document.createElement('a');
 		a.setAttribute('hidden', '');
 		a.setAttribute('href', url);
-		a.setAttribute('download', `${sheetName}.csv`);
+		a.setAttribute('download', `${filename}.vcf`);
 		document.body.appendChild(a);
 		a.click();
 		document.body.removeChild(a);
 	}
 
 	static async exportGroup(participants: TParticipant[]) {
-		const keys = [
-			{
-				field: 'group_name',
-				title: 'Group Name',
-			},
-			{
-				field: 'public_name',
-				title: 'Public Name',
-			},
-			{
-				field: 'name',
-				title: 'Name',
-			},
-			{
-				field: 'number',
-				title: 'Number',
-			},
-			{
-				field: 'isBusiness',
-				title: 'Is Business',
-			},
-			{
-				field: 'country',
-				title: 'Country',
-			},
-			{
-				field: 'user_type',
-				title: 'User Type',
-			},
-		];
+		const vCardString = participants.reduce((acc, contact) => {
+			const text = `BEGIN:VCARD\r\nVERSION:3.0\r\nFN:${
+				contact.name ?? contact.public_name
+			}\r\nTEL;TYPE=CELL:${contact.number}\r\nEND:VCARD\r\n`;
+			return acc + text;
+		}, '');
 
-		const csv = await json2csv(participants, {
-			keys: keys,
-			emptyFieldValue: '',
-		});
-
-		const blob = new Blob([csv], { type: 'text/csv' });
+		const blob = new Blob([vCardString], { type: 'text/vcf' });
 		const url = window.URL.createObjectURL(blob);
 		const a = document.createElement('a');
 		a.setAttribute('hidden', '');
 		a.setAttribute('href', url);
-		a.setAttribute('download', 'group_contacts.csv');
+		a.setAttribute('download', 'group_contacts.vcf');
 		document.body.appendChild(a);
 		a.click();
 		document.body.removeChild(a);
 	}
 
 	static async exportLabel(participants: TLabelParticipant[]) {
-		const keys = [
-			{
-				field: 'label',
-				title: 'Label',
-			},
-			{
-				field: 'group_name',
-				title: 'Group Name',
-			},
-			{
-				field: 'public_name',
-				title: 'Public Name',
-			},
-			{
-				field: 'name',
-				title: 'Name',
-			},
-			{
-				field: 'number',
-				title: 'Number',
-			},
-			{
-				field: 'isBusiness',
-				title: 'Is Business',
-			},
-			{
-				field: 'country',
-				title: 'Country',
-			},
-		];
+		const vCardString = participants.reduce((acc, contact) => {
+			const text = `BEGIN:VCARD\r\nVERSION:3.0\r\nFN:${
+				contact.name ?? contact.public_name
+			}\r\nTEL;TYPE=CELL:${contact.number}\r\nEND:VCARD\r\n`;
+			return acc + text;
+		}, '');
 
-		const csv = await json2csv(participants, {
-			keys: keys,
-			emptyFieldValue: '',
-		});
-
-		const blob = new Blob([csv], { type: 'text/csv' });
+		const blob = new Blob([vCardString], { type: 'text/vcf' });
 		const url = window.URL.createObjectURL(blob);
 		const a = document.createElement('a');
 		a.setAttribute('hidden', '');
 		a.setAttribute('href', url);
-		a.setAttribute('download', 'label_contacts.csv');
+		a.setAttribute('download', 'label_contacts.vcf');
 		document.body.appendChild(a);
 		a.click();
 		document.body.removeChild(a);
