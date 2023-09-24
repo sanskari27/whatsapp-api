@@ -18,20 +18,6 @@ type TLabelParticipant = TContact & {
 	label: string;
 };
 
-type SaveContactParams = {
-	allContacts?: TContact[];
-	savedContacts?: TContact[];
-	unsavedContacts?: TContact[];
-	groupContacts?: {
-		groupName: string;
-		contacts: TParticipant[];
-	};
-	labelContacts?: {
-		labelName: string;
-		contacts: TLabelParticipant[];
-	};
-};
-
 export default class ExportsService {
 	static async exportContacts(contacts: TContact[], sheetName: string) {
 		const keys = [
