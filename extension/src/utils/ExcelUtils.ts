@@ -1,10 +1,12 @@
 import xlsx from 'json-as-xlsx';
+import { json2csv } from 'json-2-csv';
 
 type TContact = {
 	name: string;
 	number: string;
 	isBusiness: string;
 	country: string;
+	public_name: string;
 };
 
 type TParticipant = TContact & {
@@ -31,96 +33,140 @@ type SaveContactParams = {
 	};
 };
 
-function saveContacts({
-	allContacts,
-	savedContacts,
-	unsavedContacts,
-	groupContacts,
-	labelContacts,
-}: SaveContactParams) {
-	const data = [];
+export default class ExportsService {
+	static async exportContacts(contacts: TContact[], sheetName: string) {
+		const keys = [
+			{
+				field: 'public_name',
+				title: 'Public Name',
+			},
+			{
+				field: 'name',
+				title: 'Name',
+			},
+			{
+				field: 'number',
+				title: 'Number',
+			},
+			{
+				field: 'isBusiness',
+				title: 'Is Business',
+			},
+			{
+				field: 'country',
+				title: 'Country',
+			},
+		];
 
-	if (allContacts) {
-		data.push({
-			sheet: 'All Contacts',
-			columns: [
-				{ label: 'Name', value: 'name' },
-				{ label: 'Number', value: 'number' },
-				{ label: 'Is Business', value: 'isBusiness' },
-				{ label: 'Country', value: 'country' },
-			],
-			content: allContacts,
+		const csv = await json2csv(contacts, {
+			keys: keys,
+			emptyFieldValue: '',
 		});
+
+		const blob = new Blob([csv], { type: 'text/csv' });
+		const url = window.URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.setAttribute('hidden', '');
+		a.setAttribute('href', url);
+		a.setAttribute('download', `${sheetName}.csv`);
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
 	}
 
-	if (savedContacts) {
-		data.push({
-			sheet: 'Saved Contacts',
-			columns: [
-				{ label: 'Name', value: 'name' },
-				{ label: 'Number', value: 'number' },
-				{ label: 'Is Business', value: 'isBusiness' },
-				{ label: 'Country', value: 'country' },
-			],
-			content: savedContacts,
+	static async exportGroup(participants: TParticipant[]) {
+		const keys = [
+			{
+				field: 'group_name',
+				title: 'Group Name',
+			},
+			{
+				field: 'public_name',
+				title: 'Public Name',
+			},
+			{
+				field: 'name',
+				title: 'Name',
+			},
+			{
+				field: 'number',
+				title: 'Number',
+			},
+			{
+				field: 'isBusiness',
+				title: 'Is Business',
+			},
+			{
+				field: 'country',
+				title: 'Country',
+			},
+			{
+				field: 'user_type',
+				title: 'User Type',
+			},
+		];
+
+		const csv = await json2csv(participants, {
+			keys: keys,
+			emptyFieldValue: '',
 		});
+
+		const blob = new Blob([csv], { type: 'text/csv' });
+		const url = window.URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.setAttribute('hidden', '');
+		a.setAttribute('href', url);
+		a.setAttribute('download', 'group_contacts.csv');
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
 	}
 
-	if (unsavedContacts) {
-		data.push({
-			sheet: 'Unsaved Contacts',
-			columns: [
-				{ label: 'Name', value: 'name' },
-				{ label: 'Number', value: 'number' },
-				{ label: 'Is Business', value: 'isBusiness' },
-				{ label: 'Country', value: 'country' },
-			],
-			content: unsavedContacts,
+	static async exportLabel(participants: TLabelParticipant[]) {
+		const keys = [
+			{
+				field: 'label',
+				title: 'Label',
+			},
+			{
+				field: 'group_name',
+				title: 'Group Name',
+			},
+			{
+				field: 'public_name',
+				title: 'Public Name',
+			},
+			{
+				field: 'name',
+				title: 'Name',
+			},
+			{
+				field: 'number',
+				title: 'Number',
+			},
+			{
+				field: 'isBusiness',
+				title: 'Is Business',
+			},
+			{
+				field: 'country',
+				title: 'Country',
+			},
+		];
+
+		const csv = await json2csv(participants, {
+			keys: keys,
+			emptyFieldValue: '',
 		});
+
+		const blob = new Blob([csv], { type: 'text/csv' });
+		const url = window.URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.setAttribute('hidden', '');
+		a.setAttribute('href', url);
+		a.setAttribute('download', 'label_contacts.csv');
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
 	}
-
-	if (groupContacts) {
-		data.push({
-			sheet: `Group: ${groupContacts.groupName}`,
-			columns: [
-				{ label: 'Name', value: 'name' },
-				{ label: 'Number', value: 'number' },
-				{ label: 'Is Business', value: 'isBusiness' },
-				{ label: 'Country', value: 'country' },
-				{ label: 'User Type', value: 'user_type' },
-				{ label: 'Group Name', value: 'group_name' },
-			],
-			content: groupContacts.contacts,
-		});
-	}
-
-	if (labelContacts) {
-		data.push({
-			sheet: `Label: ${labelContacts.labelName}`,
-			columns: [
-				{ label: 'Name', value: 'name' },
-				{ label: 'Number', value: 'number' },
-				{ label: 'Is Business', value: 'isBusiness' },
-				{ label: 'Country', value: 'country' },
-				{ label: 'Group Name', value: 'group_name' },
-				{ label: 'Label Name', value: 'label_name' },
-			],
-			content: labelContacts.contacts,
-		});
-	}
-
-	let settings = {
-		fileName: 'Contacts',
-		extraLength: 3,
-		writeMode: 'writeFile',
-		writeOptions: {},
-	};
-
-	xlsx(data, settings);
 }
-
-const ExcelUtils = {
-	saveContacts,
-};
-
-export default ExcelUtils;

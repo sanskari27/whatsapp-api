@@ -3,4 +3,5 @@ export default interface IContact {
 	number: string;
 	country: string;
 	isBusiness: boolean;
+	public_name: string;
 }

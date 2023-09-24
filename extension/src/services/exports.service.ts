@@ -7,8 +7,8 @@ type ExportContactParams = {
 	allContacts?: boolean;
 	savedContacts?: boolean;
 	unsavedContacts?: boolean;
-	groupID?: string;
-	labelID?: string;
+	groupIDs?: string[];
+	labelIDs?: string[];
 };
 
 type IContact = {
@@ -30,66 +30,34 @@ type ILabelParticipant = IContact & {
 export default class ExportsService {
 	static async exportContacts(options: ExportContactParams) {
 		try {
-			const contacts = {
-				allContacts: [] as IContact[],
-				savedContacts: [] as IContact[],
-				unsavedContacts: [] as IContact[],
-				groupContacts: {
-					groupName: '',
-					contacts: [] as IParticipant[],
-				},
-				labelContacts: {
-					labelName: '',
-					contacts: [] as ILabelParticipant[],
-				},
-			};
-
 			if (options.allContacts) {
 				const allContacts = await ContactService.contacts({});
-				contacts.allContacts = allContacts as IContact[];
+				ExcelUtils.exportContacts(allContacts, 'All Contacts');
 			}
 
 			if (options.savedContacts) {
 				const savedContacts = await ContactService.contacts({
 					saved_contacts: true,
 				});
-				contacts.savedContacts = savedContacts as IContact[];
+				ExcelUtils.exportContacts(savedContacts, 'Saved Contacts');
 			}
 
 			if (options.unsavedContacts) {
 				const unSavedContacts = await ContactService.contacts({
 					non_saved_contacts: true,
 				});
-				contacts.unsavedContacts = unSavedContacts as IContact[];
+				ExcelUtils.exportContacts(unSavedContacts, 'Unsaved Contacts');
 			}
 
-			if (options.groupID) {
-				const group = await GroupService.fetchGroup(options.groupID);
-				if (group) {
-					contacts.groupContacts.groupName = group.name as string;
-					contacts.groupContacts.contacts = group.participants as IParticipant[];
-				}
+			if (options.groupIDs && options.groupIDs?.length > 0) {
+				const participants = await GroupService.fetchGroup(options.groupIDs);
+				ExcelUtils.exportGroup(participants);
 			}
 
-			if (options.labelID) {
-				const label = await LabelService.fetchLabel(options.labelID);
-				if (label) {
-					contacts.labelContacts.labelName = label.name as string;
-					contacts.labelContacts.contacts = label.entries as ILabelParticipant[];
-				}
+			if (options.labelIDs && options.labelIDs?.length > 0) {
+				const label_contacts = await LabelService.fetchLabel(options.labelIDs);
+				ExcelUtils.exportLabel(label_contacts);
 			}
-
-			ExcelUtils.saveContacts({
-				allContacts: options.allContacts ? contacts.allContacts : undefined,
-				savedContacts: options.savedContacts ? contacts.savedContacts : undefined,
-				unsavedContacts: options.unsavedContacts ? contacts.unsavedContacts : undefined,
-				groupContacts: options.groupID ? contacts.groupContacts : undefined,
-				labelContacts: options.labelID ? contacts.labelContacts : undefined,
-			});
-
-			return true;
-		} catch (err) {
-			return false;
-		}
+		} catch (err) {}
 	}
 }

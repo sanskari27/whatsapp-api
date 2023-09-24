@@ -1,5 +1,4 @@
-import { CheckIcon } from '@chakra-ui/icons';
-import { Box, Button, Flex, IconButton, Image, Select, Text } from '@chakra-ui/react';
+import { Box, Button, Flex, Image, Select, Text } from '@chakra-ui/react';
 import { useEffect, useRef, useState } from 'react';
 import { startAuth, useAuth } from '../../../hooks/useAuth';
 import { EXPORT_GREEN, EXPORT_WHITE } from '../../../assets/Images';
@@ -11,6 +10,8 @@ import GroupService from '../../../services/group.service';
 import PaymentService from '../../../services/payment.service';
 import { useNavigate } from 'react-router-dom';
 import ExportsService from '../../../services/exports.service';
+import LabelService from '../../../services/label.service';
+import Multiselect from 'multiselect-react-dropdown';
 
 const Exports = () => {
 	const navigate = useNavigate();
@@ -31,8 +32,8 @@ const Exports = () => {
 
 	const { isAuthenticated, isAuthenticating, qrCode, qrGenerated } = useAuth();
 
-	const [selectedGroup, setSelectedGroup] = useState('');
-	const [selectedLabel, setSelectedLabel] = useState('');
+	const [selectedGroup, setSelectedGroup] = useState([]);
+	const [selectedLabel, setSelectedLabel] = useState([]);
 	const [exportClicked, setExportClicked] = useState(false);
 	const [paymentVerified, setPaymentVerified] = useState(false);
 
@@ -63,13 +64,14 @@ const Exports = () => {
 			allContacts: ALL,
 			savedContacts: SAVED,
 			unsavedContacts: UNSAVED,
-			groupID: selectedGroup,
-			labelID: selectedLabel,
+			groupIDs: selectedGroup.length > 0 ? selectedGroup : undefined,
+			labelIDs: selectedLabel.length > 0 ? selectedLabel : undefined,
 		});
 	};
 
 	useEffect(() => {
 		if (!isAuthenticated) return;
+
 		ContactService.contactCount()
 			.then((res) => {
 				setContactsCount({
@@ -80,7 +82,10 @@ const Exports = () => {
 			})
 			.catch(() => {});
 		GroupService.listGroups()
-			.then((res) => setGroups(res))
+			.then(setGroups)
+			.catch(() => {});
+		LabelService.listLabels()
+			.then(setLabels)
 			.catch(() => {});
 		PaymentService.isPaymentVerified()
 			.then((res) => setPaymentVerified(res))
@@ -94,6 +99,7 @@ const Exports = () => {
 			loginModelRef.current?.close();
 		}
 	}, [qrGenerated]);
+	console.log(selectedGroup);
 
 	return (
 		<Flex direction={'column'} gap={'0.5rem'}>
@@ -150,22 +156,24 @@ const Exports = () => {
 						value={GROUP}
 						onChange={handleChange}
 					/>
-					<Select
-						size='sm'
-						width={'full'}
-						color={'white'}
-						border={'none'}
-						className='!bg-[#A6A6A6] dark:!bg-[#252525]'
-						borderRadius={'10px'}
-						isDisabled={!GROUP}
-						onChange={(e) => setSelectedGroup(e.target.value)}
-					>
-						{groups.map((group, index) => (
-							<option key={index} value={group.id}>
-								{group.name}
-							</option>
-						))}
-					</Select>
+
+					<Multiselect
+						disable={!GROUP}
+						displayValue='name'
+						onRemove={(selectedList) =>
+							setSelectedGroup(selectedList.map((group: any) => group.id))
+						}
+						onSelect={(selectedList) =>
+							setSelectedGroup(selectedList.map((group: any) => group.id))
+						}
+						options={groups}
+						style={{
+							searchBox: {
+								border: 'none',
+							},
+						}}
+						className='!bg-[#A6A6A6] dark:!bg-[#252525] rounded-md border-none w-full '
+					/>
 
 					<CheckButton
 						name={'LABEL'}
@@ -173,23 +181,23 @@ const Exports = () => {
 						value={LABEL}
 						onChange={handleChange}
 					/>
-
-					<Select
-						size='sm'
-						width={'full'}
-						className='!bg-[#A6A6A6] dark:!bg-[#252525]'
-						color={'white'}
-						border={'none'}
-						borderRadius={'10px'}
-						isDisabled={!LABEL}
-						onChange={(e) => setSelectedLabel(e.target.value)}
-					>
-						{labels.map((label, index) => (
-							<option key={index} value={label.id}>
-								{label.name}
-							</option>
-						))}
-					</Select>
+					<Multiselect
+						disable={!LABEL}
+						displayValue='name'
+						onRemove={(selectedList) =>
+							setSelectedLabel(selectedList.map((label: any) => label.id))
+						}
+						onSelect={(selectedList) =>
+							setSelectedLabel(selectedList.map((label: any) => label.id))
+						}
+						options={labels}
+						style={{
+							searchBox: {
+								border: 'none',
+							},
+						}}
+						className='!bg-[#A6A6A6] dark:!bg-[#252525] rounded-md border-none w-full '
+					/>
 				</Flex>
 			</Box>
 			{!isAuthenticated ? (
@@ -237,26 +245,17 @@ const Exports = () => {
 						_hover={{
 							bgColor: 'green.400',
 						}}
-						width={'30%'}
+						width={'48%'}
 						onClick={exportExcel}
-					>
-						<Text color={'white'}>EXCEL</Text>
-					</Button>
-					<Button
-						bgColor={'green.300'}
-						_hover={{
-							bgColor: 'green.400',
-						}}
-						width={'30%'}
 					>
 						<Text color={'white'}>CSV</Text>
 					</Button>
 					<Button
-						bgColor={'green.300'}
+						bgColor={'yellow.400'}
 						_hover={{
-							bgColor: 'green.400',
+							bgColor: 'yellow.500',
 						}}
-						width={'30%'}
+						width={'48%'}
 					>
 						<Text color={'white'}>VCF</Text>
 					</Button>

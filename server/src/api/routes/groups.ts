@@ -4,7 +4,7 @@ import { VerifyPayment } from '../../middleware';
 
 const router = express.Router();
 
-router.route('/:group_id').all(VerifyPayment).get(GroupsController.exportGroups);
+router.route('/export').all(VerifyPayment).get(GroupsController.exportGroups);
 router.route('/').get(GroupsController.groups);
 
 export default router;

@@ -39,7 +39,7 @@ async function labels(req: Request, res: Response, next: NextFunction) {
 
 async function exportLabels(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
-	const { label: label_id } = req.params;
+	const { label_ids } = req.query;
 
 	const whatsapp = SocketServerProvider.getWhatsappClient(client_id);
 	if (!whatsapp) {
@@ -49,47 +49,52 @@ async function exportLabels(req: Request, res: Response, next: NextFunction) {
 	try {
 		const contacts = await WhatsappProvider.getMappedContacts(whatsapp);
 
-		const chats = await whatsapp.getChatsByLabelId(label_id);
-		const label = await whatsapp.getLabelById(label_id);
 		const entries: {
 			[label: string]: Chat;
 		} = {};
 
-		for (const chat of chats) {
-			if (chat.isGroup) {
-				for (const participant of (chat as GroupChat).participants) {
-					if (entries[participant.id.user]) {
+		const label_ids_array = (label_ids as string).split(',');
+
+		for (const label_id of label_ids_array) {
+			const chats = await whatsapp.getChatsByLabelId(label_id);
+			const label = await whatsapp.getLabelById(label_id);
+
+			for (const chat of chats) {
+				if (chat.isGroup) {
+					for (const participant of (chat as GroupChat).participants) {
+						if (entries[participant.id.user]) {
+							continue;
+						}
+						const contact = contacts[participant.id.user];
+
+						entries[participant.id.user] = {
+							...contact,
+							group_name: chat.name,
+							label: label.name,
+						};
+					}
+				} else {
+					if (entries[chat.id.user]) {
 						continue;
 					}
-					const contact = contacts[participant.id.user];
+					const contact = contacts[chat.id.user];
 
-					entries[participant.id.user] = {
+					entries[chat.id.user] = {
 						...contact,
-						group_name: chat.name,
+						group_name: '',
 						label: label.name,
 					};
 				}
-			} else {
-				if (entries[chat.id.user]) {
-					continue;
-				}
-				const contact = contacts[chat.id.user];
-
-				entries[chat.id.user] = {
-					...contact,
-					group_name: '',
-					label: label.name,
-				};
 			}
 		}
 
 		return Respond({
 			res,
 			status: 200,
-			data: { name: label.name, entries },
+			data: { entries },
 		});
 	} catch (err) {
-		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
 	}
 }
 

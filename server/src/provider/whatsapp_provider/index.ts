@@ -1,4 +1,4 @@
-import { Client, LocalAuth } from 'whatsapp-web.js';
+import WAWebJS, { Client, LocalAuth } from 'whatsapp-web.js';
 import { COUNTRIES } from '../../config/const';
 import IContact from '../../types/whatsapp/contact';
 import { generateClientID } from '../../utils/ExpressUtils';
@@ -60,10 +60,39 @@ export class WhatsappProvider {
 					isBusiness: contact.isBusiness,
 					country: COUNTRIES[country_code as string],
 					number: contact.number,
+					public_name: contact.pushname ?? '',
 				};
 				return acc;
 			}, Promise.resolve({} as MappedContacts));
 
 		return contacts;
+	}
+
+	static async getSavedContacts(whatsapp: Client) {
+		const contacts = (await whatsapp.getContacts()).filter(
+			(contact) => contact.isMyContact && !contact.isMe && !contact.isGroup
+		);
+
+		return contacts;
+	}
+
+	static async getNonSavedContacts(whatsapp: Client) {
+		const contacts = (await whatsapp.getContacts()).filter(
+			(contact) => !contact.isMyContact && !contact.isMe && !contact.isGroup
+		);
+
+		const non_saved_contacts = await Promise.all(
+			contacts.map(async (contact) => {
+				const chat = await whatsapp.getChatById(contact.id._serialized);
+				if (!chat.lastMessage) return null;
+				return contact;
+			})
+		);
+
+		const filtered_contacts = non_saved_contacts.filter(
+			(contact) => contact !== null
+		) as WAWebJS.Contact[];
+
+		return filtered_contacts;
 	}
 }

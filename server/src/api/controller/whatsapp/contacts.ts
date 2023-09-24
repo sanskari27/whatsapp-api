@@ -3,6 +3,8 @@ import { SocketServerProvider } from '../../../socket';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import { COUNTRIES } from '../../../config/const';
 import { Respond } from '../../../utils/ExpressUtils';
+import WAWebJS from 'whatsapp-web.js';
+import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 
 async function contacts(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
@@ -25,38 +27,34 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 	}
 
 	try {
-		const contacts = (await whatsapp.getContacts())
-			.filter((contact) => {
-				if (!contact.isWAContact || contact.isMe || contact.isGroup) {
-					return false;
-				}
-				if (options.all_contacts) {
-					return true;
-				}
-				if (options.saved_contacts && contact.isMyContact) {
-					return true;
-				}
-				if (!options.saved_contacts && !contact.isMyContact) {
-					return true;
-				}
-				return false;
-			})
+		const contacts = [] as WAWebJS.Contact[];
 
-			.map(async (contact) => {
-				const country_code = await contact.getCountryCode();
-				const country = COUNTRIES[country_code as string];
-				return {
-					name: contact.name,
-					number: contact.number,
-					isBusiness: contact.isBusiness,
-					country,
-				};
-			});
+		const saved = await WhatsappProvider.getSavedContacts(whatsapp);
+		const non_saved = await WhatsappProvider.getNonSavedContacts(whatsapp);
+		if (options.all_contacts) {
+			contacts.push(...saved, ...non_saved);
+		} else if (options.saved_contacts) {
+			contacts.push(...saved);
+		} else {
+			contacts.push(...non_saved);
+		}
+
+		const results = contacts.map(async (contact) => {
+			const country_code = await contact.getCountryCode();
+			const country = COUNTRIES[country_code as string];
+			return {
+				name: contact.name,
+				number: contact.number,
+				isBusiness: contact.isBusiness,
+				country,
+				public_name: contact.pushname ?? '',
+			};
+		});
 
 		return Respond({
 			res,
 			status: 200,
-			data: { contacts: await Promise.all(contacts) },
+			data: { contacts: await Promise.all(results) },
 		});
 	} catch (err) {
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));

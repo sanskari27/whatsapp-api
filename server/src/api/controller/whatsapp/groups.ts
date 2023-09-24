@@ -37,7 +37,7 @@ async function groups(req: Request, res: Response, next: NextFunction) {
 
 async function exportGroups(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
-	const { group_id } = req.params;
+	const { group_ids } = req.query;
 
 	const whatsapp = SocketServerProvider.getWhatsappClient(client_id);
 	if (!whatsapp) {
@@ -47,42 +47,61 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 	try {
 		const contacts = await WhatsappProvider.getMappedContacts(whatsapp);
 
-		const chat = await whatsapp.getChatById(group_id);
-
-		if (!chat || !chat.isGroup) {
-			return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
+		if (!group_ids || group_ids.length === 0) {
+			return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
 		}
-		const groupChat = chat as GroupChat;
 
-		const participants = groupChat.participants.map(async (participant) => {
-			const contact = contacts[participant.id.user];
-			let name = contact ? contact.name : undefined;
-			let country = contact ? contact.country : undefined;
-			let isBusiness = contact ? contact.isBusiness : false;
-			if (!contact) {
-				const fetchedContact = await whatsapp.getContactById(participant.id._serialized);
-				name = fetchedContact.pushname;
-				const country_code = await fetchedContact.getCountryCode();
-				country = COUNTRIES[country_code as string];
-				isBusiness = fetchedContact.isBusiness;
-			}
+		const group_ids_array = (group_ids as string).split(',');
 
-			return {
-				name: name,
-				number: participant.id.user,
-				country: country,
-				isBusiness: isBusiness,
-				user_type: participant.isSuperAdmin ? 'CREATOR' : participant.isAdmin ? 'ADMIN' : 'USER',
-				group_name: groupChat.name,
-			};
-		});
+		const groups = await Promise.all(
+			group_ids_array.map(async (group_id) => {
+				const chat = await whatsapp.getChatById(group_id);
+
+				if (!chat || !chat.isGroup) {
+					return null;
+				}
+				const groupChat = chat as GroupChat;
+				return groupChat;
+			})
+		);
+
+		const filtered_chats = groups.filter((chat) => chat !== null) as GroupChat[];
+
+		const participants = [];
+
+		for (const groupChat of filtered_chats) {
+			const group_participants = groupChat.participants.map(async (participant) => {
+				const contact = contacts[participant.id.user];
+				let name = contact ? contact.name : undefined;
+				let country = contact ? contact.country : undefined;
+				let isBusiness = contact ? contact.isBusiness : false;
+				let public_name = contact ? contact.public_name : undefined;
+				if (!contact) {
+					const fetchedContact = await whatsapp.getContactById(participant.id._serialized);
+					name = fetchedContact.pushname;
+					const country_code = await fetchedContact.getCountryCode();
+					country = COUNTRIES[country_code as string];
+					isBusiness = fetchedContact.isBusiness;
+					public_name = fetchedContact.pushname;
+				}
+
+				return {
+					name: name,
+					number: participant.id.user,
+					country: country,
+					isBusiness: isBusiness,
+					user_type: participant.isSuperAdmin ? 'CREATOR' : participant.isAdmin ? 'ADMIN' : 'USER',
+					group_name: groupChat.name,
+					public_name: public_name,
+				};
+			});
+			participants.push(...group_participants);
+		}
 
 		return Respond({
 			res,
 			status: 200,
 			data: {
-				id: groupChat.id.user,
-				name: groupChat.name,
 				participants: await Promise.all(participants),
 			},
 		});

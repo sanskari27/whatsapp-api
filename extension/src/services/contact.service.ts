@@ -29,9 +29,10 @@ export default class ContactService {
 				number: string;
 				isBusiness: string;
 				country: string;
+				public_name: string;
 			}[];
 		} catch (err) {
-			return null;
+			return [];
 		}
 	}
 }
