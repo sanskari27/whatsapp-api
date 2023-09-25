@@ -43,6 +43,22 @@ export default class PaymentService {
 		}
 	}
 
+	static async details(transaction_id: string) {
+		try {
+			const { data } = await APIInstance.get(`/payment/${transaction_id}/details`);
+			return {
+				transaction_id: data.transaction_id,
+				gross_amount: data.gross_amount,
+				tax: data.tax,
+				discount: data.discount,
+				total_amount: data.total_amount,
+				status: data.status,
+			};
+		} catch (err) {
+			return null;
+		}
+	}
+
 	static async removeCoupon(transaction_id: string) {
 		try {
 			const { data } = await APIInstance.post(`/payment/${transaction_id}/remove-coupon`);
