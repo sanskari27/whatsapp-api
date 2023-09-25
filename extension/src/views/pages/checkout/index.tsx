@@ -1,12 +1,14 @@
 import { Box, Button, Divider, Flex, HStack, Image, Input, Text } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { COUPON } from '../../../assets/Images';
-import { TRANSACTION_STATUS } from '../../../config/const';
+import { CHROME_ACTION, TRANSACTION_STATUS, WEBPAGE_URL } from '../../../config/const';
 import BackButton from '../../components/back-button';
 import { CouponBanner } from './components';
 import { CheckIcon, CloseIcon, WarningTwoIcon } from '@chakra-ui/icons';
 import { useLocation, useParams } from 'react-router-dom';
 import PaymentService from '../../../services/payment.service';
+import { getActiveTabURL } from '../../../utils/ChromeUtils';
+import { MessageProps } from '../../../background/background';
 
 const CheckoutPage = () => {
 	const [transaction, setTransaction] = useState({
@@ -19,6 +21,7 @@ const CheckoutPage = () => {
 		[TRANSACTION_STATUS.TAX]: '',
 		[TRANSACTION_STATUS.DISCOUNT]: '',
 		[TRANSACTION_STATUS.TOTAL_AMOUNT]: '',
+		[TRANSACTION_STATUS.TRANSACTION_ERROR]: '',
 	});
 	const location = useLocation();
 
@@ -93,6 +96,32 @@ const CheckoutPage = () => {
 			...prevState,
 			[name]: value,
 		}));
+	};
+
+	const handlePaymentClick = async () => {
+		const paymentTransaction = await PaymentService.initiateRazorpay(
+			transaction[TRANSACTION_STATUS.TRANSACTION_ID]
+		);
+		if (!paymentTransaction) return;
+		const activeTab = await getActiveTabURL();
+		const message: MessageProps = {
+			action: CHROME_ACTION.OPEN_URL,
+			tabId: activeTab.id,
+			url: activeTab.url,
+			data: {
+				url:
+					WEBPAGE_URL +
+					'api/razorpay/initiate-payment?' +
+					new URLSearchParams({
+						currency: paymentTransaction.razorpay_options.currency,
+						name: paymentTransaction.razorpay_options.name,
+						description: paymentTransaction.razorpay_options.description,
+						order_id: paymentTransaction.razorpay_options.order_id,
+						transaction_id: paymentTransaction.transaction_id,
+					}).toString(),
+			},
+		};
+		await chrome.runtime.sendMessage(message);
 	};
 
 	return (
@@ -176,6 +205,11 @@ const CheckoutPage = () => {
 					<Text className='text-[#4CB072]'>{transaction[TRANSACTION_STATUS.TOTAL_AMOUNT]}</Text>
 				</Flex>
 			</Box>
+
+			<Text textColor='red.400' textAlign={'center'} fontWeight={'semibold'} fontSize={'sm'}>
+				{transaction[TRANSACTION_STATUS.TRANSACTION_ERROR]}
+			</Text>
+
 			<Button
 				width={'auto'}
 				my={'0.5rem'}
@@ -184,6 +218,7 @@ const CheckoutPage = () => {
 				_hover={{
 					backgroundColor: 'green.500',
 				}}
+				onClick={handlePaymentClick}
 			>
 				<Text fontWeight={'semibold'} fontSize={'xl'}>
 					Pay {transaction[TRANSACTION_STATUS.TOTAL_AMOUNT]}

@@ -1,6 +1,6 @@
 import { Box, Button, Flex, Image, Select, Text } from '@chakra-ui/react';
 import { useEffect, useRef, useState } from 'react';
-import { startAuth, useAuth } from '../../../hooks/useAuth';
+import { logout, startAuth, useAuth } from '../../../hooks/useAuth';
 import { EXPORT_GREEN, EXPORT_WHITE } from '../../../assets/Images';
 import CheckButton from '../../components/check-button';
 import { EXPORTS_TYPE, NAVIGATION } from '../../../config/const';
@@ -115,16 +115,10 @@ const Exports = () => {
 					[EXPORTS_TYPE.UNSAVED]: res.unsaved,
 				});
 			})
-			.catch(() => {});
-		GroupService.listGroups()
-			.then(setGroups)
-			.catch(() => {});
-		LabelService.listLabels()
-			.then(setLabels)
-			.catch(() => {});
-		PaymentService.isPaymentVerified()
-			.then((res) => setPaymentVerified(res))
-			.catch(() => {});
+			.catch(logout);
+		GroupService.listGroups().then(setGroups);
+		LabelService.listLabels().then(setLabels);
+		PaymentService.isPaymentVerified().then(setPaymentVerified);
 	}, [isAuthenticated]);
 
 	useEffect(() => {
@@ -134,7 +128,6 @@ const Exports = () => {
 			loginModelRef.current?.close();
 		}
 	}, [qrGenerated]);
-	console.log(selectedGroup);
 
 	return (
 		<Flex direction={'column'} gap={'0.5rem'}>

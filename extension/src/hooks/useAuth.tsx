@@ -86,3 +86,13 @@ export const startAuth = async () => {
 	const client_id = await getClientID();
 	socket.emit(SOCKET_EVENT.INITIALIZE, client_id);
 };
+
+export const logout = () => {
+	setAuth({
+		isAuthenticating: false,
+		qrGenerated: false,
+		isSocketInitialized: false,
+		isAuthenticated: false,
+		qrCode: '',
+	});
+};

@@ -7,7 +7,6 @@ import DateUtils from '../../../utils/DateUtils';
 import RazorpayProvider from '../../../provider/razorpay';
 import { Types } from 'mongoose';
 import CouponDB from '../../repository/coupon';
-import { RAZORPAY_API_KEY } from '../../../provider/razorpay/config/const';
 
 export default class PaymentService {
 	private user: IUser;
@@ -126,7 +125,7 @@ export default class PaymentService {
 				prefill: {
 					contact: this.user.phone,
 				},
-				key: RAZORPAY_API_KEY,
+				key: '',
 				theme: {
 					color: '#4CB072',
 				},
@@ -163,7 +162,7 @@ export default class PaymentService {
 				user,
 				transaction_status: WALLET_TRANSACTION_STATUS.SUCCESS,
 				expires_at: {
-					$gte: DateUtils.getDate(),
+					$gte: DateUtils.getMomentNow().toDate(),
 				},
 			})) !== null
 		);
