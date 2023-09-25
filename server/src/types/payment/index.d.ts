@@ -1,5 +1,6 @@
 import { Document } from 'mongoose';
 import { IUser } from '../users';
+import { WALLET_TRANSACTION_STATUS } from '../../config/const';
 
 export default interface IPayment extends Document {
 	user: IUser;

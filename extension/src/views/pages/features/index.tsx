@@ -4,14 +4,57 @@ import { useNavigate } from 'react-router';
 import { NAVIGATION, TRANSACTION_STATUS } from '../../../config/const';
 import BackButton from '../../components/back-button';
 import PaymentService from '../../../services/payment.service';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { getTransactionData, saveTransactionData } from '../../../utils/ChromeUtils';
 
 const Features = () => {
 	const navigate = useNavigate();
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
+	const [transactionData, setTransactionData] = useState<{
+		[TRANSACTION_STATUS.TRANSACTION_ID]: string;
+		[TRANSACTION_STATUS.GROSS_AMOUNT]: string;
+		[TRANSACTION_STATUS.TAX]: string;
+		[TRANSACTION_STATUS.DISCOUNT]: string;
+		[TRANSACTION_STATUS.TOTAL_AMOUNT]: string;
+	} | null>(null);
+
+	const fetchTransactionDetails = useCallback(async () => {
+		const transaction_id = await getTransactionData();
+		if (!transaction_id) {
+			return;
+		}
+		setLoading(true);
+		PaymentService.details(transaction_id)
+			.then((res) => {
+				if (!res) {
+					return;
+				}
+				if (res.status !== 'pending') {
+					return;
+				}
+				setTransactionData({
+					[TRANSACTION_STATUS.TRANSACTION_ID]: res.transaction_id,
+					[TRANSACTION_STATUS.GROSS_AMOUNT]: res.gross_amount,
+					[TRANSACTION_STATUS.TAX]: res.tax,
+					[TRANSACTION_STATUS.DISCOUNT]: res.discount,
+					[TRANSACTION_STATUS.TOTAL_AMOUNT]: res.total_amount,
+				});
+			})
+			.finally(() => setLoading(false));
+	}, []);
+
+	useEffect(() => {
+		fetchTransactionDetails();
+	}, [fetchTransactionDetails]);
 
 	const handlePayClick = () => {
+		if (transactionData) {
+			navigate(NAVIGATION.CHECKOUT, {
+				state: transactionData,
+			});
+			return;
+		}
 		setLoading(true);
 		PaymentService.initiateTransaction().then((res) => {
 			if (!res) {
@@ -19,6 +62,7 @@ const Features = () => {
 				setLoading(false);
 				return;
 			}
+			saveTransactionData(res.transaction_id);
 			navigate(NAVIGATION.CHECKOUT, {
 				state: {
 					[TRANSACTION_STATUS.TRANSACTION_ID]: res.transaction_id,

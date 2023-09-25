@@ -11,6 +11,7 @@ router
 	.all(VerifyClientID, VerifyPayment)
 	.get(PaymentController.isPaymentValid);
 
+router.route('/:transaction_id/details').get(PaymentController.fetchTransactionDetail);
 router.route('/:transaction_id/verify-payment').post(PaymentController.confirmTransaction);
 router
 	.route('/:transaction_id/apply-coupon')

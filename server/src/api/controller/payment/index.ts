@@ -14,6 +14,37 @@ async function isPaymentValid(req: Request, res: Response, next: NextFunction) {
 	});
 }
 
+async function fetchTransactionDetail(req: Request, res: Response, next: NextFunction) {
+	const [isIDValid, transaction_id] = idValidator(req.params.transaction_id);
+
+	if (!isIDValid) {
+		return next(new APIError(INTERNAL_ERRORS.COMMON_ERRORS.INVALID_FIELD));
+	}
+	try {
+		const transactionDetails = await PaymentService.fetchTransactionDetails(transaction_id);
+
+		return Respond({
+			res,
+			status: 200,
+			data: {
+				transaction_id: transactionDetails.transaction_id,
+				gross_amount: transactionDetails.gross_amount,
+				tax: transactionDetails.tax,
+				discount: transactionDetails.discount,
+				total_amount: transactionDetails.total_amount,
+				status: transactionDetails.status,
+			},
+		});
+	} catch (err) {
+		if (err instanceof InternalError) {
+			if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND)) {
+				return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_NOT_FOUND));
+			}
+		}
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
+	}
+}
+
 async function initiatePaymentTransaction(req: Request, res: Response, next: NextFunction) {
 	const paymentService = new PaymentService(req.locals.user);
 
@@ -172,6 +203,7 @@ async function confirmTransaction(req: Request, res: Response, next: NextFunctio
 
 const TokenController = {
 	isPaymentValid,
+	fetchTransactionDetail,
 	initiatePaymentTransaction,
 	applyCoupon,
 	removeCoupon,

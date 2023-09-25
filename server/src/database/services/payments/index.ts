@@ -24,6 +24,20 @@ export default class PaymentService {
 		}
 		return new PaymentService(user);
 	}
+	public static async fetchTransactionDetails(id: Types.ObjectId) {
+		const walletTransaction = await PaymentDB.findById(id);
+		if (walletTransaction === null) {
+			throw new InternalError(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND);
+		}
+		return {
+			transaction_id: walletTransaction._id,
+			gross_amount: walletTransaction.gross_amount,
+			tax: walletTransaction.tax,
+			discount: walletTransaction.discount,
+			total_amount: walletTransaction.total_amount,
+			status: walletTransaction.transaction_status,
+		};
+	}
 
 	async initializePayment(amount: number) {
 		const walletTransaction = await PaymentDB.create({
