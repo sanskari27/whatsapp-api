@@ -41,6 +41,7 @@ const Exports = () => {
 	const [selectedLabel, setSelectedLabel] = useState([]);
 	const [exportClicked, setExportClicked] = useState(false);
 	const [paymentVerified, setPaymentVerified] = useState(false);
+	const [isBusiness, setBusiness] = useState(true);
 
 	const { ALL, SAVED, UNSAVED, GROUP, LABEL } = export_criteria;
 
@@ -117,7 +118,13 @@ const Exports = () => {
 			})
 			.catch(logout);
 		GroupService.listGroups().then(setGroups);
-		LabelService.listLabels().then(setLabels);
+		LabelService.listLabels()
+			.then(setLabels)
+			.catch((err) => {
+				if (err === 'BUSINESS_ACCOUNT_REQUIRED') {
+					setBusiness(false);
+				}
+			});
 		PaymentService.isPaymentVerified().then(setPaymentVerified);
 	}, [isAuthenticated]);
 
@@ -208,12 +215,13 @@ const Exports = () => {
 						name={'LABEL'}
 						label='Label Contacts'
 						value={LABEL}
+						isDisabled={!isBusiness}
 						onChange={handleChange}
 					/>
 					<Multiselect
 						disable={!LABEL}
 						displayValue='name'
-						placeholder='Select Label'
+						placeholder={isBusiness ? 'Select Label' : 'For Business Account Only'}
 						onRemove={(selectedList) =>
 							setSelectedLabel(selectedList.map((label: any) => label.id))
 						}
@@ -224,6 +232,9 @@ const Exports = () => {
 						style={{
 							searchBox: {
 								border: 'none',
+							},
+							inputField: {
+								width: '100%',
 							},
 						}}
 						className='!bg-[#A6A6A6] dark:!bg-[#252525] rounded-md border-none w-full '
