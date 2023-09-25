@@ -2,15 +2,34 @@ import APIInstance from '../config/APIInstance';
 
 export default class LabelService {
 	static async listLabels() {
-		try {
-			const { data } = await APIInstance.get(`/labels`);
-			return data.labels as {
-				id: string;
-				name: string;
-			}[];
-		} catch (err) {
-			return [];
-		}
+		return new Promise(
+			(
+				resolve: (
+					data: {
+						id: string;
+						name: string;
+					}[]
+				) => void,
+				reject
+			) => {
+				APIInstance.get(`/labels`)
+					.then(({ data }) => {
+						resolve(
+							data.labels as {
+								id: string;
+								name: string;
+							}[]
+						);
+					})
+					.catch((err) => {
+						if (err?.response?.data?.title === 'BUSINESS_ACCOUNT_REQUIRED') {
+							reject('BUSINESS_ACCOUNT_REQUIRED');
+							return;
+						}
+						resolve([]);
+					});
+			}
+		);
 	}
 	static async fetchLabel(ids: string[]) {
 		try {

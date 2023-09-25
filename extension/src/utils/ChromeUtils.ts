@@ -1,4 +1,4 @@
-import { PRIVACY_TYPE } from '../config/const';
+import { PRIVACY_TYPE, TRANSACTION_STATUS } from '../config/const';
 
 declare const chrome: any;
 
@@ -23,6 +23,22 @@ export function resetChromeData() {
 export function saveChromeData(key: keyof typeof PRIVACY_TYPE, data: boolean) {
 	chrome.storage.sync.set({
 		[key]: data,
+	});
+}
+export function saveTransactionData(transaction_id: string) {
+	chrome.storage.sync.set({
+		TRANSACTION_RECORD: transaction_id,
+	});
+}
+export function getTransactionData() {
+	return new Promise((resolve: (id: string) => void, reject) => {
+		chrome.storage.sync.get('TRANSACTION_RECORD', (data: any) => {
+			if (chrome.runtime.lastError) {
+				return resolve('');
+			} else {
+				return resolve(data.TRANSACTION_RECORD as string);
+			}
+		});
 	});
 }
 

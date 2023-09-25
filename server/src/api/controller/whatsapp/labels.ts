@@ -25,6 +25,11 @@ async function labels(req: Request, res: Response, next: NextFunction) {
 	}
 
 	try {
+
+		const contact = await whatsapp.getContactById(whatsapp.info.wid._serialized);
+		if(!contact.isBusiness) {
+			return next(new APIError(API_ERRORS.USER_ERRORS.BUSINESS_ACCOUNT_REQUIRED));
+		}
 		const labels = await whatsapp.getLabels();
 
 		return Respond({
