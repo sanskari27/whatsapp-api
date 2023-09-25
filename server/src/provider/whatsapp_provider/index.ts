@@ -16,7 +16,9 @@ export class WhatsappProvider {
 
 	static getWhatsappClient(cid?: ClientID) {
 		if (cid && WhatsappProvider.clientsMap.has(cid)) {
-			return [cid, WhatsappProvider.clientsMap.get(cid)!, SESSION_ACTIVE] as [
+			const client = WhatsappProvider.clientsMap.get(cid)!;
+			const sessionActive = !!client.pupPage && !client.pupPage.isClosed();
+			return [cid, WhatsappProvider.clientsMap.get(cid)!, sessionActive] as [
 				ClientID,
 				Client,
 				boolean
