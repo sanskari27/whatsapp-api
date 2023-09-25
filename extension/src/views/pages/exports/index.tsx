@@ -188,6 +188,7 @@ const Exports = () => {
 					<Multiselect
 						disable={!GROUP}
 						displayValue='name'
+						placeholder='Select Group'
 						onRemove={(selectedList) =>
 							setSelectedGroup(selectedList.map((group: any) => group.id))
 						}
@@ -212,6 +213,7 @@ const Exports = () => {
 					<Multiselect
 						disable={!LABEL}
 						displayValue='name'
+						placeholder='Select Label'
 						onRemove={(selectedList) =>
 							setSelectedLabel(selectedList.map((label: any) => label.id))
 						}
