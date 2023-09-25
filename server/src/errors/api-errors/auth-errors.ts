@@ -16,11 +16,6 @@ const USER_ERRORS = {
 		TITLE: 'SESSION_INVALIDATED',
 		MESSAGE: 'The session was invalidated. Please login again.',
 	},
-	BUSINESS_ACCOUNT_REQUIRED: {
-		STATUS: 400,
-		TITLE: 'BUSINESS_ACCOUNT_REQUIRED',
-		MESSAGE: 'The user must have a business account to perform this action.',
-	},
 } satisfies {
 	[error: string]: APIError;
 };

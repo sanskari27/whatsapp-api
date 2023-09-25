@@ -193,7 +193,7 @@ const CheckoutPage = () => {
 						{transaction[TRANSACTION_STATUS.GROSS_AMOUNT]}
 					</Text>
 				</Flex>
-				{(COUPON_VALID || transaction[TRANSACTION_STATUS.DISCOUNT]) && (
+				{COUPON_VALID && (
 					<Flex width={'full'} justifyContent={'space-between'}>
 						<Text className='text-black dark:text-white'>Discount</Text>
 						<Text className='text-[#4CB072]'>-{transaction[TRANSACTION_STATUS.DISCOUNT]}</Text>
