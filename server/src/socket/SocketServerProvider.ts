@@ -37,8 +37,8 @@ export default class SocketServerProvider {
 
 	private attachListeners() {
 		this.io.on('connection', (socket) => {
-			socket.on(SOCKET_EVENTS.INITIALIZE, (clientId: string | undefined) => {
-				this.initializeWhatsappClient(socket, clientId);
+			socket.on(SOCKET_EVENTS.INITIALIZE, async (clientId: string | undefined) => {
+				await this.initializeWhatsappClient(socket, clientId);
 			});
 			socket.on('disconnect', () => {
 				const clientId = SocketServerProvider.getClientId(socket);
@@ -52,8 +52,8 @@ export default class SocketServerProvider {
 		});
 	}
 
-	private initializeWhatsappClient(socketClient: Socket, cid: string | undefined) {
-		const [clientId, client, sessionActive] = WhatsappProvider.getWhatsappClient(cid);
+	private async initializeWhatsappClient(socketClient: Socket, cid: string | undefined) {
+		const [clientId, client, sessionActive] = await WhatsappProvider.getWhatsappClient(cid);
 
 		const entry: SocketClientEntry = {
 			socketClient: socketClient,
@@ -109,8 +109,9 @@ export default class SocketServerProvider {
 			});
 		});
 
-		whatsapp.on('ready', () => {
+		whatsapp.on('ready', async () => {
 			const number = whatsapp.info.wid.user;
+			const contact = await whatsapp.getContactById(whatsapp.info.wid._serialized);
 
 			this.sendToClient({
 				clientId,
@@ -118,7 +119,7 @@ export default class SocketServerProvider {
 				data: null,
 			});
 
-			UserService.createUser(number)
+			UserService.createUser(number, { isBusiness: contact.isBusiness })
 				.then((service) => {
 					service
 						.login(clientId)

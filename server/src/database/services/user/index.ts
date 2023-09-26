@@ -18,7 +18,7 @@ export default class UserService {
 		return new UserService(user);
 	}
 
-	static async createUser(phone: string) {
+	static async createUser(phone: string, { isBusiness = false }) {
 		const user = await UserDB.findOne({ phone });
 
 		if (user) {
@@ -27,6 +27,7 @@ export default class UserService {
 
 		const createdUser = await UserDB.create({
 			phone,
+			userType: isBusiness ? 'BUSINESS' : 'PERSONAL',
 		});
 
 		return new UserService(createdUser);
