@@ -1,5 +1,5 @@
 import WAWebJS, { Client, LocalAuth } from 'whatsapp-web.js';
-import { COUNTRIES } from '../../config/const';
+import { COUNTRIES, IS_PRODUCTION } from '../../config/const';
 import IContact from '../../types/whatsapp/contact';
 import { generateClientID } from '../../utils/ExpressUtils';
 import { UserService } from '../../database/services';
@@ -89,7 +89,7 @@ export class WhatsappProvider {
 			await WhatsappProvider.removeClient(session.client_id);
 			const path = __basedir + '/.wwebjs_auth/session-' + session.client_id;
 			const sessionExists = fs.existsSync(path);
-			if (sessionExists) {
+			if (sessionExists && IS_PRODUCTION) {
 				fs.rmSync(path, {
 					recursive: true,
 				});
