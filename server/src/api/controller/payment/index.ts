@@ -5,6 +5,7 @@ import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 import { PaymentService } from '../../../database/services';
 import { BASE_AMOUNT } from '../../../config/const';
+import { SocketServerProvider } from '../../../socket';
 
 async function isPaymentValid(req: Request, res: Response, next: NextFunction) {
 	return Respond({
@@ -174,6 +175,7 @@ async function initializeRazorpayPayment(req: Request, res: Response, next: Next
 
 async function confirmTransaction(req: Request, res: Response, next: NextFunction) {
 	const [isIDValid, transaction_id] = idValidator(req.params.transaction_id);
+	const client_id = req.body.client_id;
 
 	if (isIDValid === false) {
 		return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
@@ -182,6 +184,11 @@ async function confirmTransaction(req: Request, res: Response, next: NextFunctio
 	try {
 		const paymentService = new PaymentService(req.locals.user);
 		await paymentService.confirmTransaction(transaction_id);
+
+		if (client_id) {
+			SocketServerProvider.closePaymentWindow(client_id);
+		}
+
 		return Respond({
 			res,
 			status: 200,

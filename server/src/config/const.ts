@@ -18,6 +18,7 @@ export enum SOCKET_RESPONSES {
 	WHATSAPP_AUTHENTICATED = 'whatsapp-authenticated',
 	WHATSAPP_READY = 'whatsapp-ready',
 	WHATSAPP_CLOSED = 'whatsapp-closed',
+	PAYMENT_SUCCESS = 'payment-success',
 }
 
 export const COUNTRIES: {

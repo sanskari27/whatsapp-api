@@ -10,6 +10,7 @@ export const NAVIGATION = {
 export enum CHROME_ACTION {
 	PRIVACY_UPDATED = 'PRIVACY_UPDATED',
 	OPEN_URL = 'OPEN_URL',
+	CLOSE_TAB = 'CLOSE_TAB',
 }
 
 export enum PRIVACY_TYPE {
@@ -47,4 +48,5 @@ export enum SOCKET_EVENT {
 	WHATSAPP_AUTHENTICATED = 'whatsapp-authenticated',
 	WHATSAPP_READY = 'whatsapp-ready',
 	WHATSAPP_CLOSED = 'whatsapp-closed',
+	PAYMENT_SUCCESS = 'payment-success',
 }

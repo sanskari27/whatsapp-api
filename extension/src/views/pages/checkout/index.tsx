@@ -7,7 +7,7 @@ import { CouponBanner } from './components';
 import { CheckIcon, CloseIcon, WarningTwoIcon } from '@chakra-ui/icons';
 import { useLocation, useParams } from 'react-router-dom';
 import PaymentService from '../../../services/payment.service';
-import { getActiveTabURL } from '../../../utils/ChromeUtils';
+import { getActiveTabURL, getClientID } from '../../../utils/ChromeUtils';
 import { MessageProps } from '../../../background/background';
 
 const CheckoutPage = () => {
@@ -104,6 +104,7 @@ const CheckoutPage = () => {
 		);
 		if (!paymentTransaction) return;
 		const activeTab = await getActiveTabURL();
+		const client_id = await getClientID();
 		const message: MessageProps = {
 			action: CHROME_ACTION.OPEN_URL,
 			tabId: activeTab.id,
@@ -118,6 +119,7 @@ const CheckoutPage = () => {
 						description: paymentTransaction.razorpay_options.description,
 						order_id: paymentTransaction.razorpay_options.order_id,
 						transaction_id: paymentTransaction.transaction_id,
+						client_id: client_id,
 					}).toString(),
 			},
 		};

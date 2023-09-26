@@ -1,4 +1,4 @@
-import { PRIVACY_TYPE, TRANSACTION_STATUS } from '../config/const';
+import { PRIVACY_TYPE, WEBPAGE_URL } from '../config/const';
 
 declare const chrome: any;
 
@@ -9,6 +9,14 @@ export async function getActiveTabURL() {
 	});
 
 	return tabs[0];
+}
+
+export async function getPaymentTabsIDs() {
+	const tabs = await chrome.tabs.query({
+		url: `${WEBPAGE_URL}*}`,
+	});
+
+	return tabs.map((tab: any) => tab.id);
 }
 
 export function resetChromeData() {

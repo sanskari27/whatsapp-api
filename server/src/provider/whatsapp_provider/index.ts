@@ -14,10 +14,20 @@ const SESSION_ACTIVE = true;
 export class WhatsappProvider {
 	private static clientsMap = new Map<ClientID, Client>();
 
-	static getWhatsappClient(cid?: ClientID) {
+	static async getWhatsappClient(cid?: ClientID) {
 		if (cid && WhatsappProvider.clientsMap.has(cid)) {
 			const client = WhatsappProvider.clientsMap.get(cid)!;
-			const sessionActive = !!client.pupPage && !client.pupPage.isClosed();
+			let sessionActive = false;
+
+			try {
+				const state = await client.getState();
+				if (state === WAWebJS.WAState.CONNECTED) {
+					sessionActive = true;
+				}
+			} catch (e) {
+				//ignore
+			}
+
 			return [cid, WhatsappProvider.clientsMap.get(cid)!, sessionActive] as [
 				ClientID,
 				Client,

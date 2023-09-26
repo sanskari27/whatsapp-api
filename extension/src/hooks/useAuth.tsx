@@ -2,8 +2,14 @@ import { useEffect, useState } from 'react';
 import AuthService from '../services/auth.service';
 import { singletonHook } from 'react-singleton-hook';
 import { io } from 'socket.io-client';
-import { SERVER_URL, SOCKET_EVENT } from '../config/const';
-import { getClientID, saveClientID } from '../utils/ChromeUtils';
+import { CHROME_ACTION, SERVER_URL, SOCKET_EVENT } from '../config/const';
+import {
+	getActiveTabURL,
+	getClientID,
+	getPaymentTabsIDs,
+	saveClientID,
+} from '../utils/ChromeUtils';
+import { MessageProps } from '../background/background';
 
 const socket = io(SERVER_URL);
 
@@ -73,6 +79,16 @@ socket.on(SOCKET_EVENT.QR_GENERATED, (...args) => {
 		isSocketInitialized: false,
 		isAuthenticated: false,
 	});
+});
+
+socket.on(SOCKET_EVENT.PAYMENT_SUCCESS, () => {
+	const message: MessageProps = {
+		action: CHROME_ACTION.CLOSE_TAB,
+		tabId: '',
+		url: '',
+		data: {},
+	};
+	chrome.runtime.sendMessage(message);
 });
 
 export const startAuth = async () => {

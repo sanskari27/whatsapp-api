@@ -1,5 +1,10 @@
 import { CHROME_ACTION, PRIVACY_TYPE } from '../config/const';
-import { getChromeData, resetChromeData, saveChromeData } from '../utils/ChromeUtils';
+import {
+	getChromeData,
+	getPaymentTabsIDs,
+	resetChromeData,
+	saveChromeData,
+} from '../utils/ChromeUtils';
 
 declare const chrome: any;
 
@@ -85,6 +90,11 @@ chrome.runtime.onMessage.addListener(
 		} else if (message.action === CHROME_ACTION.OPEN_URL) {
 			chrome.tabs.create({ url: message.data.url });
 			sendResponse({ success: true });
+		} else if (message.action === CHROME_ACTION.CLOSE_TAB) {
+			const tabIDS = await getPaymentTabsIDs();
+			tabIDS.forEach((tabID: string) => {
+				chrome.tabs.remove(tabID);
+			});
 		}
 	}
 );

@@ -60,13 +60,13 @@ export default class SocketServerProvider {
 			whatsappClient: client,
 		};
 		SocketServerProvider.clientsMap.set(clientId, entry);
-		this.sendToClient({
+		SocketServerProvider.sendToClient({
 			clientId,
 			event: SOCKET_RESPONSES.INITIALIZED,
 			data: clientId,
 		});
 		if (sessionActive) {
-			this.sendToClient({
+			SocketServerProvider.sendToClient({
 				clientId,
 				event: SOCKET_RESPONSES.WHATSAPP_READY,
 				data: clientId,
@@ -94,7 +94,7 @@ export default class SocketServerProvider {
 		whatsapp.on('qr', async (qrCode) => {
 			try {
 				const qrCodeBase64 = await QRCode.toDataURL(qrCode);
-				this.sendToClient({
+				SocketServerProvider.sendToClient({
 					clientId,
 					event: SOCKET_RESPONSES.QR_GENERATED,
 					data: qrCodeBase64,
@@ -102,7 +102,7 @@ export default class SocketServerProvider {
 			} catch (err) {}
 		});
 		whatsapp.on('authenticated', async () => {
-			this.sendToClient({
+			SocketServerProvider.sendToClient({
 				clientId,
 				event: SOCKET_RESPONSES.WHATSAPP_AUTHENTICATED,
 				data: null,
@@ -113,7 +113,7 @@ export default class SocketServerProvider {
 			const number = whatsapp.info.wid.user;
 			const contact = await whatsapp.getContactById(whatsapp.info.wid._serialized);
 
-			this.sendToClient({
+			SocketServerProvider.sendToClient({
 				clientId,
 				event: SOCKET_RESPONSES.WHATSAPP_READY,
 				data: null,
@@ -130,7 +130,7 @@ export default class SocketServerProvider {
 		});
 
 		whatsapp.on('disconnected', () => {
-			this.sendToClient({
+			SocketServerProvider.sendToClient({
 				clientId,
 				event: SOCKET_RESPONSES.WHATSAPP_CLOSED,
 				data: null,
@@ -156,7 +156,15 @@ export default class SocketServerProvider {
 		return entry.whatsappClient;
 	}
 
-	private sendToClient({
+	public static closePaymentWindow(clientId: WhatsappClientID) {
+		this.sendToClient({
+			clientId,
+			event: SOCKET_RESPONSES.PAYMENT_SUCCESS,
+			data: null,
+		});
+	}
+
+	private static sendToClient({
 		clientId,
 		event,
 		data,
