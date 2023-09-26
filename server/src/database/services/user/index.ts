@@ -2,6 +2,7 @@ import { AuthDetailDB, UserDB } from '../../repository/user';
 import { IUser } from '../../../types/user';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 import DateUtils from '../../../utils/DateUtils';
+import PaymentService from '../payments';
 
 export default class UserService {
 	private user: IUser;
@@ -88,5 +89,27 @@ export default class UserService {
 			throw new InternalError(INTERNAL_ERRORS.USER_ERRORS.NOT_FOUND);
 		}
 		return user;
+	}
+
+	static async getInactiveSessions() {
+		const revokable = await AuthDetailDB.find({
+			isRevoked: false,
+			revoke_at: {
+				$lt: DateUtils.getMomentNow().toDate(),
+			},
+		});
+
+		const sessionsPromise = revokable.filter(async (auth) => {
+			const validPayment = await PaymentService.isPaymentValid(auth.user);
+			if (!validPayment) {
+				return auth;
+			} else {
+				return null;
+			}
+		});
+
+		const sessions = (await Promise.all(sessionsPromise)).filter((auth) => auth !== null);
+
+		return sessions;
 	}
 }

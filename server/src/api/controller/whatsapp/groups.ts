@@ -78,7 +78,7 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 				let public_name = contact ? contact.public_name : undefined;
 				if (!contact) {
 					const fetchedContact = await whatsapp.getContactById(participant.id._serialized);
-					name = fetchedContact.pushname;
+					name = fetchedContact.name ?? '';
 					const country_code = await fetchedContact.getCountryCode();
 					country = COUNTRIES[country_code as string];
 					isBusiness = fetchedContact.isBusiness;

@@ -62,7 +62,6 @@ async function exportLabels(req: Request, res: Response, next: NextFunction) {
 		for (const label_id of label_ids_array) {
 			const chats = await whatsapp.getChatsByLabelId(label_id);
 			const label = await whatsapp.getLabelById(label_id);
-			console.log('Chats in label', chats.length);
 
 			const contacts_in_label = chats
 				.map((chat) => {
@@ -81,8 +80,6 @@ async function exportLabels(req: Request, res: Response, next: NextFunction) {
 					}
 				})
 				.flat();
-
-			console.log('Contacts in label', contacts_in_label.length);
 
 			const ww_contacts = await Promise.all(
 				contacts_in_label.map(async ({ groupName, contactId }) => {
@@ -106,87 +103,7 @@ async function exportLabels(req: Request, res: Response, next: NextFunction) {
 			});
 
 			labelContacts.push(...(await Promise.all(contacts)));
-
-			// 	entries[participant.id.user] = {
-			// 		name: name ?? '',
-			// 		number: number ?? '',
-			// 		country: country ?? '',
-			// 		isBusiness: isBusiness ? 'Business' : 'Personal',
-			// 		public_name: public_name ?? '',
-			// 		group_name: chat.name,
-			// 		label: label.name,
-			// 	};
-
-			// 	let i = 0;
-			// 	for (const chat of chats) {
-			// 		if (chat.isGroup) {
-			// 			for (const participant of (chat as GroupChat).participants) {
-			// 				if (entries[participant.id.user]) {
-			// 					continue;
-			// 				}
-			// 				const contact = contacts[participant.id.user];
-			// 				let name = contact ? contact.name : undefined;
-			// 				let number = contact ? contact.number : undefined;
-			// 				let country = contact ? contact.country : undefined;
-			// 				let isBusiness = contact ? contact.isBusiness : undefined;
-			// 				let public_name = contact ? contact.public_name : undefined;
-
-			// 				if (!contact) {
-			// 					const contact = await whatsapp.getContactById(participant.id._serialized);
-			// 					const country_code = await contact.getCountryCode();
-			// 					name = contact.name;
-			// 					number = contact.number;
-			// 					country = COUNTRIES[country_code as string];
-			// 					isBusiness = contact.isBusiness;
-			// 					public_name = contact.pushname;
-			// 				}
-
-			// 				entries[participant.id.user] = {
-			// 					name: name ?? '',
-			// 					number: number ?? '',
-			// 					country: country ?? '',
-			// 					isBusiness: isBusiness ? 'Business' : 'Personal',
-			// 					public_name: public_name ?? '',
-			// 					group_name: chat.name,
-			// 					label: label.name,
-			// 				};
-			// 			}
-			// 		} else {
-			// 			if (entries[chat.id.user]) {
-			// 				continue;
-			// 			}
-			// 			const contact = contacts[chat.id.user];
-
-			// 			let name = contact ? contact.name : undefined;
-			// 			let number = contact ? contact.number : undefined;
-			// 			let country = contact ? contact.country : undefined;
-			// 			let isBusiness = contact ? contact.isBusiness : undefined;
-			// 			let public_name = contact ? contact.public_name : undefined;
-
-			// 			if (!contact) {
-			// 				const contact = await whatsapp.getContactById(chat.id._serialized);
-			// 				const country_code = await contact.getCountryCode();
-			// 				name = contact.name;
-			// 				number = contact.number;
-			// 				country = COUNTRIES[country_code as string];
-			// 				isBusiness = contact.isBusiness;
-			// 				public_name = contact.pushname;
-			// 			}
-
-			// 			entries[chat.id.user] = {
-			// 				isBusiness: isBusiness ? 'Business' : 'Personal',
-			// 				group_name: '',
-			// 				label: label.name,
-			// 				name: name ?? '',
-			// 				number: number ?? '',
-			// 				country: country ?? '',
-			// 				public_name: public_name ?? '',
-			// 			};
-			// 		}
-			// 		console.log(i++);
-			// 	}
 		}
-		console.log('Entries', labelContacts.length);
 
 		return Respond({
 			res,

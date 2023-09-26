@@ -2,6 +2,9 @@ import WAWebJS, { Client, LocalAuth } from 'whatsapp-web.js';
 import { COUNTRIES } from '../../config/const';
 import IContact from '../../types/whatsapp/contact';
 import { generateClientID } from '../../utils/ExpressUtils';
+import { UserService } from '../../database/services';
+import fs from 'fs';
+import logger from '../../config/Logger';
 
 type ClientID = string;
 
@@ -78,6 +81,33 @@ export class WhatsappProvider {
 			}, Promise.resolve({} as MappedContacts));
 
 		return contacts;
+	}
+
+	static async removeUnwantedSessions() {
+		const sessions = await UserService.getInactiveSessions();
+		for (const session of sessions) {
+			await WhatsappProvider.removeClient(session.client_id);
+			const path = __basedir + '/.wwebjs_auth/session-' + session.client_id;
+			const sessionExists = fs.existsSync(path);
+			if (sessionExists) {
+				fs.rmSync(path, {
+					recursive: true,
+				});
+				session.remove();
+			}
+		}
+		logger.info(`Removed ${sessions.length} unwanted sessions`);
+	}
+
+	static destroyClient(client: Client) {
+		const id = setInterval(() => {
+			client
+				.destroy()
+				.then(() => {
+					clearInterval(id);
+				})
+				.catch(() => {});
+		}, 1000);
 	}
 
 	static async getSavedContacts(whatsapp: Client) {

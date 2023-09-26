@@ -7,7 +7,6 @@ export default async function VerifyPayment(req: Request, res: Response, next: N
 		const isPaymentValid = await PaymentService.isPaymentValid(req.locals.user);
 
 		if (!isPaymentValid) {
-			// WhatsappProvider.removeClient(client_id);
 			return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_REQUIRED));
 		}
 

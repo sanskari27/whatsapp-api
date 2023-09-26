@@ -81,16 +81,6 @@ socket.on(SOCKET_EVENT.QR_GENERATED, (...args) => {
 	});
 });
 
-socket.on(SOCKET_EVENT.PAYMENT_SUCCESS, () => {
-	const message: MessageProps = {
-		action: CHROME_ACTION.CLOSE_TAB,
-		tabId: '',
-		url: '',
-		data: {},
-	};
-	chrome.runtime.sendMessage(message);
-});
-
 export const startAuth = async () => {
 	setAuth({
 		isAuthenticating: true,

@@ -40,14 +40,14 @@ export default class SocketServerProvider {
 			socket.on(SOCKET_EVENTS.INITIALIZE, async (clientId: string | undefined) => {
 				await this.initializeWhatsappClient(socket, clientId);
 			});
-			socket.on('disconnect', () => {
+			socket.on('disconnect', async () => {
 				const clientId = SocketServerProvider.getClientId(socket);
 				if (!clientId) return;
 				const entry = SocketServerProvider.clientsMap.get(clientId);
 				if (!entry) return;
-				// const { whatsappClient } = entry;
-				// whatsappClient.destroy();
-				//SocketServerProvider.clientsMap.delete(clientId);
+				const { whatsappClient } = entry;
+				WhatsappProvider.destroyClient(whatsappClient);
+				SocketServerProvider.clientsMap.delete(clientId);
 			});
 		});
 	}
@@ -72,7 +72,9 @@ export default class SocketServerProvider {
 				data: clientId,
 			});
 		} else {
-			client.initialize();
+			client.initialize().catch(() => {
+				SocketServerProvider.clientsMap.delete(clientId);
+			});
 			this.attachWhatsappListeners(clientId);
 		}
 	}
@@ -170,12 +172,3 @@ export default class SocketServerProvider {
 		entry.socketClient.emit(event, data);
 	}
 }
-// export function connectSocket(server: http.Server) {
-// 	const io = new SocketServer(server);
-
-// 	io.on('connection', (socket) => {
-// 		socket.on('initialize', (data) => {
-
-//         }
-// 	});
-// }

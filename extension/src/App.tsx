@@ -26,7 +26,7 @@ function App() {
 					<Route path={NAVIGATION.HOME} element={<Home />} />
 					<Route path={NAVIGATION.FEATURES} element={<Features />} />
 					<Route path={NAVIGATION.CHECKOUT} element={<CheckoutPage />} />
-					<Route path='*' element={<Navigate to={NAVIGATION.HOME} />} />
+					<Route path='*' element={<Navigate to={NAVIGATION.WELCOME} />} />
 				</Routes>
 			</Router>
 		</ExtensionWrapper>

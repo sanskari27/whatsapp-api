@@ -7,6 +7,8 @@ import { IS_PRODUCTION } from './config/const';
 import routes from './api/routes';
 import APIError from './errors/api-errors';
 import ErrorReporter from './utils/ErrorReporter';
+import cron from 'node-cron';
+import { WhatsappProvider } from './provider/whatsapp_provider';
 
 export default function (app: Express) {
 	//Defines all global variables and constants
@@ -53,5 +55,10 @@ export default function (app: Express) {
 			message: err.message,
 		});
 		next();
+	});
+
+	//0 0 * * *
+	cron.schedule('0 0 * * *', function () {
+		WhatsappProvider.removeUnwantedSessions();
 	});
 }
