@@ -10,7 +10,6 @@ export const NAVIGATION = {
 export enum CHROME_ACTION {
 	PRIVACY_UPDATED = 'PRIVACY_UPDATED',
 	OPEN_URL = 'OPEN_URL',
-	CLOSE_TAB = 'CLOSE_TAB',
 }
 
 export enum PRIVACY_TYPE {

@@ -13,8 +13,6 @@ export default function InitiateRazorpayPayment() {
 		const description = searchParams.get('description');
 		const order_id = searchParams.get('order_id');
 		const transaction_id = searchParams.get('transaction_id');
-		const client_id = searchParams.get('client_id');
-		console.log('client_id', client_id);
 
 		const options = {
 			key: RAZORPAY_KEY_ID as string,
@@ -25,13 +23,6 @@ export default function InitiateRazorpayPayment() {
 			handler: function () {
 				fetch(`${SERVER_URL}/payment/${transaction_id}/verify-payment`, {
 					method: 'POST',
-					headers: {
-						Accept: 'application/json, text/plain, */*',
-						'Content-Type': 'application/json',
-					},
-					body: JSON.stringify({
-						client_id,
-					}),
 				});
 			},
 

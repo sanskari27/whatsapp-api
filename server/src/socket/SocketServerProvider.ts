@@ -156,14 +156,6 @@ export default class SocketServerProvider {
 		return entry.whatsappClient;
 	}
 
-	public static closePaymentWindow(clientId: WhatsappClientID) {
-		this.sendToClient({
-			clientId,
-			event: SOCKET_RESPONSES.PAYMENT_SUCCESS,
-			data: null,
-		});
-	}
-
 	private static sendToClient({
 		clientId,
 		event,

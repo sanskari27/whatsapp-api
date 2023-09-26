@@ -13,12 +13,10 @@ export enum SOCKET_EVENTS {
 
 export enum SOCKET_RESPONSES {
 	INITIALIZED = 'initialized',
-
 	QR_GENERATED = 'qr-generated',
 	WHATSAPP_AUTHENTICATED = 'whatsapp-authenticated',
 	WHATSAPP_READY = 'whatsapp-ready',
 	WHATSAPP_CLOSED = 'whatsapp-closed',
-	PAYMENT_SUCCESS = 'payment-success',
 }
 
 export const COUNTRIES: {
