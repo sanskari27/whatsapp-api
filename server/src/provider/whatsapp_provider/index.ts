@@ -6,7 +6,7 @@ import { generateClientID } from '../../utils/ExpressUtils';
 type ClientID = string;
 
 type MappedContacts = {
-	[number: string]: IContact;
+	[contact_number: string]: IContact;
 };
 
 const SESSION_ACTIVE = true;
@@ -39,7 +39,7 @@ export class WhatsappProvider {
 		const client = new Client({
 			restartOnAuthFail: true,
 			puppeteer: {
-				headless: true,
+				headless: false,
 				args: ['--no-sandbox', '--disable-setuid-sandbox', '--unhandled-rejections=strict'],
 			},
 			authStrategy: new LocalAuth({ clientId }),
@@ -89,22 +89,19 @@ export class WhatsappProvider {
 	}
 
 	static async getNonSavedContacts(whatsapp: Client) {
-		const contacts = (await whatsapp.getContacts()).filter(
-			(contact) => !contact.isMyContact && !contact.isMe && !contact.isGroup
-		);
+		const chats = await whatsapp.getChats();
 
 		const non_saved_contacts = await Promise.all(
-			contacts.map(async (contact) => {
-				const chat = await whatsapp.getChatById(contact.id._serialized);
-				if (!chat.lastMessage) return null;
-				return contact;
+			chats.map(async (chat) => {
+				if (chat.isGroup) return Promise.resolve(null);
+				const contact = await whatsapp.getContactById(chat.id._serialized);
+				if (!contact.isMyContact && !contact.isGroup && !contact.isMe) {
+					return contact;
+				}
+				return null;
 			})
 		);
 
-		const filtered_contacts = non_saved_contacts.filter(
-			(contact) => contact !== null
-		) as WAWebJS.Contact[];
-
-		return filtered_contacts;
+		return non_saved_contacts.filter((contact) => contact !== null) as WAWebJS.Contact[];
 	}
 }
