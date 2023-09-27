@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { IS_PRODUCTION } from '../config/const';
 import { Types } from 'mongoose';
 import { z } from 'zod';
+import crypto from 'crypto';
 type ResponseData = {
 	res: Response;
 	status: 200 | 201 | 400 | 401 | 403 | 404 | 500;
