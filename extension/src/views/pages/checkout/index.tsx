@@ -39,7 +39,7 @@ const CheckoutPage = () => {
 		}));
 	}, [location.state]);
 
-	const handleApplyCoupon = () => {
+	const handleApplyCoupon = (CODE: string) => {
 		if (COUPON_VALID) {
 			PaymentService.removeCoupon(transaction[TRANSACTION_STATUS.TRANSACTION_ID]).then((res) => {
 				if (!res) {
@@ -98,8 +98,6 @@ const CheckoutPage = () => {
 		}));
 	};
 
-	
-
 	const handlePaymentClick = async () => {
 		const paymentTransaction = await PaymentService.initiateRazorpay(
 			transaction[TRANSACTION_STATUS.TRANSACTION_ID]
@@ -152,13 +150,15 @@ const CheckoutPage = () => {
 					_placeholder={{
 						color: 'gray.200',
 					}}
-					disabled={COUPON_VALID || (COUPON_ERROR!='')}
-					onChange={(e) => handleChange({ name: TRANSACTION_STATUS.CODE, value: e.target.value.toUpperCase()})}
+					isDisabled={COUPON_VALID && !!CODE}
+					onChange={(e) =>
+						handleChange({ name: TRANSACTION_STATUS.CODE, value: e.target.value.toUpperCase() })
+					}
 				/>
 
 				<Button
 					variant={'link'}
-					onClick={handleApplyCoupon}
+					onClick={() => handleApplyCoupon(CODE)}
 					isDisabled={!CODE}
 					isLoading={CHECKING_COUPON}
 				>
@@ -173,7 +173,10 @@ const CheckoutPage = () => {
 			</HStack>
 			<CouponBanner
 				isChecked={CODE === 'WELCOME'}
-				onClick={() => {handleChange({ name: TRANSACTION_STATUS.CODE, value: 'WELCOME' })}}
+				onClick={() => {
+					handleChange({ name: TRANSACTION_STATUS.CODE, value: 'WELCOME' });
+					handleApplyCoupon('WELCOME');
+				}}
 			>
 				Welcome - 40% off
 			</CouponBanner>
@@ -198,12 +201,12 @@ const CheckoutPage = () => {
 						{transaction[TRANSACTION_STATUS.GROSS_AMOUNT]}
 					</Text>
 				</Flex>
-				{(COUPON_VALID || transaction[TRANSACTION_STATUS.DISCOUNT]) && (
+				{COUPON_VALID || transaction[TRANSACTION_STATUS.DISCOUNT] ? (
 					<Flex width={'full'} justifyContent={'space-between'}>
 						<Text className='text-black dark:text-white'>Discount</Text>
 						<Text className='text-[#4CB072]'>-{transaction[TRANSACTION_STATUS.DISCOUNT]}</Text>
 					</Flex>
-				)}
+				) : null}
 				<Divider orientation='horizontal' my={'0.5rem'} />
 				<Flex width={'full'} justifyContent={'space-between'} fontWeight={'semibold'}>
 					<Text className='text-black dark:text-white'>Total Amount</Text>

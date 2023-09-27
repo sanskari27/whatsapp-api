@@ -30,7 +30,7 @@ function App() {
 						<Route path={NAVIGATION.FEATURES} element={<Features />} />
 						<Route path={NAVIGATION.CHECKOUT} element={<CheckoutPage />} />
 						<Route path={NAVIGATION.SETTINGS} element={<Settings />} />
-						<Route path='*' element={<Navigate to={NAVIGATION.HOME} />} />
+						<Route path='*' element={<Navigate to={NAVIGATION.WELCOME} />} />
 					</Routes>
 				</Suspense>
 			</Router>
