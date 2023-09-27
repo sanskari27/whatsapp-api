@@ -81,4 +81,15 @@ export default class ExportsService {
 			}
 		} catch (err) {}
 	}
+
+	static async exportPaymentsExcel(
+		records: {
+			date: string;
+			amount: number;
+		}[]
+	) {
+		try {
+			ExcelUtils.exportPayments(records);
+		} catch (err) {}
+	}
 }

@@ -9,6 +9,7 @@ import APIError from './errors/api-errors';
 import ErrorReporter from './utils/ErrorReporter';
 import cron from 'node-cron';
 import { WhatsappProvider } from './provider/whatsapp_provider';
+import cache from './config/cache';
 
 export default function (app: Express) {
 	//Defines all global variables and constants
@@ -26,6 +27,7 @@ export default function (app: Express) {
 	app.use(cors());
 	app.use(cookieParser());
 	app.use(express.static(__basedir + 'static'));
+	app.use(cache);
 	app.use((req: Request, res: Response, next: NextFunction) => {
 		req.locals = {
 			...req.locals,

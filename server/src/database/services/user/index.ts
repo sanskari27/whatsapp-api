@@ -69,6 +69,12 @@ export default class UserService {
 
 		if (!auth) return [false, null] as [boolean, null];
 
+		const validPayment = await new PaymentService(auth.user).getRunningPayment();
+
+		if (validPayment) {
+			return [true, validPayment.expires_at, auth.user] as [boolean, Date, IUser];
+		}
+
 		if (auth.isRevoked) return [false, null] as [boolean, null];
 
 		if (DateUtils.getMoment(auth.revoke_at).isBefore(DateUtils.getMomentNow())) {
