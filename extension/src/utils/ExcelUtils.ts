@@ -154,4 +154,37 @@ export default class ExcelUtils {
 		a.click();
 		document.body.removeChild(a);
 	}
+
+	static async exportPayments(
+		records: {
+			date: string;
+			amount: number;
+		}[]
+	) {
+		const keys = [
+			{
+				field: 'date',
+				title: 'Date',
+			},
+			{
+				field: 'amount',
+				title: 'Amount',
+			},
+		];
+
+		const csv = await json2csv(records, {
+			keys: keys,
+			emptyFieldValue: '',
+		});
+
+		const blob = new Blob([csv], { type: 'text/csv' });
+		const url = window.URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.setAttribute('hidden', '');
+		a.setAttribute('href', url);
+		a.setAttribute('download', 'payments.csv');
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+	}
 }

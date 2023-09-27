@@ -2,14 +2,11 @@ import { useEffect, useState } from 'react';
 import AuthService from '../services/auth.service';
 import { singletonHook } from 'react-singleton-hook';
 import { io } from 'socket.io-client';
-import { CHROME_ACTION, SERVER_URL, SOCKET_EVENT } from '../config/const';
+import { SERVER_URL, SOCKET_EVENT } from '../config/const';
 import {
-	getActiveTabURL,
 	getClientID,
-	getPaymentTabsIDs,
 	saveClientID,
 } from '../utils/ChromeUtils';
-import { MessageProps } from '../background/background';
 
 const socket = io(SERVER_URL);
 

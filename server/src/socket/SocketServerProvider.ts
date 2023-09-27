@@ -89,7 +89,7 @@ export default class SocketServerProvider {
 	}
 
 	private async attachWhatsappListeners(clientId: WhatsappClientID) {
-		const whatsapp = await SocketServerProvider.getWhatsappClient(clientId);
+		const whatsapp = await SocketServerProvider.getWhatsappClient(clientId, true);
 
 		if (!whatsapp) return;
 
@@ -151,10 +151,15 @@ export default class SocketServerProvider {
 		});
 	}
 
-	public static async getWhatsappClient(clientId: WhatsappClientID) {
+	public static async getWhatsappClient(clientId: WhatsappClientID, force = false) {
 		const entry = SocketServerProvider.clientsMap.get(clientId);
 
 		if (!entry) return null;
+
+		if (force) {
+			return entry.whatsappClient;
+		}
+
 		try {
 			const state = await entry.whatsappClient.getState();
 			if (state !== WAWebJS.WAState.CONNECTED) {
