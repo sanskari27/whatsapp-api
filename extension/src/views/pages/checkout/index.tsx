@@ -98,6 +98,8 @@ const CheckoutPage = () => {
 		}));
 	};
 
+	
+
 	const handlePaymentClick = async () => {
 		const paymentTransaction = await PaymentService.initiateRazorpay(
 			transaction[TRANSACTION_STATUS.TRANSACTION_ID]
@@ -150,7 +152,8 @@ const CheckoutPage = () => {
 					_placeholder={{
 						color: 'gray.200',
 					}}
-					onChange={(e) => handleChange({ name: TRANSACTION_STATUS.CODE, value: e.target.value })}
+					disabled={COUPON_VALID || (COUPON_ERROR!='')}
+					onChange={(e) => handleChange({ name: TRANSACTION_STATUS.CODE, value: e.target.value.toUpperCase()})}
 				/>
 
 				<Button
@@ -170,7 +173,7 @@ const CheckoutPage = () => {
 			</HStack>
 			<CouponBanner
 				isChecked={CODE === 'WELCOME'}
-				onClick={() => handleChange({ name: TRANSACTION_STATUS.CODE, value: 'WELCOME' })}
+				onClick={() => {handleChange({ name: TRANSACTION_STATUS.CODE, value: 'WELCOME' })}}
 			>
 				Welcome - 40% off
 			</CouponBanner>

@@ -1,1 +1,1 @@
-export { default as CouponBanner } from './CouponBanner';
+export { default as CouponBanner } from './couponBanner';
