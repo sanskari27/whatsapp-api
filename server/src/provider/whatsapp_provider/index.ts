@@ -1,5 +1,5 @@
 import WAWebJS, { Client, LocalAuth } from 'whatsapp-web.js';
-import { COUNTRIES, IS_PRODUCTION } from '../../config/const';
+import { CHROMIUM_PATH, COUNTRIES, IS_PRODUCTION } from '../../config/const';
 import IContact from '../../types/whatsapp/contact';
 import { generateClientID } from '../../utils/ExpressUtils';
 import { UserService } from '../../database/services';
@@ -44,6 +44,7 @@ export class WhatsappProvider {
 			puppeteer: {
 				headless: true,
 				args: ['--no-sandbox', '--disable-setuid-sandbox', '--unhandled-rejections=strict'],
+				executablePath: IS_PRODUCTION ? CHROMIUM_PATH : undefined,
 			},
 			authStrategy: new LocalAuth({ clientId }),
 		});
