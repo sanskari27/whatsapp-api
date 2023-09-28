@@ -5,6 +5,7 @@ export const NAVIGATION = {
 	HOME: '/home',
 	CHECKOUT: '/checkout',
 	FEATURES: '/features',
+	SETTINGS: '/settings',
 };
 
 export enum CHROME_ACTION {
@@ -48,4 +49,13 @@ export enum SOCKET_EVENT {
 	WHATSAPP_READY = 'whatsapp-ready',
 	WHATSAPP_CLOSED = 'whatsapp-closed',
 	PAYMENT_SUCCESS = 'payment-success',
+}
+
+export enum SETTINGS {
+	NAME = 'NAME',
+	PHONE_NUMBER = 'PHONE_NUMBER',
+	IS_SUBSCRIBED = 'IS_SUBSCRIBED',
+	SUBSCRIPTION_EXPIRATION = 'SUBSCRIPTION_EXPIRATION',
+	USER_TYPE = 'USER_TYPE',
+	PAYMENT_RECORDS = 'PAYMENT_RECORDS',
 }

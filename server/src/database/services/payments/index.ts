@@ -181,4 +181,20 @@ export default class PaymentService {
 			})) !== null
 		);
 	}
+
+	public async getPaymentRecords() {
+		return PaymentDB.find({
+			user: this.user,
+		});
+	}
+
+	public async getRunningPayment() {
+		return PaymentDB.findOne({
+			user: this.user,
+			transaction_status: WALLET_TRANSACTION_STATUS.SUCCESS,
+			expires_at: {
+				$gte: DateUtils.getMomentNow().toDate(),
+			},
+		});
+	}
 }
