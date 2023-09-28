@@ -1,6 +1,6 @@
 import { Server as SocketServer, Socket } from 'socket.io';
 import { WhatsappProvider } from '../provider/whatsapp_provider';
-import { Client as WhatsappClient } from 'whatsapp-web.js';
+import WAWebJS, { Client as WhatsappClient } from 'whatsapp-web.js';
 import QRCode from 'qrcode';
 import * as http from 'http';
 import { SOCKET_EVENTS, SOCKET_RESPONSES } from '../config/const';
@@ -88,8 +88,8 @@ export default class SocketServerProvider {
 		return null;
 	}
 
-	private attachWhatsappListeners(clientId: WhatsappClientID) {
-		const whatsapp = SocketServerProvider.getWhatsappClient(clientId);
+	private async attachWhatsappListeners(clientId: WhatsappClientID) {
+		const whatsapp = await SocketServerProvider.getWhatsappClient(clientId);
 
 		if (!whatsapp) return;
 
@@ -151,10 +151,18 @@ export default class SocketServerProvider {
 		});
 	}
 
-	public static getWhatsappClient(clientId: WhatsappClientID) {
+	public static async getWhatsappClient(clientId: WhatsappClientID) {
 		const entry = SocketServerProvider.clientsMap.get(clientId);
 
 		if (!entry) return null;
+		try {
+			const state = await entry.whatsappClient.getState();
+			if (state !== WAWebJS.WAState.CONNECTED) {
+				return null;
+			}
+		} catch (e) {
+			return null;
+		}
 		return entry.whatsappClient;
 	}
 

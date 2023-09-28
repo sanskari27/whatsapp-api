@@ -9,7 +9,7 @@ import { COUNTRIES } from '../../../config/const';
 async function groups(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
 
-	const whatsapp = SocketServerProvider.getWhatsappClient(client_id);
+	const whatsapp = await SocketServerProvider.getWhatsappClient(client_id);
 	if (!whatsapp) {
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
@@ -39,7 +39,7 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
 	const { group_ids } = req.query;
 
-	const whatsapp = SocketServerProvider.getWhatsappClient(client_id);
+	const whatsapp = await SocketServerProvider.getWhatsappClient(client_id);
 	if (!whatsapp) {
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}

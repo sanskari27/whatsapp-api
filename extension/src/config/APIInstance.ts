@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { SERVER_URL } from './const';
 import { getChromeData, getClientID } from '../utils/ChromeUtils';
+import { logout } from '../hooks/useAuth';
 
 const APIInstance = axios.create({
 	baseURL: SERVER_URL,
@@ -25,6 +26,7 @@ APIInstance.interceptors.response.use(
 		if (getStatus(error) in [401, 404] && !originalRequest._retry) {
 			if (error.response.data.error.title === 'SESSION_INVALIDATED') {
 				window.location.href = '/';
+				logout();
 			}
 		}
 
