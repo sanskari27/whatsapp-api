@@ -23,7 +23,7 @@ export default class ExcelUtils {
 		const keys = [
 			{
 				field: 'public_name',
-				title: 'Public Name',
+				title: 'Whatsapp Public Name',
 			},
 			{
 				field: 'name',
@@ -67,7 +67,7 @@ export default class ExcelUtils {
 			},
 			{
 				field: 'public_name',
-				title: 'Public Name',
+				title: 'Whatsapp Public Name',
 			},
 			{
 				field: 'name',
@@ -119,7 +119,7 @@ export default class ExcelUtils {
 			},
 			{
 				field: 'public_name',
-				title: 'Public Name',
+				title: 'Whatsapp Public Name',
 			},
 			{
 				field: 'name',
