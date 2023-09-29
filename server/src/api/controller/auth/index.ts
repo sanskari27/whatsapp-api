@@ -12,7 +12,7 @@ async function validateClientID(req: Request, res: Response, next: NextFunction)
 	const [isValidAuth, revoke_at] = await UserService.isValidAuth(client_id);
 
 	if (!isValidAuth) {
-		WhatsappProvider.removeClient(client_id);
+		WhatsappProvider.logoutClient(client_id);
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
 
@@ -57,9 +57,28 @@ async function details(req: Request, res: Response, next: NextFunction) {
 	});
 }
 
+async function logout(req: Request, res: Response, next: NextFunction) {
+	const client_id = req.locals.client_id;
+
+	const whatsapp = await SocketServerProvider.getWhatsappClient(client_id);
+	if (!whatsapp) {
+		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+	}
+
+	WhatsappProvider.logoutClient(client_id);
+	WhatsappProvider.destroyClient(whatsapp);
+
+	return Respond({
+		res,
+		status: 200,
+		data: {},
+	});
+}
+
 const AuthController = {
 	validateClientID,
 	details,
+	logout,
 };
 
 export default AuthController;

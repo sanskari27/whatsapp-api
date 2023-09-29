@@ -1,4 +1,4 @@
-export const SERVER_URL = 'http://3.110.17.240:8282/';
+export const SERVER_URL = 'http://localhost:8282/';
 export const WEBPAGE_URL = 'http://3.110.17.240/';
 export const NAVIGATION = {
 	WELCOME: '/welcome',

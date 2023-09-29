@@ -3,10 +3,7 @@ import AuthService from '../services/auth.service';
 import { singletonHook } from 'react-singleton-hook';
 import { io } from 'socket.io-client';
 import { SERVER_URL, SOCKET_EVENT } from '../config/const';
-import {
-	getClientID,
-	saveClientID,
-} from '../utils/ChromeUtils';
+import { getClientID, saveClientID } from '../utils/ChromeUtils';
 
 const socket = io(SERVER_URL);
 
@@ -98,4 +95,6 @@ export const logout = () => {
 		isAuthenticated: false,
 		qrCode: '',
 	});
+
+	AuthService.logout();
 };

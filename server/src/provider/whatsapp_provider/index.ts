@@ -54,11 +54,12 @@ export class WhatsappProvider {
 		return [clientId, client, !SESSION_ACTIVE] as [ClientID, Client, boolean];
 	}
 
-	static async removeClient(cid: ClientID) {
+	static async logoutClient(cid: ClientID) {
 		const client = WhatsappProvider.clientsMap.get(cid);
 		if (!client) return;
 		try {
 			await client.logout();
+			
 		} catch (e) {
 			//ignore
 		}
@@ -87,7 +88,7 @@ export class WhatsappProvider {
 	static async removeUnwantedSessions() {
 		const sessions = await UserService.getInactiveSessions();
 		for (const session of sessions) {
-			await WhatsappProvider.removeClient(session.client_id);
+			await WhatsappProvider.logoutClient(session.client_id);
 			const path = __basedir + '/.wwebjs_auth/session-' + session.client_id;
 			const sessionExists = fs.existsSync(path);
 			if (sessionExists && IS_PRODUCTION) {

@@ -13,16 +13,18 @@ import {
 } from '@chakra-ui/react';
 import Header from '../../components/header';
 import { useEffect, useRef, useState } from 'react';
-import { SETTINGS } from '../../../config/const';
-import { InfoOutlineIcon } from '@chakra-ui/icons';
+import { NAVIGATION, SETTINGS } from '../../../config/const';
+import { InfoOutlineIcon, WarningTwoIcon } from '@chakra-ui/icons';
 import AuthService from '../../../services/auth.service';
-import { useAuth } from '../../../hooks/useAuth';
+import { logout, useAuth } from '../../../hooks/useAuth';
 import LoginModal, { LoginHandle } from '../../components/login';
 import ExportsService from '../../../services/exports.service';
+import { useNavigate } from 'react-router-dom';
 
 export default function Settings() {
 	const { isAuthenticated, isAuthenticating, qrCode, qrGenerated } = useAuth();
 	const loginModelRef = useRef<LoginHandle>(null);
+	const navigate = useNavigate();
 
 	const [details, setDetails] = useState({
 		[SETTINGS.NAME]: '',
@@ -60,6 +62,12 @@ export default function Settings() {
 			loginModelRef.current?.close();
 		}
 	}, [qrGenerated]);
+
+	const logoutHandler = () => {
+		logout();
+		localStorage.removeItem('token');
+		navigate(NAVIGATION.WELCOME);
+	};
 
 	return (
 		<>
@@ -185,6 +193,22 @@ export default function Settings() {
 									</Table>
 								</TableContainer>
 							</Flex>
+						</section>
+						<section>
+							<Button
+								bgColor={'red.300'}
+								_hover={{
+									bgColor: 'red.400',
+								}}
+								width={'full'}
+								marginTop={'0.5rem'}
+								onClick={logoutHandler}
+							>
+								<Flex gap={'0.5rem'}>
+									<WarningTwoIcon width={4} color={'white'} />
+									<Text color={'white'}>Logout</Text>
+								</Flex>
+							</Button>
 						</section>
 					</Box>
 				)}

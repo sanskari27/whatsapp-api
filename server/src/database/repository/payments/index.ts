@@ -12,6 +12,10 @@ const paymentSchema = new mongoose.Schema<IPayment>({
 		type: Number,
 		required: true,
 	},
+	discount_coupon: {
+		type: Schema.Types.ObjectId,
+		ref: 'Coupon',
+	},
 	discount: {
 		type: Number,
 		required: true,

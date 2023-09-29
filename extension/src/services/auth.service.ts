@@ -31,4 +31,13 @@ export default class AuthService {
 			};
 		}
 	}
+
+	static async logout() {
+		try {
+			await APIInstance.post(`/auth/logout`);
+			return true;
+		} catch (err) {
+			return false;
+		}
+	}
 }
