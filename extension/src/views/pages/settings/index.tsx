@@ -64,8 +64,8 @@ export default function Settings() {
 		}
 	}, [qrGenerated]);
 
-	const logoutHandler = () => {
-		logout();
+	const logoutHandler = async () => {
+		await logout();
 		localStorage.removeItem('token');
 		saveClientID('');
 		navigate(NAVIGATION.WELCOME);

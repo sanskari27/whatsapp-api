@@ -87,7 +87,16 @@ export const startAuth = async () => {
 	socket.emit(SOCKET_EVENT.INITIALIZE, client_id);
 };
 
-export const logout = () => {
+export const logout = async () => {
+	setAuth({
+		isAuthenticating: true,
+		qrGenerated: false,
+		isSocketInitialized: false,
+		isAuthenticated: false,
+		qrCode: '',
+	});
+
+	await AuthService.logout();
 	setAuth({
 		isAuthenticating: false,
 		qrGenerated: false,
@@ -95,6 +104,4 @@ export const logout = () => {
 		isAuthenticated: false,
 		qrCode: '',
 	});
-
-	AuthService.logout();
 };

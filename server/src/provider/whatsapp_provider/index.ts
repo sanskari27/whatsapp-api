@@ -5,6 +5,7 @@ import { generateClientID } from '../../utils/ExpressUtils';
 import { UserService } from '../../database/services';
 import fs from 'fs';
 import logger from '../../config/Logger';
+import { IAuthDetail } from '../../types/user';
 
 type ClientID = string;
 
@@ -42,7 +43,7 @@ export class WhatsappProvider {
 		const client = new Client({
 			restartOnAuthFail: true,
 			puppeteer: {
-				headless: true,
+				headless: false,
 				args: ['--no-sandbox', '--disable-setuid-sandbox', '--unhandled-rejections=strict'],
 				executablePath: IS_PRODUCTION ? CHROMIUM_PATH : undefined,
 			},
@@ -58,6 +59,7 @@ export class WhatsappProvider {
 		return new Promise((resolve, reject) => {
 			const client = WhatsappProvider.clientsMap.get(cid);
 			if (!client) return resolve(false);
+			WhatsappProvider.deleteSession({ client_id: cid });
 			const id = setInterval(() => {
 				client
 					.logout()
@@ -94,14 +96,10 @@ export class WhatsappProvider {
 		const sessions = await UserService.getInactiveSessions();
 		for (const session of sessions) {
 			await WhatsappProvider.logoutClient(session.client_id);
-			const path = __basedir + '/.wwebjs_auth/session-' + session.client_id;
-			const sessionExists = fs.existsSync(path);
-			if (sessionExists && IS_PRODUCTION) {
-				fs.rmSync(path, {
-					recursive: true,
-				});
-				session.remove();
-			}
+			WhatsappProvider.deleteSession({
+				session,
+				client_id: session.client_id,
+			});
 		}
 		logger.info(`Removed ${sessions.length} unwanted sessions`);
 	}
@@ -115,6 +113,17 @@ export class WhatsappProvider {
 				})
 				.catch(() => {});
 		}, 1000);
+	}
+
+	static deleteSession({ session, client_id }: { session?: IAuthDetail; client_id: string }) {
+		const path = __basedir + '/.wwebjs_auth/session-' + client_id;
+		const sessionExists = fs.existsSync(path);
+		if (sessionExists && IS_PRODUCTION) {
+			fs.rmSync(path, {
+				recursive: true,
+			});
+			session?.remove();
+		}
 	}
 
 	static async getSavedContacts(whatsapp: Client) {
