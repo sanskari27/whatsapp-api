@@ -1,0 +1,5 @@
+export {default as CONFIRM_BG} from "./images/confirm.svg"
+export {default as FACEBOOK} from "./images/facebook.svg"
+export {default as INSTAGRAM} from "./images/instagram.svg"
+export {default as TWITTER} from "./images/twitter.svg"
+export {default as WHATSAPP} from "./images/whatsapp.svg"
