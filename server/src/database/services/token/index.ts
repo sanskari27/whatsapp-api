@@ -7,7 +7,7 @@ export default class TokenService {
 	private constructor() {}
 
 	static async createToken() {
-		const code = crypto.randomBytes(3).toString('hex');
+		const code = crypto.randomBytes(3).toString('hex').toUpperCase();
 		StorageDB.setString(TOKEN, code);
 		return code;
 	}
