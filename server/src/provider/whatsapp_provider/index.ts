@@ -57,12 +57,14 @@ export class WhatsappProvider {
 	static async logoutClient(cid: ClientID) {
 		const client = WhatsappProvider.clientsMap.get(cid);
 		if (!client) return;
-		try {
-			await client.logout();
-			
-		} catch (e) {
-			//ignore
-		}
+		const id = setInterval(() => {
+			client
+				.logout()
+				.then(() => {
+					clearInterval(id);
+				})
+				.catch(() => {});
+		}, 1000);
 		WhatsappProvider.clientsMap.delete(cid);
 	}
 
