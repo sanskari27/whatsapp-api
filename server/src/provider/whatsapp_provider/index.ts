@@ -55,17 +55,20 @@ export class WhatsappProvider {
 	}
 
 	static async logoutClient(cid: ClientID) {
-		const client = WhatsappProvider.clientsMap.get(cid);
-		if (!client) return;
-		const id = setInterval(() => {
-			client
-				.logout()
-				.then(() => {
-					clearInterval(id);
-				})
-				.catch(() => {});
-		}, 1000);
-		WhatsappProvider.clientsMap.delete(cid);
+		return new Promise((resolve, reject) => {
+			const client = WhatsappProvider.clientsMap.get(cid);
+			if (!client) return resolve(false);
+			const id = setInterval(() => {
+				client
+					.logout()
+					.then(() => {
+						clearInterval(id);
+						resolve(true);
+					})
+					.catch(() => {});
+			}, 1000);
+			WhatsappProvider.clientsMap.delete(cid);
+		});
 	}
 
 	static async getMappedContacts(whatsapp: Client) {

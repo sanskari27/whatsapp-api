@@ -20,6 +20,7 @@ import { logout, useAuth } from '../../../hooks/useAuth';
 import LoginModal, { LoginHandle } from '../../components/login';
 import ExportsService from '../../../services/exports.service';
 import { useNavigate } from 'react-router-dom';
+import { saveClientID } from '../../../utils/ChromeUtils';
 
 export default function Settings() {
 	const { isAuthenticated, isAuthenticating, qrCode, qrGenerated } = useAuth();
@@ -66,6 +67,7 @@ export default function Settings() {
 	const logoutHandler = () => {
 		logout();
 		localStorage.removeItem('token');
+		saveClientID('');
 		navigate(NAVIGATION.WELCOME);
 	};
 
