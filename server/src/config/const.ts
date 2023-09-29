@@ -2,6 +2,8 @@ import countries from './countries.json';
 
 export const DATABASE_URL = process.env.DATABASE_URL as string;
 
+export const CHROMIUM_PATH = process.env.CHROMIUM_PATH as string;
+
 export const IS_PRODUCTION = process.env.MODE === 'production';
 
 export const PORT = process.env.PORT !== undefined ? process.env.PORT : undefined;
