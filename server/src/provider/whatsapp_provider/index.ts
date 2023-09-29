@@ -43,7 +43,7 @@ export class WhatsappProvider {
 		const client = new Client({
 			restartOnAuthFail: true,
 			puppeteer: {
-				headless: false,
+				headless: true,
 				args: ['--no-sandbox', '--disable-setuid-sandbox', '--unhandled-rejections=strict'],
 				executablePath: IS_PRODUCTION ? CHROMIUM_PATH : undefined,
 			},
