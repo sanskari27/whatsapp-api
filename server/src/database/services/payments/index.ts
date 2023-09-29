@@ -68,7 +68,8 @@ export default class PaymentService {
 
 		const coupon_applied_count = await PaymentDB.countDocuments({
 			user: this.user,
-			code: couponDetails.code,
+			discount_coupon: couponDetails,
+			transaction_status: WALLET_TRANSACTION_STATUS.SUCCESS,
 		});
 
 		if (
@@ -98,6 +99,13 @@ export default class PaymentService {
 
 		if (walletTransaction === null) {
 			throw new InternalError(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND);
+		}
+
+		const couponDetails = await CouponDB.findById(walletTransaction.discount_coupon);
+
+		if (couponDetails !== null) {
+			couponDetails.available_coupons += 1;
+			await couponDetails.save();
 		}
 
 		walletTransaction.discount = 0;

@@ -5,6 +5,7 @@ import { generateClientID } from '../../utils/ExpressUtils';
 import { UserService } from '../../database/services';
 import fs from 'fs';
 import logger from '../../config/Logger';
+import { IAuthDetail } from '../../types/user';
 
 type ClientID = string;
 
@@ -54,15 +55,22 @@ export class WhatsappProvider {
 		return [clientId, client, !SESSION_ACTIVE] as [ClientID, Client, boolean];
 	}
 
-	static async removeClient(cid: ClientID) {
-		const client = WhatsappProvider.clientsMap.get(cid);
-		if (!client) return;
-		try {
-			await client.logout();
-		} catch (e) {
-			//ignore
-		}
-		WhatsappProvider.clientsMap.delete(cid);
+	static async logoutClient(cid: ClientID) {
+		return new Promise((resolve, reject) => {
+			const client = WhatsappProvider.clientsMap.get(cid);
+			if (!client) return resolve(false);
+			WhatsappProvider.deleteSession({ client_id: cid });
+			const id = setInterval(() => {
+				client
+					.logout()
+					.then(() => {
+						clearInterval(id);
+						resolve(true);
+					})
+					.catch(() => {});
+			}, 1000);
+			WhatsappProvider.clientsMap.delete(cid);
+		});
 	}
 
 	static async getMappedContacts(whatsapp: Client) {
@@ -87,15 +95,11 @@ export class WhatsappProvider {
 	static async removeUnwantedSessions() {
 		const sessions = await UserService.getInactiveSessions();
 		for (const session of sessions) {
-			await WhatsappProvider.removeClient(session.client_id);
-			const path = __basedir + '/.wwebjs_auth/session-' + session.client_id;
-			const sessionExists = fs.existsSync(path);
-			if (sessionExists && IS_PRODUCTION) {
-				fs.rmSync(path, {
-					recursive: true,
-				});
-				session.remove();
-			}
+			await WhatsappProvider.logoutClient(session.client_id);
+			WhatsappProvider.deleteSession({
+				session,
+				client_id: session.client_id,
+			});
 		}
 		logger.info(`Removed ${sessions.length} unwanted sessions`);
 	}
@@ -109,6 +113,17 @@ export class WhatsappProvider {
 				})
 				.catch(() => {});
 		}, 1000);
+	}
+
+	static deleteSession({ session, client_id }: { session?: IAuthDetail; client_id: string }) {
+		const path = __basedir + '/.wwebjs_auth/session-' + client_id;
+		const sessionExists = fs.existsSync(path);
+		if (sessionExists && IS_PRODUCTION) {
+			fs.rmSync(path, {
+				recursive: true,
+			});
+			session?.remove();
+		}
 	}
 
 	static async getSavedContacts(whatsapp: Client) {

@@ -25,7 +25,6 @@ APIInstance.interceptors.response.use(
 
 		if (getStatus(error) in [401, 404] && !originalRequest._retry) {
 			if (error.response.data.error.title === 'SESSION_INVALIDATED') {
-				window.location.href = '/';
 				logout();
 			}
 		}
