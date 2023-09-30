@@ -3,7 +3,7 @@ import { WhatsappProvider } from '../provider/whatsapp_provider';
 import WAWebJS, { Client as WhatsappClient } from 'whatsapp-web.js';
 import QRCode from 'qrcode';
 import * as http from 'http';
-import { SOCKET_EVENTS, SOCKET_RESPONSES } from '../config/const';
+import { IS_PRODUCTION, SOCKET_EVENTS, SOCKET_RESPONSES } from '../config/const';
 import { UserService } from '../database/services';
 
 type WhatsappClientID = string;
@@ -45,9 +45,11 @@ export default class SocketServerProvider {
 				if (!clientId) return;
 				const entry = SocketServerProvider.clientsMap.get(clientId);
 				if (!entry) return;
-				const { whatsappClient } = entry;
-				WhatsappProvider.destroyClient(whatsappClient);
-				SocketServerProvider.clientsMap.delete(clientId);
+				if (IS_PRODUCTION) {
+					const { whatsappClient } = entry;
+					WhatsappProvider.destroyClient(whatsappClient);
+					SocketServerProvider.clientsMap.delete(clientId);
+				}
 			});
 		});
 	}
@@ -115,20 +117,13 @@ export default class SocketServerProvider {
 			const number = whatsapp.info.wid.user;
 			const contact = await whatsapp.getContactById(whatsapp.info.wid._serialized);
 
+			const userService = await UserService.createUser(number, { isBusiness: contact.isBusiness });
+			await userService.login(clientId);
 			SocketServerProvider.sendToClient({
 				clientId,
 				event: SOCKET_RESPONSES.WHATSAPP_READY,
 				data: null,
 			});
-
-			UserService.createUser(number, { isBusiness: contact.isBusiness })
-				.then((service) => {
-					service
-						.login(clientId)
-						.then(() => {})
-						.catch(() => {});
-				})
-				.catch(() => {});
 		});
 
 		whatsapp.on('disconnected', () => {
