@@ -1,7 +1,5 @@
 export const ROUTES = {
 	INITIATE_RAZORPAY_PAYMENT: '/api/razorpay/initiate-payment',
-	CONFIRM_RAZORPAY_PAYMENT: '/api/razorpay/confirm-payment',
-	CONFIRM_PAYMENT:'/confirm'
 };
 
 export const APP_URL = 'http://3.110.17.240';
