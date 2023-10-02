@@ -292,7 +292,7 @@ const Exports = () => {
 						<Checkbox
 							size='sm'
 							colorScheme='green'
-							className='border-black text-black dark:text-white'
+							className='!border-gray-300 text-black dark:text-white'
 							isDisabled={!GROUP}
 							onChange={(e) => handleChange({ name: 'GROUP_ALL', value: e.target.checked })}
 							isChecked={export_criteria[EXPORTS_TYPE.GROUP_ALL]}
@@ -343,7 +343,7 @@ const Exports = () => {
 						<Checkbox
 							size='sm'
 							colorScheme='green'
-							className='border-black text-black dark:text-white'
+							className='!border-gray-300 text-black dark:text-white'
 							isDisabled={!LABEL}
 							onChange={(e) => handleChange({ name: 'LABEL_ALL', value: e.target.checked })}
 							isChecked={export_criteria[EXPORTS_TYPE.LABEL_ALL]}
