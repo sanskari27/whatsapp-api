@@ -72,16 +72,6 @@ const Exports = () => {
 	]);
 
 	const exportExcel = () => {
-		// if (allgroup) {
-		// 	const select:any=groups.map((group: any) => group.id)
-		// 	console.log(select)
-		// 	setSelectedGroup(select);
-		// }
-		// if (alllabel) {
-		// 	const select:any=labels.map((group: any) => group.id)
-		// 	setSelectedLabel(select);
-		// }
-		// console.log(allgroup,selectedGroup)
 		setExporting((prevState) => ({
 			...prevState,
 			CSV: true,
@@ -90,8 +80,8 @@ const Exports = () => {
 			allContacts: ALL,
 			savedContacts: SAVED,
 			unsavedContacts: UNSAVED,
-			groupIDs: selectedGroup.length > 0 ? selectedGroup : undefined,
-			labelIDs: selectedLabel.length > 0 ? selectedLabel : undefined,
+			groupIDs: GROUP ? allgroup ? groups.map((group: any) => group.id) : selectedGroup.length > 0 ? selectedGroup : undefined : undefined,
+			labelIDs: LABEL ? alllabel ? labels.map((group: any) => group.id) : selectedLabel.length > 0 ? selectedLabel : undefined : undefined,
 		}).finally(() => {
 			setExporting((prevState) => ({
 				...prevState,
@@ -102,14 +92,6 @@ const Exports = () => {
 	};
 
 	const exportVCF = () => {
-		// if (allgroup) {
-		// 	const select:any=groups.map((group: any) => group.id)
-		// 	setSelectedGroup(select);
-		// }
-		// if (alllabel) {
-		// 	const select:any=labels.map((group: any) => group.id)
-		// 	setSelectedLabel(select);
-		// }
 		setExporting((prevState) => ({
 			...prevState,
 			VCF: true,
@@ -118,8 +100,8 @@ const Exports = () => {
 			allContacts: ALL,
 			savedContacts: SAVED,
 			unsavedContacts: UNSAVED,
-			groupIDs: selectedGroup.length > 0 ? selectedGroup : undefined,
-			labelIDs: selectedLabel.length > 0 ? selectedLabel : undefined,
+			groupIDs: GROUP ? allgroup ? groups.map((group: any) => group.id) : selectedGroup.length > 0 ? selectedGroup : undefined : undefined,
+			labelIDs: LABEL ? alllabel ? labels.map((group: any) => group.id) : selectedLabel.length > 0 ? selectedLabel : undefined : undefined,
 		}).finally(() => {
 			setExporting((prevState) => ({
 				...prevState,
