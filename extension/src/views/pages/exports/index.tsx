@@ -84,18 +84,22 @@ const Exports = () => {
 
 		const selectedGroups = export_criteria[EXPORTS_TYPE.GROUP_ALL]
 			? groups.map((item) => item.id)
-			: selectedGroup;
+			: export_criteria[EXPORTS_TYPE.GROUP]
+			? selectedGroup
+			: undefined;
 
 		const selectedLabels = export_criteria[EXPORTS_TYPE.LABEL_ALL]
 			? labels.map((item) => item.id)
-			: selectedLabel;
+			: export_criteria[EXPORTS_TYPE.LABEL]
+			? selectedLabel
+			: undefined;
 
 		ExportsService.exportContactsExcel({
 			allContacts: ALL,
 			savedContacts: SAVED,
 			unsavedContacts: UNSAVED,
-			groupIDs: selectedGroups.length > 0 ? selectedGroups : undefined,
-			labelIDs: selectedLabels.length > 0 ? selectedLabels : undefined,
+			groupIDs: selectedGroups,
+			labelIDs: selectedLabels,
 		}).finally(() => {
 			setExporting((prevState) => ({
 				...prevState,
@@ -115,18 +119,22 @@ const Exports = () => {
 		}));
 		const selectedGroups = export_criteria[EXPORTS_TYPE.GROUP_ALL]
 			? groups.map((item) => item.id)
-			: selectedGroup;
+			: export_criteria[EXPORTS_TYPE.GROUP]
+			? selectedGroup
+			: undefined;
 
 		const selectedLabels = export_criteria[EXPORTS_TYPE.LABEL_ALL]
 			? labels.map((item) => item.id)
-			: selectedLabel;
+			: export_criteria[EXPORTS_TYPE.LABEL]
+			? selectedLabel
+			: undefined;
 
 		ExportsService.exportContactsVCF({
 			allContacts: ALL,
 			savedContacts: SAVED,
 			unsavedContacts: UNSAVED,
-			groupIDs: selectedGroups.length > 0 ? selectedGroups : undefined,
-			labelIDs: selectedLabels.length > 0 ? selectedLabels : undefined,
+			groupIDs: selectedGroups,
+			labelIDs: selectedLabels,
 		}).finally(() => {
 			setExporting((prevState) => ({
 				...prevState,
