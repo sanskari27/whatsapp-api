@@ -8,7 +8,12 @@ type PageWrapperProps = {
 
 const PageWrapper = ({ children }: PageWrapperProps) => {
     return (
-        <Flex direction={"column"} height={"100vh"} minHeight={"100vh"}>
+        <Flex
+            direction={"column"}
+            minHeight={"100vh"}
+            width={"100vw"}
+            className="pt-14 pb-32 md:pt-[72px] md:pb-14"
+        >
             <Navbar />
             {children}
             <Footer />
