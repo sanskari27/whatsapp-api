@@ -82,16 +82,16 @@ const Exports = () => {
 			CSV: true,
 		}));
 
-		const selectedGroups = export_criteria[EXPORTS_TYPE.GROUP_ALL]
-			? groups.map((item) => item.id)
-			: export_criteria[EXPORTS_TYPE.GROUP]
-			? selectedGroup
+		const selectedGroups = export_criteria[EXPORTS_TYPE.GROUP]
+			? export_criteria[EXPORTS_TYPE.GROUP_ALL] ?
+				groups.map((item) => item.id)
+				: selectedGroup
 			: undefined;
 
-		const selectedLabels = export_criteria[EXPORTS_TYPE.LABEL_ALL]
-			? labels.map((item) => item.id)
-			: export_criteria[EXPORTS_TYPE.LABEL]
-			? selectedLabel
+		const selectedLabels = export_criteria[EXPORTS_TYPE.LABEL]
+			? export_criteria[EXPORTS_TYPE.LABEL_ALL] ?
+				labels.map((item) => item.id)
+				: selectedLabel
 			: undefined;
 
 		ExportsService.exportContactsExcel({
@@ -117,16 +117,16 @@ const Exports = () => {
 			...prevState,
 			VCF: true,
 		}));
-		const selectedGroups = export_criteria[EXPORTS_TYPE.GROUP_ALL]
-			? groups.map((item) => item.id)
-			: export_criteria[EXPORTS_TYPE.GROUP]
-			? selectedGroup
+		const selectedGroups = export_criteria[EXPORTS_TYPE.GROUP]
+			? export_criteria[EXPORTS_TYPE.GROUP_ALL] ?
+				groups.map((item) => item.id)
+				: selectedGroup
 			: undefined;
 
-		const selectedLabels = export_criteria[EXPORTS_TYPE.LABEL_ALL]
-			? labels.map((item) => item.id)
-			: export_criteria[EXPORTS_TYPE.LABEL]
-			? selectedLabel
+		const selectedLabels = export_criteria[EXPORTS_TYPE.LABEL]
+			? export_criteria[EXPORTS_TYPE.LABEL_ALL] ?
+				labels.map((item) => item.id)
+				: selectedLabel
 			: undefined;
 
 		ExportsService.exportContactsVCF({
