@@ -58,8 +58,7 @@ export default function InitiateRazorpayPayment() {
             <Confetti width={width} height={height} />
             <Flex
                 direction={"column"}
-                height={"full"}
-                my={"auto"}
+                mt={"auto"}
                 justifyContent={"space-between"}
             >
                 <VStack

@@ -24,6 +24,7 @@ export default function Navbar() {
             position={"fixed"}
             top={0}
             width={"100%"}
+            zIndex={1000}
         >
             <Box>LOGO</Box>
             <Flex
@@ -31,30 +32,40 @@ export default function Navbar() {
                 gap={"2rem"}
                 alignItems={"center "}
             >
-                <Text
+                <Button
+                    color={"white"}
+                    variant={"link"}
+                    outline={"none"}
+                    border={"none"}
                     _hover={{ textColor: "green.300" }}
-                    textColor={"white"}
-                    transition={"0.1s"}
-                    cursor={"pointer"}
+                    onClick={() => {
+                        window.location.assign("#features");
+                    }}
                 >
                     Features
-                </Text>
-                <Text
+                </Button>
+                <Button
+                    color={"white"}
+                    variant={"link"}
+                    outline={"none"}
+                    border={"none"}
                     _hover={{ textColor: "green.300" }}
-                    textColor={"white"}
-                    transition={"0.1s"}
-                    cursor={"pointer"}
+                    onClick={() => {
+                        window.location.assign("#pricing");
+                    }}
                 >
                     Pricing
-                </Text>
-                <Text
+                </Button>
+                <Button
+                    color={"white"}
+                    variant={"link"}
+                    outline={"none"}
+                    border={"none"}
                     _hover={{ textColor: "green.300" }}
-                    textColor={"white"}
-                    transition={"0.1s"}
-                    cursor={"pointer"}
                 >
                     FAQs
-                </Text>
+                </Button>
+
                 <Button
                     variant={"solid"}
                     backgroundColor={"white"}
@@ -75,44 +86,66 @@ export default function Navbar() {
             >
                 <Image src={MENU} alt="Menu" />
             </Button>
-            <Drawer isOpen={isOpen} placement="top" onClose={onClose}>
+            <Drawer
+                isOpen={isOpen}
+                placement="right"
+                onClose={onClose}
+                size={"xs"}
+            >
                 <DrawerOverlay />
                 <DrawerContent>
                     <DrawerCloseButton />
 
-                    <DrawerBody backgroundColor={"#4CB072"} gap={"1rem"}>
-                        <Text
-                            _hover={{ textColor: "green.300" }}
-                            textColor={"white"}
-                            transition={"0.1s"}
-                            cursor={"pointer"}
+                    <DrawerBody backgroundColor={"#4CB072"}>
+                        <Flex
+                            direction={"column"}
+                            pt={"2rem"}
+                            alignItems={"flex-start"}
                         >
-                            Features
-                        </Text>
-                        <Text
-                            _hover={{ textColor: "green.300" }}
-                            textColor={"white"}
-                            transition={"0.1s"}
-                            cursor={"pointer"}
-                        >
-                            Pricing
-                        </Text>
-                        <Text
-                            _hover={{ textColor: "green.300" }}
-                            textColor={"white"}
-                            transition={"0.1s"}
-                            cursor={"pointer"}
-                        >
-                            FAQs
-                        </Text>
-                        <Text
-                            _hover={{ textColor: "green.300" }}
-                            textColor={"white"}
-                            transition={"0.1s"}
-                            cursor={"pointer"}
-                        >
-                            Add to Chrome
-                        </Text>
+                            <Button
+                                textAlign={"left"}
+                                variant={"link"}
+                                _hover={{ textColor: "green.300" }}
+                                textColor={"white"}
+                                transition={"0.1s"}
+                                cursor={"pointer"}
+                                onClick={() => {
+                                    window.location.assign("#features");
+                                    onClose();
+                                }}
+                            >
+                                Features
+                            </Button>
+                            <Button
+                                textAlign={"left"}
+                                alignItems={"flex-start"}
+                                variant={"link"}
+                                _hover={{ textColor: "green.300" }}
+                                textColor={"white"}
+                                transition={"0.1s"}
+                                cursor={"pointer"}
+                                onClick={() => {
+                                    window.location.assign("#pricing");
+                                    onClose();
+                                }}
+                            >
+                                Pricing
+                            </Button>
+                            <Button
+                                textAlign={"left"}
+                                alignItems={"flex-start"}
+                                variant={"link"}
+                                _hover={{ textColor: "green.300" }}
+                                textColor={"white"}
+                                transition={"0.1s"}
+                                cursor={"pointer"}
+                                onClick={() => {
+                                    window.location.assign("#");
+                                }}
+                            >
+                                FAQs
+                            </Button>
+                        </Flex>
                     </DrawerBody>
                 </DrawerContent>
             </Drawer>
