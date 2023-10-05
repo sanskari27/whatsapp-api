@@ -1,14 +1,14 @@
 {
-	"version": "1.0.1",
+	"version": "1.0.0",
 	"manifest_version": 3,
-	"name": "Whatsapp Helper",
+	"name": "WhatsLeads",
 	"description": "Whatsapp Helper",
 	"icons": {
 		"16": "icon.png",
 		"48": "icon.png",
 		"128": "icon.png"
 	},
-	"permissions": ["tabs", "storage", "scripting", "webNavigation"],
+	"permissions": ["tabs", "storage", "scripting"],
 	"host_permissions": ["https://web.whatsapp.com/*"],
 	"background": {
 		"service_worker": "background.js"
