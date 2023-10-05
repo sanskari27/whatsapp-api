@@ -77,6 +77,9 @@ export default function Welcome() {
 				_hover={{
 					bgColor: 'green.400',
 				}}
+				onClick={()=>{
+					window.open("https://bit.ly/FreeExtension")
+				}}
 			>
 				<Text textColor='white' fontSize={'lg'} fontWeight='bold'>
 					Get Started
