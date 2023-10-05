@@ -12,7 +12,7 @@ const PageWrapper = ({ children }: PageWrapperProps) => {
             direction={"column"}
             minHeight={"100vh"}
             width={"100vw"}
-            className="pt-14 md:pt-[72px]"
+            className="pt-14 pb-[198px] md:pt-[55px] md:pb-14"
         >
             <Navbar />
             {children}
