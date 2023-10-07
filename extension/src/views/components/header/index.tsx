@@ -23,7 +23,7 @@ export default function Header() {
 		<Box width='full' height='full' display='flex' gap={'1rem'} alignItems='center'>
 			<Image src={LOGO} width={9} />
 			<Text className='text-black dark:text-white' flexGrow={1} fontSize={'lg'} fontWeight='bold'>
-				Whatsapp Help
+				WhatsLeads
 			</Text>
 			{isAuthenticated ? (
 				isSettingsPage ? (
