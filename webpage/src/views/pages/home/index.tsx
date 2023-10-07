@@ -195,7 +195,7 @@ const Home = () => {
                         <Image
                             width={"400px"}
                             maxWidth={"350px"}
-                            src={REPORT}
+                            src={ENHANCHMENT}
                             alt=""
                         />
                     </Box>
@@ -230,7 +230,7 @@ const Home = () => {
                         <Image
                             width={"400px"}
                             maxWidth={"350px"}
-                            src={EXPORT}
+                            src={REPORT}
                             alt=""
                         />
                     </Box>
@@ -268,7 +268,7 @@ const Home = () => {
                         <Image
                             width={"400px"}
                             maxWidth={"350px"}
-                            src={ENHANCHMENT}
+                            src={EXPORT}
                             alt=""
                         />
                     </Box>
@@ -294,7 +294,7 @@ const Home = () => {
                         </Text>
                     </Box>
                 </Flex>
-                <Flex
+                {/* <Flex
                     className="flex-col md:flex-row-reverse"
                     justifyContent={"center"}
                     gap={"2rem"}
@@ -333,7 +333,7 @@ const Home = () => {
                             less than 5 minutes.
                         </Text>
                     </Box>
-                </Flex>
+                </Flex> */}
                 <Box>
                     <Text
                         textAlign={"center"}

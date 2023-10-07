@@ -1,7 +1,13 @@
-import { Button, Flex } from "@chakra-ui/react";
+import { Button, Flex, Image, Text } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
-import { FACEBOOK, INSTAGRAM, TWITTER, WHATSAPP } from "../../../assets/Images";
-import { ROUTES } from "../../../utils/const";
+import {
+    FACEBOOK,
+    INSTAGRAM,
+    LOGO,
+    TWITTER,
+    WHATSAPP,
+} from "../../../assets/Images";
+import { ROUTES, THEME } from "../../../utils/const";
 
 export default function Footer() {
     const navigate = useNavigate();
@@ -15,7 +21,16 @@ export default function Footer() {
             bottom={0}
             width={"full"}
         >
-            <span>Logo</span>
+            <Flex alignItems={"center"}>
+                <Image src={LOGO} height={"40px"} />
+                <Text
+                    fontSize={"md"}
+                    fontWeight={"medium"}
+                    color={THEME.THEME_GREEN}
+                >
+                    WhatsLeads
+                </Text>
+            </Flex>
             <Button
                 variant={"link"}
                 fontWeight={"light"}
