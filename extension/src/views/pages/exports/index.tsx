@@ -12,6 +12,7 @@ import LabelService from '../../../services/label.service';
 import PaymentService from '../../../services/payment.service';
 import CheckButton from '../../components/check-button';
 import LoginModal, { LoginHandle } from '../../components/login';
+import { InfoOutlineIcon } from '@chakra-ui/icons';
 
 const Exports = () => {
 	const navigate = useNavigate();
@@ -362,18 +363,21 @@ const Exports = () => {
 				</Flex>
 			</Box>
 			{!isAuthenticated ? (
-				<Button
-					bgColor={'blue.300'}
-					_hover={{
-						bgColor: 'blue.400',
-					}}
-					onClick={startAuth}
-					isLoading={isAuthenticating}
-				>
-					<Flex gap={'0.5rem'}>
-						<Text color={'white'}>Login</Text>
-					</Flex>
-				</Button>
+				<Flex gap={'0.5rem'} direction={'column'}>
+					<Text className="text-black text-center dark:text-white"><InfoOutlineIcon marginRight={'0.25rem'}/>Disclaimer: Please wait 5 minutes for contacts to sync after login.</Text>
+					<Button
+						bgColor={'blue.300'}
+						_hover={{
+							bgColor: 'blue.400',
+						}}
+						onClick={startAuth}
+						isLoading={isAuthenticating}
+					>
+						<Flex gap={'0.5rem'}>
+							<Text color={'white'}>Login</Text>
+						</Flex>
+					</Button>
+				</Flex>
 			) : !uiDetails.paymentVerified ? (
 				<Button
 					bgColor={'yellow.400'}
