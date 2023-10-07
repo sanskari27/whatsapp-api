@@ -1,3 +1,4 @@
+
 import { Box, Button, Checkbox, Flex, Image, Text } from '@chakra-ui/react';
 import Multiselect from 'multiselect-react-dropdown';
 import { useEffect, useRef, useState } from 'react';
@@ -15,202 +16,209 @@ import LoginModal, { LoginHandle } from '../../components/login';
 import { InfoOutlineIcon } from '@chakra-ui/icons';
 
 const Exports = () => {
-	const navigate = useNavigate();
-	const loginModelRef = useRef<LoginHandle>(null);
-	const [export_criteria, setExportCriteria] = useState({
-		[EXPORTS_TYPE.ALL]: false,
-		[EXPORTS_TYPE.SAVED]: false,
-		[EXPORTS_TYPE.UNSAVED]: false,
-		[EXPORTS_TYPE.GROUP]: false,
-		[EXPORTS_TYPE.GROUP_ALL]: false,
-		[EXPORTS_TYPE.LABEL]: false,
-		[EXPORTS_TYPE.LABEL_ALL]: false,
-	});
+    const navigate = useNavigate();
+    const loginModelRef = useRef<LoginHandle>(null);
+    const [export_criteria, setExportCriteria] = useState({
+        [EXPORTS_TYPE.ALL]: false,
+        [EXPORTS_TYPE.SAVED]: false,
+        [EXPORTS_TYPE.UNSAVED]: false,
+        [EXPORTS_TYPE.GROUP]: false,
+        [EXPORTS_TYPE.GROUP_ALL]: false,
+        [EXPORTS_TYPE.LABEL]: false,
+        [EXPORTS_TYPE.LABEL_ALL]: false,
+    });
 
-	const [exporting, setExporting] = useState({
-		CSV: false,
-		VCF: false,
-	});
+    const [exporting, setExporting] = useState({
+        CSV: false,
+        VCF: false,
+    });
 
-	const [contactsCount, setContactsCount] = useState({
-		[EXPORTS_TYPE.ALL]: 0,
-		[EXPORTS_TYPE.SAVED]: 0,
-		[EXPORTS_TYPE.UNSAVED]: 0,
-	});
+    const [contactsCount, setContactsCount] = useState({
+        [EXPORTS_TYPE.ALL]: 0,
+        [EXPORTS_TYPE.SAVED]: 0,
+        [EXPORTS_TYPE.UNSAVED]: 0,
+    });
 
-	const { isAuthenticated, isAuthenticating, qrCode, qrGenerated } = useAuth();
+    const { isAuthenticated, isAuthenticating, qrCode, qrGenerated } =
+        useAuth();
 
-	const [selectedGroup, setSelectedGroup] = useState([]);
-	const [selectedLabel, setSelectedLabel] = useState([]);
+    const [selectedGroup, setSelectedGroup] = useState([]);
+    const [selectedLabel, setSelectedLabel] = useState([]);
 
-	const [uiDetails, setUIDetails] = useState({
-		exportClicked: false,
-		paymentVerified: false,
-		isBusiness: true,
-	});
+    const [uiDetails, setUIDetails] = useState({
+        exportClicked: false,
+        paymentVerified: false,
+        isBusiness: true,
+    });
 
-	const [Loading, setLoading] = useState({
-		contactLoading: false,
-		groupLoading: false,
-		labelLoading: false,
-	});
+    const [Loading, setLoading] = useState({
+        contactLoading: false,
+        groupLoading: false,
+        labelLoading: false,
+    });
 
-	const { ALL, SAVED, UNSAVED, GROUP, LABEL } = export_criteria;
+    const { ALL, SAVED, UNSAVED, GROUP, LABEL } = export_criteria;
 
-	const handleChange = async ({ name, value }: { name: string; value: boolean }) => {
-		setExportCriteria((prevState) => ({
-			...prevState,
-			[name]: value,
-		}));
-	};
+    const handleChange = async ({
+        name,
+        value,
+    }: {
+        name: string;
+        value: boolean;
+    }) => {
+        setExportCriteria((prevState) => ({
+            ...prevState,
+            [name]: value,
+        }));
+    };
 
-	const [groups, setGroups] = useState([
-		{
-			id: '',
-			name: 'No Group Selected!',
-		},
-	]);
-	const [labels, setLabels] = useState([
-		{
-			id: '',
-			name: 'No Label Selected!',
-		},
-	]);
+    const [groups, setGroups] = useState([
+        {
+            id: "",
+            name: "No Group Selected!",
+        },
+    ]);
+    const [labels, setLabels] = useState([
+        {
+            id: "",
+            name: "No Label Selected!",
+        },
+    ]);
 
-	const exportExcel = () => {
-		setExporting((prevState) => ({
-			...prevState,
-			CSV: true,
-		}));
+    const exportExcel = () => {
+        setExporting((prevState) => ({
+            ...prevState,
+            CSV: true,
+        }));
 
-		const selectedGroups = export_criteria[EXPORTS_TYPE.GROUP]
-			? export_criteria[EXPORTS_TYPE.GROUP_ALL] ?
-				groups.map((item) => item.id)
-				: selectedGroup
-			: undefined;
+        const selectedGroups = export_criteria[EXPORTS_TYPE.GROUP]
+            ? export_criteria[EXPORTS_TYPE.GROUP_ALL]
+                ? groups.map((item) => item.id)
+                : selectedGroup
+            : undefined;
 
-		const selectedLabels = export_criteria[EXPORTS_TYPE.LABEL]
-			? export_criteria[EXPORTS_TYPE.LABEL_ALL] ?
-				labels.map((item) => item.id)
-				: selectedLabel
-			: undefined;
+        const selectedLabels = export_criteria[EXPORTS_TYPE.LABEL]
+            ? export_criteria[EXPORTS_TYPE.LABEL_ALL]
+                ? labels.map((item) => item.id)
+                : selectedLabel
+            : undefined;
 
-		ExportsService.exportContactsExcel({
-			allContacts: ALL,
-			savedContacts: SAVED,
-			unsavedContacts: UNSAVED,
-			groupIDs: selectedGroups,
-			labelIDs: selectedLabels,
-		}).finally(() => {
-			setExporting((prevState) => ({
-				...prevState,
-				CSV: false,
-			}));
-			setUIDetails((prevState) => ({
-				...prevState,
-				exportClicked: false,
-			}));
-		});
-	};
+        ExportsService.exportContactsExcel({
+            allContacts: ALL,
+            savedContacts: SAVED,
+            unsavedContacts: UNSAVED,
+            groupIDs: selectedGroups,
+            labelIDs: selectedLabels,
+        }).finally(() => {
+            setExporting((prevState) => ({
+                ...prevState,
+                CSV: false,
+            }));
+            setUIDetails((prevState) => ({
+                ...prevState,
+                exportClicked: false,
+            }));
+        });
+    };
 
-	const exportVCF = () => {
-		setExporting((prevState) => ({
-			...prevState,
-			VCF: true,
-		}));
-		const selectedGroups = export_criteria[EXPORTS_TYPE.GROUP]
-			? export_criteria[EXPORTS_TYPE.GROUP_ALL] ?
-				groups.map((item) => item.id)
-				: selectedGroup
-			: undefined;
+    const exportVCF = () => {
+        setExporting((prevState) => ({
+            ...prevState,
+            VCF: true,
+        }));
+        const selectedGroups = export_criteria[EXPORTS_TYPE.GROUP]
+            ? export_criteria[EXPORTS_TYPE.GROUP_ALL]
+                ? groups.map((item) => item.id)
+                : selectedGroup
+            : undefined;
 
-		const selectedLabels = export_criteria[EXPORTS_TYPE.LABEL]
-			? export_criteria[EXPORTS_TYPE.LABEL_ALL] ?
-				labels.map((item) => item.id)
-				: selectedLabel
-			: undefined;
+        const selectedLabels = export_criteria[EXPORTS_TYPE.LABEL]
+            ? export_criteria[EXPORTS_TYPE.LABEL_ALL]
+                ? labels.map((item) => item.id)
+                : selectedLabel
+            : undefined;
 
-		ExportsService.exportContactsVCF({
-			allContacts: ALL,
-			savedContacts: SAVED,
-			unsavedContacts: UNSAVED,
-			groupIDs: selectedGroups,
-			labelIDs: selectedLabels,
-		}).finally(() => {
-			setExporting((prevState) => ({
-				...prevState,
-				VCF: false,
-			}));
-			setUIDetails((prevState) => ({
-				...prevState,
-				exportClicked: false,
-			}));
-		});
-	};
+        ExportsService.exportContactsVCF({
+            allContacts: ALL,
+            savedContacts: SAVED,
+            unsavedContacts: UNSAVED,
+            groupIDs: selectedGroups,
+            labelIDs: selectedLabels,
+        }).finally(() => {
+            setExporting((prevState) => ({
+                ...prevState,
+                VCF: false,
+            }));
+            setUIDetails((prevState) => ({
+                ...prevState,
+                exportClicked: false,
+            }));
+        });
+    };
 
-	useEffect(() => {
-		if (!isAuthenticated) return;
+    useEffect(() => {
+        if (!isAuthenticated) return;
 
-		setLoading({
-			contactLoading: true,
-			groupLoading: true,
-			labelLoading: true,
-		});
-		ContactService.contactCount()
-			.then((res) => {
-				setContactsCount({
-					[EXPORTS_TYPE.ALL]: res.total,
-					[EXPORTS_TYPE.SAVED]: res.saved,
-					[EXPORTS_TYPE.UNSAVED]: res.unsaved,
-				});
-			})
-			.catch(logout)
-			.finally(() => {
-				setLoading((prevState) => ({
-					...prevState,
-					contactLoading: false,
-				}));
-			});
-		GroupService.listGroups()
-			.then(setGroups)
-			.finally(() => {
-				setLoading((prevState) => ({
-					...prevState,
-					groupLoading: false,
-				}));
-			});
+        setLoading({
+            contactLoading: true,
+            groupLoading: true,
+            labelLoading: true,
+        });
+        ContactService.contactCount()
+            .then((res) => {
+                setContactsCount({
+                    [EXPORTS_TYPE.ALL]: res.total,
+                    [EXPORTS_TYPE.SAVED]: res.saved,
+                    [EXPORTS_TYPE.UNSAVED]: res.unsaved,
+                });
+            })
+            .catch(logout)
+            .finally(() => {
+                setLoading((prevState) => ({
+                    ...prevState,
+                    contactLoading: false,
+                }));
+            });
+        GroupService.listGroups()
+            .then(setGroups)
+            .finally(() => {
+                setLoading((prevState) => ({
+                    ...prevState,
+                    groupLoading: false,
+                }));
+            });
 
-		LabelService.listLabels()
-			.then(setLabels)
-			.catch((err) => {
-				if (err === 'BUSINESS_ACCOUNT_REQUIRED') {
-					setUIDetails((prevState) => ({
-						...prevState,
-						isBusiness: false,
-					}));
-				}
-			})
-			.finally(() => {
-				setLoading((prevState) => ({
-					...prevState,
-					groupLoading: false,
-				}));
-			});
-		PaymentService.isPaymentVerified().then((res) => {
-			setUIDetails((prevState) => ({
-				...prevState,
-				paymentVerified: res,
-			}));
-		});
-	}, [isAuthenticated]);
+        LabelService.listLabels()
+            .then(setLabels)
+            .catch((err) => {
+                if (err === "BUSINESS_ACCOUNT_REQUIRED") {
+                    setUIDetails((prevState) => ({
+                        ...prevState,
+                        isBusiness: false,
+                    }));
+                }
+            })
+            .finally(() => {
+                setLoading((prevState) => ({
+                    ...prevState,
+                    groupLoading: false,
+                }));
+            });
+        PaymentService.isPaymentVerified().then((res) => {
+            setUIDetails((prevState) => ({
+                ...prevState,
+                paymentVerified: res,
+            }));
+        });
+    }, [isAuthenticated]);
 
-	useEffect(() => {
-		if (!!qrGenerated) {
-			loginModelRef.current?.open();
-		} else {
-			loginModelRef.current?.close();
-		}
-	}, [qrGenerated]);
+    useEffect(() => {
+        if (!!qrGenerated) {
+            loginModelRef.current?.open();
+        } else {
+            loginModelRef.current?.close();
+        }
+    }, [qrGenerated]);
 
 	return (
 		<Flex direction={'column'} gap={'0.5rem'}>
@@ -435,9 +443,9 @@ const Exports = () => {
 				</Flex>
 			)}
 
-			<LoginModal ref={loginModelRef} qr={qrCode} />
-		</Flex>
-	);
+            <LoginModal ref={loginModelRef} qr={qrCode} />
+        </Flex>
+    );
 };
 
 export default Exports;

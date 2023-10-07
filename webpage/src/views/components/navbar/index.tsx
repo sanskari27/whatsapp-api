@@ -1,5 +1,4 @@
 import {
-    Box,
     Button,
     Drawer,
     DrawerBody,
@@ -12,7 +11,7 @@ import {
     useDisclosure,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
-import { CHROME_GREEN, MENU } from "../../../assets/Images";
+import { CHROME_GREEN, LOGO, MENU } from "../../../assets/Images";
 import { ROUTES, THEME } from "../../../utils/const";
 export default function Navbar() {
     const { isOpen, onOpen, onClose } = useDisclosure();
@@ -31,7 +30,17 @@ export default function Navbar() {
             width={"100%"}
             zIndex={1000}
         >
-            <Box>LOGO</Box>
+            <Flex alignItems={"center"}>
+                <Image src={LOGO} alt="Logo" height={"35px"} />
+                <Text
+                    color={"white"}
+                    fontSize={"lg"}
+                    fontWeight={"bold"}
+                    ml={"1rem"}
+                >
+                    WhatsLeads
+                </Text>
+            </Flex>
             <Flex
                 className="!hidden md:!flex"
                 gap={"2rem"}
