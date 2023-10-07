@@ -3,10 +3,11 @@ import { useEffect } from "react";
 import { THEME } from "../../../utils/const";
 import PageWrapper from "../../components/pageWrapper";
 
-const PrivacyPage = () => {
+const Terms = () => {
     useEffect(() => {
         window.scroll(0, 0);
     });
+
     return (
         <PageWrapper>
             <Flex
@@ -26,7 +27,7 @@ const PrivacyPage = () => {
                         py={"2rem"}
                         color={THEME.THEME_GREEN}
                     >
-                        Privacy Policy
+                        Terms & Conditions
                     </Text>
                     <Box>
                         <Text fontSize={"xl"} fontWeight={"medium"}>
@@ -99,4 +100,4 @@ const PrivacyPage = () => {
     );
 };
 
-export default PrivacyPage;
+export default Terms;

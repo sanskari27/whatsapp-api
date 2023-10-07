@@ -3,7 +3,7 @@ import { ROUTES } from "./utils/const";
 import Home from "./views/pages/home";
 import PrivacyPage from "./views/pages/privacy";
 import { InitiateRazorpayPayment } from "./views/pages/razorpay";
-import Terms from "./views/terms";
+import Terms from "./views/pages/terms";
 
 function App() {
     return (

@@ -11,14 +11,19 @@ import {
     Text,
     useDisclosure,
 } from "@chakra-ui/react";
-import { MENU } from "../../../assets/Images";
+import { useNavigate } from "react-router-dom";
+import { CHROME_GREEN, MENU } from "../../../assets/Images";
+import { ROUTES, THEME } from "../../../utils/const";
 export default function Navbar() {
     const { isOpen, onOpen, onClose } = useDisclosure();
+
+    const navigate = useNavigate();
 
     return (
         <Flex
             bg="#4CB072"
-            p={"1rem"}
+            py={"0.75rem"}
+            px={"1rem"}
             justifyContent={"space-between"}
             alignItems={"center"}
             position={"fixed"}
@@ -32,6 +37,18 @@ export default function Navbar() {
                 gap={"2rem"}
                 alignItems={"center "}
             >
+                <Button
+                    color={"white"}
+                    variant={"link"}
+                    outline={"none"}
+                    border={"none"}
+                    _hover={{ textColor: "green.300" }}
+                    onClick={() => {
+                        navigate(ROUTES.HOME);
+                    }}
+                >
+                    Home
+                </Button>
                 <Button
                     color={"white"}
                     variant={"link"}
@@ -62,6 +79,9 @@ export default function Navbar() {
                     outline={"none"}
                     border={"none"}
                     _hover={{ textColor: "green.300" }}
+                    onClick={() => {
+                        window.location.assign("#faq");
+                    }}
                 >
                     FAQs
                 </Button>
@@ -71,7 +91,9 @@ export default function Navbar() {
                     backgroundColor={"white"}
                     rounded={"full"}
                     outline={"none"}
+                    gap={"0.5rem"}
                 >
+                    <Image src={CHROME_GREEN} alt="" height={"60%"} />
                     <Text textColor={"#4CB072"}>Add to Chrome</Text>
                 </Button>
             </Flex>
@@ -90,7 +112,7 @@ export default function Navbar() {
                 isOpen={isOpen}
                 placement="right"
                 onClose={onClose}
-                size={"xs"}
+                size={"full"}
             >
                 <DrawerOverlay />
                 <DrawerContent>
@@ -100,7 +122,8 @@ export default function Navbar() {
                         <Flex
                             direction={"column"}
                             pt={"2rem"}
-                            alignItems={"flex-start"}
+                            alignItems={"center"}
+                            gap={"1.25rem"}
                         >
                             <Button
                                 textAlign={"left"}
@@ -145,97 +168,33 @@ export default function Navbar() {
                             >
                                 FAQs
                             </Button>
+                            <Button
+                                variant={"link"}
+                                backgroundColor={"white"}
+                                _hover={{ textColor: "green.300" }}
+                                textColor={THEME.THEME_GREEN}
+                                rounded={"full"}
+                                size={"md"}
+                                transition={"0.1s"}
+                                cursor={"pointer"}
+                                onClick={() => {
+                                    window.location.assign("#faq");
+                                    onClose();
+                                }}
+                                px={"0.5rem"}
+                                py={"0.25rem"}
+                            >
+                                <Image
+                                    src={CHROME_GREEN}
+                                    alt=""
+                                    height={"20px"}
+                                />
+                                <Text mx={"0.5rem"}>Add To Chrome</Text>
+                            </Button>
                         </Flex>
                     </DrawerBody>
                 </DrawerContent>
             </Drawer>
         </Flex>
-        // <header>
-        //     <nav
-        //         className="
-        //   flex flex-wrap
-        //   items-center
-        //   justify-between
-        //   w-full
-        //   py-2
-        //   md:py-0
-        //   px-6
-        //   text-sm
-        //   bg-[#4CB072]
-        //   text-white
-        // "
-        //     >
-        //         <div>
-        //             <a href="#">LOGO</a>
-        //         </div>
-
-        //         <svg
-        //             xmlns="http://www.w3.org/2000/svg"
-        //             onClick={() => {
-        //                 setHidden(!hidden);
-        //             }}
-        //             className="h-6 w-6 cursor-pointer md:hidden block"
-        //             fill="none"
-        //             viewBox="0 0 24 24"
-        //             stroke="currentColor"
-        //         >
-        //             <path
-        //                 stroke-linecap="round"
-        //                 stroke-linejoin="round"
-        //                 stroke-width="2"
-        //                 d="M4 6h16M4 12h16M4 18h16"
-        //             />
-        //         </svg>
-
-        //         <div
-        //             className={
-        //                 hidden
-        //                     ? "hidden"
-        //                     : "w-full md:flex md:items-center md:w-auto"
-        //             }
-        //         >
-        //             <ul
-        //                 className="
-        //                         pt-4
-        //                         md:flex
-        //                         md:justify-between
-        //                         md:pt-0"
-        //             >
-        //                 <li>
-        //                     <a
-        //                         className="md:p-4 py-2 block hover:text-black"
-        //                         href="#"
-        //                     >
-        //                         Features
-        //                     </a>
-        //                 </li>
-        //                 <li>
-        //                     <a
-        //                         className="md:p-4 py-2 block hover:text-black"
-        //                         href="#"
-        //                     >
-        //                         Pricing
-        //                     </a>
-        //                 </li>
-        //                 <li>
-        //                     <a
-        //                         className="md:p-4 py-2 block hover:text-black"
-        //                         href="#"
-        //                     >
-        //                         FAQs
-        //                     </a>
-        //                 </li>
-        //                 <li>
-        //                     <a
-        //                         className="md:p-4 py-2 block hover:text-black"
-        //                         href="#"
-        //                     >
-        //                         Add to Chrome
-        //                     </a>
-        //                 </li>
-        //             </ul>
-        //         </div>
-        //     </nav>
-        // </header>
     );
 }
