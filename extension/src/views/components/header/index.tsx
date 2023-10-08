@@ -1,6 +1,5 @@
 import { CloseIcon } from '@chakra-ui/icons';
 import { Box, Button, IconButton, Image, Text } from '@chakra-ui/react';
-import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { LOGO, SETTINGS } from '../../../assets/Images';
 import { NAVIGATION } from '../../../config/const';
