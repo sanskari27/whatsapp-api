@@ -45,7 +45,6 @@ export default function Header() {
 					_hover={{
 						backgroundColor: 'transparent',
 					}}
-					// className='dark:bg-background-dark bg-background'
 				/>
 			</Box>
 			{isAuthenticated ? (
