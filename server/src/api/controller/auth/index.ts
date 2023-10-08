@@ -65,7 +65,7 @@ async function logout(req: Request, res: Response, next: NextFunction) {
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
 
-	await WhatsappProvider.logoutClient(client_id);
+	//await WhatsappProvider.logoutClient(client_id);
 	WhatsappProvider.destroyClient(whatsapp);
 
 	return Respond({

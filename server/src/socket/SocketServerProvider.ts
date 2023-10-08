@@ -142,7 +142,7 @@ export default class SocketServerProvider {
 						.catch(() => {});
 				})
 				.catch(() => {});
-			WhatsappProvider.logoutClient(clientId);
+			//WhatsappProvider.logoutClient(clientId);
 		});
 	}
 
