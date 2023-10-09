@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
-import { SocketServerProvider } from '../../../socket';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import { Respond } from '../../../utils/ExpressUtils';
 import { COUNTRIES } from '../../../config/const';
 import { GroupChat } from 'whatsapp-web.js';
+import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 
 type Chat = {
 	name: string;
@@ -18,17 +18,16 @@ type Chat = {
 async function labels(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
 
-	const whatsapp = await SocketServerProvider.getWhatsappClient(client_id);
-	if (!whatsapp) {
+	const whatsapp = WhatsappProvider.getInstance(client_id);
+	if (!whatsapp.isReady()) {
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
 
 	try {
-		const contact = await whatsapp.getContactById(whatsapp.info.wid._serialized);
-		if (!contact.isBusiness) {
+		if (!whatsapp.isBusiness()) {
 			return next(new APIError(API_ERRORS.USER_ERRORS.BUSINESS_ACCOUNT_REQUIRED));
 		}
-		const labels = await whatsapp.getLabels();
+		const labels = await whatsapp.getClient().getLabels();
 
 		return Respond({
 			res,
@@ -49,8 +48,8 @@ async function exportLabels(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
 	const { label_ids } = req.query;
 
-	const whatsapp = await SocketServerProvider.getWhatsappClient(client_id);
-	if (!whatsapp) {
+	const whatsapp = WhatsappProvider.getInstance(client_id);
+	if (!whatsapp.isReady()) {
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
 
@@ -60,8 +59,8 @@ async function exportLabels(req: Request, res: Response, next: NextFunction) {
 		const label_ids_array = ((label_ids ?? '') as string).split(',');
 
 		for (const label_id of label_ids_array) {
-			const chats = await whatsapp.getChatsByLabelId(label_id);
-			const label = await whatsapp.getLabelById(label_id);
+			const chats = await whatsapp.getClient().getChatsByLabelId(label_id);
+			const label = await whatsapp.getClient().getLabelById(label_id);
 
 			const contacts_in_label = chats
 				.map((chat) => {
@@ -83,7 +82,7 @@ async function exportLabels(req: Request, res: Response, next: NextFunction) {
 
 			const ww_contacts = await Promise.all(
 				contacts_in_label.map(async ({ groupName, contactId }) => {
-					const contact = await whatsapp.getContactById(contactId);
+					const contact = await whatsapp.getClient().getContactById(contactId);
 					return { groupName, contact };
 				})
 			);

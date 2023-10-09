@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from 'express';
-import { SocketServerProvider } from '../../../socket';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import { COUNTRIES } from '../../../config/const';
 import { Respond } from '../../../utils/ExpressUtils';
@@ -9,8 +8,8 @@ import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 async function contacts(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
 
-	const whatsapp = await SocketServerProvider.getWhatsappClient(client_id);
-	if (!whatsapp) {
+	const whatsapp = WhatsappProvider.getInstance(client_id);
+	if (!whatsapp.isReady()) {
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
 
@@ -29,8 +28,8 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 	try {
 		const contacts = [] as WAWebJS.Contact[];
 
-		const saved = await WhatsappProvider.getSavedContacts(whatsapp);
-		const non_saved = await WhatsappProvider.getNonSavedContacts(whatsapp);
+		const saved = await whatsapp.getSavedContacts();
+		const non_saved = await whatsapp.getNonSavedContacts();
 		if (options.all_contacts) {
 			contacts.push(...saved, ...non_saved);
 		} else if (options.saved_contacts) {
@@ -64,14 +63,14 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 async function countContacts(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
 
-	const whatsapp = await SocketServerProvider.getWhatsappClient(client_id);
-	if (!whatsapp) {
+	const whatsapp = WhatsappProvider.getInstance(client_id);
+	if (!whatsapp.isReady()) {
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
 
 	try {
-		const saved = await WhatsappProvider.getSavedContacts(whatsapp);
-		const non_saved = await WhatsappProvider.getNonSavedContacts(whatsapp);
+		const saved = await whatsapp.getSavedContacts();
+		const non_saved = await whatsapp.getNonSavedContacts();
 
 		return Respond({
 			res,

@@ -3,7 +3,6 @@ import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import { Respond } from '../../../utils/ExpressUtils';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 import { PaymentService, UserService } from '../../../database/services';
-import { SocketServerProvider } from '../../../socket';
 import DateUtils from '../../../utils/DateUtils';
 
 async function validateClientID(req: Request, res: Response, next: NextFunction) {
@@ -12,7 +11,9 @@ async function validateClientID(req: Request, res: Response, next: NextFunction)
 	const [isValidAuth, revoke_at] = await UserService.isValidAuth(client_id);
 
 	if (!isValidAuth) {
-		WhatsappProvider.logoutClient(client_id);
+		if (client_id) {
+			WhatsappProvider.getInstance(client_id).logoutClient();
+		}
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
 
@@ -28,22 +29,23 @@ async function validateClientID(req: Request, res: Response, next: NextFunction)
 async function details(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
 
-	const whatsapp = await SocketServerProvider.getWhatsappClient(client_id);
-	if (!whatsapp) {
+	const whatsapp = WhatsappProvider.getInstance(client_id);
+	if (!whatsapp.isReady()) {
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
 	const paymentService = new PaymentService(req.locals.user);
 	const currentPayment = await paymentService.getRunningPayment();
 	const paymentRecords = await paymentService.getPaymentRecords();
 
-	const contact = await whatsapp.getContactById(whatsapp.info.wid._serialized);
+	const client = whatsapp.getClient();
+	const contact = whatsapp.getContact();
 
 	return Respond({
 		res,
 		status: 200,
 		data: {
-			name: whatsapp.info.pushname,
-			phoneNumber: whatsapp.info.wid.user,
+			name: client.info.pushname,
+			phoneNumber: client.info.wid.user,
 			isSubscribed: currentPayment !== null,
 			subscriptionExpiration: currentPayment
 				? DateUtils.getMoment(currentPayment.expires_at).format('DD/MM/YYYY')
@@ -60,13 +62,10 @@ async function details(req: Request, res: Response, next: NextFunction) {
 async function logout(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
 
-	const whatsapp = await SocketServerProvider.getWhatsappClient(client_id);
-	if (!whatsapp) {
-		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
-	}
+	const whatsapp = WhatsappProvider.getInstance(client_id);
 
-	//await WhatsappProvider.logoutClient(client_id);
-	WhatsappProvider.destroyClient(whatsapp);
+	// await whatsapp.logoutClient();
+	whatsapp.destroyClient();
 
 	return Respond({
 		res,
