@@ -49,7 +49,7 @@ export class WhatsappProvider {
 			restartOnAuthFail: true,
 
 			puppeteer: {
-				headless: false,
+				headless: true,
 				args: PUPPETEER_ARGS,
 				executablePath: IS_PRODUCTION ? CHROMIUM_PATH : undefined,
 			},
