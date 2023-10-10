@@ -41,8 +41,6 @@ export default class ExportsService {
 
 			if (options.labelIDs && options.labelIDs?.length > 0) {
 				const label_contacts = await LabelService.fetchLabel(options.labelIDs);
-				console.log(label_contacts, 'label_contacts');
-
 				ExcelUtils.exportLabel(label_contacts);
 			}
 		} catch (err) {}
@@ -75,8 +73,6 @@ export default class ExportsService {
 
 			if (options.labelIDs && options.labelIDs?.length > 0) {
 				const label_contacts = await LabelService.fetchLabel(options.labelIDs);
-				console.log(label_contacts, 'label_contacts');
-
 				VCardUtils.exportLabel(label_contacts);
 			}
 		} catch (err) {}

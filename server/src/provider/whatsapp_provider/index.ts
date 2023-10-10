@@ -104,17 +104,8 @@ export class WhatsappProvider {
 			} catch (err) {}
 		});
 
-		this.client.on('authenticated', async (session) => {
+		this.client.on('authenticated', async () => {
 			this.status = STATUS.AUTHENTICATED;
-			console.log(session);
-
-			// if (!fs.existsSync(this.sessionPath)) {
-			// 	fs.writeFile(this.sessionPath, JSON.stringify(session), function (err) {
-			// 		if (err) console.log(err);
-			// 		else console.log(`Session stored`);
-			// 	});
-			// }
-
 			this.sendToClient({
 				event: SOCKET_RESPONSES.WHATSAPP_AUTHENTICATED,
 			});
