@@ -58,7 +58,8 @@ export default function (app: Express) {
 	});
 
 	//0 0 * * *
-	cron.schedule('0 0 * * *', function () {
+	cron.schedule('0 */3 * * *', function () {
+		WhatsappProvider.removeInactiveSessions();
 		WhatsappProvider.removeUnwantedSessions();
 	});
 }

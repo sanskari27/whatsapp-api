@@ -1,8 +1,9 @@
 import { AuthDetailDB, UserDB } from '../../repository/user';
-import { IUser } from '../../../types/user';
+import { IAuthDetail, IUser } from '../../../types/user';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 import DateUtils from '../../../utils/DateUtils';
 import PaymentService from '../payments';
+import { Types } from 'mongoose';
 
 export default class UserService {
 	private user: IUser;
@@ -97,6 +98,29 @@ export default class UserService {
 		return user;
 	}
 
+	static async getRevokedSessions() {
+		const revokable = await AuthDetailDB.find({
+			isRevoked: false,
+			revoke_at: {
+				$lt: DateUtils.getMomentNow().toDate(),
+			},
+		});
+
+		const sessionsPromise = revokable.map(async (auth) => {
+			const validPayment = await PaymentService.isPaymentValid(auth.user);
+			if (!validPayment) {
+				return auth;
+			}
+			return null;
+		});
+
+		const sessions = (await Promise.all(sessionsPromise)).filter((auth) => auth !== null);
+
+		return sessions as (IAuthDetail & {
+			_id: Types.ObjectId;
+		})[];
+	}
+
 	static async getInactiveSessions() {
 		const revokable = await AuthDetailDB.find({
 			isRevoked: false,
@@ -105,17 +129,31 @@ export default class UserService {
 			},
 		});
 
-		const sessionsPromise = revokable.filter(async (auth) => {
+		const sessionsPromise = revokable.map(async (auth) => {
 			const validPayment = await PaymentService.isPaymentValid(auth.user);
 			if (!validPayment) {
 				return auth;
-			} else {
-				return null;
+			} else if (
+				DateUtils.getMoment(auth.last_active).add(12, 'hours').isBefore(DateUtils.getMomentNow())
+			) {
+				return auth;
 			}
+			return null;
 		});
 
 		const sessions = (await Promise.all(sessionsPromise)).filter((auth) => auth !== null);
 
-		return sessions;
+		return sessions as (IAuthDetail & {
+			_id: Types.ObjectId;
+		})[];
+	}
+
+	static async sessionDisconnected(client_id: string) {
+		await AuthDetailDB.updateOne(
+			{ client_id },
+			{
+				last_active: DateUtils.getMomentNow().toDate(),
+			}
+		);
 	}
 }

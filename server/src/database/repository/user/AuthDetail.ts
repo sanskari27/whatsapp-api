@@ -14,6 +14,9 @@ const authDetailSchema = new mongoose.Schema<IAuthDetail>(
 			required: true,
 			unique: true,
 		},
+		last_active: {
+			type: Date,
+		},
 		isRevoked: {
 			type: Boolean,
 			default: false,
@@ -31,7 +34,7 @@ const authDetailSchema = new mongoose.Schema<IAuthDetail>(
 
 authDetailSchema.pre<IAuthDetail>('save', function (next) {
 	if (!this.revoke_at) {
-		this.revoke_at = DateUtils.getMomentNow().add(1, 'day').toDate();
+		this.revoke_at = DateUtils.getMomentNow().add(3, 'hours').toDate();
 	}
 	next();
 });

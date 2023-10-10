@@ -27,6 +27,8 @@ enum STATUS {
 	AUTHENTICATED = 'AUTHENTICATED',
 	READY = 'READY',
 	DISCONNECTED = 'DISCONNECTED',
+	LOGGED_OUT = 'LOGGED_OUT',
+	DESTROYED = 'DESTROYED',
 }
 
 export class WhatsappProvider {
@@ -41,6 +43,10 @@ export class WhatsappProvider {
 	private socket: Socket | undefined;
 
 	private status: STATUS;
+
+	private callbackHandlers: {
+		onDestroy: (client_id: ClientID) => void;
+	};
 
 	private constructor(cid: ClientID) {
 		this.client_id = cid;
@@ -60,6 +66,9 @@ export class WhatsappProvider {
 		});
 
 		this.status = STATUS.UNINITIALIZED;
+		this.callbackHandlers = {
+			onDestroy: () => {},
+		};
 
 		this.attachListeners();
 		WhatsappProvider.clientsMap.set(this.client_id, this);
@@ -191,11 +200,16 @@ export class WhatsappProvider {
 
 	async logoutClient() {
 		return new Promise((resolve, reject) => {
-			WhatsappProvider.deleteSession({ client_id: this.client_id });
+			this.callbackHandlers.onDestroy(this.client_id);
+			if (this.status === STATUS.LOGGED_OUT || this.status === STATUS.DESTROYED) {
+				return resolve(true);
+			}
 			const id = setInterval(() => {
 				this.client
 					.logout()
 					.then(() => {
+						this.status = STATUS.LOGGED_OUT;
+						this.destroyClient();
 						clearInterval(id);
 						resolve(true);
 					})
@@ -225,7 +239,7 @@ export class WhatsappProvider {
 	}
 
 	static async removeUnwantedSessions() {
-		const sessions = await UserService.getInactiveSessions();
+		const sessions = await UserService.getRevokedSessions();
 		for (const session of sessions) {
 			await WhatsappProvider.getInstance(session.client_id).logoutClient();
 			WhatsappProvider.deleteSession({
@@ -236,15 +250,35 @@ export class WhatsappProvider {
 		logger.info(`Removed ${sessions.length} unwanted sessions`);
 	}
 
+	static async removeInactiveSessions() {
+		const sessions = await UserService.getInactiveSessions();
+		for (const session of sessions) {
+			await WhatsappProvider.getInstance(session.client_id).logoutClient();
+		}
+		logger.info(`Removed ${sessions.length} inactive sessions`);
+	}
+
 	destroyClient() {
+		this.callbackHandlers.onDestroy(this.client_id);
+		if (this.status === STATUS.DESTROYED) {
+			return;
+		}
+		let count = 0;
 		const id = setInterval(() => {
+			if (count >= 10) {
+				clearInterval(id);
+			}
 			this.client
 				.destroy()
 				.then(() => {
+					this.status = STATUS.DESTROYED;
 					clearInterval(id);
 				})
-				.catch(() => {});
+				.catch(() => {
+					count++;
+				});
 		}, 1000);
+		WhatsappProvider.clientsMap.delete(this.client_id);
 	}
 
 	static deleteSession({ client_id }: { client_id: string }) {
@@ -280,5 +314,9 @@ export class WhatsappProvider {
 		);
 
 		return non_saved_contacts.filter((contact) => contact !== null) as WAWebJS.Contact[];
+	}
+
+	onDestroy(func: (client_id: ClientID) => void) {
+		this.callbackHandlers.onDestroy = func;
 	}
 }
