@@ -57,7 +57,9 @@ export class WhatsappProvider {
 			puppeteer: {
 				headless: true,
 				args: PUPPETEER_ARGS,
-				executablePath: IS_PRODUCTION ? CHROMIUM_PATH : undefined,
+				executablePath: IS_PRODUCTION
+					? CHROMIUM_PATH
+					: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
 			},
 
 			authStrategy: new LocalAuth({
@@ -90,14 +92,13 @@ export class WhatsappProvider {
 	}
 
 	public initialize() {
-		if (this.status === STATUS.UNINITIALIZED) {
-			this.client.initialize();
-			this.status = STATUS.INITIALIZED;
-			this.sendToClient({
-				event: SOCKET_RESPONSES.INITIALIZED,
-				data: this.client_id,
-			});
-		}
+		if (this.status !== STATUS.UNINITIALIZED) return;
+		this.client.initialize();
+		this.status = STATUS.INITIALIZED;
+		this.sendToClient({
+			event: SOCKET_RESPONSES.INITIALIZED,
+			data: this.client_id,
+		});
 	}
 
 	private async attachListeners() {
