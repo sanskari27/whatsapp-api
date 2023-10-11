@@ -5,8 +5,10 @@ import PageWrapper from "../../components/pageWrapper";
 
 const Terms = () => {
     useEffect(() => {
+        window.document.title = "WhatsLeads | Terms & Conditions";
+
         window.scroll(0, 0);
-    });
+    }, []);
 
     return (
         <PageWrapper>
