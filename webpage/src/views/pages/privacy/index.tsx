@@ -5,8 +5,9 @@ import PageWrapper from "../../components/pageWrapper";
 
 const PrivacyPage = () => {
     useEffect(() => {
+        window.document.title = "WhatsLeads | Privacy Policy";
         window.scroll(0, 0);
-    });
+    }, []);
     return (
         <PageWrapper>
             <Flex
