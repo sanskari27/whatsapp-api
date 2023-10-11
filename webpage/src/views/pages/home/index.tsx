@@ -12,6 +12,7 @@ import {
 } from "@chakra-ui/react";
 import {
     CHROME,
+    CUSTOMER,
     ENHANCHMENT,
     EXPORT,
     HERO_BG,
@@ -189,7 +190,7 @@ const Home = () => {
                     justifyContent={"center"}
                     gap={"2rem"}
                     alignItems={"center"}
-                    pt={"2rem"}
+                    pt={"4rem"}
                 >
                     <Box>
                         <Image
@@ -225,6 +226,7 @@ const Home = () => {
                     justifyContent={"center"}
                     gap={"2rem"}
                     alignItems={"center"}
+                    pt={"4rem"}
                 >
                     <Box>
                         <Image
@@ -263,6 +265,7 @@ const Home = () => {
                     justifyContent={"center"}
                     gap={"2rem"}
                     alignItems={"center"}
+                    pt={"4rem"}
                 >
                     <Box>
                         <Image
@@ -299,12 +302,13 @@ const Home = () => {
                     justifyContent={"center"}
                     gap={"2rem"}
                     alignItems={"center"}
+                    pt={"2rem"}
                 >
                     <Box>
                         <Image
                             width={"400px"}
                             maxWidth={"350px"}
-                            src={ENHANCHMENT}
+                            src={CUSTOMER}
                             alt=""
                         />
                     </Box>
@@ -367,7 +371,7 @@ const Home = () => {
                                     width={"full"}
                                     justifyContent={"space-between"}
                                 >
-                                    <Text>
+                                    <Text fontWeight={"medium"}>
                                         Emily{" "}
                                         <Box
                                             as="span"
@@ -382,19 +386,24 @@ const Home = () => {
                                         alt=""
                                     />
                                 </Flex>
-                                <Text textColor={THEME.THEME_GREEN} py={"1rem"}>
-                                    Simple Yet Powerful
+                                <Text fontSize={"sm"} pt={"1rem"}>
+                                    This extension is a perfect example of how
+                                    simplicity can be powerful. I'm not a
+                                    tech-savvy person, but I found the interface
+                                    to be incredibly intuitive. The privacy
+                                    settings are fantastic, and the unlimited
+                                    downloads for contacts make it stand out.
+                                    It's become an essential part of my WhatsApp
+                                    Web experience. Thank you for making my life
+                                    easier!
                                 </Text>
                             </Box>
-                            <Text fontSize={"sm"}>
-                                This extension is a perfect example of how
-                                simplicity can be powerful. I'm not a tech-savvy
-                                person, but I found the interface to be
-                                incredibly intuitive. The privacy settings are
-                                fantastic, and the unlimited downloads for
-                                contacts make it stand out. It's become an
-                                essential part of my WhatsApp Web experience.
-                                Thank you for making my life easier!
+                            <Text
+                                fontWeight={"medium"}
+                                textColor={THEME.THEME_GREEN}
+                                py={"1rem"}
+                            >
+                                Simple Yet Powerful
                             </Text>
                         </Flex>
                         <Flex
@@ -413,7 +422,7 @@ const Home = () => {
                                     width={"full"}
                                     justifyContent={"space-between"}
                                 >
-                                    <Text>
+                                    <Text fontWeight={"medium"}>
                                         David{" "}
                                         <Box
                                             as="span"
@@ -428,19 +437,24 @@ const Home = () => {
                                         alt=""
                                     />
                                 </Flex>
-                                <Text textColor={THEME.THEME_GREEN} py={"1rem"}>
-                                    Effortless Contact Management
+                                <Text fontSize={"sm"} pt={"1rem"}>
+                                    As a business owner who uses WhatsApp for
+                                    client communication, this extension has
+                                    been a lifesaver. The ability to categorize
+                                    and export contacts with ease has
+                                    streamlined my workflow significantly. I can
+                                    now find and reach out to clients quickly.
+                                    It's user-friendly and has saved me a ton of
+                                    time. Kudos to the developers for creating
+                                    such a valuable tool!
                                 </Text>
                             </Box>
-                            <Text fontSize={"sm"} pt={"1rem"}>
-                                As a business owner who uses WhatsApp for client
-                                communication, this extension has been a
-                                lifesaver. The ability to categorize and export
-                                contacts with ease has streamlined my workflow
-                                significantly. I can now find and reach out to
-                                clients quickly. It's user-friendly and has
-                                saved me a ton of time. Kudos to the developers
-                                for creating such a valuable tool!
+                            <Text
+                                fontWeight={"medium"}
+                                textColor={THEME.THEME_GREEN}
+                                py={"1rem"}
+                            >
+                                Effortless Contact Management
                             </Text>
                         </Flex>
                         <Box
@@ -455,7 +469,7 @@ const Home = () => {
                                 width={"full"}
                                 justifyContent={"space-between"}
                             >
-                                <Text>
+                                <Text fontWeight={"medium"}>
                                     Sarah{" "}
                                     <Box
                                         as="span"
@@ -466,9 +480,6 @@ const Home = () => {
                                 </Text>
                                 <Image height={"15px"} src={RATING} alt="" />
                             </Flex>
-                            <Text textColor={THEME.THEME_GREEN} py={"1rem"}>
-                                A Game Changer for WhatsApp Privacy
-                            </Text>
 
                             <Text fontSize={"sm"} pt={"1rem"}>
                                 I stumbled upon this extension while searching
@@ -482,14 +493,28 @@ const Home = () => {
                                 anyone who values their privacy and wants to
                                 simplify contact management!
                             </Text>
+                            <Text
+                                fontWeight={"medium"}
+                                textColor={THEME.THEME_GREEN}
+                                py={"1rem"}
+                            >
+                                A Game Changer for WhatsApp Privacy
+                            </Text>
                         </Box>
                     </Flex>
                 </Box>
-                <Flex id="pricing" direction={"column"} py={"3rem"} px={"1rem"}>
+                <Flex
+                    id="pricing"
+                    direction={"column"}
+                    py={"3rem"}
+                    px={"1rem"}
+                    alignItems={"center"}
+                >
                     <Text
                         textAlign={"center"}
                         fontSize={"2xl"}
                         fontWeight={"medium"}
+                        pb={"2rem"}
                     >
                         <Box as={"span"} color={THEME.THEME_GREEN}>
                             Simple Pricing{" "}
@@ -497,50 +522,376 @@ const Home = () => {
                         For You
                     </Text>
                     <Flex
-                        mx={"auto"}
-                        boxShadow={"0px 0px 10px 5px #00000029"}
-                        rounded={"lg"}
-                        mt={"2rem"}
+                        className="flex-col md:flex-row w-11/12 justify-evenly gap-8 md:gap-0"
+                        boxShadow={"0px 0px 10px 5px rgba(0, 0, 0, 0.1)"}
+                        rounded={"2xl"}
+                        p={"2rem"}
+                        mb={"2rem"}
                     >
-                        <Box
-                            backgroundColor={THEME.THEME_GREEN}
-                            p={"1rem"}
-                            rounded={"lg"}
-                        >
+                        <Box textAlign={"center"}>
                             <Text
-                                color={"white"}
-                                px={"0.25rem"}
-                                textAlign={"center"}
+                                color={THEME.THEME_GREEN}
+                                fontSize={"2xl"}
+                                fontWeight={"medium"}
                             >
-                                Premium
+                                Free
                             </Text>
-                            <Text
-                                color={"white"}
-                                py={"0.25rem"}
-                                textAlign={"center"}
-                            >
-                                ₹ 250/-
+                            <Text color={"gray.400"} p={"0.25rem"}>
+                                Rs. 0/mo
+                            </Text>
+                            <Text fontSize={"sm"} pt={"0.25rem"}>
+                                Unlock Basic Privacy for
+                            </Text>
+                            <Text fontSize={"sm"} pb={"0.25rem"}>
+                                Free
                             </Text>
                             <Button
+                                backgroundColor={THEME.THEME_GREEN}
+                                color={"white"}
                                 rounded={"full"}
-                                backgroundColor={"white"}
-                                size={"sm"}
-                                px={"1rem"}
                             >
-                                Get Started
+                                Get Started For Free
                             </Button>
                         </Box>
-                        <Box px={"1rem"} py={"0.5rem"}>
-                            <Text>Heading</Text>
-                            <Flex alignItems={"center"} gap={"0.25rem"}>
+                        <Box>
+                            <Text
+                                className="text-center md:text-left"
+                                pb={"2rem"}
+                                color={THEME.THEME_GREEN}
+                                fontSize={"2xl"}
+                            >
+                                -Feature-
+                            </Text>
+                            <Flex className="items-start md:items-center">
+                                {" "}
                                 <Box
-                                    height={"7px"}
-                                    width={"7px"}
+                                    className="mt-2 md:mt-0"
+                                    height={"5px"}
+                                    width={"5px"}
+                                    minWidth={"5px"}
+                                    backgroundColor={"black"}
                                     rounded={"full"}
-                                    backgroundColor={THEME.THEME_GREEN}
+                                    mr={"0.25rem"}
                                 />
-                                <Text fontSize={"sm"}>
-                                    80% customers don't save your number
+                                <Text>Blur Chat Content</Text>
+                            </Flex>
+                            <Flex className="items-start md:items-center">
+                                {" "}
+                                <Box
+                                    className="mt-2 md:mt-0"
+                                    height={"5px"}
+                                    width={"5px"}
+                                    minWidth={"5px"}
+                                    backgroundColor={"black"}
+                                    rounded={"full"}
+                                    mr={"0.25rem"}
+                                />
+                                <Text>Blur Contact Names</Text>
+                            </Flex>
+                            <Flex className="items-start md:items-center">
+                                {" "}
+                                <Box
+                                    className="mt-2 md:mt-0"
+                                    height={"5px"}
+                                    width={"5px"}
+                                    minWidth={"5px"}
+                                    backgroundColor={"black"}
+                                    rounded={"full"}
+                                    mr={"0.25rem"}
+                                />
+                                <Text>Blur Profile Photos</Text>
+                            </Flex>
+                            <Flex className="items-start md:items-center">
+                                {" "}
+                                <Box
+                                    className="mt-2 md:mt-0"
+                                    height={"5px"}
+                                    width={"5px"}
+                                    minWidth={"5px"}
+                                    backgroundColor={"black"}
+                                    rounded={"full"}
+                                    mr={"0.25rem"}
+                                />
+                                <Text>Basic Privacy Controls</Text>
+                            </Flex>
+                            <Flex className="items-start md:items-center">
+                                {" "}
+                                <Box
+                                    className="mt-2 md:mt-0"
+                                    height={"5px"}
+                                    width={"5px"}
+                                    minWidth={"5px"}
+                                    backgroundColor={"black"}
+                                    rounded={"full"}
+                                    mr={"0.25rem"}
+                                />
+                                <Text>No Cost</Text>
+                            </Flex>
+                        </Box>
+                        <Box>
+                            <Text
+                                className="text-center md:text-left"
+                                pb={"2rem"}
+                                color={THEME.THEME_GREEN}
+                                fontSize={"2xl"}
+                            >
+                                -Benefits-
+                            </Text>
+                            <Flex className="items-start md:items-center">
+                                {" "}
+                                <Box
+                                    className="mt-2 md:mt-0"
+                                    height={"5px"}
+                                    width={"5px"}
+                                    minWidth={"5px"}
+                                    backgroundColor={"black"}
+                                    rounded={"full"}
+                                    mr={"0.25rem"}
+                                />
+                                <Text>Protect your sensitive information</Text>
+                            </Flex>
+                            <Flex className="items-start md:items-center">
+                                {" "}
+                                <Box
+                                    className="mt-2 md:mt-0"
+                                    height={"5px"}
+                                    width={"5px"}
+                                    minWidth={"5px"}
+                                    backgroundColor={"black"}
+                                    rounded={"full"}
+                                    mr={"0.25rem"}
+                                />
+                                <Text>
+                                    Customize WhatsApp Web to your comfort level
+                                </Text>
+                            </Flex>
+                            <Flex className="items-start md:items-center">
+                                {" "}
+                                <Box
+                                    className="mt-2 md:mt-0"
+                                    height={"5px"}
+                                    width={"5px"}
+                                    minWidth={"5px"}
+                                    backgroundColor={"black"}
+                                    rounded={"full"}
+                                    mr={"0.25rem"}
+                                />
+                                <Text>
+                                    Experience enhanced privacy at no cost
+                                </Text>
+                            </Flex>
+                            <Flex className="items-start md:items-center">
+                                {" "}
+                                <Box
+                                    className="mt-2 md:mt-0"
+                                    height={"5px"}
+                                    width={"5px"}
+                                    minWidth={"5px"}
+                                    backgroundColor={"black"}
+                                    rounded={"full"}
+                                    mr={"0.25rem"}
+                                />
+                                <Text>
+                                    Ideal for individual users who value their
+                                    privacy
+                                </Text>
+                            </Flex>
+                        </Box>
+                    </Flex>
+                    <Flex
+                        className="flex-col md:flex-row w-11/12 justify-evenly gap-8 md:gap-0"
+                        boxShadow={"0px 0px 10px 5px rgba(0, 0, 0, 0.1)"}
+                        rounded={"2xl"}
+                        p={"2rem"}
+                    >
+                        <Box textAlign={"center"}>
+                            <Text
+                                color={THEME.THEME_GREEN}
+                                fontSize={"2xl"}
+                                fontWeight={"medium"}
+                            >
+                                Free
+                            </Text>
+                            <Text color={"gray.400"} p={"0.25rem"}>
+                                Rs. 2500/mo
+                            </Text>
+                            <Text fontSize={"sm"} pt={"0.25rem"}>
+                                Upgrade To Premium
+                            </Text>
+                            <Text fontSize={"sm"} pb={"0.25rem"}>
+                                Privacy & Export
+                            </Text>
+                            <Button
+                                backgroundColor={"white"}
+                                color={"black"}
+                                rounded={"full"}
+                                borderColor={THEME.THEME_GREEN}
+                                borderWidth={"1px"}
+                                boxShadow={"0px 0px 10px 5px #0080001f"}
+                                mt={"1rem"}
+                            >
+                                Upgrade To Premium
+                            </Button>
+                        </Box>
+                        <Box>
+                            <Text
+                                className="text-center md:text-left"
+                                pb={"2rem"}
+                                color={THEME.THEME_GREEN}
+                                fontSize={"2xl"}
+                            >
+                                -Feature-
+                            </Text>
+                            <Flex className="items-start md:items-center">
+                                {" "}
+                                <Box
+                                    className="mt-2 md:mt-0 text-green-500"
+                                    height={"5px"}
+                                    width={"5px"}
+                                    minWidth={"5px"}
+                                    backgroundColor={THEME.THEME_GREEN}
+                                    rounded={"full"}
+                                    mr={"0.25rem"}
+                                />
+                                <Text>Blur Contact Names</Text>
+                            </Flex>
+                            <Flex className="items-start md:items-center">
+                                {" "}
+                                <Box
+                                    className="mt-2 md:mt-0 text-green-500"
+                                    height={"5px"}
+                                    width={"5px"}
+                                    minWidth={"5px"}
+                                    backgroundColor={THEME.THEME_GREEN}
+                                    rounded={"full"}
+                                    mr={"0.25rem"}
+                                />
+                                <Text>Blur Profile Photos</Text>
+                            </Flex>
+                            <Flex className="items-start md:items-center">
+                                {" "}
+                                <Box
+                                    className="mt-2 md:mt-0 text-green-500"
+                                    height={"5px"}
+                                    width={"5px"}
+                                    minWidth={"5px"}
+                                    backgroundColor={THEME.THEME_GREEN}
+                                    rounded={"full"}
+                                    mr={"0.25rem"}
+                                />
+                                <Text>Basic Privacy Controls</Text>
+                            </Flex>
+                            <Flex className="items-start md:items-center">
+                                {" "}
+                                <Box
+                                    className="mt-2 md:mt-0 text-green-500"
+                                    height={"5px"}
+                                    width={"5px"}
+                                    minWidth={"5px"}
+                                    backgroundColor={THEME.THEME_GREEN}
+                                    rounded={"full"}
+                                    mr={"0.25rem"}
+                                />
+                                <Text>Export Contacts (CSV/VCF)</Text>
+                            </Flex>
+                            <Flex className="items-start md:items-center">
+                                {" "}
+                                <Box
+                                    className="mt-2 md:mt-0 text-green-500"
+                                    height={"5px"}
+                                    width={"5px"}
+                                    minWidth={"5px"}
+                                    backgroundColor={THEME.THEME_GREEN}
+                                    rounded={"full"}
+                                    mr={"0.25rem"}
+                                />
+                                <Text>Unlimited Downloads</Text>
+                            </Flex>
+                            <Flex className="items-start md:items-center">
+                                {" "}
+                                <Box
+                                    className="mt-2 md:mt-0 text-green-500"
+                                    height={"5px"}
+                                    width={"5px"}
+                                    minWidth={"5px"}
+                                    backgroundColor={THEME.THEME_GREEN}
+                                    rounded={"full"}
+                                    mr={"0.25rem"}
+                                />
+                                <Text>
+                                    Ideal for Businesses and Power Users
+                                </Text>
+                            </Flex>
+                        </Box>
+                        <Box>
+                            <Text
+                                className="text-center md:text-left"
+                                pb={"2rem"}
+                                color={THEME.THEME_GREEN}
+                                fontSize={"2xl"}
+                            >
+                                -Benefits-
+                            </Text>
+                            <Flex className="items-start md:items-center">
+                                {" "}
+                                <Box
+                                    className="mt-2 md:mt-0 text-green-500"
+                                    height={"5px"}
+                                    width={"5px"}
+                                    backgroundColor={THEME.THEME_GREEN}
+                                    rounded={"full"}
+                                    mr={"0.25rem"}
+                                />
+                                <Text>Take control of your privacy</Text>
+                            </Flex>
+                            <Flex className="items-start md:items-center">
+                                {" "}
+                                <Box
+                                    className="mt-2 md:mt-0 text-green-500"
+                                    height={"5px"}
+                                    width={"5px"}
+                                    backgroundColor={THEME.THEME_GREEN}
+                                    rounded={"full"}
+                                    mr={"0.25rem"}
+                                />
+                                <Text>Streamline contact management</Text>
+                            </Flex>
+                            <Flex className="items-start md:items-center">
+                                {" "}
+                                <Box
+                                    className="mt-2 md:mt-0 text-green-500"
+                                    height={"5px"}
+                                    width={"5px"}
+                                    backgroundColor={THEME.THEME_GREEN}
+                                    rounded={"full"}
+                                    mr={"0.25rem"}
+                                />
+                                <Text>Export contacts for business needs</Text>
+                            </Flex>
+                            <Flex className="items-start md:items-center">
+                                {" "}
+                                <Box
+                                    className="mt-2 md:mt-0 text-green-500"
+                                    height={"5px"}
+                                    width={"5px"}
+                                    backgroundColor={THEME.THEME_GREEN}
+                                    rounded={"full"}
+                                    mr={"0.25rem"}
+                                />
+                                <Text>No limits on downloads</Text>
+                            </Flex>
+                            <Flex className="items-start md:items-center">
+                                {" "}
+                                <Box
+                                    className="mt-2 md:mt-0 text-green-500"
+                                    height={"5px"}
+                                    width={"5px"}
+                                    backgroundColor={THEME.THEME_GREEN}
+                                    rounded={"full"}
+                                    mr={"0.25rem"}
+                                />
+                                <Text>
+                                    Perfect for businesses and power users
                                 </Text>
                             </Flex>
                         </Box>
