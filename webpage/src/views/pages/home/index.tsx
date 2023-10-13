@@ -12,7 +12,6 @@ import {
 } from "@chakra-ui/react";
 import {
     CHROME,
-    CUSTOMER,
     ENHANCHMENT,
     EXPORT,
     HERO_BG,
