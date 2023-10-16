@@ -6,8 +6,6 @@ const moveFile = (from: string, to: string) => {
 		fs.renameSync(from, to);
 		return true;
 	} catch (err) {
-		console.log(err);
-
 		return false;
 	}
 };

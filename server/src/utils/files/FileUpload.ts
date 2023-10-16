@@ -131,8 +131,6 @@ const ONLY_CSV_ALLOWED = (
 	file: Express.Multer.File,
 	cb: multer.FileFilterCallback
 ) => {
-	console.log(file.mimetype);
-
 	if (file.mimetype !== 'text/csv') {
 		return cb(new Error('Only CSV are allowed'));
 	}
