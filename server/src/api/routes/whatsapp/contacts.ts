@@ -1,6 +1,6 @@
 import express from 'express';
-import { ContactsController } from '../controller';
-import { VerifyPayment } from '../../middleware';
+import { ContactsController } from '../../controller';
+import { VerifyPayment } from '../../../middleware';
 
 const router = express.Router();
 

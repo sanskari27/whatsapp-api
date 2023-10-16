@@ -1,6 +1,6 @@
 import express from 'express';
-import { LabelsController } from '../controller';
-import { VerifyPayment } from '../../middleware';
+import { LabelsController } from '../../controller';
+import { VerifyPayment } from '../../../middleware';
 
 const router = express.Router();
 

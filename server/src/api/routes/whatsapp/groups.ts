@@ -1,6 +1,6 @@
 import express from 'express';
-import { GroupsController } from '../controller';
-import { VerifyPayment } from '../../middleware';
+import { GroupsController } from '../../controller';
+import { VerifyPayment } from '../../../middleware';
 
 const router = express.Router();
 
