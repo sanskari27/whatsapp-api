@@ -1,5 +1,7 @@
-export const SERVER_URL = 'https://api.whatsleads.in/';
-export const WEBPAGE_URL = 'https://www.whatsleads.in/';
+// export const SERVER_URL = 'https://api.whatsleads.in/';
+// export const WEBPAGE_URL = 'https://www.whatsleads.in/';
+export const SERVER_URL = 'http://193.203.162.155:8282/';
+export const WEBPAGE_URL = 'http://193.203.162.155:8282/';
 // export const SERVER_URL = 'http://localhost:8282/';
 // export const WEBPAGE_URL = 'http://localhost:3000/';
 

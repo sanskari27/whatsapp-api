@@ -17,6 +17,8 @@
 		"bcrypt": "^5.1.0",
 		"cookie-parser": "^1.4.6",
 		"cors": "^2.8.5",
+		"csv-parse": "^5.5.2",
+		"csvtojson": "^2.0.10",
 		"dotenv": "^11.0.0",
 		"express": "^4.17.2",
 		"form-data": "^4.0.0",

@@ -2,9 +2,12 @@ import fs from 'fs';
 
 const moveFile = (from: string, to: string) => {
 	try {
+		
 		fs.renameSync(from, to);
 		return true;
 	} catch (err) {
+		console.log(err);
+
 		return false;
 	}
 };

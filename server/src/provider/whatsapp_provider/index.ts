@@ -55,11 +55,9 @@ export class WhatsappProvider {
 			restartOnAuthFail: true,
 
 			puppeteer: {
-				headless: true,
+				headless: false,
 				args: PUPPETEER_ARGS,
-				executablePath: IS_PRODUCTION
-					? CHROMIUM_PATH
-					: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+				executablePath: IS_PRODUCTION ? CHROMIUM_PATH : undefined, ///'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
 			},
 
 			authStrategy: new LocalAuth({
@@ -78,7 +76,8 @@ export class WhatsappProvider {
 
 	public static getInstance(client_id: ClientID) {
 		if (!client_id) {
-			throw new Error();
+			return new WhatsappProvider(client_id);
+			// throw new Error();
 		}
 		if (WhatsappProvider.clientsMap.has(client_id)) {
 			return WhatsappProvider.clientsMap.get(client_id)!;
@@ -187,7 +186,7 @@ export class WhatsappProvider {
 
 	public getContact() {
 		if (!this.contact) {
-			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.WHATSAPP_NOT_READY);
+			throw new InternalError(INTERNAL_ERRORS.WHATSAPP_ERROR.WHATSAPP_NOT_READY);
 		}
 		return this.contact;
 	}

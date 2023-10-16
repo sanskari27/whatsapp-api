@@ -26,6 +26,11 @@ const COMMON_ERRORS = {
 		TITLE: 'ALREADY_EXISTS',
 		MESSAGE: 'The requested resource already exists. Please try again later.',
 	},
+	ERROR_PARSING_CSV: {
+		STATUS: 400,
+		TITLE: 'ERROR_PARSING_CSV',
+		MESSAGE: 'Error parsing the CSV.',
+	},
 } satisfies {
 	[error: string]: APIError;
 };

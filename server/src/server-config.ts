@@ -9,6 +9,7 @@ import APIError from './errors/api-errors';
 import ErrorReporter from './utils/ErrorReporter';
 import cron from 'node-cron';
 import { WhatsappProvider } from './provider/whatsapp_provider';
+import { MessageSchedulerService } from './database/services';
 
 export default function (app: Express) {
 	//Defines all global variables and constants
@@ -61,5 +62,8 @@ export default function (app: Express) {
 	cron.schedule('0 */3 * * *', function () {
 		WhatsappProvider.removeInactiveSessions();
 		WhatsappProvider.removeUnwantedSessions();
+	});
+	cron.schedule('* * * * * *', function () {
+		MessageSchedulerService.sendScheduledMessage();
 	});
 }

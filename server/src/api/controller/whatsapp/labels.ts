@@ -25,7 +25,7 @@ async function labels(req: Request, res: Response, next: NextFunction) {
 
 	try {
 		if (!whatsapp.isBusiness()) {
-			return next(new APIError(API_ERRORS.USER_ERRORS.BUSINESS_ACCOUNT_REQUIRED));
+			return next(new APIError(API_ERRORS.WHATSAPP_ERROR.BUSINESS_ACCOUNT_REQUIRED));
 		}
 		const labels = await whatsapp.getClient().getLabels();
 
