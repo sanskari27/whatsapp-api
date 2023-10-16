@@ -57,7 +57,9 @@ export class WhatsappProvider {
 			puppeteer: {
 				headless: false,
 				args: PUPPETEER_ARGS,
-				executablePath: IS_PRODUCTION ? CHROMIUM_PATH : undefined, ///'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+				executablePath: IS_PRODUCTION
+					? CHROMIUM_PATH
+					: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
 			},
 
 			authStrategy: new LocalAuth({
