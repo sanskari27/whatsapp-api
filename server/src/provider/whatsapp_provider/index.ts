@@ -84,8 +84,7 @@ export class WhatsappProvider {
 
 	public static getInstance(client_id: ClientID) {
 		if (!client_id) {
-			return new WhatsappProvider(client_id);
-			// throw new Error();
+			throw new Error();
 		}
 		if (WhatsappProvider.clientsMap.has(client_id)) {
 			return WhatsappProvider.clientsMap.get(client_id)!;
