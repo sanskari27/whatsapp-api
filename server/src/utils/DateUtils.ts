@@ -59,24 +59,13 @@ const getLocalTime = (date: Date | number, format = 'YYYY-MM-DDTHH:mm:ss.SSSZ') 
 	return moment(date).local().format(format);
 };
 
-const isTimeBetween = function (
-	startAt: moment.Moment,
-	endAt: moment.Moment,
-	currTime: moment.Moment
-) {
-	// you may pass in aCurrTime or use the *actual* current time
-	const currentTime = !currTime ? moment() : moment(currTime, 'HH:mm');
-	const startTime = moment(startAt.format('HH:mm'), 'HH:mm');
-	const endTime = moment(endAt.format('HH:mm'), 'HH:mm');
+function isTimeBetween(startTime: string, endTime: string, targetTime: string): boolean {
+	const start = moment(startTime, 'HH:mm');
+	const end = moment(endTime, 'HH:mm');
+	const target = moment(targetTime, 'HH:mm');
 
-	if (startTime.hour() >= 12 && endTime.hour() <= 12) {
-		endTime.add(1, 'days'); // handle spanning days
-	}
-
-	const isBetween = currentTime.isBetween(startTime, endTime);
-
-	return isBetween;
-};
+	return target.isBetween(start, end, null, '[]'); // '[]' includes both start and end times
+}
 
 export default {
 	getDate,

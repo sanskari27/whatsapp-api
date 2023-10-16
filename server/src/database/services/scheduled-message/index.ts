@@ -5,9 +5,9 @@ import { IUser } from '../../../types/user';
 import DateUtils from '../../../utils/DateUtils';
 import ScheduledMessageDB from '../../repository/scheduled-message';
 import fs from 'fs';
+import { generateBatchID } from '../../../utils/ExpressUtils';
 import IScheduledMessage from '../../../types/scheduled-message';
 import { Types } from 'mongoose';
-import { generateBatchID } from '../../../utils/ExpressUtils';
 
 type BaseMessage = {
 	number: string;
@@ -71,6 +71,12 @@ export default class MessageSchedulerService {
 		const startMoment = opts.startTime ? DateUtils.getMoment(opts.startTime, 'HH:mm') : undefined;
 		const endMoment = opts.endTime ? DateUtils.getMoment(opts.endTime, 'HH:mm') : undefined;
 		const scheduledTime = DateUtils.getMomentNow();
+		if (startMoment !== undefined && scheduledTime.isBefore(startMoment)) {
+			scheduledTime
+				.hours(startMoment.hours())
+				.minutes(startMoment.minutes())
+				.seconds(startMoment.seconds() + 1);
+		}
 
 		const no_of_batch = Math.ceil(messages.length / opts.batch_size);
 
@@ -80,14 +86,25 @@ export default class MessageSchedulerService {
 				batch_counter * opts.batch_size,
 				Math.min((batch_counter + 1) * opts.batch_size)
 			);
+			scheduledTime.add(opts.delay * batch_counter, 'seconds');
 
 			for (const message of _messages) {
 				if (startMoment !== undefined && endMoment !== undefined) {
-					while (!DateUtils.isTimeBetween(startMoment, endMoment, scheduledTime)) {
-						scheduledTime.add(1, 'day').hours(startMoment.hours()).minutes(startMoment.minutes());
+					if (
+						!DateUtils.isTimeBetween(
+							startMoment.format('HH:mm'),
+							endMoment.format('HH:mm'),
+							scheduledTime.format('HH:mm')
+						)
+					) {
+						// scheduledTime.add(opts.delay * batch_counter, 'seconds');
+						scheduledTime
+							.add(1, 'day')
+							.hours(startMoment.hours())
+							.minutes(startMoment.minutes())
+							.seconds(startMoment.seconds() + 1);
 					}
 				}
-				scheduledTime.add(opts.delay * batch_counter, 'seconds');
 
 				docPromise.push(
 					ScheduledMessageDB.create({
