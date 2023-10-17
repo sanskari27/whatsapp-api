@@ -3,7 +3,7 @@ import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import WAWebJS, { MessageMedia } from 'whatsapp-web.js';
 import fs from 'fs';
-import { ATTACHMENTS_PATH, CSV_PATH } from '../../../config/const';
+import { ATTACHMENTS_PATH, CSV_PATH, PROMOTIONAL_MESSAGE } from '../../../config/const';
 import csv from 'csvtojson/v2';
 import { Respond } from '../../../utils/ExpressUtils';
 import {
@@ -12,7 +12,7 @@ import {
 	getChatIdsByNumbers,
 	getChatIdsWithNumberByNumbers,
 } from '../../../utils/WhatsappUtils';
-import { MessageSchedulerService } from '../../../database/services';
+import { MessageSchedulerService, PaymentService } from '../../../database/services';
 import { Message } from '../../../database/services/scheduled-message';
 import { z } from 'zod';
 
@@ -83,6 +83,11 @@ export async function sendMessage(req: Request, res: Response, next: NextFunctio
 		[key: string]: string;
 	} | null = null;
 	let numbers: string[] = [];
+	const { isSubscribed, isNew } = await new PaymentService(req.locals.user).canSendMessage();
+
+	if (!isSubscribed && !isNew) {
+		return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_REQUIRED));
+	}
 
 	if (type === 'NUMBERS') {
 		numbers = await getChatIdsByNumbers(whatsapp, requestedNumberList as string[]);
@@ -178,7 +183,11 @@ export async function sendMessage(req: Request, res: Response, next: NextFunctio
 		const arr: WAWebJS.Message[] = [];
 		const _message = messages !== null ? messages[number] : message ?? '';
 		if (_message.length > 0) {
-			sendMessagePromises.push(whatsapp.getClient().sendMessage(number, _message));
+			let formatted_message = _message;
+			if (!isSubscribed && isNew) {
+				formatted_message += PROMOTIONAL_MESSAGE;
+			}
+			sendMessagePromises.push(whatsapp.getClient().sendMessage(number, formatted_message));
 		}
 		for (const mediaObject of mediaObjects) {
 			sendMessagePromises.push(
@@ -291,6 +300,12 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 	} | null = null;
 	let numbers: string[] = [];
 
+	const { isSubscribed, isNew } = await new PaymentService(req.locals.user).canSendMessage();
+
+	if (!isSubscribed && !isNew) {
+		return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_REQUIRED));
+	}
+
 	if (type === 'NUMBERS') {
 		numbers = await getChatIdsByNumbers(whatsapp, requestedNumberList as string[]);
 	} else if (type === 'CSV') {
@@ -373,9 +388,13 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 		const arr: WAWebJS.Message[] = [];
 		const _message = messages !== null ? messages[number] : message ?? '';
 		if (_message.length > 0) {
+			let formatted_message = _message;
+			if (!isSubscribed && isNew) {
+				formatted_message += PROMOTIONAL_MESSAGE;
+			}
 			sendMessageList.push({
 				number,
-				message: _message,
+				message: formatted_message,
 				type: 'TEXT',
 			});
 		}

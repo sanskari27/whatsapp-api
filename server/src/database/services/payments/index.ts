@@ -190,6 +190,17 @@ export default class PaymentService {
 		);
 	}
 
+	async canSendMessage() {
+		const isPaymentValid = await PaymentService.isPaymentValid(this.user);
+		const isNew = DateUtils.getMoment(this.user.createdAt)
+			.add(28, 'days')
+			.isAfter(DateUtils.getMomentNow());
+		return {
+			isSubscribed: isPaymentValid,
+			isNew: isNew,
+		};
+	}
+
 	public async getPaymentRecords() {
 		return PaymentDB.find({
 			user: this.user,

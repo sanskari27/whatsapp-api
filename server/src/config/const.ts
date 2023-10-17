@@ -37,3 +37,5 @@ export const BASE_AMOUNT = 2500;
 export const UPLOADS_PATH = '/static/uploads/';
 export const CSV_PATH = '/static/csv/';
 export const ATTACHMENTS_PATH = '/static/attachments/';
+
+export const PROMOTIONAL_MESSAGE = 'Powered by Whatsleads.in';
