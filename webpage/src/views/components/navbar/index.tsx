@@ -13,7 +13,10 @@ import {
 import { useNavigate } from "react-router-dom";
 import { CHROME_GREEN, LOGO, MENU } from "../../../assets/Images";
 import { ROUTES, THEME } from "../../../utils/const";
-export default function Navbar() {
+
+type NavbarProps = { scrollFunction: (id: string) => void }
+
+export default function Navbar({ scrollFunction }: NavbarProps) {
     const { isOpen, onOpen, onClose } = useDisclosure();
 
     const navigate = useNavigate();
@@ -21,7 +24,7 @@ export default function Navbar() {
     return (
         <Flex
             bg="#4CB072"
-            py={"0.75rem"}
+            py={"0.5rem"}
             px={"1rem"}
             justifyContent={"space-between"}
             alignItems={"center"}
@@ -30,7 +33,10 @@ export default function Navbar() {
             width={"100%"}
             zIndex={1000}
         >
-            <Flex alignItems={"center"}>
+            <Flex alignItems={"center"} cursor='pointer' onClick={() => {
+                navigate(ROUTES.HOME)
+                scrollFunction("home")
+            }}>
                 <Image src={LOGO} alt="Logo" height={"35px"} />
                 <Text
                     color={"white"}
@@ -53,7 +59,8 @@ export default function Navbar() {
                     border={"none"}
                     _hover={{ textColor: "green.300" }}
                     onClick={() => {
-                        navigate(ROUTES.HOME);
+                        navigate(ROUTES.HOME)
+                        scrollFunction("home")
                     }}
                 >
                     Home
@@ -65,7 +72,8 @@ export default function Navbar() {
                     border={"none"}
                     _hover={{ textColor: "green.300" }}
                     onClick={() => {
-                        window.location.assign("#features");
+                        navigate(ROUTES.HOME)
+                        scrollFunction("features")
                     }}
                 >
                     Features
@@ -77,7 +85,8 @@ export default function Navbar() {
                     border={"none"}
                     _hover={{ textColor: "green.300" }}
                     onClick={() => {
-                        window.location.assign("#pricing");
+                        navigate(ROUTES.HOME)
+                        scrollFunction("pricing")
                     }}
                 >
                     Pricing
@@ -89,7 +98,8 @@ export default function Navbar() {
                     border={"none"}
                     _hover={{ textColor: "green.300" }}
                     onClick={() => {
-                        window.location.assign("#faq");
+                        navigate(ROUTES.HOME)
+                        scrollFunction("faq")
                     }}
                 >
                     FAQs
@@ -101,6 +111,9 @@ export default function Navbar() {
                     rounded={"full"}
                     outline={"none"}
                     gap={"0.5rem"}
+                    onClick={() => {
+                        window.open("https://chrome.google.com/webstore/detail/whatsleads/fcgjgjellnemnioihojklppanoldamnd?hl=en-GB&authuser=0")
+                    }}
                 >
                     <Image src={CHROME_GREEN} alt="" height={"60%"} />
                     <Text textColor={"#4CB072"}>Add to Chrome</Text>
@@ -187,11 +200,13 @@ export default function Navbar() {
                                 transition={"0.1s"}
                                 cursor={"pointer"}
                                 onClick={() => {
+                                    window.open("https://chrome.google.com/webstore/detail/whatsleads/fcgjgjellnemnioihojklppanoldamnd?hl=en-GB&authuser=0")
                                     window.location.assign("#faq");
                                     onClose();
                                 }}
                                 px={"0.5rem"}
                                 py={"0.25rem"}
+
                             >
                                 <Image
                                     src={CHROME_GREEN}
