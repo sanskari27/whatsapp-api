@@ -155,7 +155,23 @@ export default function Navbar({ scrollFunction }: NavbarProps) {
                                 transition={"0.1s"}
                                 cursor={"pointer"}
                                 onClick={() => {
-                                    window.location.assign("#features");
+                                    navigate(ROUTES.HOME)
+                                    scrollFunction("home")
+                                    onClose();
+                                }}
+                            >
+                                Home
+                            </Button>
+                            <Button
+                                textAlign={"left"}
+                                variant={"link"}
+                                _hover={{ textColor: "green.300" }}
+                                textColor={"white"}
+                                transition={"0.1s"}
+                                cursor={"pointer"}
+                                onClick={() => {
+                                    navigate(ROUTES.HOME)
+                                    scrollFunction("features")
                                     onClose();
                                 }}
                             >
@@ -170,7 +186,8 @@ export default function Navbar({ scrollFunction }: NavbarProps) {
                                 transition={"0.1s"}
                                 cursor={"pointer"}
                                 onClick={() => {
-                                    window.location.assign("#pricing");
+                                    navigate(ROUTES.HOME)
+                                    scrollFunction("pricing")
                                     onClose();
                                 }}
                             >
@@ -185,7 +202,9 @@ export default function Navbar({ scrollFunction }: NavbarProps) {
                                 transition={"0.1s"}
                                 cursor={"pointer"}
                                 onClick={() => {
-                                    window.location.assign("#");
+                                    navigate(ROUTES.HOME)
+                                    scrollFunction("faq")
+                                    onClose();
                                 }}
                             >
                                 FAQs
@@ -201,7 +220,6 @@ export default function Navbar({ scrollFunction }: NavbarProps) {
                                 cursor={"pointer"}
                                 onClick={() => {
                                     window.open("https://chrome.google.com/webstore/detail/whatsleads/fcgjgjellnemnioihojklppanoldamnd?hl=en-GB&authuser=0")
-                                    window.location.assign("#faq");
                                     onClose();
                                 }}
                                 px={"0.5rem"}
