@@ -19,6 +19,7 @@ export default interface IScheduledMessage extends Document {
 
 	sendAt: Date;
 	isSent: boolean;
+	isFailed: boolean;
 
 	batch_id?: string;
 }

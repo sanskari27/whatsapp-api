@@ -22,6 +22,10 @@ const scheduledMessageSchema = new mongoose.Schema<IScheduledMessage>({
 		type: Boolean,
 		default: false,
 	},
+	isFailed: {
+		type: Boolean,
+		default: false,
+	},
 	message: String,
 	attachment: String,
 	caption: String,

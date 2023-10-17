@@ -128,11 +128,14 @@ export default class MessageSchedulerService {
 		const scheduledMessages = await ScheduledMessageDB.find({
 			sendAt: { $lte: DateUtils.getMomentNow().toDate() },
 			isSent: false,
+			isFailed: false,
 		});
 
 		scheduledMessages.forEach(async (scheduledMessage) => {
 			const whatsapp = WhatsappProvider.getInstance(scheduledMessage.sender_client_id);
 			if (!whatsapp.isReady()) {
+				scheduledMessage.isFailed = true;
+				scheduledMessage.save();
 				return null;
 			}
 			if (scheduledMessage.type === 'TEXT') {
@@ -140,6 +143,8 @@ export default class MessageSchedulerService {
 			} else {
 				const path = __basedir + ATTACHMENTS_PATH + scheduledMessage.attachment;
 				if (!fs.existsSync(path)) {
+					scheduledMessage.isFailed = true;
+					scheduledMessage.save();
 					return null;
 				}
 				const media = MessageMedia.fromFilePath(path);
