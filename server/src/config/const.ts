@@ -34,5 +34,6 @@ export enum WALLET_TRANSACTION_STATUS {
 export const TAX = 0;
 export const BASE_AMOUNT = 2500;
 
+export const UPLOADS_PATH = '/static/uploads/';
 export const CSV_PATH = '/static/csv/';
 export const ATTACHMENTS_PATH = '/static/attachments/';
