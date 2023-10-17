@@ -11,6 +11,8 @@ router
 	.all(VerifyClientID, VerifyPayment)
 	.get(PaymentController.isPaymentValid);
 
+router.route('/can-send-message').all(VerifyClientID).get(PaymentController.canSendMessages);
+
 router.route('/:transaction_id/details').get(PaymentController.fetchTransactionDetail);
 router.route('/:transaction_id/verify-payment').post(PaymentController.confirmTransaction);
 router

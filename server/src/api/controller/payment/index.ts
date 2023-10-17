@@ -13,6 +13,17 @@ async function isPaymentValid(req: Request, res: Response, next: NextFunction) {
 		data: {},
 	});
 }
+async function canSendMessages(req: Request, res: Response, next: NextFunction) {
+	const paymentService = new PaymentService(req.locals.user);
+	const { isSubscribed, isNew } = await paymentService.canSendMessage();
+	return Respond({
+		res,
+		status: 200,
+		data: {
+			can_send_message: isSubscribed || isNew,
+		},
+	});
+}
 
 async function fetchTransactionDetail(req: Request, res: Response, next: NextFunction) {
 	const [isIDValid, transaction_id] = idValidator(req.params.transaction_id);
@@ -204,6 +215,7 @@ async function confirmTransaction(req: Request, res: Response, next: NextFunctio
 
 const TokenController = {
 	isPaymentValid,
+	canSendMessages,
 	fetchTransactionDetail,
 	initiatePaymentTransaction,
 	applyCoupon,
