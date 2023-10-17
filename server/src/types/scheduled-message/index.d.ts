@@ -10,12 +10,14 @@ export default interface IScheduledMessage extends Document {
 
 	receiver: string;
 
-	type: 'TEXT' | 'ATTACHMENT';
+	type: 'TEXT' | 'ATTACHMENT' | 'CONTACT_CARDS';
 
 	message: string;
 
 	attachment: string;
 	caption: string;
+
+	shared_contact_cards: string[];
 
 	sendAt: Date;
 	isSent: boolean;

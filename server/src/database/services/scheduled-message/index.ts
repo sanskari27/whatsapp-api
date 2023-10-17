@@ -1,4 +1,4 @@
-import { MessageMedia } from 'whatsapp-web.js';
+import WAWebJS, { MessageMedia } from 'whatsapp-web.js';
 import { ATTACHMENTS_PATH } from '../../../config/const';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 import { IUser } from '../../../types/user';
@@ -11,7 +11,7 @@ import { Types } from 'mongoose';
 
 type BaseMessage = {
 	number: string;
-	type: 'TEXT' | 'ATTACHMENT';
+	type: 'TEXT' | 'ATTACHMENT' | 'CONTACT_CARDS';
 };
 
 type TextMessage = {
@@ -24,6 +24,10 @@ type AttachmentMessage = {
 	caption: string;
 	type: 'ATTACHMENT';
 };
+type ContactCardMessage = {
+	shared_contact_cards: string[];
+	type: 'CONTACT_CARDS';
+};
 type Delay = number;
 type Batch = {
 	delay: number;
@@ -32,7 +36,7 @@ type Batch = {
 	endTime?: string;
 };
 
-export type Message = BaseMessage & (TextMessage | AttachmentMessage);
+export type Message = BaseMessage & (TextMessage | AttachmentMessage | ContactCardMessage);
 
 export default class MessageSchedulerService {
 	private user: IUser;
@@ -53,6 +57,7 @@ export default class MessageSchedulerService {
 				message: message.type === 'TEXT' ? message.message : '',
 				attachment: message.type === 'ATTACHMENT' ? message.attachment : '',
 				caption: message.type === 'ATTACHMENT' ? message.caption : '',
+				shared_contact_cards: message.type === 'CONTACT_CARDS' ? message.shared_contact_cards : '',
 				sendAt: DateUtils.getMomentNow()
 					.add(delay * (index + 1), 'seconds')
 					.toDate(),
@@ -86,7 +91,7 @@ export default class MessageSchedulerService {
 				batch_counter * opts.batch_size,
 				Math.min((batch_counter + 1) * opts.batch_size)
 			);
-			scheduledTime.add(opts.delay * batch_counter, 'seconds');
+			scheduledTime.add(opts.delay, 'seconds');
 
 			for (const message of _messages) {
 				if (startMoment !== undefined && endMoment !== undefined) {
@@ -114,6 +119,8 @@ export default class MessageSchedulerService {
 						message: message.type === 'TEXT' ? message.message : '',
 						attachment: message.type === 'ATTACHMENT' ? message.attachment : '',
 						caption: message.type === 'ATTACHMENT' ? message.caption : '',
+						shared_contact_cards:
+							message.type === 'CONTACT_CARDS' ? message.shared_contact_cards : '',
 						sendAt: scheduledTime.toDate(),
 						batch_id: batch_id,
 					})
@@ -140,6 +147,24 @@ export default class MessageSchedulerService {
 			}
 			if (scheduledMessage.type === 'TEXT') {
 				whatsapp.getClient().sendMessage(scheduledMessage.receiver, scheduledMessage.message);
+			} else if (scheduledMessage.type === 'CONTACT_CARDS') {
+				const contact_cards_promise = (scheduledMessage.shared_contact_cards ?? []).map(
+					async (number) => {
+						const id = await whatsapp.getClient().getNumberId(number);
+						if (!id) {
+							return null;
+						}
+						return await whatsapp.getClient().getContactById(id._serialized);
+					}
+				);
+				Promise.all(contact_cards_promise).then((contact_cards) => {
+					const non_empty_cards = contact_cards.filter(
+						(card) => card !== null
+					) as WAWebJS.Contact[];
+					if (contact_cards.length > 0) {
+						whatsapp.getClient().sendMessage(scheduledMessage.receiver, non_empty_cards);
+					}
+				});
 			} else {
 				const path = __basedir + ATTACHMENTS_PATH + scheduledMessage.attachment;
 				if (!fs.existsSync(path)) {

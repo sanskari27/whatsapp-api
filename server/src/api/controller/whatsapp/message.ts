@@ -33,6 +33,7 @@ export async function sendMessage(req: Request, res: Response, next: NextFunctio
 			label_id: z.string().optional(),
 			message: z.string().optional(),
 			variables: z.string().array().optional(),
+			shared_contact_cards: z.string().array().optional(),
 			attachments: z
 				.object({
 					filename: z.string(),
@@ -51,7 +52,11 @@ export async function sendMessage(req: Request, res: Response, next: NextFunctio
 			} else if (obj.type === 'LABEL' && obj.label_id === undefined) {
 				return false;
 			}
-			if (obj.message === undefined && obj.attachments === undefined) {
+			if (
+				obj.message === undefined &&
+				obj.attachments === undefined &&
+				obj.shared_contact_cards === undefined
+			) {
 				return false;
 			}
 			return true;
@@ -68,6 +73,7 @@ export async function sendMessage(req: Request, res: Response, next: NextFunctio
 		label_id,
 		csv_file,
 		variables,
+		shared_contact_cards,
 		message,
 		attachments,
 		numbers: requestedNumberList,
@@ -157,6 +163,17 @@ export async function sendMessage(req: Request, res: Response, next: NextFunctio
 
 	const sendMessagePromises: Promise<WAWebJS.Message>[] = [];
 
+	const contact_cards_promise = (shared_contact_cards ?? []).map(async (number) => {
+		const id = await whatsapp.getClient().getNumberId(number);
+		if (!id) {
+			return null;
+		}
+		return await whatsapp.getClient().getContactById(id._serialized);
+	});
+	const contact_cards = (await Promise.all(contact_cards_promise)).filter(
+		(card) => card !== null
+	) as WAWebJS.Contact[];
+
 	numbers.forEach((number) => {
 		const arr: WAWebJS.Message[] = [];
 		const _message = messages !== null ? messages[number] : message ?? '';
@@ -170,6 +187,11 @@ export async function sendMessage(req: Request, res: Response, next: NextFunctio
 				})
 			);
 		}
+
+		if (contact_cards.length > 0) {
+			sendMessagePromises.push(whatsapp.getClient().sendMessage(number, contact_cards));
+		}
+
 		return arr;
 	});
 
@@ -205,6 +227,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 			label_id: z.string().optional(),
 			message: z.string().optional(),
 			variables: z.string().array().optional(),
+			shared_contact_cards: z.string().array().optional(),
 			attachments: z
 				.object({
 					filename: z.string(),
@@ -228,7 +251,11 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 			} else if (obj.type === 'LABEL' && obj.label_id === undefined) {
 				return false;
 			}
-			if (obj.message === undefined && obj.attachments === undefined) {
+			if (
+				obj.message === undefined &&
+				obj.attachments === undefined &&
+				obj.shared_contact_cards === undefined
+			) {
 				return false;
 			}
 			if (obj.isBatched && obj.batch_size === undefined) {
@@ -250,6 +277,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 		variables,
 		message,
 		attachments,
+		shared_contact_cards,
 		delay,
 		startTime,
 		endTime,
@@ -359,6 +387,14 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 				type: 'ATTACHMENT',
 			});
 		}
+
+		if (shared_contact_cards && shared_contact_cards.length > 0) {
+			sendMessageList.push({
+				number,
+				shared_contact_cards,
+				type: 'CONTACT_CARDS',
+			});
+		}
 		return arr;
 	});
 
@@ -371,8 +407,8 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 			messageSchedulerService.scheduleBatch(sendMessageList, {
 				delay,
 				batch_size: batch_size ?? 10,
-				startTime:startTime,
-				endTime:endTime,
+				startTime: startTime,
+				endTime: endTime,
 			});
 		} else {
 			messageSchedulerService.scheduleDelay(sendMessageList, delay);

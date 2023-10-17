@@ -16,7 +16,7 @@ const scheduledMessageSchema = new mongoose.Schema<IScheduledMessage>({
 	},
 	type: {
 		type: String,
-		enum: ['TEXT', 'ATTACHMENT'],
+		enum: ['TEXT', 'ATTACHMENT', 'CONTACT_CARDS'],
 	},
 	isSent: {
 		type: Boolean,
@@ -29,6 +29,7 @@ const scheduledMessageSchema = new mongoose.Schema<IScheduledMessage>({
 	message: String,
 	attachment: String,
 	caption: String,
+	shared_contact_cards: [String],
 	sendAt: Date,
 	batch_id: String,
 });
