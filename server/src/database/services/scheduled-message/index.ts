@@ -97,7 +97,6 @@ export default class MessageSchedulerService {
 							scheduledTime.format('HH:mm')
 						)
 					) {
-						// scheduledTime.add(opts.delay * batch_counter, 'seconds');
 						scheduledTime
 							.add(1, 'day')
 							.hours(startMoment.hours())
