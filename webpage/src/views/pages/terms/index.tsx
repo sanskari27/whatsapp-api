@@ -1,11 +1,11 @@
-import { Box, Divider, Flex, Text } from "@chakra-ui/react";
+import { Box, Divider, Flex, Link, Text } from "@chakra-ui/react";
 import { useEffect } from "react";
 import { THEME } from "../../../utils/const";
 import PageWrapper from "../../components/pageWrapper";
 
 const Terms = () => {
     useEffect(() => {
-        window.document.title = "WhatsLeads | Terms & Conditions";
+        window.document.title = "Terms & Conditions | WhatsLeads";
 
         window.scroll(0, 0);
     }, []);
@@ -41,8 +41,6 @@ const Terms = () => {
                             extension are encrypted. Moreover, all Chrome store
                             extensions are reviewed manually by Google team
                             before they approve of them on the Chrome Web store.
-                            Also we are using AWS(Amazon Web Services) for your
-                            data security.
                         </Text>
                     </Box>
                     <Divider my={"1rem"} />
@@ -65,7 +63,7 @@ const Terms = () => {
                             parties?
                         </Text>
                         <Text pt={"1rem"}>
-                            No, the export features get the data from the AWS,
+                            No, the export features get the data from the WhatsApp web,
                             and saves it immediately to your computer, the data
                             is not exposed or processed anywhere outside your
                             computer.
@@ -92,8 +90,8 @@ const Terms = () => {
                         <Text pt={"1rem"}>
                             Users are not able to change their subscribed
                             numbers, and refunds are not provided. Please reach
-                            out to customer support for more help on this at
-                            wa.me/16507312588
+                            out to customer support for more help on this at 
+                            <Link href="https://api.whatsapp.com/send/?phone=919654308000&text&type=phone_number&app_absent=0" target="_blank" color="green.400" _hover={{color:"green.300"}}> wa.me/9654308000</Link>
                         </Text>
                     </Box>
                 </Flex>

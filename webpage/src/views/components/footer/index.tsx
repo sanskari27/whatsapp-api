@@ -8,8 +8,8 @@ import {
     WHATSAPP,
 } from "../../../assets/Images";
 import { ROUTES, THEME } from "../../../utils/const";
-
-export default function Footer() {
+type NavbarProps = { scrollFunction: (id: string) => void }
+export default function Footer({ scrollFunction }: NavbarProps) {
     const navigate = useNavigate();
 
     return (
