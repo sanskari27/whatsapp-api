@@ -180,7 +180,6 @@ export async function sendMessage(req: Request, res: Response, next: NextFunctio
 	) as WAWebJS.Contact[];
 
 	numbers.forEach((number) => {
-		const arr: WAWebJS.Message[] = [];
 		const _message = messages !== null ? messages[number] : message ?? '';
 		if (_message.length > 0) {
 			let formatted_message = _message;
@@ -200,8 +199,6 @@ export async function sendMessage(req: Request, res: Response, next: NextFunctio
 		if (contact_cards.length > 0) {
 			sendMessagePromises.push(whatsapp.getClient().sendMessage(number, contact_cards));
 		}
-
-		return arr;
 	});
 
 	try {

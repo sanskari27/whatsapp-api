@@ -90,12 +90,12 @@ export default class UserService {
 		return [true, auth.revoke_at, auth.user] as [boolean, Date, IUser];
 	}
 
+	getUser() {
+		return this.user;
+	}
 	static async getUser(phone: string) {
-		const user = await UserDB.findOne({ phone });
-		if (user === null) {
-			throw new InternalError(INTERNAL_ERRORS.USER_ERRORS.NOT_FOUND);
-		}
-		return user;
+		const service = await UserService.getService(phone);
+		return service.getUser();
 	}
 
 	static async getRevokedSessions() {

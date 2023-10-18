@@ -3,11 +3,11 @@ import { FileUtils, SingleFileUploadOptions } from '../../../utils/files';
 import FileUpload, { ONLY_CSV_ALLOWED } from '../../../utils/files/FileUpload';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import { Respond, idValidator } from '../../../utils/ExpressUtils';
-import { CSV_PATH } from '../../../config/const';
+import { ATTACHMENTS_PATH, CSV_PATH } from '../../../config/const';
 import CSVUploadService from '../../../database/services/csv_uploads';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 
-export async function csv(req: Request, res: Response, next: NextFunction) {
+export async function saveCSV(req: Request, res: Response, next: NextFunction) {
 	const fileUploadOptions: SingleFileUploadOptions = {
 		field_name: 'file',
 		options: {
@@ -15,12 +15,13 @@ export async function csv(req: Request, res: Response, next: NextFunction) {
 		},
 	};
 
-	const name = req.body.name;
-
 	try {
 		const uploadedFile = await FileUpload.SingleFileUpload(req, res, fileUploadOptions);
 		const destination = __basedir + CSV_PATH + uploadedFile.filename;
 		FileUtils.moveFile(uploadedFile.path, destination);
+
+		const name = req.body.name;
+
 		new CSVUploadService(req.locals.user).addCSV(name, uploadedFile.filename);
 		return Respond({
 			res,
@@ -31,8 +32,6 @@ export async function csv(req: Request, res: Response, next: NextFunction) {
 			},
 		});
 	} catch (err: unknown) {
-		console.log(err);
-
 		return next(new APIError(API_ERRORS.COMMON_ERRORS.FILE_UPLOAD_ERROR));
 	}
 }
@@ -54,13 +53,14 @@ export async function deleteCSV(req: Request, res: Response, next: NextFunction)
 		return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
 	}
 	try {
-		const csv_docs = await new CSVUploadService(req.locals.user).deleteCSV(id);
+		const filename = await new CSVUploadService(req.locals.user).deleteCSV(id);
+		const path = __basedir + CSV_PATH + filename;
+		FileUtils.deleteFile(path);
+
 		return Respond({
 			res,
 			status: 200,
-			data: {
-				csv_list: csv_docs,
-			},
+			data: {},
 		});
 	} catch (err: unknown) {
 		if (err instanceof InternalError) {
@@ -72,10 +72,34 @@ export async function deleteCSV(req: Request, res: Response, next: NextFunction)
 	}
 }
 
+export async function addAttachment(req: Request, res: Response, next: NextFunction) {
+	const fileUploadOptions: SingleFileUploadOptions = {
+		field_name: 'file',
+		options: {},
+	};
+
+	try {
+		const uploadedFile = await FileUpload.SingleFileUpload(req, res, fileUploadOptions);
+		const destination = __basedir + ATTACHMENTS_PATH + uploadedFile.filename;
+		FileUtils.moveFile(uploadedFile.path, destination);
+
+		return Respond({
+			res,
+			status: 200,
+			data: {
+				fileName: uploadedFile.filename,
+			},
+		});
+	} catch (err: unknown) {
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.FILE_UPLOAD_ERROR));
+	}
+}
+
 const UploadsController = {
-	csv,
+	saveCSV,
 	listCSV,
 	deleteCSV,
+	addAttachment,
 };
 
 export default UploadsController;

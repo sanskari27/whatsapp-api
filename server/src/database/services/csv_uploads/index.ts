@@ -35,5 +35,6 @@ export default class CSVUploadService {
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
 		}
 		doc.remove();
+		return doc.filename;
 	}
 }

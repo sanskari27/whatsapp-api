@@ -2,6 +2,7 @@ export { default as ContactsController } from './whatsapp/contacts';
 export { default as GroupsController } from './whatsapp/groups';
 export { default as LabelsController } from './whatsapp/labels';
 export { default as MessageController } from './whatsapp/message';
+export { default as BotController } from './whatsapp/bot';
 export { default as TokenController } from './token';
 export { default as AuthController } from './auth';
 export { default as PaymentController } from './payment';

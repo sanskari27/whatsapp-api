@@ -7,6 +7,7 @@ import logger from '../../config/Logger';
 import QRCode from 'qrcode';
 import { Socket } from 'socket.io';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
+import BotService from '../../database/services/bot';
 
 type ClientID = string;
 
@@ -47,6 +48,7 @@ export class WhatsappProvider {
 	private contact: WAWebJS.Contact | undefined;
 	private user_service: UserService | undefined;
 	private socket: Socket | undefined;
+	private bot_service: BotService | undefined;
 
 	private status: STATUS;
 
@@ -142,6 +144,8 @@ export class WhatsappProvider {
 			this.sendToClient({
 				event: SOCKET_RESPONSES.WHATSAPP_READY,
 			});
+			this.bot_service = new BotService(this.user_service.getUser());
+			this.bot_service.attachWhatsappProvider(this);
 		});
 
 		this.client.on('disconnected', () => {
@@ -153,6 +157,11 @@ export class WhatsappProvider {
 			this.sendToClient({
 				event: SOCKET_RESPONSES.WHATSAPP_CLOSED,
 			});
+		});
+
+		this.client.on('message', (message) => {
+			if (!this.bot_service) return;
+			this.bot_service.handleMessage(message);
 		});
 	}
 
