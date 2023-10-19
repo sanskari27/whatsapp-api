@@ -1,8 +1,8 @@
-import Redis from 'redis';
+import { createClient } from 'redis';
 import ErrorReporter from '../utils/ErrorReporter';
 import { CACHE_TIMEOUT } from './const';
 
-const cache = Redis.createClient();
+const cache = createClient();
 
 export function getOrCache<T>(key: string, cb: () => Promise<T>) {
 	return new Promise((resolve: (value: T) => void, reject) => {

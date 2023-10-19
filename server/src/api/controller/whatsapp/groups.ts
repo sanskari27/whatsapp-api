@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { GroupChat } from 'whatsapp-web.js';
 import { getOrCache } from '../../../config/cache';
-import { CACHE_TOKEN_GENERATOR, COUNTRIES } from '../../../config/const';
+import { CACHE_TOKEN_GENERATOR } from '../../../config/const';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 import { Respond } from '../../../utils/ExpressUtils';
