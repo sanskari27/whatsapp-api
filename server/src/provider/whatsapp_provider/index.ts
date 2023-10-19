@@ -3,17 +3,12 @@ import QRCode from 'qrcode';
 import { Socket } from 'socket.io';
 import WAWebJS, { Client, LocalAuth } from 'whatsapp-web.js';
 import logger from '../../config/Logger';
-import { CHROMIUM_PATH, COUNTRIES, IS_PRODUCTION, SOCKET_RESPONSES } from '../../config/const';
+import { CHROMIUM_PATH, IS_PRODUCTION, SOCKET_RESPONSES } from '../../config/const';
 import { UserService } from '../../database/services';
 import BotService from '../../database/services/bot';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
-import IContact from '../../types/whatsapp/contact';
 
 type ClientID = string;
-
-type MappedContacts = {
-	[contact_number: string]: IContact;
-};
 
 const PUPPETEER_ARGS = [
 	'--no-sandbox',
@@ -236,43 +231,6 @@ export class WhatsappProvider {
 		});
 	}
 
-	async getMappedContacts() {
-		const contacts = (await this.client.getContacts())
-			.filter((contact) => contact.isMyContact && contact.name && contact.number)
-			.reduce(async (accPromise, contact) => {
-				const acc = await accPromise;
-				const country_code = await contact.getCountryCode();
-				acc[contact.number] = {
-					name: contact.name ?? 'Unknown',
-					isBusiness: contact.isBusiness,
-					country: COUNTRIES[country_code as string],
-					number: contact.number,
-					public_name: contact.pushname ?? '',
-				};
-				return acc;
-			}, Promise.resolve({} as MappedContacts));
-
-		return contacts;
-	}
-
-	static async removeUnwantedSessions() {
-		const sessions = await UserService.getRevokedSessions();
-		for (const session of sessions) {
-			await WhatsappProvider.getInstance(session.client_id).logoutClient();
-			WhatsappProvider.deleteSession(session.client_id);
-			session.remove();
-		}
-		logger.info(`Removed ${sessions.length} unwanted sessions`);
-	}
-
-	static async removeInactiveSessions() {
-		const sessions = await UserService.getInactiveSessions();
-		for (const session of sessions) {
-			await WhatsappProvider.getInstance(session.client_id).logoutClient();
-		}
-		logger.info(`Removed ${sessions.length} inactive sessions`);
-	}
-
 	destroyClient() {
 		this.callbackHandlers.onDestroy(this.client_id);
 		if (this.status === STATUS.DESTROYED) {
@@ -296,6 +254,24 @@ export class WhatsappProvider {
 		WhatsappProvider.clientsMap.delete(this.client_id);
 	}
 
+	static async removeUnwantedSessions() {
+		const sessions = await UserService.getRevokedSessions();
+		for (const session of sessions) {
+			await WhatsappProvider.getInstance(session.client_id).logoutClient();
+			WhatsappProvider.deleteSession(session.client_id);
+			session.remove();
+		}
+		logger.info(`Removed ${sessions.length} unwanted sessions`);
+	}
+
+	static async removeInactiveSessions() {
+		const sessions = await UserService.getInactiveSessions();
+		for (const session of sessions) {
+			await WhatsappProvider.getInstance(session.client_id).logoutClient();
+		}
+		logger.info(`Removed ${sessions.length} inactive sessions`);
+	}
+
 	static deleteSession(client_id: string) {
 		WhatsappProvider.clientsMap.delete(client_id);
 		const path = __basedir + '/.wwebjs_auth/session-' + client_id;
@@ -305,31 +281,6 @@ export class WhatsappProvider {
 				recursive: true,
 			});
 		}
-	}
-
-	async getSavedContacts() {
-		const contacts = (await this.client.getContacts()).filter(
-			(contact) => contact.isMyContact && !contact.isMe && !contact.isGroup
-		);
-
-		return contacts;
-	}
-
-	async getNonSavedContacts() {
-		const chats = await this.client.getChats();
-
-		const non_saved_contacts = await Promise.all(
-			chats.map(async (chat) => {
-				if (chat.isGroup) return Promise.resolve(null);
-				const contact = await this.client.getContactById(chat.id._serialized);
-				if (!contact.isMyContact && !contact.isGroup && !contact.isMe) {
-					return contact;
-				}
-				return null;
-			})
-		);
-
-		return non_saved_contacts.filter((contact) => contact !== null) as WAWebJS.Contact[];
 	}
 
 	onDestroy(func: (client_id: ClientID) => void) {

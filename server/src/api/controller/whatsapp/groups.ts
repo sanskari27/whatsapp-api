@@ -1,9 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
-import APIError, { API_ERRORS } from '../../../errors/api-errors';
-import { Respond } from '../../../utils/ExpressUtils';
 import { GroupChat } from 'whatsapp-web.js';
-import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 import { COUNTRIES } from '../../../config/const';
+import APIError, { API_ERRORS } from '../../../errors/api-errors';
+import { WhatsappProvider } from '../../../provider/whatsapp_provider';
+import { Respond } from '../../../utils/ExpressUtils';
+import WhatsappUtils from '../../../utils/WhatsappUtils';
 
 async function groups(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
@@ -39,12 +40,13 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 	const { group_ids } = req.query;
 
 	const whatsapp = WhatsappProvider.getInstance(client_id);
+	const whatsappUtils = new WhatsappUtils(whatsapp);
 	if (!whatsapp.isReady()) {
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
 
 	try {
-		const contacts = await whatsapp.getMappedContacts();
+		const contacts = await whatsappUtils.getMappedContacts();
 
 		if (!group_ids || group_ids.length === 0) {
 			return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));

@@ -7,12 +7,13 @@ import { PaymentService } from '../../../database/services';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 import { Respond } from '../../../utils/ExpressUtils';
-import { getChatIdsByNumbers } from '../../../utils/WhatsappUtils';
+import WhatsappUtils from '../../../utils/WhatsappUtils';
 
 export async function validate(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
 
 	const whatsapp = WhatsappProvider.getInstance(client_id);
+	const whatsappUtils = new WhatsappUtils(whatsapp);
 	if (!whatsapp.isReady()) {
 		console.log('WHatsapp not ready');
 
@@ -65,14 +66,14 @@ export async function validate(req: Request, res: Response, next: NextFunction) 
 		numbers_to_be_checked = requestedNumberList as string[];
 	}
 
-	const chat_ids = await getChatIdsByNumbers(whatsapp, numbers_to_be_checked);
+	const chat_ids = await whatsappUtils.getChatIdsByNumbers(numbers_to_be_checked);
 
 	const valid_contacts = chat_ids.map(async (chat_id) => {
 		const contact = await whatsapp.getClient().getContactById(chat_id);
 		const country_code = await contact.getCountryCode();
 		const country = COUNTRIES[country_code as string];
 		return {
-			name: contact.name ?? '',
+			name: contact.name ?? 'Unknown',
 			number: contact.number,
 			isBusiness: contact.isBusiness ? 'Business' : 'Personal',
 			public_name: contact.pushname ?? '',

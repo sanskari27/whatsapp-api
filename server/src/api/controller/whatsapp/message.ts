@@ -9,17 +9,13 @@ import UploadService from '../../../database/services/uploads';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 import { Respond, generateBatchID } from '../../../utils/ExpressUtils';
-import {
-	getChatIdsByGroup,
-	getChatIdsByLabel,
-	getChatIdsByNumbers,
-	getChatIdsWithNumberByNumbers,
-} from '../../../utils/WhatsappUtils';
+import WhatsappUtils from '../../../utils/WhatsappUtils';
 
 export async function scheduleMessage(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
 
 	const whatsapp = WhatsappProvider.getInstance(client_id);
+	const whatsappUtils = new WhatsappUtils(whatsapp);
 	if (!whatsapp.isReady()) {
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
@@ -104,7 +100,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 	}
 
 	if (type === 'NUMBERS') {
-		numbers = await getChatIdsByNumbers(whatsapp, requestedNumberList as string[]);
+		numbers = await whatsappUtils.getChatIdsByNumbers(requestedNumberList as string[]);
 	} else if (type === 'CSV') {
 		const csvFilePath = __basedir + CSV_PATH + csv_file;
 		if (!fs.existsSync(csvFilePath)) {
@@ -125,8 +121,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 			return acc;
 		}, {});
 
-		const numbersWithId = await getChatIdsWithNumberByNumbers(
-			whatsapp,
+		const numbersWithId = await whatsappUtils.getChatIdsWithNumberByNumbers(
 			Object.keys(parsed_csv_mapped)
 		);
 		numbers = numbersWithId.map((item) => item.numberId);
@@ -151,13 +146,13 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 		}
 	} else if (type === 'GROUP') {
 		try {
-			numbers = await getChatIdsByGroup(whatsapp, group_id as string);
+			numbers = await whatsappUtils.getChatIdsByGroup(group_id as string);
 		} catch (err) {
 			return next(new APIError(API_ERRORS.WHATSAPP_ERROR.INVALID_GROUP_ID));
 		}
 	} else if (type === 'LABEL') {
 		try {
-			numbers = await getChatIdsByLabel(whatsapp, label_id as string);
+			numbers = await whatsappUtils.getChatIdsByLabel(label_id as string);
 		} catch (err) {
 			return next(new APIError(API_ERRORS.WHATSAPP_ERROR.BUSINESS_ACCOUNT_REQUIRED));
 		}
