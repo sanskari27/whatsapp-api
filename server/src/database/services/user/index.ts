@@ -2,6 +2,7 @@ import { Types } from 'mongoose';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 import { IAuthDetail, IUser } from '../../../types/user';
 import DateUtils from '../../../utils/DateUtils';
+import ScheduledMessageDB from '../../repository/scheduled-message';
 import { AuthDetailDB, UserDB } from '../../repository/user';
 import PaymentService from '../payments';
 
@@ -48,7 +49,6 @@ export default class UserService {
 					client_id,
 				});
 			}
-			
 		} catch (e) {
 			//ignored
 		}
@@ -137,14 +137,28 @@ export default class UserService {
 			},
 		});
 
+		const scheduled = await ScheduledMessageDB.find({
+			isSent: false,
+			isFailed: false,
+		});
+
+		const scheduleMap = scheduled.reduce(
+			(acc, item) => {
+				acc[item.sender_client_id] = true;
+				return acc;
+			},
+			{} as {
+				[key: string]: true;
+			}
+		);
+
 		const sessionsPromise = revokable.map(async (auth) => {
-			const validPayment = await PaymentService.isPaymentValid(auth.user);
-			if (!validPayment) {
-				return auth;
-			} else if (
+			if (
 				DateUtils.getMoment(auth.last_active).add(12, 'hours').isBefore(DateUtils.getMomentNow())
 			) {
-				return auth;
+				if (!scheduleMap[auth.client_id]) {
+					return auth;
+				}
 			}
 			return null;
 		});

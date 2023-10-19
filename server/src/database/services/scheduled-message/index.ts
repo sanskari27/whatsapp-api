@@ -121,6 +121,12 @@ export default class MessageSchedulerService {
 				scheduledMessage.sender
 			).canSendMessage();
 
+			if (!isSubscribed && !isNew) {
+				scheduledMessage.isFailed = true;
+				scheduledMessage.save();
+				return;
+			}
+
 			if (scheduledMessage.message) {
 				whatsapp.getClient().sendMessage(scheduledMessage.receiver, scheduledMessage.message);
 			}
@@ -157,7 +163,7 @@ export default class MessageSchedulerService {
 				});
 			});
 
-			if (!isSubscribed && isNew) {
+			if (isNew) {
 				whatsapp.getClient().sendMessage(scheduledMessage.receiver, PROMOTIONAL_MESSAGE);
 			}
 
