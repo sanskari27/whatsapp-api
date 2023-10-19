@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { Types } from 'mongoose';
-import WAWebJS from 'whatsapp-web.js';
+import WAWebJS, { MessageMedia } from 'whatsapp-web.js';
 import {
 	ATTACHMENTS_PATH,
 	BOT_TRIGGER_OPTIONS,
@@ -102,8 +102,6 @@ export default class BotService {
 			}
 			if (bot.trigger_gap_seconds > 0) {
 				const last_message_time = last_messages[bot.bot_id.toString()];
-				console.log(last_message_time);
-
 				if (!isNaN(last_message_time) && last_message_time <= bot.trigger_gap_seconds) {
 					return false;
 				}
@@ -154,7 +152,8 @@ export default class BotService {
 				if (!fs.existsSync(path)) {
 					continue;
 				}
-				whatsapp.getClient().sendMessage(message.from, path, {
+				const media = MessageMedia.fromFilePath(path);
+				whatsapp.getClient().sendMessage(message.from, media, {
 					caption: mediaObject.caption,
 				});
 			}
