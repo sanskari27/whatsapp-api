@@ -132,7 +132,7 @@ export default class BotService {
 		if (!this.whatsapp) {
 			throw new Error('Whatsapp Provider not attached.');
 		}
-		const { isSubscribed, isNew } = await this.paymentService.canSendMessage();
+		const { isSubscribed, isNew } = await this.paymentService.isSubscribed();
 		if (!isSubscribed && !isNew) {
 			return;
 		}

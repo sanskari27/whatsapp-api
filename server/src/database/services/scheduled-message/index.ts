@@ -119,7 +119,7 @@ export default class MessageSchedulerService {
 
 			const { isSubscribed, isNew } = await new PaymentService(
 				scheduledMessage.sender
-			).canSendMessage();
+			).isSubscribed();
 
 			if (!isSubscribed && !isNew) {
 				scheduledMessage.isFailed = true;

@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from 'express';
-import APIError, { API_ERRORS } from '../errors/api-errors';
 import { PaymentService } from '../database/services';
+import APIError, { API_ERRORS } from '../errors/api-errors';
 
-export default async function VerifyPayment(req: Request, res: Response, next: NextFunction) {
+export async function isSubscribed(req: Request, res: Response, next: NextFunction) {
 	try {
-		const isPaymentValid = await PaymentService.isPaymentValid(req.locals.user);
+		const { isSubscribed } = await new PaymentService(req.locals.user).isSubscribed();
 
-		if (!isPaymentValid) {
+		if (!isSubscribed) {
 			return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_REQUIRED));
 		}
 
@@ -15,3 +15,27 @@ export default async function VerifyPayment(req: Request, res: Response, next: N
 		return next(new APIError(API_ERRORS.USER_ERRORS.AUTHORIZATION_ERROR));
 	}
 }
+
+export async function isPseudoSubscribed(req: Request, res: Response, next: NextFunction) {
+	try {
+		const { isSubscribed, isNew } = await new PaymentService(req.locals.user).isSubscribed();
+		if (isSubscribed) {
+			return next();
+		}
+
+		if (isNew) {
+			return next();
+		}
+
+		return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_REQUIRED));
+	} catch (e: unknown) {
+		return next(new APIError(API_ERRORS.USER_ERRORS.AUTHORIZATION_ERROR));
+	}
+}
+
+const PaymentValidator = {
+	isSubscribed,
+	isPseudoSubscribed,
+};
+
+export default PaymentValidator;

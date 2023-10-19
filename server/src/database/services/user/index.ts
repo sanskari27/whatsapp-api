@@ -116,8 +116,8 @@ export default class UserService {
 		});
 
 		const sessionsPromise = revokable.map(async (auth) => {
-			const validPayment = await PaymentService.isPaymentValid(auth.user);
-			if (!validPayment) {
+			const { isSubscribed } = await new PaymentService(auth.user).isSubscribed();
+			if (!isSubscribed) {
 				return auth;
 			}
 			return null;

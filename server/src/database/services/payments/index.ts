@@ -1,12 +1,12 @@
-import { UserDB } from '../../repository/user';
-import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
-import { IUser } from '../../../types/user';
-import PaymentDB from '../../repository/payments';
-import { WALLET_TRANSACTION_STATUS } from '../../../config/const';
-import DateUtils from '../../../utils/DateUtils';
-import RazorpayProvider from '../../../provider/razorpay';
 import { Types } from 'mongoose';
+import { WALLET_TRANSACTION_STATUS } from '../../../config/const';
+import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
+import RazorpayProvider from '../../../provider/razorpay';
+import { IUser } from '../../../types/user';
+import DateUtils from '../../../utils/DateUtils';
 import CouponDB from '../../repository/coupon';
+import PaymentDB from '../../repository/payments';
+import { UserDB } from '../../repository/user';
 
 export default class PaymentService {
 	private user: IUser;
@@ -178,7 +178,7 @@ export default class PaymentService {
 		await walletTransaction.save();
 	}
 
-	public static async isPaymentValid(user: IUser) {
+	private static async isPaymentValid(user: IUser) {
 		return (
 			(await PaymentDB.exists({
 				user,
@@ -190,7 +190,7 @@ export default class PaymentService {
 		);
 	}
 
-	async canSendMessage() {
+	async isSubscribed() {
 		const isPaymentValid = await PaymentService.isPaymentValid(this.user);
 		const isNew = DateUtils.getMoment(this.user.createdAt)
 			.add(28, 'days')

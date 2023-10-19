@@ -97,7 +97,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 	} | null = null;
 	let numbers: string[] = [];
 
-	const { isSubscribed, isNew } = await new PaymentService(req.locals.user).canSendMessage();
+	const { isSubscribed, isNew } = await new PaymentService(req.locals.user).isSubscribed();
 
 	if (!isSubscribed && !isNew) {
 		return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_REQUIRED));

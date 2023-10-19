@@ -1,25 +1,20 @@
-import { Request, Response, NextFunction } from 'express';
-import { Respond, idValidator } from '../../../utils/ExpressUtils';
+import { NextFunction, Request, Response } from 'express';
 import { z } from 'zod';
+import { BASE_AMOUNT } from '../../../config/const';
+import { PaymentService } from '../../../database/services';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
-import { PaymentService } from '../../../database/services';
-import { BASE_AMOUNT } from '../../../config/const';
+import { Respond, idValidator } from '../../../utils/ExpressUtils';
 
 async function isPaymentValid(req: Request, res: Response, next: NextFunction) {
+	const { isSubscribed, isNew } = await new PaymentService(req.locals.user).isSubscribed();
+
 	return Respond({
 		res,
-		status: 200,
-		data: {},
-	});
-}
-async function canSendMessages(req: Request, res: Response, next: NextFunction) {
-	const paymentService = new PaymentService(req.locals.user);
-	const { isSubscribed, isNew } = await paymentService.canSendMessage();
-	return Respond({
-		res,
-		status: 200,
+		status: isSubscribed || isNew ? 200 : 400,
 		data: {
+			isSubscribed,
+			isNew,
 			can_send_message: isSubscribed || isNew,
 		},
 	});
@@ -215,7 +210,6 @@ async function confirmTransaction(req: Request, res: Response, next: NextFunctio
 
 const TokenController = {
 	isPaymentValid,
-	canSendMessages,
 	fetchTransactionDetail,
 	initiatePaymentTransaction,
 	applyCoupon,

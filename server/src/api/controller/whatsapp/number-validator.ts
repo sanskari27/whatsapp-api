@@ -41,7 +41,7 @@ export async function validate(req: Request, res: Response, next: NextFunction) 
 	}
 	const { type, csv_file, numbers: requestedNumberList } = reqValidatorResult.data;
 
-	const { isSubscribed, isNew } = await new PaymentService(req.locals.user).canSendMessage();
+	const { isSubscribed, isNew } = await new PaymentService(req.locals.user).isSubscribed();
 
 	if (!isSubscribed && !isNew) {
 		return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_REQUIRED));
