@@ -50,3 +50,18 @@ export const CSV_PATH = '/static/csv/';
 export const ATTACHMENTS_PATH = '/static/attachments/';
 
 export const PROMOTIONAL_MESSAGE = 'Powered by Whatsleads.in';
+
+export const SESSION_STARTUP_WAIT_TIME = 5 * 60 * 1000; //milis
+export const CACHE_TIMEOUT = 5 * 60; //seconds
+
+export const CACHE_TOKEN_GENERATOR = {
+	SAVED_CONTACTS: (client_id: string) => `SAVED_CONTACTS?client_id=${client_id}`,
+	NON_SAVED_CONTACTS: (client_id: string) => `NON_SAVED_CONTACTS?client_id=${client_id}`,
+	GROUPS: (client_id: string) => `GROUPS?client_id=${client_id}`,
+	LABELS: (client_id: string) => `LABELS?client_id=${client_id}`,
+	MAPPED_CONTACTS: (client_id: string) => `MAPPED_CONTACTS?client_id=${client_id}`,
+	GROUPS_EXPORT: (client_id: string, group_id: string) =>
+		`GROUPS_EXPORT?client_id=${client_id}&group_id=${group_id}`,
+	LABELS_EXPORT: (client_id: string, label_id: string) =>
+		`LABELS_EXPORT?client_id=${client_id}&label_id=${label_id}`,
+};

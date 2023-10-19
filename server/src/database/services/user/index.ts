@@ -55,10 +55,13 @@ export default class UserService {
 		}
 	}
 	async logout(client_id: string) {
+		UserService.logout(client_id);
+	}
+
+	static async logout(client_id: string) {
 		try {
 			await AuthDetailDB.updateOne(
 				{
-					user: this.user._id,
 					client_id,
 				},
 				{

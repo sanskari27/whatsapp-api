@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import WAWebJS from 'whatsapp-web.js';
-import { COUNTRIES } from '../../../config/const';
+import { getOrCache } from '../../../config/cache';
+import { CACHE_TOKEN_GENERATOR, COUNTRIES } from '../../../config/const';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 import { Respond } from '../../../utils/ExpressUtils';
@@ -16,46 +17,52 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 	}
 
 	const options = {
-		all_contacts: true,
-		saved_contacts: false,
+		saved_contacts: true,
+		non_saved_contacts: true,
 	};
 	if (req.query.saved_contacts && req.query.saved_contacts === 'true') {
-		options.all_contacts = false;
 		options.saved_contacts = true;
+		options.non_saved_contacts = false;
 	} else if (req.query.non_saved_contacts && req.query.non_saved_contacts === 'true') {
-		options.all_contacts = false;
+		options.non_saved_contacts = true;
 		options.saved_contacts = false;
 	}
 
 	try {
-		const contacts = [] as WAWebJS.Contact[];
+		const contacts = [] as {
+			name: string | undefined;
+			number: string;
+			isBusiness: string;
+			country: string;
+			public_name: string;
+		}[];
 
-		const saved = await whatsappUtils.getSavedContacts();
-		const non_saved = await whatsappUtils.getNonSavedContacts();
-		if (options.all_contacts) {
-			contacts.push(...saved, ...non_saved);
-		} else if (options.saved_contacts) {
+		const saved = await getOrCache(CACHE_TOKEN_GENERATOR.SAVED_CONTACTS(client_id), async () => {
+			const saved = await whatsappUtils.getSavedContacts();
+			const contact_with_country_code = await whatsappUtils.contactsWithCountry(saved);
+			return await Promise.all(contact_with_country_code);
+		});
+
+		const non_saved = await getOrCache(
+			CACHE_TOKEN_GENERATOR.NON_SAVED_CONTACTS(client_id),
+			async () => {
+				const non_saved = await whatsappUtils.getNonSavedContacts();
+				const contact_with_country_code = await whatsappUtils.contactsWithCountry(non_saved);
+				return await Promise.all(contact_with_country_code);
+			}
+		);
+
+		if (options.saved_contacts) {
 			contacts.push(...saved);
-		} else {
+		}
+		if (options.non_saved_contacts) {
 			contacts.push(...non_saved);
 		}
-
-		const results = contacts.map(async (contact) => {
-			const country_code = await contact.getCountryCode();
-			const country = COUNTRIES[country_code as string];
-			return {
-				name: contact.name,
-				number: contact.number,
-				isBusiness: contact.isBusiness ? 'Business' : 'Personal',
-				country,
-				public_name: contact.pushname ?? '',
-			};
-		});
 
 		return Respond({
 			res,
 			status: 200,
-			data: { contacts: await Promise.all(results) },
+			data: { contacts },
 		});
 	} catch (err) {
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
@@ -72,8 +79,20 @@ async function countContacts(req: Request, res: Response, next: NextFunction) {
 	}
 
 	try {
-		const saved = await whatsappUtils.getSavedContacts();
-		const non_saved = await whatsappUtils.getNonSavedContacts();
+		const saved = await getOrCache(CACHE_TOKEN_GENERATOR.SAVED_CONTACTS(client_id), async () => {
+			const saved = await whatsappUtils.getSavedContacts();
+			const contact_with_country_code = await whatsappUtils.contactsWithCountry(saved);
+			return await Promise.all(contact_with_country_code);
+		});
+
+		const non_saved = await getOrCache(
+			CACHE_TOKEN_GENERATOR.NON_SAVED_CONTACTS(client_id),
+			async () => {
+				const non_saved = await whatsappUtils.getNonSavedContacts();
+				const contact_with_country_code = await whatsappUtils.contactsWithCountry(non_saved);
+				return await Promise.all(contact_with_country_code);
+			}
+		);
 
 		return Respond({
 			res,

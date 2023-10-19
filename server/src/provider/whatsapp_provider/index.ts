@@ -1,8 +1,6 @@
-import fs from 'fs';
 import QRCode from 'qrcode';
 import { Socket } from 'socket.io';
 import WAWebJS, { Client, LocalAuth } from 'whatsapp-web.js';
-import logger from '../../config/Logger';
 import { CHROMIUM_PATH, IS_PRODUCTION, SOCKET_RESPONSES } from '../../config/const';
 import { UserService } from '../../database/services';
 import BotService from '../../database/services/bot';
@@ -125,6 +123,8 @@ export class WhatsappProvider {
 		});
 
 		this.client.on('ready', async () => {
+			console.log('READY');
+
 			this.status = STATUS.READY;
 
 			this.number = this.client.info.wid.user;
@@ -254,36 +254,11 @@ export class WhatsappProvider {
 		WhatsappProvider.clientsMap.delete(this.client_id);
 	}
 
-	static async removeUnwantedSessions() {
-		const sessions = await UserService.getRevokedSessions();
-		for (const session of sessions) {
-			await WhatsappProvider.getInstance(session.client_id).logoutClient();
-			WhatsappProvider.deleteSession(session.client_id);
-			session.remove();
-		}
-		logger.info(`Removed ${sessions.length} unwanted sessions`);
-	}
-
-	static async removeInactiveSessions() {
-		const sessions = await UserService.getInactiveSessions();
-		for (const session of sessions) {
-			await WhatsappProvider.getInstance(session.client_id).logoutClient();
-		}
-		logger.info(`Removed ${sessions.length} inactive sessions`);
+	onDestroy(func: (client_id: ClientID) => void) {
+		this.callbackHandlers.onDestroy = func;
 	}
 
 	static deleteSession(client_id: string) {
 		WhatsappProvider.clientsMap.delete(client_id);
-		const path = __basedir + '/.wwebjs_auth/session-' + client_id;
-		const dataExists = fs.existsSync(path);
-		if (dataExists) {
-			fs.rmSync(path, {
-				recursive: true,
-			});
-		}
-	}
-
-	onDestroy(func: (client_id: ClientID) => void) {
-		this.callbackHandlers.onDestroy = func;
 	}
 }

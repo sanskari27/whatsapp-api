@@ -1,16 +1,15 @@
-import express, { Express, Request, Response, NextFunction } from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-
+import express, { Express, NextFunction, Request, Response } from 'express';
+import fs from 'fs';
+import cron from 'node-cron';
+import routes from './api/routes';
 import logger from './config/Logger';
 import { ATTACHMENTS_PATH, CSV_PATH, IS_PRODUCTION, UPLOADS_PATH } from './config/const';
-import routes from './api/routes';
+import { MessageSchedulerService } from './database/services';
 import APIError from './errors/api-errors';
 import ErrorReporter from './utils/ErrorReporter';
-import cron from 'node-cron';
-import { WhatsappProvider } from './provider/whatsapp_provider';
-import { MessageSchedulerService } from './database/services';
-import fs from 'fs';
+import WhatsappUtils from './utils/WhatsappUtils';
 
 export default function (app: Express) {
 	//Defines all global variables and constants
@@ -60,11 +59,12 @@ export default function (app: Express) {
 	});
 
 	createDir();
+	WhatsappUtils.resumeSessions();
 
 	//0 0 * * *
 	cron.schedule('0 */3 * * *', function () {
-		WhatsappProvider.removeInactiveSessions();
-		WhatsappProvider.removeUnwantedSessions();
+		WhatsappUtils.removeInactiveSessions();
+		WhatsappUtils.removeUnwantedSessions();
 	});
 	cron.schedule('* * * * * *', function () {
 		MessageSchedulerService.sendScheduledMessage();
