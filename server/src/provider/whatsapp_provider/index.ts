@@ -123,8 +123,6 @@ export class WhatsappProvider {
 		});
 
 		this.client.on('ready', async () => {
-			console.log('READY');
-
 			this.status = STATUS.READY;
 
 			this.number = this.client.info.wid.user;

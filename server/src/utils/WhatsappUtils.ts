@@ -1,6 +1,6 @@
 import fs from 'fs';
 import WAWebJS, { GroupChat } from 'whatsapp-web.js';
-import { COUNTRIES, SESSION_STARTUP_WAIT_TIME } from '../config/const';
+import { COUNTRIES, IS_PRODUCTION, SESSION_STARTUP_WAIT_TIME } from '../config/const';
 import { UserService } from '../database/services';
 import APIError, { API_ERRORS } from '../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../errors/internal-errors';
@@ -233,6 +233,7 @@ export default class WhatsappUtils {
 	}
 
 	static async resumeSessions() {
+		if (!IS_PRODUCTION) return;
 		const path = __basedir + '/.wwebjs_auth';
 		if (!fs.existsSync(path)) {
 			return;

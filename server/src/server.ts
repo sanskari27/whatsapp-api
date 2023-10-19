@@ -5,12 +5,13 @@ dotenv.config();
 import express from 'express';
 import configServer from './server-config';
 
-import { PORT } from './config/const';
-import Date from './utils/DateUtils';
-import logger from './config/Logger';
-import ErrorReporter from './utils/ErrorReporter';
-import { SocketServerProvider } from './socket';
 import connectDB from './config/DB';
+import logger from './config/Logger';
+import cache from './config/cache';
+import { PORT } from './config/const';
+import { SocketServerProvider } from './socket';
+import Date from './utils/DateUtils';
+import ErrorReporter from './utils/ErrorReporter';
 
 //  ------------------------- Setup Variables
 const app = express();
@@ -30,6 +31,7 @@ connectDB()
 
 const server = app.listen(PORT, async () => {
 	SocketServerProvider.getInstance(server);
+	await cache.connect();
 	logger.info(`Server started on port ${PORT}`, {
 		label: 'Running Status',
 	});
