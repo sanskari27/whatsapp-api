@@ -42,13 +42,14 @@ export default class UserService {
 				user: this.user._id,
 				client_id,
 			});
+			if (auth && !auth.isRevoked) return;
 			if (auth && auth.isRevoked) {
 				await auth.remove();
-				await AuthDetailDB.create({
-					user: this.user._id,
-					client_id,
-				});
 			}
+			await AuthDetailDB.create({
+				user: this.user._id,
+				client_id,
+			});
 		} catch (e) {
 			//ignored
 		}

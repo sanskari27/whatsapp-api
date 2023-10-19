@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { UserService } from '../database/services';
 import APIError, { API_ERRORS } from '../errors/api-errors';
+import { WhatsappProvider } from '../provider/whatsapp_provider';
 import { Locals } from '../types';
 
 export default async function VerifyClientID(req: Request, res: Response, next: NextFunction) {
@@ -14,9 +15,7 @@ export default async function VerifyClientID(req: Request, res: Response, next: 
 		const [isValidAuth, _, user] = await UserService.isValidAuth(client_id);
 
 		if (!isValidAuth) {
-			console.log('Not Valid Auth');
-
-			// WhatsappProvider.removeClient(client_id);
+			WhatsappProvider.deleteSession(client_id);
 			return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 		}
 

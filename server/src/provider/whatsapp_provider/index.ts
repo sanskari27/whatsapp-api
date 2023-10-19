@@ -160,9 +160,9 @@ export class WhatsappProvider {
 			});
 		});
 
-		this.client.on('message', (message) => {
+		this.client.on('message', async (message) => {
 			if (!this.bot_service) return;
-			this.bot_service.handleMessage(message);
+			this.bot_service.handleMessage(message, await message.getContact());
 		});
 	}
 
@@ -259,9 +259,7 @@ export class WhatsappProvider {
 		const sessions = await UserService.getRevokedSessions();
 		for (const session of sessions) {
 			await WhatsappProvider.getInstance(session.client_id).logoutClient();
-			WhatsappProvider.deleteSession({
-				client_id: session.client_id,
-			});
+			WhatsappProvider.deleteSession(session.client_id);
 			session.remove();
 		}
 		logger.info(`Removed ${sessions.length} unwanted sessions`);
@@ -298,7 +296,8 @@ export class WhatsappProvider {
 		WhatsappProvider.clientsMap.delete(this.client_id);
 	}
 
-	static deleteSession({ client_id }: { client_id: string }) {
+	static deleteSession(client_id: string) {
+		WhatsappProvider.clientsMap.delete(client_id);
 		const path = __basedir + '/.wwebjs_auth/session-' + client_id;
 		const dataExists = fs.existsSync(path);
 		if (dataExists) {

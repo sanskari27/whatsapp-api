@@ -1,9 +1,9 @@
-import { Server as SocketServer, Socket } from 'socket.io';
-import { WhatsappProvider } from '../provider/whatsapp_provider';
 import * as http from 'http';
+import { Socket, Server as SocketServer } from 'socket.io';
 import { SOCKET_EVENTS } from '../config/const';
-import { generateClientID } from '../utils/ExpressUtils';
 import { UserService } from '../database/services';
+import { WhatsappProvider } from '../provider/whatsapp_provider';
+import { generateClientID } from '../utils/ExpressUtils';
 
 type WhatsappClientID = string;
 type SocketID = string;
@@ -34,8 +34,19 @@ export default class SocketServerProvider {
 
 	private attachListeners() {
 		this.io.on('connection', (socket) => {
-			socket.on(SOCKET_EVENTS.INITIALIZE, (cid: string | undefined) => {
-				const client_id = cid || generateClientID();
+			socket.on(SOCKET_EVENTS.INITIALIZE, async (cid: string | undefined) => {
+				let client_id = '';
+				if (cid) {
+					const [isValidAuth] = await UserService.isValidAuth(cid);
+					if (!isValidAuth) {
+						WhatsappProvider.deleteSession(cid);
+						client_id = generateClientID();
+					} else {
+						client_id = cid;
+					}
+				} else {
+					client_id = generateClientID();
+				}
 				SocketServerProvider.socketsMap.set(socket.id, client_id);
 				this.initializeWhatsappClient(socket, client_id);
 			});

@@ -1,22 +1,17 @@
 import mongoose, { Schema } from 'mongoose';
+import { BOT_TRIGGER_OPTIONS, BOT_TRIGGER_TO } from '../../../config/const';
 import IBot from '../../../types/bot/Bot';
-import { BOT_TRIGGER_OPTIONS } from '../../../config/const';
 
 const botSchema = new mongoose.Schema<IBot>({
 	user: {
 		type: Schema.Types.ObjectId,
 		ref: 'User',
 	},
-	respond_to_all: {
-		type: Boolean,
-		default: false,
+	respond_to: {
+		type: String,
+		enum: Object.values(BOT_TRIGGER_TO),
+		default: BOT_TRIGGER_TO.ALL,
 	},
-	respond_to_recipients: [
-		{
-			type: String,
-			default: [],
-		},
-	],
 	trigger: {
 		type: String,
 	},
@@ -30,8 +25,8 @@ const botSchema = new mongoose.Schema<IBot>({
 	message: String,
 	attachments: [
 		{
-			filename: String,
-			caption: String,
+			type: Schema.Types.ObjectId,
+			ref: 'Upload',
 		},
 	],
 	shared_contact_cards: [String],

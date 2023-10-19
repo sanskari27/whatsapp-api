@@ -2,11 +2,12 @@ import csv from 'csvtojson/v2';
 import { NextFunction, Request, Response } from 'express';
 import fs from 'fs';
 import { z } from 'zod';
-import { CSV_PATH } from '../../../config/const';
+import { COUNTRIES, CSV_PATH } from '../../../config/const';
 import { PaymentService } from '../../../database/services';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 import { Respond } from '../../../utils/ExpressUtils';
+import { getChatIdsByNumbers } from '../../../utils/WhatsappUtils';
 
 export async function validate(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
@@ -64,25 +65,27 @@ export async function validate(req: Request, res: Response, next: NextFunction) 
 		numbers_to_be_checked = requestedNumberList as string[];
 	}
 
-	const numbersValidator = numbers_to_be_checked.map(async (number) => {
-		const isRegisteredUser = await whatsapp.getClient().isRegisteredUser(number);
-		return isRegisteredUser ? number : null;
+	const chat_ids = await getChatIdsByNumbers(whatsapp, numbers_to_be_checked);
+
+	const valid_contacts = chat_ids.map(async (chat_id) => {
+		const contact = await whatsapp.getClient().getContactById(chat_id);
+		const country_code = await contact.getCountryCode();
+		const country = COUNTRIES[country_code as string];
+		return {
+			name: contact.name ?? '',
+			number: contact.number,
+			isBusiness: contact.isBusiness ? 'Business' : 'Personal',
+			public_name: contact.pushname ?? '',
+			country,
+		};
 	});
-
-	const valid_numbers = (await Promise.all(numbersValidator)).filter(
-		(number) => number !== null
-	) as string[];
-
-	const valid_numbers_set = new Set(valid_numbers);
-	const invalid_numbers = numbers_to_be_checked.filter((x) => !valid_numbers_set.has(x));
 
 	try {
 		return Respond({
 			res,
 			status: 200,
 			data: {
-				valid_numbers,
-				invalid_numbers,
+				contacts: await Promise.all(valid_contacts),
 			},
 		});
 	} catch (e) {

@@ -1,9 +1,15 @@
 import fs from 'fs';
 import { Types } from 'mongoose';
 import WAWebJS from 'whatsapp-web.js';
-import { ATTACHMENTS_PATH, BOT_TRIGGER_OPTIONS, PROMOTIONAL_MESSAGE } from '../../../config/const';
+import {
+	ATTACHMENTS_PATH,
+	BOT_TRIGGER_OPTIONS,
+	BOT_TRIGGER_TO,
+	PROMOTIONAL_MESSAGE,
+} from '../../../config/const';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
+import IUpload from '../../../types/uploads';
 import { IUser } from '../../../types/user';
 import DateUtils from '../../../utils/DateUtils';
 import { BotResponseDB } from '../../repository/bot';
@@ -24,39 +30,29 @@ export default class BotService {
 		this.whatsapp = whatsapp_provider;
 	}
 
-	public async allBots() {
+	public async allBots(active?: boolean) {
 		const bots = await BotDB.find({
 			user: this.user,
-		});
+			...(active !== undefined ? { active: true } : {}),
+		}).populate('attachments');
 		return bots.map((bot) => ({
 			bot_id: bot._id as Types.ObjectId,
-			respond_to_all: bot.respond_to_all,
-			respond_to_recipients: bot.respond_to_recipients,
+			respond_to: bot.respond_to,
 			trigger: bot.trigger,
 			trigger_gap_seconds: bot.trigger_gap_seconds,
 			options: bot.options,
 			message: bot.message,
-			attachments: bot.attachments,
+			attachments: bot.attachments.map((attachment) => ({
+				id: attachment._id,
+				filename: attachment.filename,
+				caption: attachment.caption,
+			})),
 			shared_contact_cards: bot.shared_contact_cards,
 			isActive: bot.active,
 		}));
 	}
 	private async activeBots() {
-		const bots = await BotDB.find({
-			user: this.user,
-			active: true,
-		});
-		return bots.map((bot) => ({
-			bot_id: bot._id as Types.ObjectId,
-			respond_to_all: bot.respond_to_all,
-			respond_to_recipients: bot.respond_to_recipients,
-			trigger: bot.trigger,
-			trigger_gap_seconds: bot.trigger_gap_seconds,
-			options: bot.options,
-			message: bot.message,
-			attachments: bot.attachments,
-			shared_contact_cards: bot.shared_contact_cards,
-		}));
+		return await this.allBots(true);
 	}
 
 	private async lastMessages(ids: Types.ObjectId[], recipient: string) {
@@ -83,9 +79,11 @@ export default class BotService {
 	private async botsEngaged({
 		message_from,
 		message_body,
+		contact,
 	}: {
 		message_from: string;
 		message_body: string;
+		contact: WAWebJS.Contact;
 	}) {
 		const bots = await this.activeBots();
 		const last_messages = await this.lastMessages(
@@ -94,13 +92,17 @@ export default class BotService {
 		);
 
 		return bots.filter((bot) => {
-			const is_recipient = bot.respond_to_all || bot.respond_to_recipients.includes(message_from);
+			const is_recipient =
+				bot.respond_to === BOT_TRIGGER_TO.ALL ||
+				(bot.respond_to === BOT_TRIGGER_TO.SAVED_CONTACTS && contact.isMyContact) ||
+				(bot.respond_to === BOT_TRIGGER_TO.NON_SAVED_CONTACTS && !contact.isMyContact);
 
 			if (!is_recipient) {
 				return false;
 			}
 			if (bot.trigger_gap_seconds > 0) {
 				const last_message_time = last_messages[bot.bot_id.toString()];
+				console.log(last_message_time);
 
 				if (!isNaN(last_message_time) && last_message_time <= bot.trigger_gap_seconds) {
 					return false;
@@ -126,16 +128,19 @@ export default class BotService {
 		});
 	}
 
-	public async handleMessage(message: WAWebJS.Message) {
+	public async handleMessage(message: WAWebJS.Message, contact: WAWebJS.Contact) {
 		if (!this.whatsapp) {
 			throw new Error('Whatsapp Provider not attached.');
+		}
+		const { isSubscribed, isNew } = await this.paymentService.canSendMessage();
+		if (!isSubscribed && !isNew) {
+			return;
 		}
 		const message_from = message.from.split('@')[0];
 		const message_body = message.body;
 
-		const botsEngaged = await this.botsEngaged({ message_body, message_from });
+		const botsEngaged = await this.botsEngaged({ message_body, message_from, contact });
 
-		const { isSubscribed, isNew } = await this.paymentService.canSendMessage();
 		const whatsapp = this.whatsapp;
 		botsEngaged.forEach(async (bot) => {
 			this.responseSent(bot.bot_id, message_from);
@@ -164,7 +169,7 @@ export default class BotService {
 				});
 				Promise.all(contact_cards_promise).then((contact_cards) => {
 					const cards = contact_cards.filter((card) => card !== null) as WAWebJS.Contact[];
-					whatsapp.getClient().sendMessage(message.from, cards);
+					whatsapp.getClient().sendMessage(message.from, cards.length > 1 ? cards : cards[0]);
 				});
 			}
 			if (!isSubscribed && isNew) {
@@ -194,17 +199,13 @@ export default class BotService {
 	}
 
 	public createBot(data: {
-		respond_to_all: boolean;
-		respond_to_recipients: string[];
+		respond_to: BOT_TRIGGER_TO;
 		trigger_gap_seconds: number;
 		options: BOT_TRIGGER_OPTIONS;
 		trigger: string;
 		message: string;
 		shared_contact_cards: string[];
-		attachments: {
-			filename: string;
-			caption?: string;
-		}[];
+		attachments: IUpload[];
 	}) {
 		const bot = new BotDB({
 			...data,
@@ -214,20 +215,23 @@ export default class BotService {
 		bot.save();
 		return {
 			bot_id: bot._id as Types.ObjectId,
-			respond_to_all: bot.respond_to_all,
-			respond_to_recipients: bot.respond_to_recipients,
+			respond_to: bot.respond_to,
 			trigger: bot.trigger,
 			trigger_gap_seconds: bot.trigger_gap_seconds,
 			options: bot.options,
 			message: bot.message,
-			attachments: bot.attachments,
+			attachments: data.attachments.map((attachment) => ({
+				id: attachment._id,
+				filename: attachment.filename,
+				caption: attachment.caption,
+			})),
 			shared_contact_cards: bot.shared_contact_cards,
 			isActive: bot.active,
 		};
 	}
 
 	public async toggleActive(bot_id: Types.ObjectId) {
-		const bot = await BotDB.findById(bot_id);
+		const bot = await BotDB.findById(bot_id).populate('attachments');
 		if (!bot) {
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
 		}
@@ -235,13 +239,16 @@ export default class BotService {
 		bot.save();
 		return {
 			bot_id: bot._id as Types.ObjectId,
-			respond_to_all: bot.respond_to_all,
-			respond_to_recipients: bot.respond_to_recipients,
+			respond_to: bot.respond_to,
 			trigger: bot.trigger,
 			trigger_gap_seconds: bot.trigger_gap_seconds,
 			options: bot.options,
 			message: bot.message,
-			attachments: bot.attachments,
+			attachments: bot.attachments.map((attachment) => ({
+				id: attachment._id,
+				filename: attachment.filename,
+				caption: attachment.caption,
+			})),
 			shared_contact_cards: bot.shared_contact_cards,
 			isActive: bot.active,
 		};

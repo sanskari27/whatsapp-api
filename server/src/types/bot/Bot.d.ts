@@ -1,12 +1,12 @@
 import { Document } from 'mongoose';
+import { BOT_TRIGGER_OPTIONS, BOT_TRIGGER_TO } from '../../config/const';
+import IUpload from '../uploads';
 import { IUser } from '../users';
-import { BOT_TRIGGER_OPTIONS } from '../../config/const';
 
 export default interface IBot extends Document {
 	user: IUser;
 
-	respond_to_all: boolean;
-	respond_to_recipients: string[];
+	respond_to: BOT_TRIGGER_TO;
 
 	trigger: string;
 	trigger_gap_seconds: number;
@@ -14,10 +14,7 @@ export default interface IBot extends Document {
 	options: BOT_TRIGGER_OPTIONS;
 
 	message: string;
-	attachments: {
-		filename: string;
-		caption: string;
-	}[];
+	attachments: IUpload[];
 	shared_contact_cards: string[];
 
 	active: boolean;
