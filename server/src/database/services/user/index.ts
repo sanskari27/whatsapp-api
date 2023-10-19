@@ -1,9 +1,9 @@
-import { AuthDetailDB, UserDB } from '../../repository/user';
-import { IAuthDetail, IUser } from '../../../types/user';
-import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
-import DateUtils from '../../../utils/DateUtils';
-import PaymentService from '../payments';
 import { Types } from 'mongoose';
+import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
+import { IAuthDetail, IUser } from '../../../types/user';
+import DateUtils from '../../../utils/DateUtils';
+import { AuthDetailDB, UserDB } from '../../repository/user';
+import PaymentService from '../payments';
 
 export default class UserService {
 	private user: IUser;
@@ -37,10 +37,18 @@ export default class UserService {
 
 	async login(client_id: string) {
 		try {
-			await AuthDetailDB.create({
+			const auth = await AuthDetailDB.findOne({
 				user: this.user._id,
 				client_id,
 			});
+			if (auth && auth.isRevoked) {
+				await auth.remove();
+				await AuthDetailDB.create({
+					user: this.user._id,
+					client_id,
+				});
+			}
+			
 		} catch (e) {
 			//ignored
 		}

@@ -1,15 +1,16 @@
 import express from 'express';
+import { VerifyClientID } from '../../middleware';
+import AuthRoute from './auth';
+import PaymentRoute from './payment';
+import TemplateRoute from './template';
+import CouponRoute from './token';
+import UploadsRoute from './uploads';
+import BotRoute from './whatsapp/bot';
 import ContactsRoute from './whatsapp/contacts';
 import GroupsRoute from './whatsapp/groups';
 import LabelsRoute from './whatsapp/labels';
 import MessageRoute from './whatsapp/message';
-import BotRoute from './whatsapp/bot';
-import CouponRoute from './token';
-import PaymentRoute from './payment';
-import AuthRoute from './auth';
-import UploadsRoute from './uploads';
-import TemplateRoute from './template';
-import { VerifyClientID } from '../../middleware';
+import NumberValidatorRoute from './whatsapp/number-validator';
 
 const router = express.Router();
 
@@ -26,6 +27,7 @@ router.use('/groups', GroupsRoute);
 router.use('/labels', LabelsRoute);
 router.use('/message', MessageRoute);
 router.use('/bot', BotRoute);
+router.use('/numbers', NumberValidatorRoute);
 router.use('/template', TemplateRoute);
 router.use('/uploads', UploadsRoute);
 

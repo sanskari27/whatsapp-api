@@ -14,10 +14,6 @@ const scheduledMessageSchema = new mongoose.Schema<IScheduledMessage>({
 		type: String,
 		required: true,
 	},
-	type: {
-		type: String,
-		enum: ['TEXT', 'ATTACHMENT', 'CONTACT_CARDS'],
-	},
 	isSent: {
 		type: Boolean,
 		default: false,
@@ -27,11 +23,17 @@ const scheduledMessageSchema = new mongoose.Schema<IScheduledMessage>({
 		default: false,
 	},
 	message: String,
-	attachment: String,
-	caption: String,
+	attachments: [
+		{
+			type: Schema.Types.ObjectId,
+			ref: 'Upload',
+		},
+	],
 	shared_contact_cards: [String],
 	sendAt: Date,
 	batch_id: String,
+	campaign_id: String,
+	campaign_name: String,
 });
 
 const ScheduledMessageDB = mongoose.model<IScheduledMessage>(

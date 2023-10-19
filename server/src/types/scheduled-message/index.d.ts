@@ -1,8 +1,9 @@
 import { Document } from 'mongoose';
-import { IUser } from '../users';
 import { WALLET_TRANSACTION_STATUS } from '../../config/const';
 import ICoupon from '../coupon';
+import IUpload from '../uploads';
 import { IAuthDetail } from '../user';
+import { IUser } from '../users';
 
 export default interface IScheduledMessage extends Document {
 	sender: IUser;
@@ -10,12 +11,9 @@ export default interface IScheduledMessage extends Document {
 
 	receiver: string;
 
-	type: 'TEXT' | 'ATTACHMENT' | 'CONTACT_CARDS';
-
 	message: string;
 
-	attachment: string;
-	caption: string;
+	attachments: IUpload[];
 
 	shared_contact_cards: string[];
 
@@ -23,5 +21,7 @@ export default interface IScheduledMessage extends Document {
 	isSent: boolean;
 	isFailed: boolean;
 
-	batch_id?: string;
+	batch_id: string;
+	campaign_id: string;
+	campaign_name: string;
 }

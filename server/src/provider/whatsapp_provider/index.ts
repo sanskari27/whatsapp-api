@@ -1,13 +1,13 @@
-import WAWebJS, { Client, LocalAuth } from 'whatsapp-web.js';
-import { CHROMIUM_PATH, COUNTRIES, IS_PRODUCTION, SOCKET_RESPONSES } from '../../config/const';
-import IContact from '../../types/whatsapp/contact';
-import { UserService } from '../../database/services';
 import fs from 'fs';
-import logger from '../../config/Logger';
 import QRCode from 'qrcode';
 import { Socket } from 'socket.io';
-import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
+import WAWebJS, { Client, LocalAuth } from 'whatsapp-web.js';
+import logger from '../../config/Logger';
+import { CHROMIUM_PATH, COUNTRIES, IS_PRODUCTION, SOCKET_RESPONSES } from '../../config/const';
+import { UserService } from '../../database/services';
 import BotService from '../../database/services/bot';
+import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
+import IContact from '../../types/whatsapp/contact';
 
 type ClientID = string;
 
@@ -139,11 +139,12 @@ export class WhatsappProvider {
 				isBusiness: this.contact.isBusiness,
 			});
 
-			await this.user_service.login(this.client_id);
-
 			this.sendToClient({
 				event: SOCKET_RESPONSES.WHATSAPP_READY,
 			});
+
+			await this.user_service.login(this.client_id);
+
 			this.bot_service = new BotService(this.user_service.getUser());
 			this.bot_service.attachWhatsappProvider(this);
 		});

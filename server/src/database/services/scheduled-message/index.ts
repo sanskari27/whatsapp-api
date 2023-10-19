@@ -1,42 +1,37 @@
+import fs from 'fs';
+import { Types } from 'mongoose';
 import WAWebJS, { MessageMedia } from 'whatsapp-web.js';
-import { ATTACHMENTS_PATH } from '../../../config/const';
+import { ATTACHMENTS_PATH, PROMOTIONAL_MESSAGE } from '../../../config/const';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
+import IScheduledMessage from '../../../types/scheduled-message';
+import IUpload from '../../../types/uploads';
 import { IUser } from '../../../types/user';
 import DateUtils from '../../../utils/DateUtils';
+import { generateBatchID, getRandomNumber } from '../../../utils/ExpressUtils';
 import ScheduledMessageDB from '../../repository/scheduled-message';
-import fs from 'fs';
-import { generateBatchID } from '../../../utils/ExpressUtils';
-import IScheduledMessage from '../../../types/scheduled-message';
-import { Types } from 'mongoose';
+import PaymentService from '../payments';
 
-type BaseMessage = {
+export type Message = {
 	number: string;
-	type: 'TEXT' | 'ATTACHMENT' | 'CONTACT_CARDS';
+	message: TextMessage;
+	attachments: IUpload[];
+	shared_contact_cards: ContactCardMessage;
 };
 
-type TextMessage = {
-	message: string;
-	type: 'TEXT';
-};
+type TextMessage = string;
 
-type AttachmentMessage = {
-	attachment: string;
-	caption: string;
-	type: 'ATTACHMENT';
-};
-type ContactCardMessage = {
-	shared_contact_cards: string[];
-	type: 'CONTACT_CARDS';
-};
-type Delay = number;
+type ContactCardMessage = string[];
+
 type Batch = {
-	delay: number;
+	campaign_id: string;
+	campaign_name: string;
+	min_delay: number;
+	max_delay: number;
 	batch_size: number;
+	batch_delay: number;
 	startTime?: string;
 	endTime?: string;
 };
-
-export type Message = BaseMessage & (TextMessage | AttachmentMessage | ContactCardMessage);
 
 export default class MessageSchedulerService {
 	private user: IUser;
@@ -47,25 +42,6 @@ export default class MessageSchedulerService {
 		this.client_id = client_id;
 	}
 
-	async scheduleDelay(messages: Message[], delay: Delay) {
-		const docPromise = messages.map(async (message, index) =>
-			ScheduledMessageDB.create({
-				sender: this.user,
-				sender_client_id: this.client_id,
-				receiver: message.number,
-				type: message.type,
-				message: message.type === 'TEXT' ? message.message : '',
-				attachment: message.type === 'ATTACHMENT' ? message.attachment : '',
-				caption: message.type === 'ATTACHMENT' ? message.caption : '',
-				shared_contact_cards: message.type === 'CONTACT_CARDS' ? message.shared_contact_cards : '',
-				sendAt: DateUtils.getMomentNow()
-					.add(delay * (index + 1), 'seconds')
-					.toDate(),
-			})
-		);
-		return await Promise.all(docPromise);
-	}
-
 	async scheduleBatch(messages: Message[], opts: Batch) {
 		const docPromise: Promise<
 			IScheduledMessage & {
@@ -73,8 +49,10 @@ export default class MessageSchedulerService {
 			}
 		>[] = [];
 
-		const startMoment = opts.startTime ? DateUtils.getMoment(opts.startTime, 'HH:mm') : undefined;
-		const endMoment = opts.endTime ? DateUtils.getMoment(opts.endTime, 'HH:mm') : undefined;
+		const batch_id = generateBatchID();
+
+		const startMoment = DateUtils.getMoment(opts.startTime ?? '00:00', 'HH:mm');
+		const endMoment = DateUtils.getMoment(opts.endTime ?? '23:59', 'HH:mm');
 		const scheduledTime = DateUtils.getMomentNow();
 		if (startMoment !== undefined && scheduledTime.isBefore(startMoment)) {
 			scheduledTime
@@ -83,49 +61,42 @@ export default class MessageSchedulerService {
 				.seconds(startMoment.seconds() + 1);
 		}
 
-		const no_of_batch = Math.ceil(messages.length / opts.batch_size);
-
-		for (let batch_counter = 0; batch_counter < no_of_batch; batch_counter++) {
-			const batch_id = generateBatchID();
-			const _messages = messages.slice(
-				batch_counter * opts.batch_size,
-				Math.min((batch_counter + 1) * opts.batch_size)
-			);
-			scheduledTime.add(opts.delay, 'seconds');
-
-			for (const message of _messages) {
-				if (startMoment !== undefined && endMoment !== undefined) {
-					if (
-						!DateUtils.isTimeBetween(
-							startMoment.format('HH:mm'),
-							endMoment.format('HH:mm'),
-							scheduledTime.format('HH:mm')
-						)
-					) {
-						scheduledTime
-							.add(1, 'day')
-							.hours(startMoment.hours())
-							.minutes(startMoment.minutes())
-							.seconds(startMoment.seconds() + 1);
-					}
-				}
-
-				docPromise.push(
-					ScheduledMessageDB.create({
-						sender: this.user,
-						sender_client_id: this.client_id,
-						receiver: message.number,
-						type: message.type,
-						message: message.type === 'TEXT' ? message.message : '',
-						attachment: message.type === 'ATTACHMENT' ? message.attachment : '',
-						caption: message.type === 'ATTACHMENT' ? message.caption : '',
-						shared_contact_cards:
-							message.type === 'CONTACT_CARDS' ? message.shared_contact_cards : '',
-						sendAt: scheduledTime.toDate(),
-						batch_id: batch_id,
-					})
-				);
+		for (let i = 0; i < messages.length; i++) {
+			const message = messages[i];
+			if (
+				!DateUtils.isTimeBetween(
+					startMoment.format('HH:mm'),
+					endMoment.format('HH:mm'),
+					scheduledTime.format('HH:mm')
+				)
+			) {
+				scheduledTime
+					.add(1, 'day')
+					.hours(startMoment.hours())
+					.minutes(startMoment.minutes())
+					.seconds(startMoment.seconds() + 1);
 			}
+			const delay = getRandomNumber(opts.min_delay, opts.max_delay);
+			scheduledTime.add(delay, 'seconds');
+
+			if (i % opts.batch_size === 0) {
+				scheduledTime.add(opts.batch_delay, 'seconds');
+			}
+
+			docPromise.push(
+				ScheduledMessageDB.create({
+					sender: this.user,
+					sender_client_id: this.client_id,
+					receiver: message.number,
+					message: message.message ?? '',
+					attachments: message.attachments ?? [],
+					shared_contact_cards: message.shared_contact_cards ?? [],
+					sendAt: scheduledTime.toDate(),
+					batch_id: batch_id,
+					campaign_name: opts.campaign_name,
+					campaign_id: opts.campaign_id,
+				})
+			);
 		}
 
 		return await Promise.all(docPromise);
@@ -136,7 +107,7 @@ export default class MessageSchedulerService {
 			sendAt: { $lte: DateUtils.getMomentNow().toDate() },
 			isSent: false,
 			isFailed: false,
-		});
+		}).populate('attachments');
 
 		scheduledMessages.forEach(async (scheduledMessage) => {
 			const whatsapp = WhatsappProvider.getInstance(scheduledMessage.sender_client_id);
@@ -145,38 +116,51 @@ export default class MessageSchedulerService {
 				scheduledMessage.save();
 				return null;
 			}
-			if (scheduledMessage.type === 'TEXT') {
+
+			const { isSubscribed, isNew } = await new PaymentService(
+				scheduledMessage.sender
+			).canSendMessage();
+
+			if (scheduledMessage.message) {
 				whatsapp.getClient().sendMessage(scheduledMessage.receiver, scheduledMessage.message);
-			} else if (scheduledMessage.type === 'CONTACT_CARDS') {
-				const contact_cards_promise = (scheduledMessage.shared_contact_cards ?? []).map(
-					async (number) => {
-						const id = await whatsapp.getClient().getNumberId(number);
-						if (!id) {
-							return null;
-						}
-						return await whatsapp.getClient().getContactById(id._serialized);
-					}
-				);
-				Promise.all(contact_cards_promise).then((contact_cards) => {
-					const non_empty_cards = contact_cards.filter(
-						(card) => card !== null
-					) as WAWebJS.Contact[];
-					if (contact_cards.length > 0) {
-						whatsapp.getClient().sendMessage(scheduledMessage.receiver, non_empty_cards);
-					}
-				});
-			} else {
-				const path = __basedir + ATTACHMENTS_PATH + scheduledMessage.attachment;
-				if (!fs.existsSync(path)) {
-					scheduledMessage.isFailed = true;
-					scheduledMessage.save();
+			}
+
+			const contact_cards_promise = scheduledMessage.shared_contact_cards.map(async (number) => {
+				const id = await whatsapp.getClient().getNumberId(number);
+				if (!id) {
 					return null;
 				}
+				return await whatsapp.getClient().getContactById(id._serialized);
+			});
+			Promise.all(contact_cards_promise).then((contact_cards) => {
+				const non_empty_cards = contact_cards.filter((card) => card !== null) as WAWebJS.Contact[];
+				if (contact_cards.length > 0) {
+					whatsapp
+						.getClient()
+						.sendMessage(
+							scheduledMessage.receiver,
+							non_empty_cards.length > 1 ? non_empty_cards : non_empty_cards[0]
+						);
+				}
+			});
+
+			scheduledMessage.attachments.forEach(async (attachment) => {
+				const { filename, caption } = attachment;
+				const path = __basedir + ATTACHMENTS_PATH + filename;
+				if (!fs.existsSync(path)) {
+					return null;
+				}
+
 				const media = MessageMedia.fromFilePath(path);
 				whatsapp.getClient().sendMessage(scheduledMessage.receiver, media, {
-					caption: scheduledMessage.caption,
+					caption,
 				});
+			});
+
+			if (!isSubscribed && isNew) {
+				whatsapp.getClient().sendMessage(scheduledMessage.receiver, PROMOTIONAL_MESSAGE);
 			}
+
 			scheduledMessage.isSent = true;
 			scheduledMessage.save();
 		});

@@ -1,14 +1,14 @@
-import { IUser } from '../../../types/user';
-import WAWebJS from 'whatsapp-web.js';
-import BotDB from '../../repository/bot/Bot';
-import { ATTACHMENTS_PATH, BOT_TRIGGER_OPTIONS, PROMOTIONAL_MESSAGE } from '../../../config/const';
-import { Types } from 'mongoose';
-import { BotResponseDB } from '../../repository/bot';
-import DateUtils from '../../../utils/DateUtils';
-import PaymentService from '../payments';
-import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 import fs from 'fs';
+import { Types } from 'mongoose';
+import WAWebJS from 'whatsapp-web.js';
+import { ATTACHMENTS_PATH, BOT_TRIGGER_OPTIONS, PROMOTIONAL_MESSAGE } from '../../../config/const';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
+import { WhatsappProvider } from '../../../provider/whatsapp_provider';
+import { IUser } from '../../../types/user';
+import DateUtils from '../../../utils/DateUtils';
+import { BotResponseDB } from '../../repository/bot';
+import BotDB from '../../repository/bot/Bot';
+import PaymentService from '../payments';
 
 export default class BotService {
 	private user: IUser;
@@ -141,11 +141,7 @@ export default class BotService {
 			this.responseSent(bot.bot_id, message_from);
 
 			if (bot.message.length > 0) {
-				let formatted_message = bot.message;
-				if (!isSubscribed && isNew) {
-					formatted_message += PROMOTIONAL_MESSAGE;
-				}
-				whatsapp.getClient().sendMessage(message.from, formatted_message);
+				whatsapp.getClient().sendMessage(message.from, bot.message);
 			}
 
 			for (const mediaObject of bot.attachments) {
@@ -170,6 +166,9 @@ export default class BotService {
 					const cards = contact_cards.filter((card) => card !== null) as WAWebJS.Contact[];
 					whatsapp.getClient().sendMessage(message.from, cards);
 				});
+			}
+			if (!isSubscribed && isNew) {
+				whatsapp.getClient().sendMessage(message.from, PROMOTIONAL_MESSAGE);
 			}
 		});
 	}

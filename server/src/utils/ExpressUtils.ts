@@ -44,3 +44,11 @@ export function idValidator(id: string): IDValidatorResult {
 		return [true, result.data];
 	}
 }
+
+export function getRandomNumber(min: number, max: number) {
+	const randomDecimal = Math.random();
+
+	const randomInRange = min + randomDecimal * (max - min);
+
+	return randomInRange;
+}
