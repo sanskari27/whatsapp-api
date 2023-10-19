@@ -201,7 +201,7 @@ const Exports = () => {
 		PaymentService.isPaymentVerified().then((res) => {
 			setUIDetails((prevState) => ({
 				...prevState,
-				paymentVerified: res,
+				paymentVerified: res.isSubscribed,
 			}));
 		});
 	}, [isAuthenticated]);

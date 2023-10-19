@@ -3,6 +3,7 @@ import VCardUtils from '../utils/VCardUtils';
 import ContactService from './contact.service';
 import GroupService from './group.service';
 import LabelService from './label.service';
+import NumbersValidatorService from './numbers.service';
 
 type ExportContactParams = {
 	allContacts?: boolean;
@@ -75,6 +76,17 @@ export default class ExportsService {
 				const label_contacts = await LabelService.fetchLabel(options.labelIDs);
 				VCardUtils.exportLabel(label_contacts);
 			}
+		} catch (err) {}
+	}
+
+	static async exportValidNumbersExcel(data: {
+		filename?: string;
+		type: 'NUMBERS' | 'CSV';
+		numbers?: string[];
+	}) {
+		try {
+			const validContacts = await NumbersValidatorService.validateNumbers(data);
+			ExcelUtils.exportContacts(validContacts, 'Valid Contacts');
 		} catch (err) {}
 	}
 
