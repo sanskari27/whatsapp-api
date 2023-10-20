@@ -25,8 +25,8 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 			type: z.enum(['NUMBERS', 'CSV', 'GROUP', 'LABEL']),
 			numbers: z.string().array().optional(),
 			csv_file: z.string().optional(),
-			group_id: z.string().optional(),
-			label_id: z.string().optional(),
+			group_ids: z.string().array().optional(),
+			label_ids: z.string().array().optional(),
 			message: z.string().optional(),
 			variables: z.string().array().optional(),
 			shared_contact_cards: z.string().array().optional(),
@@ -49,9 +49,9 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 				return false;
 			} else if (obj.type === 'CSV' && obj.csv_file === undefined) {
 				return false;
-			} else if (obj.type === 'GROUP' && obj.group_id === undefined) {
+			} else if (obj.type === 'GROUP' && obj.group_ids === undefined) {
 				return false;
-			} else if (obj.type === 'LABEL' && obj.label_id === undefined) {
+			} else if (obj.type === 'LABEL' && obj.label_ids === undefined) {
 				return false;
 			}
 			if (
@@ -71,8 +71,8 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 	}
 	const {
 		type,
-		group_id,
-		label_id,
+		group_ids: group_id,
+		label_ids: label_id,
 		csv_file,
 		variables,
 		message,
@@ -146,13 +146,25 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 		}
 	} else if (type === 'GROUP') {
 		try {
-			numbers = await whatsappUtils.getChatIdsByGroup(group_id as string);
+			numbers = (
+				await Promise.all(
+					(group_id as string[]).map(
+						async (id) => await whatsappUtils.getChatIdsByGroup(id as string)
+					)
+				)
+			).flat();
 		} catch (err) {
 			return next(new APIError(API_ERRORS.WHATSAPP_ERROR.INVALID_GROUP_ID));
 		}
 	} else if (type === 'LABEL') {
 		try {
-			numbers = await whatsappUtils.getChatIdsByLabel(label_id as string);
+			numbers = (
+				await Promise.all(
+					(label_id as string[]).map(
+						async (id) => await whatsappUtils.getChatIdsByLabel(id as string)
+					)
+				)
+			).flat();
 		} catch (err) {
 			return next(new APIError(API_ERRORS.WHATSAPP_ERROR.BUSINESS_ACCOUNT_REQUIRED));
 		}

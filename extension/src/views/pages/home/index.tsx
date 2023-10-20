@@ -12,6 +12,7 @@ import {
 import Header from '../../components/header';
 import Enhancements from '../enhancements';
 import Exports from '../exports';
+import Message from '../meessage';
 
 const TABS = [
 	{
@@ -33,8 +34,8 @@ const TABS = [
 		name: 'Message',
 		icon: MESSAGE,
 		selectedIcon: MESSAGE,
-		component: <div>Message</div>,
-		disabled: true,
+		component: <Message />,
+		disabled: false,
 	},
 	{
 		name: 'Chat-Bot',
@@ -53,7 +54,7 @@ const TABS = [
 ];
 
 export default function Home() {
-	const [tabIndex, setTabIndex] = useState(0);
+	const [tabIndex, setTabIndex] = useState(2);
 	return (
 		<Box width='full' py={'1rem'} px={'1rem'}>
 			<Header />

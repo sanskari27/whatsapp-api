@@ -22,7 +22,12 @@ export default class UploadsService {
 	static async listAttachments() {
 		try {
 			const { data: response } = await APIInstance.get(`/uploads/attachment`);
-			return response.csv_list as { id: string; caption: string; filename: string }[];
+			return response.attachments as {
+				id: string;
+				name: string;
+				caption: string;
+				filename: string;
+			}[];
 		} catch (err) {
 			return [];
 		}
@@ -36,7 +41,7 @@ export default class UploadsService {
 			const { data: response } = await APIInstance.post(`/uploads/csv`, data);
 			return {
 				name: response.name,
-				filename: response.filename,
+				id: response.filename,
 			};
 		} catch (err) {
 			return null;
@@ -46,7 +51,7 @@ export default class UploadsService {
 	static async listCSV() {
 		try {
 			const { data: response } = await APIInstance.get(`/uploads/csv`);
-			return response.csv_list as { id: string; filename: string }[];
+			return response.csv_list.map((csv: any) => ({ name: csv.name, id: csv.filename }));
 		} catch (err) {
 			return [];
 		}

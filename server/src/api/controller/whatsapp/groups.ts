@@ -21,24 +21,29 @@ async function groups(req: Request, res: Response, next: NextFunction) {
 	}
 
 	try {
-		const groups = getOrCache<GroupDetail[]>(CACHE_TOKEN_GENERATOR.GROUPS(client_id), async () => {
-			const groups = (await whatsapp.getClient().getChats())
-				.filter((chat) => chat.isGroup)
-				.map((chat) => {
-					const groupChat = chat as GroupChat;
-					return {
-						id: groupChat.id._serialized,
-						name: groupChat.name,
-					};
-				});
+		const groups = await getOrCache<GroupDetail[]>(
+			CACHE_TOKEN_GENERATOR.GROUPS(client_id),
+			async () => {
+				const groups = (await whatsapp.getClient().getChats())
+					.filter((chat) => chat.isGroup)
+					.map((chat) => {
+						const groupChat = chat as GroupChat;
+						return {
+							id: groupChat.id._serialized,
+							name: groupChat.name,
+						};
+					});
 
-			return groups;
-		});
+				return groups;
+			}
+		);
 
 		return Respond({
 			res,
 			status: 200,
-			data: { groups },
+			data: {
+				groups,
+			},
 		});
 	} catch (err) {
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));

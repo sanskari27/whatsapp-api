@@ -5,8 +5,8 @@ export default class MessageService {
 		type: 'NUMBERS' | 'CSV' | 'GROUP' | 'LABEL';
 		numbers?: string[];
 		csv_file?: string;
-		group_id?: string;
-		label_id?: string;
+		group_ids?: string[];
+		label_ids?: string[];
 		message?: string;
 		variables?: string[];
 		shared_contact_cards?: string[];
