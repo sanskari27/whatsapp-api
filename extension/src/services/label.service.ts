@@ -1,39 +1,24 @@
+import axios from 'axios';
 import APIInstance from '../config/APIInstance';
 
 export default class LabelService {
 	static async listLabels() {
-		return new Promise(
-			(
-				resolve: (
-					data: {
-						id: string;
-						name: string;
-					}[]
-				) => void,
-				reject
-			) => {
-				APIInstance.get(`/labels`)
-					.then(({ data }) => {
-						resolve(
-							data.labels as {
-								id: string;
-								name: string;
-							}[]
-						);
-					})
-					.catch((err) => {
-						if (err?.response?.data?.title === 'BUSINESS_ACCOUNT_REQUIRED') {
-							reject('BUSINESS_ACCOUNT_REQUIRED');
-							return;
-						}
-						resolve([]);
-					});
+		try {
+			const { data } = await APIInstance.get(`/whatsapp/labels`);
+			return data.labels as {
+				id: string;
+				name: string;
+			}[];
+		} catch (err) {
+			if (axios.isAxiosError(err) && err.response?.data?.title === 'BUSINESS_ACCOUNT_REQUIRED') {
+				throw 'BUSINESS_ACCOUNT_REQUIRED';
 			}
-		);
+			return [];
+		}
 	}
 	static async fetchLabel(ids: string[]) {
 		try {
-			const { data } = await APIInstance.get(`/labels/export?label_ids=${ids.join(',')}`);
+			const { data } = await APIInstance.get(`/whatsapp/labels/export?label_ids=${ids.join(',')}`);
 			return data.entries as {
 				name: string;
 				number: string;

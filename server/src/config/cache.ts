@@ -1,12 +1,26 @@
-import { NextFunction, Request, Response } from 'express';
+import { createClient } from 'redis';
+import ErrorReporter from '../utils/ErrorReporter';
+import { CACHE_TIMEOUT } from './const';
 
-export default function (req: Request, res: Response, next: NextFunction) {
-	const period = 60 * 5; // 5 minutes
+const cache = createClient();
 
-	if (req.method === 'GET') {
-		res.set('Cache-control', `public, max-age=${period}`);
-	} else {
-		res.set('Cache-control', `no-store`);
-	}
-	next();
+export function getOrCache<T>(key: string, cb: () => Promise<T>) {
+	return new Promise((resolve: (value: T) => void, reject) => {
+		cache
+			.get(key)
+			.then(async (value) => {
+				if (value) {
+					resolve(JSON.parse(value));
+					return;
+				}
+				const updatedData = await cb();
+				cache.setEx(key, CACHE_TIMEOUT, JSON.stringify(updatedData));
+				resolve(updatedData);
+			})
+			.catch((err) => {
+				ErrorReporter.report(err);
+			});
+	});
 }
+
+export default cache;

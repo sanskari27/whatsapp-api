@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import { IS_PRODUCTION } from '../config/const';
 import { Types } from 'mongoose';
 import { z } from 'zod';
 import crypto from 'crypto';
@@ -11,26 +10,6 @@ type ResponseData = {
 
 export const Respond = ({ res, status, data = {} }: ResponseData) => {
 	if (status === 200 || status === 201) {
-		const auth_token = res.locals.auth_token;
-		const refresh_token = res.locals.refresh_token;
-		if (auth_token !== undefined) {
-			res.cookie('auth_token', auth_token, {
-				httpOnly: true,
-				sameSite: IS_PRODUCTION ? 'strict' : 'none',
-				secure: true,
-				maxAge: 1000 * 60 * 3,
-			});
-		}
-
-		if (refresh_token !== undefined) {
-			res.cookie('refresh_token', refresh_token, {
-				httpOnly: true,
-				sameSite: IS_PRODUCTION ? 'strict' : 'none',
-				secure: true,
-				maxAge: 1000 * 60 * 60 * 24 * 30,
-			});
-		}
-
 		return res.status(status).json({ ...data, success: true });
 	}
 	return res.status(status).json({ ...data, success: false });
@@ -47,6 +26,9 @@ export const getRequestIP = (req: Request) => {
 export function generateClientID() {
 	return crypto.randomUUID();
 }
+export function generateBatchID() {
+	return crypto.randomBytes(6).toString('hex');
+}
 
 type IDValidatorResult = [true, Types.ObjectId] | [false, undefined];
 export function idValidator(id: string): IDValidatorResult {
@@ -61,4 +43,12 @@ export function idValidator(id: string): IDValidatorResult {
 	} else {
 		return [true, result.data];
 	}
+}
+
+export function getRandomNumber(min: number, max: number) {
+	const randomDecimal = Math.random();
+
+	const randomInRange = min + randomDecimal * (max - min);
+
+	return randomInRange;
 }

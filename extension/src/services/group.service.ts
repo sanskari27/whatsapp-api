@@ -3,7 +3,7 @@ import APIInstance from '../config/APIInstance';
 export default class GroupService {
 	static async listGroups() {
 		try {
-			const { data } = await APIInstance.get(`/groups`);
+			const { data } = await APIInstance.get(`/whatsapp/groups`);
 			return data.groups as {
 				id: string;
 				name: string;
@@ -14,7 +14,7 @@ export default class GroupService {
 	}
 	static async fetchGroup(ids: string[]) {
 		try {
-			const { data } = await APIInstance.get(`/groups/export?group_ids=${ids.join(',')}`);
+			const { data } = await APIInstance.get(`/whatsapp/groups/export?group_ids=${ids.join(',')}`);
 			return data.participants as {
 				name: string;
 				number: string;

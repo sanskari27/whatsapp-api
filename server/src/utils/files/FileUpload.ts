@@ -1,15 +1,19 @@
+import crypto from 'crypto';
 import { Request, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
-import crypto from 'crypto';
 
 type ResolvedFile = {
 	filename: string;
 	destination: string;
 	path: string;
 };
-interface FileUploadOptions {
+export interface SingleFileUploadOptions {
 	field_name: string;
+	options: multer.Options;
+}
+export interface MultipleFileUploadOptions {
+	field_names: string[];
 	options: multer.Options;
 }
 
@@ -27,7 +31,7 @@ const storage = multer.diskStorage({
 const SingleFileUpload = (
 	req: Request,
 	res: Response,
-	{ field_name = 'file', options = {} }: FileUploadOptions
+	{ field_name = 'file', options = {} }: SingleFileUploadOptions
 ) => {
 	const upload = multer({ storage, ...options }).single(field_name);
 
@@ -53,9 +57,14 @@ const SingleFileUpload = (
 const MultiFileUpload = (
 	req: Request,
 	res: Response,
-	{ field_name = 'files', options = {} }: FileUploadOptions
+	{ field_names = [], options = {} }: MultipleFileUploadOptions
 ) => {
-	const multi_upload = multer({ storage, ...options }).array(field_name, 1000);
+	const multi_upload = multer({ storage, ...options }).fields(
+		field_names.map((name) => ({
+			name,
+			maxCount: 1,
+		}))
+	);
 	return new Promise((resolve: (resolvedFile: ResolvedFile[]) => void, reject) => {
 		multi_upload(req, res, (err) => {
 			if (err !== null) {
@@ -78,7 +87,7 @@ const MultiFileUpload = (
 
 export default { SingleFileUpload, MultiFileUpload };
 
-export { FileUploadOptions, ResolvedFile };
+export { MultipleFileUploadOptions as FileUploadOptions, ResolvedFile };
 
 const ONLY_IMAGES_ALLOWED = (
 	req: Request,
@@ -117,4 +126,20 @@ const ONLY_PDF_ALLOWED = (
 	cb(null, true);
 };
 
-export { ONLY_IMAGES_ALLOWED as ONLY_JPG_IMAGES_ALLOWED, ONLY_VIDEO_ALLOWED, ONLY_PDF_ALLOWED };
+const ONLY_CSV_ALLOWED = (
+	req: Request,
+	file: Express.Multer.File,
+	cb: multer.FileFilterCallback
+) => {
+	if (file.mimetype !== 'text/csv') {
+		return cb(new Error('Only CSV are allowed'));
+	}
+	cb(null, true);
+};
+
+export {
+	ONLY_CSV_ALLOWED,
+	ONLY_IMAGES_ALLOWED as ONLY_JPG_IMAGES_ALLOWED,
+	ONLY_PDF_ALLOWED,
+	ONLY_VIDEO_ALLOWED,
+};

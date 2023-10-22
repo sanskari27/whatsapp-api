@@ -1,5 +1,5 @@
 import { Box, Image, Tab, TabList, TabPanel, TabPanels, Tabs, Text } from '@chakra-ui/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
 	CHAT_BOT,
 	ENHANCEMENT,
@@ -7,11 +7,16 @@ import {
 	EXPORT,
 	EXPORT_SELECTED,
 	MESSAGE,
+	MESSAGE_SELECTED,
 	REPORT,
 } from '../../../assets/Images';
 import Header from '../../components/header';
 import Enhancements from '../enhancements';
 import Exports from '../exports';
+import Message from '../message';
+import { useNavigate } from 'react-router-dom';
+import { NAVIGATION } from '../../../config/const';
+import { useNetwork } from '../../../hooks/useNetwork';
 
 const TABS = [
 	{
@@ -32,9 +37,9 @@ const TABS = [
 	{
 		name: 'Message',
 		icon: MESSAGE,
-		selectedIcon: MESSAGE,
-		component: <div>Message</div>,
-		disabled: true,
+		selectedIcon: MESSAGE_SELECTED,
+		component: <Message />,
+		disabled: false,
 	},
 	{
 		name: 'Chat-Bot',
@@ -53,7 +58,16 @@ const TABS = [
 ];
 
 export default function Home() {
-	const [tabIndex, setTabIndex] = useState(0);
+	const [tabIndex, setTabIndex] = useState(2);
+
+	const navigate = useNavigate();
+	const status = useNetwork();
+	useEffect(() => {
+		if (status === 'NO-NETWORK') {
+			navigate(NAVIGATION.NETWORK_ERROR);
+		}
+	}, [status, navigate]);
+
 	return (
 		<Box width='full' py={'1rem'} px={'1rem'}>
 			<Header />

@@ -11,11 +11,6 @@ const COMMON_ERRORS = {
 		TITLE: 'INVALID_FIELD',
 		MESSAGE: 'The request contains an invalid field.',
 	},
-	WHATSAPP_NOT_READY: {
-		STATUS: 400,
-		TITLE: 'WHATSAPP_NOT_READY',
-		MESSAGE: 'Whatsapp still not ready',
-	},
 } satisfies {
 	[error: string]: ServerError;
 };

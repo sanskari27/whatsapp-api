@@ -1,14 +1,15 @@
-import express, { Express, Request, Response, NextFunction } from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-
-import logger from './config/Logger';
-import { IS_PRODUCTION } from './config/const';
+import express, { Express, NextFunction, Request, Response } from 'express';
+import fs from 'fs';
+import cron from 'node-cron';
 import routes from './api/routes';
+import logger from './config/Logger';
+import { ATTACHMENTS_PATH, CSV_PATH, IS_PRODUCTION, UPLOADS_PATH } from './config/const';
+import { MessageSchedulerService } from './database/services';
 import APIError from './errors/api-errors';
 import ErrorReporter from './utils/ErrorReporter';
-import cron from 'node-cron';
-import { WhatsappProvider } from './provider/whatsapp_provider';
+import WhatsappUtils from './utils/WhatsappUtils';
 
 export default function (app: Express) {
 	//Defines all global variables and constants
@@ -31,6 +32,11 @@ export default function (app: Express) {
 			...req.locals,
 		};
 		next();
+	});
+	app.route('/api-status').get((req, res) => {
+		res.status(200).json({
+			success: true,
+		});
 	});
 	app.use(routes);
 
@@ -57,9 +63,21 @@ export default function (app: Express) {
 		next();
 	});
 
+	createDir();
+	WhatsappUtils.resumeSessions();
+
 	//0 0 * * *
 	cron.schedule('0 */3 * * *', function () {
-		WhatsappProvider.removeInactiveSessions();
-		WhatsappProvider.removeUnwantedSessions();
+		WhatsappUtils.removeInactiveSessions();
+		WhatsappUtils.removeUnwantedSessions();
 	});
+	cron.schedule('* * * * * *', function () {
+		MessageSchedulerService.sendScheduledMessage();
+	});
+}
+
+function createDir() {
+	fs.mkdirSync(__basedir + ATTACHMENTS_PATH, { recursive: true });
+	fs.mkdirSync(__basedir + CSV_PATH, { recursive: true });
+	fs.mkdirSync(__basedir + UPLOADS_PATH, { recursive: true });
 }

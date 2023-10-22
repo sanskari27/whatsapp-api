@@ -2,7 +2,7 @@ import APIInstance from '../config/APIInstance';
 
 export default class ContactService {
 	static async contactCount() {
-		const { data } = await APIInstance.get(`/contacts/count`);
+		const { data } = await APIInstance.get(`/whatsapp/contacts/count`);
 		return {
 			saved: data.saved_contacts as number,
 			unsaved: data.non_saved_contacts as number,
@@ -12,9 +12,9 @@ export default class ContactService {
 	static async contacts({ saved_contacts = false, non_saved_contacts = false }) {
 		try {
 			const { data } = await APIInstance.get(
-				`/contacts?saved_contacts=${saved_contacts ? 'true' : 'false'}&non_saved_contacts=${
-					non_saved_contacts ? 'true' : 'false'
-				}`
+				`/whatsapp/contacts?saved_contacts=${
+					saved_contacts ? 'true' : 'false'
+				}&non_saved_contacts=${non_saved_contacts ? 'true' : 'false'}`
 			);
 			return data.contacts as {
 				name: string;

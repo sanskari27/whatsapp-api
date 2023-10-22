@@ -1,7 +1,7 @@
-export const SERVER_URL = 'https://api.whatsleads.in/';
-export const WEBPAGE_URL = 'https://www.whatsleads.in/';
-// export const SERVER_URL = 'http://localhost:8282/';
-// export const WEBPAGE_URL = 'http://localhost:3000/';
+// export const SERVER_URL = 'https://api.whatsleads.in/';
+// export const WEBPAGE_URL = 'https://whatsleads.in/';
+export const SERVER_URL = 'http://localhost:8282/';
+export const WEBPAGE_URL = 'http://localhost:3000/';
 
 export const NAVIGATION = {
 	WELCOME: '/welcome',
@@ -9,6 +9,7 @@ export const NAVIGATION = {
 	CHECKOUT: '/checkout',
 	FEATURES: '/features',
 	SETTINGS: '/settings',
+	NETWORK_ERROR: '/network-error',
 };
 
 export enum CHROME_ACTION {

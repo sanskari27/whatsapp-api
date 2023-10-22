@@ -1,11 +1,11 @@
 import express from 'express';
-import ContactsRoute from './contacts';
-import GroupsRoute from './groups';
-import LabelsRoute from './labels';
-import CouponRoute from './token';
-import PaymentRoute from './payment';
-import AuthRoute from './auth';
 import { VerifyClientID } from '../../middleware';
+import AuthRoute from './auth';
+import PaymentRoute from './payment';
+import TemplateRoute from './template';
+import CouponRoute from './token';
+import UploadsRoute from './uploads';
+import WhatsappRoute from './whatsapp';
 
 const router = express.Router();
 
@@ -17,8 +17,8 @@ router.use('/payment', PaymentRoute);
 // Next routes will be protected by VerifyClientID middleware
 router.use(VerifyClientID);
 
-router.use('/contacts', ContactsRoute);
-router.use('/groups', GroupsRoute);
-router.use('/labels', LabelsRoute);
+router.use('/whatsapp', WhatsappRoute);
+router.use('/template', TemplateRoute);
+router.use('/uploads', UploadsRoute);
 
 export default router;

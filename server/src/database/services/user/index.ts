@@ -1,9 +1,10 @@
-import { AuthDetailDB, UserDB } from '../../repository/user';
-import { IAuthDetail, IUser } from '../../../types/user';
-import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
-import DateUtils from '../../../utils/DateUtils';
-import PaymentService from '../payments';
 import { Types } from 'mongoose';
+import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
+import { IAuthDetail, IUser } from '../../../types/user';
+import DateUtils from '../../../utils/DateUtils';
+import ScheduledMessageDB from '../../repository/scheduled-message';
+import { AuthDetailDB, UserDB } from '../../repository/user';
+import PaymentService from '../payments';
 
 export default class UserService {
 	private user: IUser;
@@ -37,6 +38,14 @@ export default class UserService {
 
 	async login(client_id: string) {
 		try {
+			const auth = await AuthDetailDB.findOne({
+				user: this.user._id,
+				client_id,
+			});
+			if (auth && !auth.isRevoked) return;
+			if (auth && auth.isRevoked) {
+				await auth.remove();
+			}
 			await AuthDetailDB.create({
 				user: this.user._id,
 				client_id,
@@ -46,10 +55,13 @@ export default class UserService {
 		}
 	}
 	async logout(client_id: string) {
+		UserService.logout(client_id);
+	}
+
+	static async logout(client_id: string) {
 		try {
 			await AuthDetailDB.updateOne(
 				{
-					user: this.user._id,
 					client_id,
 				},
 				{
@@ -90,12 +102,12 @@ export default class UserService {
 		return [true, auth.revoke_at, auth.user] as [boolean, Date, IUser];
 	}
 
+	getUser() {
+		return this.user;
+	}
 	static async getUser(phone: string) {
-		const user = await UserDB.findOne({ phone });
-		if (user === null) {
-			throw new InternalError(INTERNAL_ERRORS.USER_ERRORS.NOT_FOUND);
-		}
-		return user;
+		const service = await UserService.getService(phone);
+		return service.getUser();
 	}
 
 	static async getRevokedSessions() {
@@ -107,8 +119,8 @@ export default class UserService {
 		});
 
 		const sessionsPromise = revokable.map(async (auth) => {
-			const validPayment = await PaymentService.isPaymentValid(auth.user);
-			if (!validPayment) {
+			const { isSubscribed } = await new PaymentService(auth.user).isSubscribed();
+			if (!isSubscribed) {
 				return auth;
 			}
 			return null;
@@ -129,14 +141,28 @@ export default class UserService {
 			},
 		});
 
+		const scheduled = await ScheduledMessageDB.find({
+			isSent: false,
+			isFailed: false,
+		});
+
+		const scheduleMap = scheduled.reduce(
+			(acc, item) => {
+				acc[item.sender_client_id] = true;
+				return acc;
+			},
+			{} as {
+				[key: string]: true;
+			}
+		);
+
 		const sessionsPromise = revokable.map(async (auth) => {
-			const validPayment = await PaymentService.isPaymentValid(auth.user);
-			if (!validPayment) {
-				return auth;
-			} else if (
+			if (
 				DateUtils.getMoment(auth.last_active).add(12, 'hours').isBefore(DateUtils.getMomentNow())
 			) {
-				return auth;
+				if (!scheduleMap[auth.client_id]) {
+					return auth;
+				}
 			}
 			return null;
 		});
