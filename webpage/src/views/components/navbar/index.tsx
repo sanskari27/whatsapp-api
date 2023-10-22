@@ -133,7 +133,21 @@ export default function Navbar() {
 								transition={'0.1s'}
 								cursor={'pointer'}
 								onClick={() => {
-									window.location.assign('#features');
+									scrollTo("home")
+									onClose();
+								}}
+							>
+								Home
+							</Button>
+							<Button
+								textAlign={'left'}
+								variant={'link'}
+								_hover={{ textColor: 'green.300' }}
+								textColor={'white'}
+								transition={'0.1s'}
+								cursor={'pointer'}
+								onClick={() => {
+									scrollTo("features")
 									onClose();
 								}}
 							>
@@ -148,7 +162,7 @@ export default function Navbar() {
 								transition={'0.1s'}
 								cursor={'pointer'}
 								onClick={() => {
-									window.location.assign('#pricing');
+									scrollTo("pricing")
 									onClose();
 								}}
 							>
@@ -163,7 +177,8 @@ export default function Navbar() {
 								transition={'0.1s'}
 								cursor={'pointer'}
 								onClick={() => {
-									window.location.assign('#');
+									scrollTo("faq");
+									onClose();
 								}}
 							>
 								FAQs
@@ -181,7 +196,6 @@ export default function Navbar() {
 									window.open(
 										'https://chrome.google.com/webstore/detail/whatsleads/fcgjgjellnemnioihojklppanoldamnd?hl=en-GB&authuser=0'
 									);
-									window.location.assign('#faq');
 									onClose();
 								}}
 								px={'0.5rem'}
