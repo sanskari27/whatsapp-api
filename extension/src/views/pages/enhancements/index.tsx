@@ -1,6 +1,6 @@
-import { Box, Flex, Image, Text } from '@chakra-ui/react';
+import { Box, Flex, Icon, Text } from '@chakra-ui/react';
 import { useCallback, useEffect, useState } from 'react';
-import { PRIVACY } from '../../../assets/Images';
+import { AiFillEye } from 'react-icons/ai';
 import { MessageProps } from '../../../background/background';
 import { CHROME_ACTION, PRIVACY_TYPE } from '../../../config/const';
 import { getActiveTabURL, getChromeData } from '../../../utils/ChromeUtils';
@@ -57,7 +57,7 @@ const ENHANCEMENT = () => {
 	return (
 		<Flex direction={'column'} gap={'0.5rem'}>
 			<Flex alignItems='center' gap={'0.5rem'} mt={'1.5rem'}>
-				<Image src={PRIVACY} width={4} />
+				<Icon as={AiFillEye} height={5} width={5} color={'green.400'} />
 				<Text fontSize='md' className='text-black dark:text-white'>
 					Privacy
 				</Text>

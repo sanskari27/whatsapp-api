@@ -1,7 +1,6 @@
-import { useNavigate } from 'react-router';
-import { BACK } from '../../../assets/Images';
-import { Flex, Button, Image, Text } from '@chakra-ui/react';
 import { ArrowBackIcon } from '@chakra-ui/icons';
+import { Button, Flex, Text } from '@chakra-ui/react';
+import { useNavigate } from 'react-router';
 
 const BackButton = () => {
 	const navigate = useNavigate();

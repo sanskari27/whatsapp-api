@@ -1,9 +1,9 @@
 import { InfoOutlineIcon } from '@chakra-ui/icons';
-import { Box, Button, Flex, Image, Text } from '@chakra-ui/react';
+import { Box, Button, Flex, Icon, Image, Text } from '@chakra-ui/react';
 import Multiselect from 'multiselect-react-dropdown';
 import { useEffect, useRef, useState } from 'react';
+import { PiExportBold, PiFileCsvLight } from 'react-icons/pi';
 import { useNavigate } from 'react-router-dom';
-import { EXPORT_GREEN, EXPORT_WHITE } from '../../../assets/Images';
 import { EXPORTS_TYPE, NAVIGATION } from '../../../config/const';
 import { logout, startAuth, useAuth } from '../../../hooks/useAuth';
 import ContactService from '../../../services/contact.service';
@@ -218,7 +218,7 @@ const Exports = () => {
 		<Flex direction={'column'} gap={'0.5rem'} justifyContent={'space-between'} height={'full'}>
 			<Flex direction={'column'} gap={'0.5rem'}>
 				<Flex alignItems='center' gap={'0.5rem'} mt={'1.5rem'}>
-					<Image src={EXPORT_GREEN} width={4} alt='' />
+					<Icon as={PiFileCsvLight} height={5} width={5} color={'green.400'} />
 					<Text className='text-black dark:text-white' fontSize='md'>
 						Exports
 					</Text>
@@ -462,7 +462,7 @@ const Exports = () => {
 					}
 				>
 					<Flex gap={'0.5rem'}>
-						<Image src={EXPORT_WHITE} width={4} alt='' />
+						<Icon as={PiExportBold} width={5} height={5} color={'white'} />
 						<Text color={'white'}>Export</Text>
 					</Flex>
 				</Button>

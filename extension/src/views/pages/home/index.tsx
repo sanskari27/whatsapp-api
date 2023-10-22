@@ -1,57 +1,47 @@
-import { Box, Image, Tab, TabList, TabPanel, TabPanels, Tabs, Text } from '@chakra-ui/react';
+import { Box, Icon, Image, Tab, TabList, TabPanel, TabPanels, Tabs, Text } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
-import {
-	CHAT_BOT,
-	ENHANCEMENT,
-	ENHANCEMENT_SELECTED,
-	EXPORT,
-	EXPORT_SELECTED,
-	MESSAGE,
-	MESSAGE_SELECTED,
-	REPORT,
-} from '../../../assets/Images';
+import { AiFillEyeInvisible } from 'react-icons/ai';
+import { BsBarChartFill } from 'react-icons/bs';
+import { PiExportBold } from 'react-icons/pi';
+import { SiProbot } from 'react-icons/si';
+import { TbMessage2Minus } from 'react-icons/tb';
+import { useNavigate } from 'react-router-dom';
+import { NAVIGATION } from '../../../config/const';
+import { useNetwork } from '../../../hooks/useNetwork';
 import Header from '../../components/header';
 import Enhancements from '../enhancements';
 import Exports from '../exports';
 import Message from '../message';
-import { useNavigate } from 'react-router-dom';
-import { NAVIGATION } from '../../../config/const';
-import { useNetwork } from '../../../hooks/useNetwork';
 
 const TABS = [
 	{
 		name: 'Privacy',
-		icon: ENHANCEMENT,
-		selectedIcon: ENHANCEMENT_SELECTED,
+		icon: AiFillEyeInvisible,
 		component: <Enhancements />,
 		disabled: false,
 	},
 	{
 		name: 'Exports',
-		icon: EXPORT,
-		selectedIcon: EXPORT_SELECTED,
+		icon: PiExportBold,
 		component: <Exports />,
 		disabled: false,
 	},
 
 	{
 		name: 'Message',
-		icon: MESSAGE,
-		selectedIcon: MESSAGE_SELECTED,
+		icon: TbMessage2Minus,
 		component: <Message />,
 		disabled: false,
 	},
 	{
 		name: 'Chat-Bot',
-		icon: CHAT_BOT,
-		selectedIcon: CHAT_BOT,
+		icon: SiProbot,
 		component: <div>CHAT_BOT</div>,
-		disabled: true,
+		disabled: false,
 	},
 	{
 		name: 'Reports',
-		icon: REPORT,
-		selectedIcon: REPORT,
+		icon: BsBarChartFill,
 		component: <div>Report</div>,
 		disabled: true,
 	},
@@ -98,7 +88,7 @@ export default function Home() {
 								gap={'0.5rem'}
 								padding={'0.5rem'}
 							>
-								<Image src={tabIndex === index ? tab.selectedIcon : tab.icon} width={4} />
+								<Icon as={tab.icon} color={tabIndex === index ? 'white' : 'green.400'} width={4} />
 								{tabIndex === index ? (
 									<Text textColor='white' fontSize={'sm'} fontWeight='bold' transition='0.3s'>
 										{tab.name}

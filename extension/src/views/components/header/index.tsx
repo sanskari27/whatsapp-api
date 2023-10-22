@@ -1,7 +1,8 @@
 import { CloseIcon } from '@chakra-ui/icons';
-import { Box, Button, IconButton, Image, Text } from '@chakra-ui/react';
+import { Box, Button, Icon, IconButton, Image, Text } from '@chakra-ui/react';
+import { IoSettingsOutline } from 'react-icons/io5';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { LOGO, SETTINGS } from '../../../assets/Images';
+import { LOGO } from '../../../assets/Images';
 import { NAVIGATION } from '../../../config/const';
 import { useAuth } from '../../../hooks/useAuth';
 import useTheme from '../../../hooks/useTheme';
@@ -58,7 +59,13 @@ export default function Header() {
 					/>
 				) : (
 					<Button variant={'link'} onClick={handleSettingClicked} p={0}>
-						<Image src={SETTINGS} width={4} height={4} className='invert dark:invert-0' />
+						<Icon
+							as={IoSettingsOutline}
+							width={5}
+							height={5}
+							color='white'
+							className='invert dark:invert-0'
+						/>
 					</Button>
 				)
 			) : null}

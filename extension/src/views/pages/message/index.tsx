@@ -3,7 +3,7 @@ import {
 	Box,
 	Button,
 	Flex,
-	Image,
+	Icon,
 	Step,
 	StepIcon,
 	StepIndicator,
@@ -16,8 +16,8 @@ import {
 	useSteps,
 } from '@chakra-ui/react';
 import { useEffect, useRef, useState } from 'react';
+import { BiMessageSquareDetail } from 'react-icons/bi';
 import { useNavigate } from 'react-router-dom';
-import { EXPORT_GREEN, MESSAGE } from '../../../assets/Images';
 import { NAVIGATION } from '../../../config/const';
 import { startAuth, useAuth } from '../../../hooks/useAuth';
 import AuthService from '../../../services/auth.service';
@@ -257,7 +257,7 @@ const Message = () => {
 		<Flex direction={'column'} gap={'0.5rem'} justifyContent={'space-between'} height={'full'}>
 			<Flex direction={'column'} gap={'0.5rem'}>
 				<Flex alignItems='center' gap={'0.5rem'} mt={'1.5rem'}>
-					<Image src={MESSAGE} width={4} alt='' />
+					<Icon as={BiMessageSquareDetail} height={5} width={5} color={'green.400'} />
 					<Text className='text-black dark:text-white' fontSize='md'>
 						Schedule Messages
 					</Text>
