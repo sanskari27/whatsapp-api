@@ -8,4 +8,5 @@ export default interface IUpload extends Document {
 	filename: string;
 	caption?: string;
 	type: 'NUMBERS' | 'ATTACHMENT';
+	headers: string[];
 }

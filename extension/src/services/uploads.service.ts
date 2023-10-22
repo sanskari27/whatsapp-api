@@ -56,10 +56,20 @@ export default class UploadsService {
 		}
 	}
 
-	static async listCSV() {
+	static async listCSV(): Promise<
+		{
+			name: string;
+			id: string;
+			headers: string[];
+		}[]
+	> {
 		try {
 			const { data: response } = await APIInstance.get(`/uploads/csv`);
-			return response.csv_list.map((csv: any) => ({ name: csv.name, id: csv.filename }));
+			return response.csv_list.map((csv: any) => ({
+				name: csv.name,
+				id: csv.filename,
+				headers: csv.headers,
+			}));
 		} catch (err) {
 			return [];
 		}

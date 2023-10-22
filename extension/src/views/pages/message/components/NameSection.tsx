@@ -55,7 +55,9 @@ const NameSection = ({
 	isDisabled: boolean;
 	isHidden: boolean;
 }) => {
-	const [recipients, setRecipientsOptions] = useState<{ id: string; name: string }[]>([]);
+	const [recipients, setRecipientsOptions] = useState<
+		{ id: string; name: string; headers?: string[] }[]
+	>([]);
 	const fileInputRef = useRef<HTMLInputElement | null>();
 	const [uiDetails, setUIDetails] = useState({
 		recipientsLoading: false,
@@ -205,7 +207,13 @@ const NameSection = ({
 							className='!bg-[#ECECEC] dark:!bg-[#535353] rounded-md w-full text-black dark:text-white '
 							border={'none'}
 							value={details.csv_file}
-							onChange={(e) => handleChange({ name: 'csv_file', value: e.target.value })}
+							onChange={(e) => {
+								handleChange({ name: 'csv_file', value: e.target.value });
+								const recipient = recipients.find((recipient) => recipient.id === e.target.value);
+								if (!recipient || !recipient.headers) return;
+								const headers = recipient.headers.map((item) => `{{${item}}}`);
+								if (recipient) handleChange({ name: 'variables', value: headers });
+							}}
 						>
 							{recipients.map(({ id, name }) => (
 								<option value={id}>{name}</option>

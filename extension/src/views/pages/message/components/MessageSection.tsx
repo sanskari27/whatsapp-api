@@ -33,8 +33,6 @@ const MessageSection = ({
 	type,
 	handleChange,
 	error,
-	addVariable,
-	removeVariable,
 	addContact,
 	removeContact,
 	isHidden,
@@ -53,8 +51,6 @@ const MessageSection = ({
 		name: keyof SchedulerDetails;
 		value: string | number | string[] | undefined;
 	}) => Promise<void>;
-	addVariable: (text: string) => void;
-	removeVariable: (text: string) => void;
 	addContact: (text: string) => void;
 	removeContact: (text: string) => void;
 	error: string;
@@ -62,9 +58,6 @@ const MessageSection = ({
 }) => {
 	const { templates, add: addToTemplate, addingTemplate } = useTemplate();
 	const { attachments: allAttachments, add: addAttachment, addingAttachment } = useAttachment();
-	const fileInputRef = useRef<HTMLInputElement | null>();
-	const [variableName, setVariableName] = useState('');
-	const [contact_name, setContactName] = useState('');
 	const {
 		isOpen: isNameInputOpen,
 		onOpen: openNameInput,
@@ -77,6 +70,8 @@ const MessageSection = ({
 	} = useDisclosure();
 
 	const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+	const fileInputRef = useRef<HTMLInputElement | null>();
+	const [contact_name, setContactName] = useState('');
 
 	const handleAttachmentInput = (e: ChangeEvent<HTMLInputElement>) => {
 		const files = e.target.files;
@@ -158,50 +153,26 @@ const MessageSection = ({
 					onChange={(e) => handleChange({ name: 'message', value: e.target.value })}
 				/>
 			</Box>
+
 			<Box hidden={type !== 'CSV'}>
 				<Text fontSize='xs' className='text-gray-700 dark:text-gray-400'>
 					Variables
 				</Text>
-				<Flex gap={3} alignItems={'center'}>
-					<Input
-						width={'full'}
-						placeholder='Enter variable name'
-						size={'sm'}
-						rounded={'md'}
-						border={'none'}
-						className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]'
-						_focus={{ border: 'none', outline: 'none' }}
-						value={variableName}
-						onChange={(e) => setVariableName(e.target.value)}
-					/>
-					<IconButton
-						size={'sm'}
-						colorScheme='green'
-						aria-label='Add Template'
-						rounded={'md'}
-						icon={<AddIcon />}
-						onClick={() => {
-							if (variableName.length === 0) return;
-							addVariable(`{{${variableName}}}`);
-							setVariableName('');
-						}}
-					/>
-				</Flex>
-			</Box>
-			<Box hidden={type !== 'CSV'}>
-				{details.variables.map((variable, index) => (
-					<Tag
-						size={'sm'}
-						m={'0.125rem'}
-						key={index}
-						borderRadius='full'
-						variant='solid'
-						colorScheme='green'
-					>
-						<TagLabel>{variable}</TagLabel>
-						<TagCloseButton onClick={() => removeVariable(variable)} />
-					</Tag>
-				))}
+				<Box>
+					{details.variables.map((variable, index) => (
+						<Tag
+							size={'sm'}
+							m={'0.25rem'}
+							p={'0.5rem'}
+							key={index}
+							borderRadius='md'
+							variant='solid'
+							colorScheme='gray'
+						>
+							<TagLabel>{variable}</TagLabel>
+						</Tag>
+					))}
+				</Box>
 			</Box>
 			<Box>
 				<Text fontSize='xs' className='text-gray-700 dark:text-gray-400'>
@@ -281,7 +252,7 @@ const MessageSection = ({
 				<Flex gap={3} alignItems={'center'}>
 					<Input
 						width={'full'}
-						placeholder='91 + contact number'
+						placeholder='country code + contact number'
 						size={'sm'}
 						rounded={'md'}
 						border={'none'}
@@ -297,7 +268,7 @@ const MessageSection = ({
 						rounded={'md'}
 						icon={<AddIcon />}
 						onClick={() => {
-							if (variableName.length === 0) return;
+							if (contact_name.length === 0) return;
 							addContact(contact_name);
 							setContactName('');
 						}}

@@ -193,20 +193,6 @@ const Message = () => {
 		goToNext();
 	};
 
-	const addVariable = (text: string) => {
-		setDetails((prevState) => ({
-			...prevState,
-			variables: [...prevState.variables, text],
-		}));
-	};
-
-	const removeVariable = (text: string) => {
-		setDetails((prevState) => ({
-			...prevState,
-			variables: prevState.variables.filter((name) => name !== text),
-		}));
-	};
-
 	const addContact = (text: string) => {
 		setDetails((prevState) => ({
 			...prevState,
@@ -295,8 +281,6 @@ const Message = () => {
 							type={details.type}
 							error={uiDetails.messageError}
 							isHidden={activeStep !== 2}
-							addVariable={addVariable}
-							removeVariable={removeVariable}
 							addContact={addContact}
 							removeContact={removeContact}
 						/>

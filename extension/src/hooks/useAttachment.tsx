@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import UploadsService from '../services/uploads.service';
 
 export default function useAttachment() {
-	const [isLoading, setLoading] = useState(false);
 	const [addingAttachment, setAddingAttachment] = useState(false);
 	const [attachments, setAttachments] = useState<
 		{
@@ -12,13 +11,6 @@ export default function useAttachment() {
 			filename: string;
 		}[]
 	>([]);
-
-	useEffect(() => {
-		setLoading(true);
-		UploadsService.listAttachments()
-			.then(setAttachments)
-			.finally(() => setLoading(false));
-	}, []);
 
 	const add = (name: string, caption: string, file: File) => {
 		setAddingAttachment(true);
@@ -32,5 +24,5 @@ export default function useAttachment() {
 			});
 	};
 
-	return { addingAttachment, isLoading, add, attachments };
+	return { addingAttachment, add, attachments };
 }

@@ -12,6 +12,7 @@ const uploadSchema = new mongoose.Schema<IUpload>({
 	},
 	name: String,
 	caption: String,
+	headers: [String],
 	type: {
 		type: String,
 		enum: ['ATTACHMENT', 'NUMBERS'],

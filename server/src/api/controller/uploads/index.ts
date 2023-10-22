@@ -1,3 +1,4 @@
+import csv from 'csvtojson/v2';
 import { NextFunction, Request, Response } from 'express';
 import { ATTACHMENTS_PATH, CSV_PATH } from '../../../config/const';
 import UploadService from '../../../database/services/uploads';
@@ -19,16 +20,24 @@ export async function saveCSV(req: Request, res: Response, next: NextFunction) {
 		const uploadedFile = await FileUpload.SingleFileUpload(req, res, fileUploadOptions);
 		const destination = __basedir + CSV_PATH + uploadedFile.filename;
 		FileUtils.moveFile(uploadedFile.path, destination);
+		const parsed_csv = await csv().fromFile(destination);
+
+		if (!parsed_csv) {
+			return next(new APIError(API_ERRORS.COMMON_ERRORS.ERROR_PARSING_CSV));
+		}
+
+		const headers: string[] = Object.keys(parsed_csv[0]) ?? [];
 
 		const name = req.body.name;
 
-		new UploadService(req.locals.user).addCSV(name, uploadedFile.filename);
+		new UploadService(req.locals.user).addCSV(name, uploadedFile.filename, headers);
 		return Respond({
 			res,
 			status: 200,
 			data: {
 				name: name,
 				filename: uploadedFile.filename,
+				headers,
 			},
 		});
 	} catch (err: unknown) {

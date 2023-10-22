@@ -17,16 +17,18 @@ export default class UploadService {
 			id: csv._id as string,
 			name: csv.name,
 			filename: csv.filename,
+			headers: csv.headers,
 		}));
 	}
 
-	addCSV(name: string, filename: string) {
-		const csv_doc = new UploadDB({ user: this.user, name, filename, type: 'NUMBERS' });
+	addCSV(name: string, filename: string, headers: string[]) {
+		const csv_doc = new UploadDB({ user: this.user, name, filename, type: 'NUMBERS', headers });
 		csv_doc.save();
 		return {
 			id: csv_doc._id as string,
 			name: csv_doc.name,
 			filename: csv_doc.filename,
+			headers: csv_doc.headers,
 		};
 	}
 
