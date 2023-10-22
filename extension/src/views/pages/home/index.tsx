@@ -1,4 +1,4 @@
-import { Box, Icon, Image, Tab, TabList, TabPanel, TabPanels, Tabs, Text } from '@chakra-ui/react';
+import { Box, Icon, Tab, TabList, TabPanel, TabPanels, Tabs, Text } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { AiFillEyeInvisible } from 'react-icons/ai';
 import { BsBarChartFill } from 'react-icons/bs';
@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { NAVIGATION } from '../../../config/const';
 import { useNetwork } from '../../../hooks/useNetwork';
 import Header from '../../components/header';
+import ChatBot from '../chat-bot';
 import Enhancements from '../enhancements';
 import Exports from '../exports';
 import Message from '../message';
@@ -36,19 +37,19 @@ const TABS = [
 	{
 		name: 'Chat-Bot',
 		icon: SiProbot,
-		component: <div>CHAT_BOT</div>,
+		component: <ChatBot />,
 		disabled: false,
 	},
 	{
 		name: 'Reports',
 		icon: BsBarChartFill,
 		component: <div>Report</div>,
-		disabled: true,
+		disabled: false,
 	},
 ];
 
 export default function Home() {
-	const [tabIndex, setTabIndex] = useState(2);
+	const [tabIndex, setTabIndex] = useState(3);
 
 	const navigate = useNavigate();
 	const status = useNetwork();

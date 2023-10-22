@@ -1,5 +1,5 @@
 import { InfoOutlineIcon } from '@chakra-ui/icons';
-import { Box, Button, Flex, Icon, Image, Text } from '@chakra-ui/react';
+import { Box, Button, Flex, Icon, Text } from '@chakra-ui/react';
 import Multiselect from 'multiselect-react-dropdown';
 import { useEffect, useRef, useState } from 'react';
 import { PiExportBold, PiFileCsvLight } from 'react-icons/pi';
@@ -317,25 +317,10 @@ const Exports = () => {
 								className={`${
 									uiDetails.selectAllGroups ? '!bg-green-400' : '!bg-[#A6A6A6] dark:!bg-[#252525]'
 								} !text-white`}
-								// bgColor={
-								//     uiDetails.selectAllGroups
-								//         ? "green.300"
-								//         : "gray.700"
-								// }
 								color={'white'}
 							>
 								{uiDetails.selectAllGroups ? 'Deselect All' : 'Select All'}
 							</Button>
-							{/* <Checkbox
-							size='sm'
-							colorScheme='green'
-							className='!border-gray-300 text-black dark:text-white'
-							isDisabled={!GROUP}
-							onChange={(e) => handleChange({ name: 'GROUP_ALL', value: e.target.checked })}
-							isChecked={export_criteria[EXPORTS_TYPE.GROUP_ALL]}
-						>
-							Select All
-						</Checkbox> */}
 						</Flex>
 						<Flex alignItems='flex-end' justifyContent={'space-between'}>
 							<CheckButton
@@ -397,22 +382,6 @@ const Exports = () => {
 							>
 								{uiDetails.selectAllLabels ? 'Deselect All' : 'Select All'}
 							</Button>
-
-							{/* <Checkbox
-                            size="sm"
-                            colorScheme="green"
-                            className="!border-gray-300 text-black dark:text-white"
-                            isDisabled={!LABEL}
-                            onChange={(e) =>
-                                handleChange({
-                                    name: "LABEL_ALL",
-                                    value: e.target.checked,
-                                })
-                            }
-                            isChecked={export_criteria[EXPORTS_TYPE.LABEL_ALL]}
-                        >
-                            Select All
-                        </Checkbox> */}
 						</Flex>
 					</Flex>
 				</Box>

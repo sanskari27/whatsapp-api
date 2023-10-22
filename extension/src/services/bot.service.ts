@@ -1,6 +1,6 @@
 import APIInstance from '../config/APIInstance';
 
-type BotDetails = {
+export type BotDetails = {
 	bot_id: string;
 	respond_to: string;
 	trigger: string;
@@ -52,7 +52,7 @@ export default class BotService {
 		}
 	}
 
-	static async deleteTemplate(id: string) {
+	static async deleteBot(id: string) {
 		try {
 			await APIInstance.delete(`/whatsapp/bot/${id}`);
 			return true;

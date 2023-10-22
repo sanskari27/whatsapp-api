@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import AuthService from '../services/auth.service';
 import { singletonHook } from 'react-singleton-hook';
 import { io } from 'socket.io-client';
 import { SERVER_URL, SOCKET_EVENT } from '../config/const';
+import AuthService from '../services/auth.service';
 import { getClientID, saveClientID } from '../utils/ChromeUtils';
 
 const socket = io(SERVER_URL);

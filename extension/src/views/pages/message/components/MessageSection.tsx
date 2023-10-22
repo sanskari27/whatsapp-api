@@ -27,6 +27,7 @@ import React, { ChangeEvent, useRef, useState } from 'react';
 import { SchedulerDetails } from '..';
 import useAttachment from '../../../../hooks/useAttachment';
 import useTemplate from '../../../../hooks/useTemplate';
+import AttachmentDetailsInputDialog from '../../../components/attachment-details-input-dialog';
 
 const MessageSection = ({
 	details,
@@ -59,14 +60,14 @@ const MessageSection = ({
 	const { templates, add: addToTemplate, addingTemplate } = useTemplate();
 	const { attachments: allAttachments, add: addAttachment, addingAttachment } = useAttachment();
 	const {
-		isOpen: isNameInputOpen,
-		onOpen: openNameInput,
-		onClose: closeNameInput,
-	} = useDisclosure();
-	const {
 		isOpen: isAttachmentDetailsOpen,
 		onOpen: openAttachmentDetailsInput,
 		onClose: closeAttachmentDetailsInput,
+	} = useDisclosure();
+	const {
+		isOpen: isNameInputOpen,
+		onOpen: openNameInput,
+		onClose: closeNameInput,
 	} = useDisclosure();
 
 	const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
@@ -358,70 +359,6 @@ const InputDialog = ({
 						Cancel
 					</Button>
 					<Button colorScheme='green' onClick={() => onConfirm(name)} ml={3} size={'sm'}>
-						Save
-					</Button>
-				</AlertDialogFooter>
-			</AlertDialogContent>
-		</AlertDialog>
-	);
-};
-
-const AttachmentDetailsInputDialog = ({
-	isOpen,
-	onConfirm,
-	onClose,
-}: {
-	onClose: () => void;
-	onConfirm: (name: string, caption: string) => void;
-	isOpen: boolean;
-}) => {
-	const [name, setName] = React.useState('');
-	const [caption, setCaption] = React.useState('');
-	const cancelRef = React.useRef<any>();
-	return (
-		<AlertDialog
-			motionPreset='slideInBottom'
-			leastDestructiveRef={cancelRef}
-			onClose={onClose}
-			isOpen={isOpen}
-			isCentered
-		>
-			<AlertDialogOverlay />
-
-			<AlertDialogContent width={'80%'}>
-				<AlertDialogHeader pb={0} fontSize={'sm'}>
-					Assign a name & caption.
-				</AlertDialogHeader>
-				<AlertDialogCloseButton />
-				<AlertDialogBody>
-					<Flex direction={'column'} gap={2}>
-						<Input
-							width={'full'}
-							placeholder={'attachment name....'}
-							border={'none'}
-							className='text-black !bg-[#ECECEC] '
-							_placeholder={{ opacity: 0.4, color: 'inherit' }}
-							_focus={{ border: 'none', outline: 'none' }}
-							value={name}
-							onChange={(e) => setName(e.target.value)}
-						/>
-						<Input
-							width={'full'}
-							placeholder={'caption (optional)'}
-							border={'none'}
-							className='text-black !bg-[#ECECEC] '
-							_placeholder={{ opacity: 0.4, color: 'inherit' }}
-							_focus={{ border: 'none', outline: 'none' }}
-							value={caption}
-							onChange={(e) => setCaption(e.target.value)}
-						/>
-					</Flex>
-				</AlertDialogBody>
-				<AlertDialogFooter pt={0}>
-					<Button ref={cancelRef} colorScheme='red' onClick={onClose} size={'sm'}>
-						Cancel
-					</Button>
-					<Button colorScheme='green' onClick={() => onConfirm(name, caption)} ml={3} size={'sm'}>
 						Save
 					</Button>
 				</AlertDialogFooter>

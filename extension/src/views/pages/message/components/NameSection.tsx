@@ -125,11 +125,6 @@ const NameSection = ({
 		}
 	}
 
-	const selectedRecipients = recipients.filter((recipient) => {
-		const ids = type === 'GROUP' ? details.group_ids : type === 'LABEL' ? details.label_ids : [];
-		return ids.includes(recipient.id);
-	});
-
 	const handleCSVFileInput = (e: ChangeEvent<HTMLInputElement>) => {
 		const files = e.target.files;
 		if (files === null) return;
@@ -238,7 +233,9 @@ const NameSection = ({
 							}}
 						>
 							{recipients.map(({ id, name }) => (
-								<option value={id}>{name}</option>
+								<option value={id} key={id}>
+									{name}
+								</option>
 							))}
 						</Select>
 

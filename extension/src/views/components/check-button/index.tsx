@@ -1,6 +1,5 @@
 import { CheckIcon } from '@chakra-ui/icons';
 import { Flex, IconButton, Text } from '@chakra-ui/react';
-import { isDisabled } from '@testing-library/user-event/dist/utils';
 
 type CheckButtonType = {
 	name: string;
@@ -8,9 +7,19 @@ type CheckButtonType = {
 	value: boolean;
 	onChange: ({ name, value }: { name: string; value: boolean }) => void;
 	isDisabled?: boolean;
+	gap?: number;
+	backgroundClassName?: string;
 };
 
-const CheckButton = ({ name, label, onChange, value, isDisabled = false }: CheckButtonType) => {
+const CheckButton = ({
+	name,
+	label,
+	onChange,
+	value,
+	isDisabled = false,
+	gap = 6,
+	backgroundClassName = '',
+}: CheckButtonType) => {
 	const handleChange = (e: boolean) => {
 		onChange({
 			name: name,
@@ -19,7 +28,7 @@ const CheckButton = ({ name, label, onChange, value, isDisabled = false }: Check
 	};
 
 	return (
-		<Flex gap={6} alignItems={'center'}>
+		<Flex gap={gap} alignItems={'center'}>
 			<IconButton
 				isRound={true}
 				variant='solid'
@@ -31,8 +40,8 @@ const CheckButton = ({ name, label, onChange, value, isDisabled = false }: Check
 				}}
 				isDisabled={isDisabled}
 				className={`${
-					value ? '!bg-[#4CB072]' : '!bg-[#A6A6A6] dark:!bg-[#252525]'
-				} hover:!bg-green-700`}
+					value ? '!bg-[#4CB072]' : backgroundClassName ?? '!bg-[#A6A6A6] dark:!bg-[#252525]'
+				} hover:!bg-green-700 `}
 			/>
 			<Text className='text-black dark:text-white' fontSize='sm'>
 				{label}
