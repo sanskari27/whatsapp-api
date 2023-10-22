@@ -78,7 +78,7 @@ const Message = () => {
 		});
 	}, [isAuthenticated]);
 
-	const { activeStep, goToNext, goToPrevious } = useSteps({
+	const { activeStep, goToNext, goToPrevious, setActiveStep } = useSteps({
 		index: 1,
 		count: 3,
 	});
@@ -221,10 +221,34 @@ const Message = () => {
 				}));
 				return;
 			}
-
+			setActiveStep(1);
+			setDetails({
+				type: 'NUMBERS',
+				numbers: [],
+				csv_file: '',
+				group_ids: [],
+				label_ids: [],
+				message: '',
+				variables: [],
+				shared_contact_cards: [],
+				attachments: [],
+				campaign_name: '',
+				min_delay: 1,
+				max_delay: 60,
+				startTime: '00:00',
+				endTime: '23:59',
+				batch_delay: 120,
+				batch_size: 10,
+			});
 			setUIDetails((prev) => ({
-				...prev,
+				recipientsLoading: false,
+				paymentVerified: prev.paymentVerified,
 				schedulingMessages: false,
+				isBusiness: prev.isBusiness,
+				nameError: '',
+				messageError: '',
+				delayError: '',
+				apiError: '',
 			}));
 		});
 	};
@@ -272,7 +296,7 @@ const Message = () => {
 							setSelectedRecipients={setSelectedRecipients}
 							error={uiDetails.nameError}
 							isBusiness={uiDetails.isBusiness}
-							isDisabled={!isAuthenticated}
+							isDisabled={!isAuthenticated || !uiDetails.paymentVerified}
 							isHidden={activeStep !== 1}
 						/>
 						<MessageSection
@@ -319,7 +343,7 @@ const Message = () => {
 						</Flex>
 					</Button>
 				</Flex>
-			) : !uiDetails.paymentVerified && activeStep === 3 ? (
+			) : !uiDetails.paymentVerified && activeStep === 1 ? (
 				<Button
 					bgColor={'yellow.400'}
 					_hover={{

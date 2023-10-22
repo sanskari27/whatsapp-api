@@ -1,4 +1,4 @@
-import { AddIcon } from '@chakra-ui/icons';
+import { AddIcon, AttachmentIcon, PhoneIcon } from '@chakra-ui/icons';
 import {
 	AlertDialog,
 	AlertDialogBody,
@@ -174,122 +174,140 @@ const MessageSection = ({
 					))}
 				</Box>
 			</Box>
-			<Box>
-				<Text fontSize='xs' className='text-gray-700 dark:text-gray-400'>
-					Attachments
-				</Text>
-				<Flex gap={3} alignItems={'center'}>
-					<Multiselect
-						displayValue='displayValue'
-						placeholder={'Select Attachments'}
-						onRemove={(selectedList: typeof allAttachments) =>
-							handleChange({
-								name: 'attachments',
-								value: selectedList.map((attachment) => attachment.id),
-							})
-						}
-						onSelect={(selectedList: typeof allAttachments) =>
-							handleChange({
-								name: 'attachments',
-								value: selectedList.map((attachment) => attachment.id),
-							})
-						}
-						showCheckbox={true}
-						hideSelectedList={true}
-						options={allAttachments.map((item, index) => ({
-							...item,
-							displayValue: `${index + 1}. ${item.name}`,
-						}))}
-						style={{
-							searchBox: {
-								border: 'none',
-							},
-							inputField: {
-								width: '100%',
-							},
+			<Flex gap={4}>
+				<Box flexGrow={1}>
+					<Text fontSize='xs' className='text-gray-700 dark:text-gray-400'>
+						Attachments
+					</Text>
+					<Flex gap={2} alignItems={'center'}>
+						<Multiselect
+							displayValue='displayValue'
+							placeholder={'Select Attachments'}
+							onRemove={(selectedList: typeof allAttachments) =>
+								handleChange({
+									name: 'attachments',
+									value: selectedList.map((attachment) => attachment.id),
+								})
+							}
+							onSelect={(selectedList: typeof allAttachments) =>
+								handleChange({
+									name: 'attachments',
+									value: selectedList.map((attachment) => attachment.id),
+								})
+							}
+							showCheckbox={true}
+							hideSelectedList={true}
+							options={allAttachments.map((item, index) => ({
+								...item,
+								displayValue: `${index + 1}. ${item.name}`,
+							}))}
+							style={{
+								searchBox: {
+									border: 'none',
+								},
+								inputField: {
+									width: '100%',
+								},
+							}}
+							className='!w-[162px] bg-[#ECECEC] dark:bg-[#535353] rounded-md border-none '
+						/>
+						<IconButton
+							size={'sm'}
+							colorScheme='green'
+							backgroundColor={'transparent'}
+							rounded={'full'}
+							borderWidth={'1px'}
+							borderColor={'green.400'}
+							icon={<AttachmentIcon color={'green.400'} />}
+							_hover={{
+								opacity: 1,
+								borderColor: 'green.500',
+							}}
+							aria-label='Add Attachment'
+							isLoading={addingAttachment}
+							onClick={() => {
+								document.getElementById('attachment-file-input')?.click();
+							}}
+						/>
+					</Flex>
+					<AttachmentDetailsInputDialog
+						isOpen={isAttachmentDetailsOpen}
+						onClose={() => {
+							closeAttachmentDetailsInput();
+							setAttachmentFile(null);
 						}}
-						className='!w-[375px]  bg-[#ECECEC] dark:bg-[#535353] rounded-md border-none '
-					/>
-					<IconButton
-						size={'sm'}
-						colorScheme='green'
-						aria-label='Add Template'
-						rounded={'md'}
-						icon={<AddIcon />}
-						onClick={() => {
-							document.getElementById('attachment-file-input')?.click();
+						onConfirm={(name: string, caption: string) => {
+							if (!attachmentFile || !name) return;
+							addAttachment(name, caption, attachmentFile);
+							closeAttachmentDetailsInput();
 						}}
-						isLoading={addingAttachment}
 					/>
-				</Flex>
-				<AttachmentDetailsInputDialog
-					isOpen={isAttachmentDetailsOpen}
-					onClose={() => {
-						closeAttachmentDetailsInput();
-						setAttachmentFile(null);
-					}}
-					onConfirm={(name: string, caption: string) => {
-						if (!attachmentFile || !name) return;
-						addAttachment(name, caption, attachmentFile);
-						closeAttachmentDetailsInput();
-					}}
-				/>
-				<input
-					type='file'
-					name='attachment-file-input'
-					id='attachment-file-input'
-					className='invisible h-[1px] w-[1px] absolute'
-					multiple={false}
-					ref={(ref) => (fileInputRef.current = ref)}
-					onInput={handleAttachmentInput}
-				/>
-			</Box>
+					<input
+						type='file'
+						name='attachment-file-input'
+						id='attachment-file-input'
+						className='invisible h-[1px] w-[1px] absolute'
+						multiple={false}
+						ref={(ref) => (fileInputRef.current = ref)}
+						onInput={handleAttachmentInput}
+					/>
+				</Box>
 
-			<Box hidden={type !== 'CSV'}>
-				<Text fontSize='xs' className='text-gray-700 dark:text-gray-400'>
-					Contact Cards
-				</Text>
-				<Flex gap={3} alignItems={'center'}>
-					<Input
-						width={'full'}
-						placeholder='country code + contact number'
-						size={'sm'}
-						rounded={'md'}
-						border={'none'}
-						className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]'
-						_focus={{ border: 'none', outline: 'none' }}
-						value={contact_name}
-						onChange={(e) => setContactName(e.target.value)}
-					/>
-					<IconButton
-						size={'sm'}
-						colorScheme='green'
-						aria-label='Add Template'
-						rounded={'md'}
-						icon={<AddIcon />}
-						onClick={() => {
-							if (contact_name.length === 0) return;
-							addContact(contact_name);
-							setContactName('');
-						}}
-					/>
-				</Flex>
-			</Box>
-			<Box hidden={type !== 'CSV'}>
-				{details.shared_contact_cards.map((contact, index) => (
-					<Tag
-						size={'sm'}
-						m={'0.125rem'}
-						key={index}
-						borderRadius='full'
-						variant='solid'
-						colorScheme='green'
-					>
-						<TagLabel>{contact}</TagLabel>
-						<TagCloseButton onClick={() => removeContact(contact)} />
-					</Tag>
-				))}
-			</Box>
+				<Box flexGrow={1}>
+					<Text fontSize='xs' className='text-gray-700 dark:text-gray-400'>
+						Contact Cards
+					</Text>
+					<Flex gap={3} alignItems={'center'}>
+						<Input
+							width={'full'}
+							placeholder='91XXXXXXXX09'
+							size={'sm'}
+							rounded={'md'}
+							border={'none'}
+							className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]'
+							_focus={{ border: 'none', outline: 'none' }}
+							value={contact_name}
+							onChange={(e) => setContactName(e.target.value)}
+						/>
+						<IconButton
+							size={'sm'}
+							colorScheme='green'
+							aria-label='Add Contact'
+							backgroundColor={'transparent'}
+							rounded={'full'}
+							borderWidth={'1px'}
+							borderColor={'green.400'}
+							_hover={{
+								opacity: 1,
+								borderColor: 'green.500',
+							}}
+							icon={<PhoneIcon color={'green.400'} />}
+							onClick={() => {
+								if (contact_name.length === 0) return;
+								addContact(contact_name);
+								setContactName('');
+							}}
+						/>
+					</Flex>
+					<Box>
+						{details.shared_contact_cards.map((contact, index) => (
+							<Tag
+								size={'sm'}
+								m={'0.25rem'}
+								p={'0.5rem'}
+								key={index}
+								borderRadius='md'
+								variant='solid'
+								colorScheme='gray'
+							>
+								<TagLabel>{contact}</TagLabel>
+								<TagCloseButton onClick={() => removeContact(contact)} />
+							</Tag>
+						))}
+					</Box>
+				</Box>
+			</Flex>
+
 			{error && (
 				<FormErrorMessage mt={-2} textAlign={'center'}>
 					{error}

@@ -139,7 +139,7 @@ const DelaySection = ({
 							className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]'
 							_focus={{ border: 'none', outline: 'none' }}
 							value={details.startTime}
-							onChange={(e) => handleChange({ name: 'batch_size', value: e.target.value })}
+							onChange={(e) => handleChange({ name: 'startTime', value: e.target.value })}
 						/>
 					</Box>
 					<Box flexGrow={1}>

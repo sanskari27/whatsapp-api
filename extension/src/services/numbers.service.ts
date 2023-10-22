@@ -2,12 +2,13 @@ import APIInstance from '../config/APIInstance';
 
 export default class NumbersValidatorService {
 	static async validateNumbers(data: {
-		filename?: string;
+		csv_file?: string;
 		type: 'NUMBERS' | 'CSV';
 		numbers?: string[];
 	}) {
 		try {
 			const { data: response } = await APIInstance.post(`/whatsapp/validate-numbers`, data);
+
 			return response.contacts as {
 				name: string;
 				number: string;

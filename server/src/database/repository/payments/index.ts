@@ -1,6 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
-import IPayment from '../../../types/payment';
 import { TAX, WALLET_TRANSACTION_STATUS } from '../../../config/const';
+import IPayment from '../../../types/payment';
 import DateUtils from '../../../utils/DateUtils';
 
 const paymentSchema = new mongoose.Schema<IPayment>({

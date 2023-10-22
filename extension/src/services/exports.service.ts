@@ -80,7 +80,7 @@ export default class ExportsService {
 	}
 
 	static async exportValidNumbersExcel(data: {
-		filename?: string;
+		csv_file?: string;
 		type: 'NUMBERS' | 'CSV';
 		numbers?: string[];
 	}) {

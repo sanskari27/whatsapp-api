@@ -12,6 +12,8 @@ import {
 	Flex,
 	FormControl,
 	FormErrorMessage,
+	Icon,
+	IconButton,
 	Input,
 	Select,
 	Text,
@@ -19,7 +21,10 @@ import {
 } from '@chakra-ui/react';
 import Multiselect from 'multiselect-react-dropdown';
 import React, { ChangeEvent, useRef, useState } from 'react';
+import { FiFilter } from 'react-icons/fi';
+import { GrDocumentCsv } from 'react-icons/gr';
 import { SchedulerDetails } from '..';
+import ExportsService from '../../../../services/exports.service';
 import GroupService from '../../../../services/group.service';
 import LabelService from '../../../../services/label.service';
 import UploadsService from '../../../../services/uploads.service';
@@ -62,6 +67,7 @@ const NameSection = ({
 	const [uiDetails, setUIDetails] = useState({
 		recipientsLoading: false,
 		uploadingCSV: false,
+		loadingVerifiedContacts: false,
 	});
 
 	const [newCSVDetails, setNewCSVDetails] = useState<{ file: File | null; name: string }>({
@@ -149,6 +155,22 @@ const NameSection = ({
 			});
 	}
 
+	function exportFilteredNumbers() {
+		setUIDetails((prevState) => ({
+			...prevState,
+			loadingVerifiedContacts: true,
+		}));
+		ExportsService.exportValidNumbersExcel({
+			type: 'CSV',
+			csv_file: details.csv_file,
+		}).finally(() => {
+			setUIDetails((prevState) => ({
+				...prevState,
+				loadingVerifiedContacts: false,
+			}));
+		});
+	}
+
 	return (
 		<FormControl
 			isInvalid={!!error}
@@ -227,17 +249,38 @@ const NameSection = ({
 							</Text>
 							<Divider />
 						</Flex>
+						<Flex justifyContent={'space-between'} gap={2}>
+							<Button
+								flexGrow={1}
+								variant={'outline'}
+								colorScheme='blue'
+								onClick={() => document.getElementById('csv-file-input')?.click()}
+								isLoading={uiDetails.uploadingCSV}
+							>
+								<Text>Upload</Text>
+							</Button>
+							<IconButton
+								variant='outline'
+								colorScheme='blue'
+								aria-label='Download'
+								_hover={{
+									backgroundColor: 'transparent',
+								}}
+								icon={<Icon as={GrDocumentCsv} className='dark:invert' />}
+							/>
+						</Flex>
 
 						<Button
-							bgColor={'blue.300'}
-							_hover={{
-								bgColor: 'blue.400',
-							}}
-							onClick={() => document.getElementById('csv-file-input')?.click()}
-							isLoading={uiDetails.uploadingCSV}
+							variant={'outline'}
+							colorScheme='yellow'
+							onClick={exportFilteredNumbers}
+							hidden={!details.csv_file}
+							isLoading={uiDetails.loadingVerifiedContacts}
+							leftIcon={<FiFilter />}
 						>
-							<Text color={'white'}>Upload</Text>
+							<Text>Filter Numbers</Text>
 						</Button>
+
 						<input
 							type='file'
 							name='csv-file-input'
@@ -265,7 +308,6 @@ const NameSection = ({
 					<Multiselect
 						disable={uiDetails.recipientsLoading}
 						displayValue='displayValue'
-						selectedValues={selectedRecipients}
 						placeholder={
 							type === 'GROUP'
 								? 'Select Groups'
