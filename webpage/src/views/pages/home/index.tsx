@@ -8,11 +8,11 @@ import {
     Button,
     Flex,
     Image,
+    Link,
     Text,
 } from "@chakra-ui/react";
 import {
     CHROME,
-    CUSTOMER,
     ENHANCHMENT,
     EXPORT,
     HERO_BG,
@@ -22,8 +22,13 @@ import {
 } from "../../../assets/Images";
 import { THEME } from "../../../utils/const";
 import PageWrapper from "../../components/pageWrapper";
+import { useEffect } from "react";
 
 const Home = () => {
+    useEffect(() => {
+        window.document.title = "WhatsLeads";
+        window.scroll(0, 0);
+    }, []);
     return (
         <PageWrapper>
             <Box>
@@ -35,6 +40,7 @@ const Home = () => {
                     className="flex-col md:flex-row"
                     px={"1rem"}
                     height={"100vh"}
+                    id='home'
                 >
                     <Box>
                         <Box pb={"2rem"}>
@@ -119,6 +125,10 @@ const Home = () => {
                                 color={"white"}
                                 rounded={"full"}
                                 className="my-4 mx-auto md:ml-0"
+                                onClick={() => {
+                                    window.open("https://chrome.google.com/webstore/detail/whatsleads/fcgjgjellnemnioihojklppanoldamnd?hl=en-GB&authuser=0")
+                                }}
+                                _hover={{ backgroundColor: "green.300" }}
                             >
                                 <Image src={CHROME} alt="" height={"60%"} />
                                 <Text px={"0.5rem"}>Add to Chrome</Text>
@@ -142,7 +152,6 @@ const Home = () => {
                     direction={"column"}
                     gap={"2rem"}
                     mt={"2rem"}
-                    id="features"
                 >
                     <Text
                         fontSize={"2xl"}
@@ -191,6 +200,7 @@ const Home = () => {
                     gap={"2rem"}
                     alignItems={"center"}
                     pt={"4rem"}
+                    id="features"
                 >
                     <Box>
                         <Image
@@ -297,47 +307,6 @@ const Home = () => {
                         </Text>
                     </Box>
                 </Flex>
-                {/* <Flex
-                    className="flex-col md:flex-row-reverse"
-                    justifyContent={"center"}
-                    gap={"2rem"}
-                    alignItems={"center"}
-                    pt={"2rem"}
-                >
-                    <Box>
-                        <Image
-                            width={"400px"}
-                            maxWidth={"350px"}
-                            src={CUSTOMER}
-                            alt=""
-                        />
-                    </Box>
-                    <Box className="w-full md:w-1/2">
-                        <Box>
-                            <Text
-                                fontSize={"xl"}
-                                fontWeight={"medium"}
-                                className="text-center md:text-left"
-                            >
-                                Get 24/7 Customer Support{" "}
-                            </Text>
-                            <Text
-                                fontSize={"xl"}
-                                fontWeight={"medium"}
-                                color={THEME.THEME_GREEN}
-                            >
-                                {" "}
-                                Whenever You Need It
-                            </Text>
-                        </Box>
-                        <Text className="text-center md:text-left">
-                            Our team is available 24/7 by WhatsApp to answer any
-                            questions you have or help you troubleshoot any
-                            issues you encounter. Our average response time is
-                            less than 5 minutes.
-                        </Text>
-                    </Box>
-                </Flex> */}
                 <Box>
                     <Text
                         textAlign={"center"}
@@ -372,12 +341,12 @@ const Home = () => {
                                     justifyContent={"space-between"}
                                 >
                                     <Text fontWeight={"medium"}>
-                                        Emily{" "}
+                                        Aniket{" "}
                                         <Box
                                             as="span"
                                             textColor={THEME.THEME_GREEN}
                                         >
-                                            Turner
+                                            Bhoye
                                         </Box>{" "}
                                     </Text>
                                     <Image
@@ -423,12 +392,12 @@ const Home = () => {
                                     justifyContent={"space-between"}
                                 >
                                     <Text fontWeight={"medium"}>
-                                        David{" "}
+                                        Gaurav{" "}
                                         <Box
                                             as="span"
                                             textColor={THEME.THEME_GREEN}
                                         >
-                                            Martinez
+                                            Maheshwari
                                         </Box>{" "}
                                     </Text>
                                     <Image
@@ -470,12 +439,12 @@ const Home = () => {
                                 justifyContent={"space-between"}
                             >
                                 <Text fontWeight={"medium"}>
-                                    Sarah{" "}
+                                    Varshmaan{" "}
                                     <Box
                                         as="span"
                                         textColor={THEME.THEME_GREEN}
                                     >
-                                        Johnson
+                                        Sonkar
                                     </Box>{" "}
                                 </Text>
                                 <Image height={"15px"} src={RATING} alt="" />
@@ -506,7 +475,7 @@ const Home = () => {
                 <Flex
                     id="pricing"
                     direction={"column"}
-                    py={"3rem"}
+                    py={"4rem"}
                     px={"1rem"}
                     alignItems={"center"}
                 >
@@ -549,6 +518,10 @@ const Home = () => {
                                 backgroundColor={THEME.THEME_GREEN}
                                 color={"white"}
                                 rounded={"full"}
+                                _hover={{ backgroundColor: "green.300" }}
+                                onClick={() => {
+                                    window.open("https://chrome.google.com/webstore/detail/whatsleads/fcgjgjellnemnioihojklppanoldamnd?hl=en-GB&authuser=0")
+                                }}
                             >
                                 Get Started For Free
                             </Button>
@@ -729,6 +702,9 @@ const Home = () => {
                                 borderWidth={"1px"}
                                 boxShadow={"0px 0px 10px 5px #0080001f"}
                                 mt={"1rem"}
+                                onClick={() => {
+                                    window.open("https://chrome.google.com/webstore/detail/whatsleads/fcgjgjellnemnioihojklppanoldamnd?hl=en-GB&authuser=0")
+                                }}
                             >
                                 Upgrade To Premium
                             </Button>
@@ -975,8 +951,7 @@ const Home = () => {
                             <AccordionPanel pb={4} fontSize={"sm"}>
                                 You can trust WhatsLeads for a safe and secure
                                 experience. We scan to help you export contacts,
-                                all while ensuring your data protection using
-                                AWS (Amazon Web Services). Your privacy is our
+                                all while ensuring your data protection. Your privacy is our
                                 priority.
                             </AccordionPanel>
                         </AccordionItem>
@@ -1079,7 +1054,7 @@ const Home = () => {
                                 Users are not able to change their subscribed
                                 numbers, and refunds are not provided. Please
                                 reach out to customer support for more help on
-                                this at wa.me/9785562665
+                                this at <Link target="_blank" href="https://api.whatsapp.com/send/?phone=919654308000&text&type=phone_number&app_absent=0" color="green.400" _hover={{ color: "green.300" }}> wa.me/9654308000</Link>
                             </AccordionPanel>
                         </AccordionItem>
                     </Accordion>
