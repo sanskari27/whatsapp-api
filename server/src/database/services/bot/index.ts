@@ -44,6 +44,7 @@ export default class BotService {
 			message: bot.message,
 			attachments: bot.attachments.map((attachment) => ({
 				id: attachment._id,
+				name: attachment.name,
 				filename: attachment.filename,
 				caption: attachment.caption,
 			})),
@@ -115,11 +116,28 @@ export default class BotService {
 			if (bot.options === BOT_TRIGGER_OPTIONS.EXACT_MATCH_CASE) {
 				return message_body === bot.trigger;
 			}
+
 			if (bot.options === BOT_TRIGGER_OPTIONS.INCLUDES_IGNORE_CASE) {
-				return message_body.toLowerCase().split(' ').includes(bot.trigger.toLowerCase());
+				const wordsToCheck = bot.trigger.toLowerCase().split(' ');
+				const words = message_body.toLowerCase().split(' ');
+
+				for (let i = 0; i <= words.length - wordsToCheck.length; i++) {
+					const subarray = words.slice(i, i + wordsToCheck.length);
+					if (subarray.every((word, index) => word === wordsToCheck[index])) {
+						return true;
+					}
+				}
 			}
 			if (bot.options === BOT_TRIGGER_OPTIONS.INCLUDES_MATCH_CASE) {
-				return message_body.split(' ').includes(bot.trigger);
+				const wordsToCheck = bot.trigger.split(' ');
+				const words = message_body.split(' ');
+
+				for (let i = 0; i <= words.length - wordsToCheck.length; i++) {
+					const subarray = words.slice(i, i + wordsToCheck.length);
+					if (subarray.every((word, index) => word === wordsToCheck[index])) {
+						return true;
+					}
+				}
 			}
 
 			return false;
@@ -153,6 +171,9 @@ export default class BotService {
 					continue;
 				}
 				const media = MessageMedia.fromFilePath(path);
+				if (mediaObject.name) {
+					media.filename = mediaObject.name + path.substring(path.lastIndexOf('.'));
+				}
 				whatsapp.getClient().sendMessage(message.from, media, {
 					caption: mediaObject.caption,
 				});

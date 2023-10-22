@@ -1,15 +1,16 @@
-import { useEffect, lazy, Suspense } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { Navigate, Route, MemoryRouter as Router, Routes } from 'react-router-dom';
 import './App.css';
 import { NAVIGATION } from './config/const';
 
-import ExtensionWrapper from './views/components/extension-wrapper';
 import { Text } from '@chakra-ui/react';
+import ExtensionWrapper from './views/components/extension-wrapper';
 const CheckoutPage = lazy(() => import('./views/pages/checkout'));
 const Features = lazy(() => import('./views/pages/features'));
 const Home = lazy(() => import('./views/pages/home'));
 const Welcome = lazy(() => import('./views/pages/welcome'));
 const Settings = lazy(() => import('./views/pages/settings'));
+const NetworkError = lazy(() => import('./views/pages/network-error'));
 
 function App() {
 	useEffect(() => {
@@ -30,6 +31,7 @@ function App() {
 						<Route path={NAVIGATION.FEATURES} element={<Features />} />
 						<Route path={NAVIGATION.CHECKOUT} element={<CheckoutPage />} />
 						<Route path={NAVIGATION.SETTINGS} element={<Settings />} />
+						<Route path={NAVIGATION.NETWORK_ERROR} element={<NetworkError />} />
 						<Route path='*' element={<Navigate to={NAVIGATION.WELCOME} />} />
 					</Routes>
 				</Suspense>
@@ -37,6 +39,7 @@ function App() {
 		</ExtensionWrapper>
 	);
 }
+
 const Loading = () => {
 	return (
 		<Text

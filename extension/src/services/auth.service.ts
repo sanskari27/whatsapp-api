@@ -17,7 +17,7 @@ export default class AuthService {
 				phoneNumber: data.phoneNumber,
 				isSubscribed: data.isSubscribed,
 				subscriptionExpiration: data.subscriptionExpiration,
-				userType: data.userType,
+				userType: data.userType as 'BUSINESS' | 'PERSONAL',
 				paymentRecords: data.paymentRecords,
 			};
 		} catch (err) {

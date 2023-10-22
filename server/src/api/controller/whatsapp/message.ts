@@ -23,13 +23,13 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 	const reqValidator = z
 		.object({
 			type: z.enum(['NUMBERS', 'CSV', 'GROUP', 'LABEL']),
-			numbers: z.string().array().optional(),
-			csv_file: z.string().optional(),
-			group_ids: z.string().array().optional(),
-			label_ids: z.string().array().optional(),
-			message: z.string().optional(),
-			variables: z.string().array().optional(),
-			shared_contact_cards: z.string().array().optional(),
+			numbers: z.string().array(),
+			csv_file: z.string(),
+			group_ids: z.string().array(),
+			label_ids: z.string().array(),
+			message: z.string(),
+			variables: z.string().array(),
+			shared_contact_cards: z.string().array(),
 			attachments: z
 				.string()
 				.array()
@@ -45,19 +45,19 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 			batch_size: z.number().positive().default(1),
 		})
 		.refine((obj) => {
-			if (obj.type === 'NUMBERS' && obj.numbers === undefined) {
+			if (obj.type === 'NUMBERS' && obj.numbers.length === 0) {
 				return false;
-			} else if (obj.type === 'CSV' && obj.csv_file === undefined) {
+			} else if (obj.type === 'CSV' && obj.csv_file.length === 0) {
 				return false;
-			} else if (obj.type === 'GROUP' && obj.group_ids === undefined) {
+			} else if (obj.type === 'GROUP' && obj.group_ids.length === 0) {
 				return false;
-			} else if (obj.type === 'LABEL' && obj.label_ids === undefined) {
+			} else if (obj.type === 'LABEL' && obj.label_ids.length === 0) {
 				return false;
 			}
 			if (
-				obj.message === undefined &&
-				obj.attachments === undefined &&
-				obj.shared_contact_cards === undefined
+				obj.message.length === 0 &&
+				obj.attachments.length === 0 &&
+				obj.shared_contact_cards.length === 0
 			) {
 				return false;
 			}

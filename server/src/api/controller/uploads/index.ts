@@ -32,7 +32,7 @@ export async function saveCSV(req: Request, res: Response, next: NextFunction) {
 			},
 		});
 	} catch (err: unknown) {
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.FILE_UPLOAD_ERROR));
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.FILE_UPLOAD_ERROR, err));
 	}
 }
 

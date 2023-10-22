@@ -7,7 +7,11 @@ export default class UploadsService {
 		formData.append('name', data.name);
 		formData.append('caption', data.caption);
 		try {
-			const { data: response } = await APIInstance.post(`/uploads/attachment`, data);
+			const { data: response } = await APIInstance.post(`/uploads/attachment`, data, {
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			});
 			return response.attachment as {
 				id: string;
 				name: string;
@@ -38,7 +42,11 @@ export default class UploadsService {
 		formData.append('file', data.file);
 		formData.append('name', data.name);
 		try {
-			const { data: response } = await APIInstance.post(`/uploads/csv`, data);
+			const { data: response } = await APIInstance.post(`/uploads/csv`, data, {
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			});
 			return {
 				name: response.name,
 				id: response.filename,

@@ -33,6 +33,11 @@ export default function (app: Express) {
 		};
 		next();
 	});
+	app.route('/api-status').get((req, res) => {
+		res.status(200).json({
+			success: true,
+		});
+	});
 	app.use(routes);
 
 	app.use((err: Error, req: Request, res: Response, next: NextFunction) => {

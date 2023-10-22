@@ -9,6 +9,7 @@ export const NAVIGATION = {
 	CHECKOUT: '/checkout',
 	FEATURES: '/features',
 	SETTINGS: '/settings',
+	NETWORK_ERROR: '/network-error',
 };
 
 export enum CHROME_ACTION {

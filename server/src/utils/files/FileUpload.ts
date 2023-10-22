@@ -1,7 +1,7 @@
+import crypto from 'crypto';
 import { Request, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
-import crypto from 'crypto';
 
 type ResolvedFile = {
 	filename: string;
@@ -138,8 +138,8 @@ const ONLY_CSV_ALLOWED = (
 };
 
 export {
-	ONLY_IMAGES_ALLOWED as ONLY_JPG_IMAGES_ALLOWED,
-	ONLY_VIDEO_ALLOWED,
-	ONLY_PDF_ALLOWED,
 	ONLY_CSV_ALLOWED,
+	ONLY_IMAGES_ALLOWED as ONLY_JPG_IMAGES_ALLOWED,
+	ONLY_PDF_ALLOWED,
+	ONLY_VIDEO_ALLOWED,
 };

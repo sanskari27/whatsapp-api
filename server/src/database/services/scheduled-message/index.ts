@@ -151,13 +151,16 @@ export default class MessageSchedulerService {
 			});
 
 			scheduledMessage.attachments.forEach(async (attachment) => {
-				const { filename, caption } = attachment;
+				const { filename, caption, name } = attachment;
 				const path = __basedir + ATTACHMENTS_PATH + filename;
 				if (!fs.existsSync(path)) {
 					return null;
 				}
 
 				const media = MessageMedia.fromFilePath(path);
+				if (name) {
+					media.filename = name + path.substring(path.lastIndexOf('.'));
+				}
 				whatsapp.getClient().sendMessage(scheduledMessage.receiver, media, {
 					caption,
 				});

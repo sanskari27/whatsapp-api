@@ -50,9 +50,10 @@ export default class UploadService {
 				id: attachment._id as string,
 				caption: attachment.caption,
 				filename: attachment.filename,
+				name: attachment.name ?? '',
 			})),
 			attachments,
-		] as [{ id: string; caption: string; filename: string }[], IUpload[]];
+		] as [{ id: string; caption: string; filename: string; name: string }[], IUpload[]];
 	}
 	addAttachment(name: string, caption: string, filename: string) {
 		const attachment = new UploadDB({
