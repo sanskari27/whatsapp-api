@@ -186,10 +186,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 	});
 
 	try {
-		const messageSchedulerService = new MessageSchedulerService(
-			req.locals.user,
-			req.locals.client_id
-		);
+		const messageSchedulerService = new MessageSchedulerService(req.locals.user);
 		const campaign_id = generateBatchID();
 		messageSchedulerService.scheduleBatch(await Promise.all(sendMessageList), {
 			campaign_id,
@@ -200,6 +197,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 			batch_delay,
 			startTime: startTime,
 			endTime: endTime,
+			client_id: req.locals.client_id,
 		});
 
 		return Respond({

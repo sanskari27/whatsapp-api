@@ -1,8 +1,5 @@
 import { Document } from 'mongoose';
-import { WALLET_TRANSACTION_STATUS } from '../../config/const';
-import ICoupon from '../coupon';
 import IUpload from '../uploads';
-import { IAuthDetail } from '../user';
 import { IUser } from '../users';
 
 export default interface IScheduledMessage extends Document {
@@ -24,4 +21,7 @@ export default interface IScheduledMessage extends Document {
 	batch_id: string;
 	campaign_id: string;
 	campaign_name: string;
+
+	isPaused: boolean;
+	pausedAt: Date;
 }

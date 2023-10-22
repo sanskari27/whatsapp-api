@@ -40,7 +40,7 @@ const CheckButton = ({
 				}}
 				isDisabled={isDisabled}
 				className={`${
-					value ? '!bg-[#4CB072]' : backgroundClassName ?? '!bg-[#A6A6A6] dark:!bg-[#252525]'
+					value ? '!bg-[#4CB072]' : backgroundClassName || '!bg-[#A6A6A6] dark:!bg-[#252525]'
 				} hover:!bg-green-700 `}
 			/>
 			<Text className='text-black dark:text-white' fontSize='sm'>

@@ -13,6 +13,7 @@ import ChatBot from '../chat-bot';
 import Enhancements from '../enhancements';
 import Exports from '../exports';
 import Message from '../message';
+import Reports from '../reports';
 
 const TABS = [
 	{
@@ -43,13 +44,13 @@ const TABS = [
 	{
 		name: 'Reports',
 		icon: BsBarChartFill,
-		component: <div>Report</div>,
+		component: <Reports />,
 		disabled: false,
 	},
 ];
 
 export default function Home() {
-	const [tabIndex, setTabIndex] = useState(3);
+	const [tabIndex, setTabIndex] = useState(0);
 
 	const navigate = useNavigate();
 	const status = useNetwork();

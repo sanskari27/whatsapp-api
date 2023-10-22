@@ -1,4 +1,4 @@
-import { AttachmentIcon, InfoIcon, InfoOutlineIcon, PhoneIcon } from '@chakra-ui/icons';
+import { AttachmentIcon, InfoOutlineIcon, PhoneIcon } from '@chakra-ui/icons';
 import {
 	Box,
 	Button,
@@ -102,7 +102,6 @@ const ChatBot = () => {
 
 	const [uiDetails, setUIDetails] = useState({
 		paymentVerified: false,
-		apiError: false,
 	});
 
 	const handleChange = async ({
@@ -445,12 +444,6 @@ const ChatBot = () => {
 					</Box>
 				</Flex>
 			</Flex>
-
-			{uiDetails.apiError && (
-				<Text mt={-2} color='red.400' textAlign={'center'}>
-					<InfoIcon /> {uiDetails.apiError}
-				</Text>
-			)}
 
 			{!isAuthenticated ? (
 				<Flex gap={'0.5rem'} direction={'column'}>

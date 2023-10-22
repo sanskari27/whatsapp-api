@@ -34,6 +34,11 @@ const scheduledMessageSchema = new mongoose.Schema<IScheduledMessage>({
 	batch_id: String,
 	campaign_id: String,
 	campaign_name: String,
+	isPaused: {
+		type: Boolean,
+		default: false,
+	},
+	pausedAt: Date,
 });
 
 const ScheduledMessageDB = mongoose.model<IScheduledMessage>(

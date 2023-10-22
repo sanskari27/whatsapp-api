@@ -31,15 +31,14 @@ type Batch = {
 	batch_delay: number;
 	startTime?: string;
 	endTime?: string;
+	client_id: string;
 };
 
 export default class MessageSchedulerService {
 	private user: IUser;
-	private client_id: string;
 
-	public constructor(user: IUser, client_id: string) {
+	public constructor(user: IUser) {
 		this.user = user;
-		this.client_id = client_id;
 	}
 
 	async scheduleBatch(messages: Message[], opts: Batch) {
@@ -86,7 +85,7 @@ export default class MessageSchedulerService {
 			docPromise.push(
 				ScheduledMessageDB.create({
 					sender: this.user,
-					sender_client_id: this.client_id,
+					sender_client_id: opts.client_id,
 					receiver: message.number,
 					message: message.message ?? '',
 					attachments: message.attachments ?? [],
@@ -107,6 +106,7 @@ export default class MessageSchedulerService {
 			sendAt: { $lte: DateUtils.getMomentNow().toDate() },
 			isSent: false,
 			isFailed: false,
+			isPaused: false,
 		}).populate('attachments');
 
 		scheduledMessages.forEach(async (scheduledMessage) => {
@@ -172,6 +172,79 @@ export default class MessageSchedulerService {
 
 			scheduledMessage.isSent = true;
 			scheduledMessage.save();
+		});
+	}
+
+	async allCampaigns() {
+		const messages = await ScheduledMessageDB.aggregate([
+			{ $match: { sender: this.user, campaign_id: { $exists: true } } },
+			{
+				$group: {
+					_id: '$campaign_id', // Group by campaign_id
+					campaignName: { $first: '$campaign_name' }, // Get the first campaign_name
+					sent: { $sum: { $cond: ['$isSent', 1, 0] } }, // Count isSent = true
+					failed: { $sum: { $cond: ['$isFailed', 1, 0] } }, // Count isFailed = true
+					pending: {
+						$sum: {
+							$cond: [{ $and: [{ $eq: ['$isSent', false] }, { $eq: ['$isFailed', false] }] }, 1, 0],
+						},
+					},
+					isPaused: {
+						$max: {
+							$cond: {
+								if: { $eq: ['$isPaused', true] },
+								then: true,
+								else: false,
+							},
+						},
+					},
+				},
+			},
+			{
+				$project: {
+					campaign_id: '$_id',
+					_id: 0, // Keep the _id (campaign_id) field
+					campaignName: 1,
+					sent: 1,
+					failed: 1,
+					pending: 1,
+					isPaused: 1,
+				},
+			},
+			{
+				$sort: {
+					campaignName: 1, // Sort by campaignName in ascending order (1)
+				},
+			},
+		]);
+		return messages as {
+			campaign_id: string;
+			campaignName: string;
+			sent: number;
+			failed: number;
+			pending: number;
+		}[];
+	}
+
+	async pauseCampaign(campaign_id: string) {
+		await ScheduledMessageDB.updateMany(
+			{ sender: this.user, campaign_id },
+			{ $set: { isPaused: true, pausedAt: DateUtils.getMomentNow().toDate() } }
+		);
+	}
+	async resumeCampaign(campaign_id: string) {
+		const campaigns = await ScheduledMessageDB.find({ sender: this.user, campaign_id });
+		campaigns.forEach((campaign) => {
+			campaign.isPaused = false; // Resume the campaign by setting isPaused to false
+
+			const pausedAt = DateUtils.getMoment(campaign.pausedAt);
+			const sendAt = DateUtils.getMoment(campaign.sendAt);
+			const timeDifference = DateUtils.getMomentNow().diff(pausedAt, 'seconds');
+
+			sendAt.add(timeDifference, 'seconds');
+
+			campaign.sendAt = sendAt.toDate();
+			campaign.save();
 		});
 	}
 }
