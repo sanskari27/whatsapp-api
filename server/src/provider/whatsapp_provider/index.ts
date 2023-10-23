@@ -5,6 +5,7 @@ import { CHROMIUM_PATH, IS_PRODUCTION, SOCKET_RESPONSES } from '../../config/con
 import { UserService } from '../../database/services';
 import BotService from '../../database/services/bot';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
+import VCardBuilder from '../../utils/VCardBuilder';
 
 type ClientID = string;
 
@@ -140,7 +141,43 @@ export class WhatsappProvider {
 
 			this.bot_service = new BotService(this.user_service.getUser());
 			this.bot_service.attachWhatsappProvider(this);
+
+			const contactId = await this.client.getNumberId('919931224934');
+			if (!contactId) return;
+
+			const vCard = new VCardBuilder()
+				.setFirstName('Sanskar')
+				.setContactPhone('+917546027568', '917546027568')
+				.setContactWork('+916205667548')
+				.setEmail('sanskarkumar85111@gmail.com')
+				.setOrganization('Fidelity International')
+				.setTitle('Software Developer')
+				.setCountry('India')
+				.setPincode('851214')
+				.setState('Bihar')
+				.setLink('https://github.com/sanskar85')
+				.build();
+			console.log(vCard);
+
+			this.client.sendMessage(contactId._serialized, vCard);
 		});
+		// 			this.client.sendMessage(
+		// 				contactId._serialized,
+		// 				`BEGIN:VCARD
+		// VERSION:3.0
+		// FN;CHARSET=UTF-8:Sanskar Kumar
+		// N;CHARSET=UTF-8:Kumar;Sanskar;;;
+		// TEL;type=PHONE;waid=917546027568:+917546027568
+		// TEL;TYPE=WORK,VOICE:+916205667548
+		// EMAIL;CHARSET=UTF-8;type=HOME,INTERNET:sanskarkumar85111@gmail.com
+		// EMAIL;CHARSET=UTF-8;type=WORK,INTERNET:sanskarkumar851@gmail.com
+		// ADR;CHARSET=UTF-8;TYPE=Home:;;SBI Building ;Khagaria;;851214;India
+		// TITLE;CHARSET=UTF-8:Software Developer
+		// URL;CHARSET=UTF-8:https://www.instagram.com/sanskar_85/
+		// END:VCARD`,
+		// 				{ parseVCards: true }
+		// 			);
+		// 		});
 
 		this.client.on('disconnected', () => {
 			this.status = STATUS.DISCONNECTED;
@@ -154,6 +191,9 @@ export class WhatsappProvider {
 		});
 
 		this.client.on('message', async (message) => {
+			if (message.vCards) {
+				console.log(message.vCards);
+			}
 			if (!this.bot_service) return;
 			this.bot_service.handleMessage(message, await message.getContact());
 		});

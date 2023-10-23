@@ -9,6 +9,7 @@ import UploadService from '../../../database/services/uploads';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 import { Respond, generateBatchID } from '../../../utils/ExpressUtils';
+import VCardBuilder from '../../../utils/VCardBuilder';
 import WhatsappUtils from '../../../utils/WhatsappUtils';
 
 export async function scheduleMessage(req: Request, res: Response, next: NextFunction) {
@@ -29,7 +30,25 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 			label_ids: z.string().array(),
 			message: z.string(),
 			variables: z.string().array(),
-			shared_contact_cards: z.string().array(),
+			shared_contact_cards: z
+				.object({
+					first_name: z.string().default(''),
+					last_name: z.string().default(''),
+					title: z.string().default(''),
+					organization: z.string().default(''),
+					email_personal: z.string().default(''),
+					email_work: z.string().default(''),
+					contact_number_phone: z.string().default(''),
+					contact_number_work: z.string().default(''),
+					link: z.string().default(''),
+					street: z.string().default(''),
+					city: z.string().default(''),
+					state: z.string().default(''),
+					country: z.string().default(''),
+					pincode: z.string().default(''),
+				})
+				.array()
+				.default([]),
 			attachments: z
 				.string()
 				.array()
@@ -174,6 +193,50 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 		attachments
 	);
 
+	const contact_cards_promise = shared_contact_cards.map(async (detail) => {
+		const vcard = new VCardBuilder()
+			.setFirstName(detail.first_name)
+			.setLastName(detail.last_name)
+			.setTitle(detail.title)
+			.setOrganization(detail.organization)
+			.setEmail(detail.email_personal)
+			.setWorkEmail(detail.email_work)
+			.setLink(detail.link)
+			.setStreet(detail.street)
+			.setCity(detail.city)
+			.setState(detail.state)
+			.setPincode(detail.pincode)
+			.setCountry(detail.country);
+
+		if (detail.contact_number_phone) {
+			const number = detail.contact_number_phone.startsWith('+')
+				? detail.contact_number_phone.substring(1)
+				: detail.contact_number_phone;
+			const numberId = await whatsapp.getClient().getNumberId(number);
+			if (numberId) {
+				vcard.setContactPhone(`+${numberId.user}`, numberId.user);
+			} else {
+				vcard.setContactPhone(`+${number}`);
+			}
+		}
+
+		if (detail.contact_number_work) {
+			const number = detail.contact_number_work.startsWith('+')
+				? detail.contact_number_work.substring(1)
+				: detail.contact_number_work;
+			const numberId = await whatsapp.getClient().getNumberId(number);
+			if (numberId) {
+				vcard.setContactPhone(`+${numberId.user}`, numberId.user);
+			} else {
+				vcard.setContactPhone(`+${number}`);
+			}
+		}
+
+		return vcard.build();
+	});
+
+	const contact_cards = await Promise.all(contact_cards_promise);
+
 	const sendMessageList = numbers.map(async (number) => {
 		const _message = messages !== null ? messages[number] : message ?? '';
 
@@ -181,7 +244,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 			number,
 			message: _message,
 			attachments: media_attachments,
-			shared_contact_cards: shared_contact_cards ?? [],
+			shared_contact_cards: contact_cards ?? [],
 		};
 	});
 

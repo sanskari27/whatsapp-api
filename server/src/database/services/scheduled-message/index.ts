@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { Types } from 'mongoose';
-import WAWebJS, { MessageMedia } from 'whatsapp-web.js';
+import { MessageMedia } from 'whatsapp-web.js';
 import { ATTACHMENTS_PATH, PROMOTIONAL_MESSAGE } from '../../../config/const';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 import IScheduledMessage from '../../../types/scheduled-message';
@@ -131,23 +131,8 @@ export default class MessageSchedulerService {
 				whatsapp.getClient().sendMessage(scheduledMessage.receiver, scheduledMessage.message);
 			}
 
-			const contact_cards_promise = scheduledMessage.shared_contact_cards.map(async (number) => {
-				const id = await whatsapp.getClient().getNumberId(number);
-				if (!id) {
-					return null;
-				}
-				return await whatsapp.getClient().getContactById(id._serialized);
-			});
-			Promise.all(contact_cards_promise).then((contact_cards) => {
-				const non_empty_cards = contact_cards.filter((card) => card !== null) as WAWebJS.Contact[];
-				if (contact_cards.length > 0) {
-					whatsapp
-						.getClient()
-						.sendMessage(
-							scheduledMessage.receiver,
-							non_empty_cards.length > 1 ? non_empty_cards : non_empty_cards[0]
-						);
-				}
+			scheduledMessage.shared_contact_cards.forEach(async (card) => {
+				whatsapp.getClient().sendMessage(scheduledMessage.receiver, card);
 			});
 
 			scheduledMessage.attachments.forEach(async (attachment) => {

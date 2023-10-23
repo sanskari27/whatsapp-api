@@ -179,19 +179,10 @@ export default class BotService {
 				});
 			}
 
-			if (bot.shared_contact_cards.length > 0) {
-				const contact_cards_promise = (bot.shared_contact_cards ?? []).map(async (number) => {
-					const id = await whatsapp.getClient().getNumberId(number);
-					if (!id) {
-						return null;
-					}
-					return await whatsapp.getClient().getContactById(id._serialized);
-				});
-				Promise.all(contact_cards_promise).then((contact_cards) => {
-					const cards = contact_cards.filter((card) => card !== null) as WAWebJS.Contact[];
-					whatsapp.getClient().sendMessage(message.from, cards.length > 1 ? cards : cards[0]);
-				});
-			}
+			(bot.shared_contact_cards ?? []).forEach(async (card) => {
+				whatsapp.getClient().sendMessage(message.from, card);
+			});
+
 			if (!isSubscribed && isNew) {
 				whatsapp.getClient().sendMessage(message.from, PROMOTIONAL_MESSAGE);
 			}
