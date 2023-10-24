@@ -15,8 +15,6 @@ export async function validate(req: Request, res: Response, next: NextFunction) 
 	const whatsapp = WhatsappProvider.getInstance(client_id);
 	const whatsappUtils = new WhatsappUtils(whatsapp);
 	if (!whatsapp.isReady()) {
-		console.log('WHatsapp not ready');
-
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
 
