@@ -16,10 +16,32 @@ export default class PaymentService {
 		}
 	}
 
-	static async initiateTransaction() {
+	static async initiateTransaction(details: {
+		name: string;
+		phone_number: string;
+		email: string;
+		whatsapp_numbers: string[];
+		plan_name:
+			| 'SILVER_MONTH'
+			| 'GOLD_MONTH'
+			| 'PLATINUM_MONTH'
+			| 'SILVER_YEAR'
+			| 'GOLD_YEAR'
+			| 'PLATINUM_YEAR';
+
+		billing_address: {
+			street: string;
+			city: string;
+			district: string;
+			state: string;
+			country: string;
+			pincode: string;
+		};
+	}) {
 		try {
-			const { data } = await APIInstance.post(`/payment/initiate`);
+			const { data } = await APIInstance.post(`/payment/initiate`, details);
 			return {
+				bucket_id: data.bucket_id,
 				transaction_id: data.transaction_id,
 				gross_amount: data.gross_amount,
 				tax: data.tax,
@@ -31,12 +53,16 @@ export default class PaymentService {
 		}
 	}
 
-	static async applyCoupon(transaction_id: string, coupon_code: string) {
+	static async applyCoupon(bucket_id: string, transaction_id: string, coupon_code: string) {
 		try {
-			const { data } = await APIInstance.post(`/payment/${transaction_id}/apply-coupon`, {
-				coupon_code,
-			});
+			const { data } = await APIInstance.post(
+				`/payment/${bucket_id}/${transaction_id}/apply-coupon`,
+				{
+					coupon_code,
+				}
+			);
 			return {
+				bucket_id: data.bucket_id,
 				transaction_id: data.transaction_id,
 				gross_amount: data.gross_amount,
 				tax: data.tax,
@@ -48,10 +74,11 @@ export default class PaymentService {
 		}
 	}
 
-	static async details(transaction_id: string) {
+	static async details(bucket_id: string, transaction_id: string) {
 		try {
-			const { data } = await APIInstance.get(`/payment/${transaction_id}/details`);
+			const { data } = await APIInstance.get(`/payment/${bucket_id}/${transaction_id}/details`);
 			return {
+				bucket_id: data.bucket_id,
 				transaction_id: data.transaction_id,
 				gross_amount: data.gross_amount,
 				tax: data.tax,
@@ -64,10 +91,13 @@ export default class PaymentService {
 		}
 	}
 
-	static async removeCoupon(transaction_id: string) {
+	static async removeCoupon(bucket_id: string, transaction_id: string) {
 		try {
-			const { data } = await APIInstance.post(`/payment/${transaction_id}/remove-coupon`);
+			const { data } = await APIInstance.post(
+				`/payment/${bucket_id}/${transaction_id}/remove-coupon`
+			);
 			return {
+				bucket_id: data.bucket_id,
 				transaction_id: data.transaction_id,
 				gross_amount: data.gross_amount,
 				tax: data.tax,
@@ -78,10 +108,13 @@ export default class PaymentService {
 			return null;
 		}
 	}
-	static async initiateRazorpay(transaction_id: string) {
+	static async initiateRazorpay(bucket_id: string, transaction_id: string) {
 		try {
-			const { data } = await APIInstance.post(`/payment/${transaction_id}/initiate-razorpay`);
+			const { data } = await APIInstance.post(
+				`/payment/${bucket_id}/${transaction_id}/initiate-razorpay`
+			);
 			return {
+				bucket_id: data.bucket_id as string,
 				transaction_id: data.transaction_id as string,
 				order_id: data.order_id as string,
 				razorpay_options: data.razorpay_options as {
