@@ -1,5 +1,6 @@
 export { default as ENHANCHMENT } from "./images/ENHANCHMENT.png";
 export { default as EXPORT } from "./images/EXPORT.png";
+export { default as PAYMENT } from "./images/Payment process.png";
 export { default as REPORT } from "./images/REPORT.png";
 export { default as SCREEN_SHOT } from "./images/SS.png";
 export { default as CHROME_GREEN } from "./images/chrome-green.svg";
