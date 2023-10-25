@@ -1,6 +1,8 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { ROUTES } from "./utils/const";
 import Home from "./views/pages/home";
+import PaymentPage from "./views/pages/payment";
+import PricePage from "./views/pages/price";
 import PrivacyPage from "./views/pages/privacy";
 import { InitiateRazorpayPayment } from "./views/pages/razorpay";
 import Terms from "./views/pages/terms";
@@ -23,6 +25,13 @@ function App() {
                         path={ROUTES.TERMS_AND_CONDITIONS}
                         element={<Terms />}
                     />
+                    <Route path={ROUTES.PRICE} element={<PricePage />}>
+                        <Route
+                            path={ROUTES.PAYMENT}
+                            element={<PaymentPage />}
+                        />
+                    </Route>
+
                     <Route path="*" element={<Navigate to={ROUTES.HOME} />} />
                 </Routes>
             </BrowserRouter>
