@@ -1,13 +1,19 @@
 import RazorpayAPI from '../../config/RazorpayAPI';
 
-type Props = { amount: number; reference_id: string; data?: { [key: string]: string } };
+type Props = {
+	amount: number;
+	reference_id: string;
+	customer_id: string;
+	data?: { [key: string]: string };
+};
 
-async function createOrder({ amount, reference_id, data = {} }: Props) {
+async function createOrder({ amount, customer_id, reference_id, data = {} }: Props) {
 	const amount_in_paise = amount * 100;
 	const order = await RazorpayAPI.orders.create({
 		amount: amount_in_paise,
 		currency: 'INR',
 		receipt: reference_id,
+		customer_id: customer_id,
 		notes: data,
 	});
 

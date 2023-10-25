@@ -78,14 +78,16 @@ export default class UserService {
 	static async isValidAuth(client_id: string) {
 		const auth = await AuthDetailDB.findOne({
 			client_id,
-		});
+		}).populate('user');
 
 		if (!auth) return [false, null] as [boolean, null];
 
-		const validPayment = await new PaymentService(auth.user).getRunningPayment();
+		const isPaymentValid = !auth.user.subscription_expiry
+			? DateUtils.getMoment(auth.user.subscription_expiry).isAfter(DateUtils.getMomentNow())
+			: false;
 
-		if (validPayment) {
-			return [true, validPayment.expires_at, auth.user] as [boolean, Date, IUser];
+		if (isPaymentValid) {
+			return [true, auth.user.subscription_expiry, auth.user] as [boolean, Date, IUser];
 		}
 
 		if (auth.isRevoked) return [false, null] as [boolean, null];
@@ -105,6 +107,28 @@ export default class UserService {
 	getUser() {
 		return this.user;
 	}
+
+	isSubscribed() {
+		const isPaymentValid = !this.user.subscription_expiry
+			? DateUtils.getMoment(this.user.subscription_expiry).isAfter(DateUtils.getMomentNow())
+			: false;
+		const isNew = DateUtils.getMoment(this.user.createdAt)
+			.add(28, 'days')
+			.isAfter(DateUtils.getMomentNow());
+		return {
+			isSubscribed: isPaymentValid,
+			isNew: isNew,
+		};
+	}
+
+	async getPaymentRecords() {
+		return PaymentService.getPaymentRecords(this.user.phone);
+	}
+
+	async getRunningPayment() {
+		return PaymentService.getRunningPayment(this.user.phone);
+	}
+
 	static async getUser(phone: string) {
 		const service = await UserService.getService(phone);
 		return service.getUser();
@@ -118,19 +142,13 @@ export default class UserService {
 			},
 		});
 
-		const sessionsPromise = revokable.map(async (auth) => {
-			const { isSubscribed } = await new PaymentService(auth.user).isSubscribed();
-			if (!isSubscribed) {
-				return auth;
-			}
-			return null;
+		const sessions = revokable.filter((auth) => {
+			const userService = new UserService(auth.user);
+			const { isSubscribed } = userService.isSubscribed();
+			return !isSubscribed;
 		});
 
-		const sessions = (await Promise.all(sessionsPromise)).filter((auth) => auth !== null);
-
-		return sessions as (IAuthDetail & {
-			_id: Types.ObjectId;
-		})[];
+		return sessions;
 	}
 
 	static async getInactiveSessions() {

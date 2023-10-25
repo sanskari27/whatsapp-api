@@ -30,6 +30,23 @@ export enum WALLET_TRANSACTION_STATUS {
 	PENDING = 'pending',
 	CANCELLED = 'cancelled',
 }
+export enum BILLING_PLANS_TYPE {
+	SILVER_MONTH = 'SILVER_MONTH',
+	GOLD_MONTH = 'GOLD_MONTH',
+	PLATINUM_MONTH = 'PLATINUM_MONTH',
+	SILVER_YEAR = 'SILVER_YEAR',
+	GOLD_YEAR = 'GOLD_YEAR',
+	PLATINUM_YEAR = 'PLATINUM_YEAR',
+}
+export const BILLING_PLANS_DETAILS = {
+	[BILLING_PLANS_TYPE.SILVER_MONTH]: { amount: 1500, user_count: 1 },
+	[BILLING_PLANS_TYPE.GOLD_MONTH]: { amount: 2500, user_count: 2 },
+	[BILLING_PLANS_TYPE.PLATINUM_MONTH]: { amount: 3000, user_count: 4 },
+	[BILLING_PLANS_TYPE.SILVER_YEAR]: { amount: 15000, user_count: 1 },
+	[BILLING_PLANS_TYPE.GOLD_YEAR]: { amount: 20000, user_count: 2 },
+	[BILLING_PLANS_TYPE.PLATINUM_YEAR]: { amount: 30000, user_count: 4 },
+};
+
 export enum BOT_TRIGGER_OPTIONS {
 	INCLUDES_IGNORE_CASE = 'INCLUDES_IGNORE_CASE',
 	INCLUDES_MATCH_CASE = 'INCLUDES_MATCH_CASE',
@@ -42,8 +59,7 @@ export enum BOT_TRIGGER_TO {
 	NON_SAVED_CONTACTS = 'NON_SAVED_CONTACTS',
 }
 
-export const TAX = 0;
-export const BASE_AMOUNT = 2500;
+export const TAX = 0.18;
 
 export const UPLOADS_PATH = '/static/uploads/';
 export const CSV_PATH = '/static/csv/';

@@ -4,9 +4,9 @@ import IPayment from '../../../types/payment';
 import DateUtils from '../../../utils/DateUtils';
 
 const paymentSchema = new mongoose.Schema<IPayment>({
-	user: {
+	bucket: {
 		type: Schema.Types.ObjectId,
-		ref: 'User',
+		ref: 'PaymentBucket',
 	},
 	gross_amount: {
 		type: Number,
@@ -57,8 +57,7 @@ paymentSchema.pre<IPayment>('save', function (next) {
 		this.expires_at = DateUtils.getMomentNow().add(1, 'month').toDate();
 	}
 
-	this.tax = this.gross_amount * TAX;
-
+	this.tax = (this.gross_amount - this.discount) * TAX;
 	this.total_amount = this.gross_amount + this.tax - this.discount;
 
 	next();

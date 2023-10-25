@@ -1,142 +1,140 @@
 import { Types } from 'mongoose';
-import { WALLET_TRANSACTION_STATUS } from '../../../config/const';
+import { BILLING_PLANS_DETAILS, WALLET_TRANSACTION_STATUS } from '../../../config/const';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 import RazorpayProvider from '../../../provider/razorpay';
-import { IUser } from '../../../types/user';
+import IPayment from '../../../types/payment';
+import IPaymentBucket from '../../../types/payment-bucket';
 import DateUtils from '../../../utils/DateUtils';
 import CouponDB from '../../repository/coupon';
 import PaymentDB from '../../repository/payments';
-import { UserDB } from '../../repository/user';
 
 export default class PaymentService {
-	private user: IUser;
-	public constructor(user: IUser) {
-		if (user === null) {
-			throw new InternalError(INTERNAL_ERRORS.USER_ERRORS.NOT_FOUND);
-		}
-		this.user = user;
+	private bucket: IPaymentBucket;
+	private walletTransaction: IPayment | null;
+	public constructor(bucket: IPaymentBucket) {
+		this.bucket = bucket;
+		this.walletTransaction = null;
 	}
 
-	public static async getService(phone: string) {
-		const user = await UserDB.findOne({ phone });
-		if (user === null) {
-			throw new InternalError(INTERNAL_ERRORS.USER_ERRORS.NOT_FOUND);
+	// public static async fetchTransactionDetails(id: Types.ObjectId) {
+	// 	const walletTransaction = await PaymentDB.findById(id);
+	// 	if (walletTransaction === null) {
+	// 		throw new InternalError(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND);
+	// 	}
+	// 	return {
+	// 		transaction_id: walletTransaction._id,
+	// 		gross_amount: walletTransaction.gross_amount,
+	// 		tax: walletTransaction.tax,
+	// 		discount: walletTransaction.discount,
+	// 		total_amount: walletTransaction.total_amount,
+	// 		status: walletTransaction.transaction_status,
+	// 	};
+	// }
+
+	public async initialize(id?: Types.ObjectId) {
+		if (id) {
+			const walletTransaction = await PaymentDB.findById(id);
+			if (
+				walletTransaction === null ||
+				String(walletTransaction.bucket._id) !== String(this.bucket._id)
+			) {
+				throw new InternalError(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND);
+			}
+			this.walletTransaction = walletTransaction;
+		} else {
+			await this.createWalletTransaction();
 		}
-		return new PaymentService(user);
 	}
-	public static async fetchTransactionDetails(id: Types.ObjectId) {
-		const walletTransaction = await PaymentDB.findById(id);
-		if (walletTransaction === null) {
-			throw new InternalError(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND);
+
+	getTransactionDetails() {
+		if (this.walletTransaction === null) {
+			throw new InternalError(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_SERVICE_UNINITIALIZED);
 		}
 		return {
-			transaction_id: walletTransaction._id,
-			gross_amount: walletTransaction.gross_amount,
-			tax: walletTransaction.tax,
-			discount: walletTransaction.discount,
-			total_amount: walletTransaction.total_amount,
-			status: walletTransaction.transaction_status,
+			bucket_id: this.bucket._id,
+			transaction_id: this.walletTransaction._id,
+			gross_amount: this.walletTransaction.gross_amount,
+			tax: this.walletTransaction.tax,
+			discount: this.walletTransaction.discount,
+			total_amount: this.walletTransaction.total_amount,
+			status: this.walletTransaction.transaction_status,
 		};
 	}
 
-	async initializePayment(amount: number) {
-		const walletTransaction = await PaymentDB.create({
-			user: this.user,
+	private async createWalletTransaction() {
+		const amount = BILLING_PLANS_DETAILS[this.bucket.plan_name].amount;
+
+		this.walletTransaction = await PaymentDB.create({
+			bucket: this.bucket,
 			gross_amount: amount,
 			transaction_status: WALLET_TRANSACTION_STATUS.PENDING,
 			transaction_date: DateUtils.getDate(),
 		});
-
-		return {
-			transaction_id: walletTransaction._id,
-			gross_amount: walletTransaction.gross_amount,
-			tax: walletTransaction.tax,
-			discount: walletTransaction.discount,
-			total_amount: walletTransaction.total_amount,
-		};
 	}
 
-	async applyCoupon(id: Types.ObjectId, coupon: string) {
-		const walletTransaction = await PaymentDB.findById(id);
+	async applyCoupon(coupon: string) {
+		if (this.walletTransaction === null) {
+			throw new InternalError(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_SERVICE_UNINITIALIZED);
+		}
 		const couponDetails = await CouponDB.findOne({ code: coupon });
 
-		if (walletTransaction === null) {
-			throw new InternalError(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND);
-		} else if (couponDetails === null) {
+		if (couponDetails === null) {
 			throw new InternalError(INTERNAL_ERRORS.PAYMENT_ERROR.COUPON_NOT_FOUND);
 		}
-
-		const coupon_applied_count = await PaymentDB.countDocuments({
-			user: this.user,
-			discount_coupon: couponDetails,
-			transaction_status: WALLET_TRANSACTION_STATUS.SUCCESS,
-		});
-
-		if (
-			coupon_applied_count >= couponDetails.no_of_coupons_per_user ||
-			couponDetails.available_coupons <= 0
-		) {
-			throw new InternalError(INTERNAL_ERRORS.PAYMENT_ERROR.COUPON_EXPIRED);
+		if (this.walletTransaction.discount_coupon) {
+			await this.removeCoupon();
 		}
 
-		walletTransaction.discount = couponDetails.discount_percentage * walletTransaction.gross_amount;
+		this.walletTransaction.discount =
+			couponDetails.discount_percentage * this.walletTransaction.gross_amount;
 		couponDetails.available_coupons -= 1;
+		this.walletTransaction.discount_coupon = couponDetails;
 
-		await walletTransaction.save();
+		await this.walletTransaction.save();
 		await couponDetails.save();
-
-		return {
-			transaction_id: walletTransaction._id,
-			gross_amount: walletTransaction.gross_amount,
-			tax: walletTransaction.tax,
-			discount: walletTransaction.discount,
-			total_amount: walletTransaction.total_amount,
-		};
 	}
 
-	async removeCoupon(id: Types.ObjectId) {
-		const walletTransaction = await PaymentDB.findById(id);
-
-		if (walletTransaction === null) {
-			throw new InternalError(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND);
+	async removeCoupon() {
+		if (this.walletTransaction === null) {
+			throw new InternalError(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_SERVICE_UNINITIALIZED);
 		}
 
-		const couponDetails = await CouponDB.findById(walletTransaction.discount_coupon);
-
-		if (couponDetails !== null) {
-			couponDetails.available_coupons += 1;
-			await couponDetails.save();
+		if (this.walletTransaction.discount_coupon === null) {
+			return;
 		}
+		this.walletTransaction.discount_coupon.available_coupons += 1;
+		this.walletTransaction.discount = 0;
 
-		walletTransaction.discount = 0;
-		await walletTransaction.save();
-
-		return {
-			transaction_id: walletTransaction._id,
-			gross_amount: walletTransaction.gross_amount,
-			tax: walletTransaction.tax,
-			discount: walletTransaction.discount,
-			total_amount: walletTransaction.total_amount,
-		};
+		await this.walletTransaction.save();
 	}
 
-	async initializeRazorpayTransaction(id: Types.ObjectId) {
-		const walletTransaction = await PaymentDB.findById(id);
-
-		if (walletTransaction === null) {
-			throw new InternalError(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND);
+	async initializeRazorpay() {
+		if (this.walletTransaction === null) {
+			throw new InternalError(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_SERVICE_UNINITIALIZED);
 		}
+
+		const customer = await RazorpayProvider.customers.createCustomer({
+			name: this.bucket.name,
+			email: this.bucket.email,
+			phone_number: this.bucket.phone_number,
+			billing_address: this.bucket.billing_address,
+		});
+		if (!customer) {
+			throw new InternalError(INTERNAL_ERRORS.RAZORPAY_ERRORS.CUSTOMER_ERROR);
+		}
+		const { id: customer_id } = customer;
 
 		const order = await RazorpayProvider.orders.createOrder({
-			amount: walletTransaction.total_amount,
-			reference_id: walletTransaction._id,
+			amount: this.walletTransaction.total_amount,
+			reference_id: this.walletTransaction._id,
+			customer_id: customer_id,
 		});
 
-		walletTransaction.reference_id = order.id;
-		await walletTransaction.save();
+		this.walletTransaction.reference_id = order.id;
+		await this.walletTransaction.save();
 
 		return {
-			transaction_id: walletTransaction._id,
+			transaction_id: this.walletTransaction._id,
 			order_id: order.id,
 			razorpay_options: {
 				description: 'Subscription',
@@ -145,7 +143,9 @@ export default class PaymentService {
 				name: 'Whatsapp Helper',
 				order_id: order.id,
 				prefill: {
-					contact: this.user.phone,
+					name: this.bucket.name,
+					contact: this.bucket.phone_number,
+					email: this.bucket.email,
 				},
 				key: '',
 				theme: {
@@ -155,61 +155,38 @@ export default class PaymentService {
 		};
 	}
 
-	public async confirmTransaction(id: Types.ObjectId) {
-		const walletTransaction = await PaymentDB.findById(id);
-
-		if (walletTransaction === null) {
-			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
+	public async confirmTransaction() {
+		if (this.walletTransaction === null) {
+			throw new InternalError(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_SERVICE_UNINITIALIZED);
 		}
 
-		if (walletTransaction.transaction_status === WALLET_TRANSACTION_STATUS.SUCCESS) {
+		if (this.walletTransaction.transaction_status === WALLET_TRANSACTION_STATUS.SUCCESS) {
 			return;
 		}
 
 		const orderStatus = await RazorpayProvider.orders.getOrderStatus(
-			walletTransaction.reference_id
+			this.walletTransaction.reference_id
 		);
 
 		if (orderStatus !== 'paid') {
 			throw new InternalError(INTERNAL_ERRORS.RAZORPAY_ERRORS.ORDER_PENDING);
 		}
 
-		walletTransaction.transaction_status = WALLET_TRANSACTION_STATUS.SUCCESS;
-		await walletTransaction.save();
+		this.walletTransaction.transaction_status = WALLET_TRANSACTION_STATUS.SUCCESS;
+		//TODO
+		await this.walletTransaction.save();
 	}
 
-	private static async isPaymentValid(user: IUser) {
-		return (
-			(await PaymentDB.exists({
-				user,
-				transaction_status: WALLET_TRANSACTION_STATUS.SUCCESS,
-				expires_at: {
-					$gte: DateUtils.getMomentNow().toDate(),
-				},
-			})) !== null
-		);
-	}
-
-	async isSubscribed() {
-		const isPaymentValid = await PaymentService.isPaymentValid(this.user);
-		const isNew = DateUtils.getMoment(this.user.createdAt)
-			.add(28, 'days')
-			.isAfter(DateUtils.getMomentNow());
-		return {
-			isSubscribed: isPaymentValid,
-			isNew: isNew,
-		};
-	}
-
-	public async getPaymentRecords() {
+	static async getPaymentRecords(phone_number: string) {
 		return PaymentDB.find({
-			user: this.user,
+			'bucket.whatsapp_numbers': phone_number,
+			transaction_status: WALLET_TRANSACTION_STATUS.SUCCESS,
 		});
 	}
 
-	public async getRunningPayment() {
+	static async getRunningPayment(phone_number: string) {
 		return PaymentDB.findOne({
-			user: this.user,
+			'bucket.whatsapp_numbers': phone_number,
 			transaction_status: WALLET_TRANSACTION_STATUS.SUCCESS,
 			expires_at: {
 				$gte: DateUtils.getMomentNow().toDate(),

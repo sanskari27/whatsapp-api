@@ -4,7 +4,7 @@ import fs from 'fs';
 import { Types } from 'mongoose';
 import { z } from 'zod';
 import { CSV_PATH } from '../../../config/const';
-import { MessageSchedulerService, PaymentService } from '../../../database/services';
+import { MessageSchedulerService, UserService } from '../../../database/services';
 import UploadService from '../../../database/services/uploads';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
@@ -112,7 +112,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 	} | null = null;
 	let numbers: string[] = [];
 
-	const { isSubscribed, isNew } = await new PaymentService(req.locals.user).isSubscribed();
+	const { isSubscribed, isNew } = new UserService(req.locals.user).isSubscribed();
 
 	if (!isSubscribed && !isNew) {
 		return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_REQUIRED));

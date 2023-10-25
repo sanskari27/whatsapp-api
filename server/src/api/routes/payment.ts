@@ -4,23 +4,23 @@ import { PaymentController } from '../controller';
 
 const router = express.Router();
 
-router.route('/initiate').all(VerifyClientID).post(PaymentController.initiatePaymentTransaction);
+router.route('/initiate').all(VerifyClientID).post(PaymentController.createPaymentBucket);
 
-router.route('/is-payment-valid').all(VerifyClientID).get(PaymentController.isPaymentValid);
-
-router.route('/:transaction_id/details').get(PaymentController.fetchTransactionDetail);
-router.route('/:transaction_id/verify-payment').post(PaymentController.confirmTransaction);
+router.route('/:bucket_id/:transaction_id/details').get(PaymentController.fetchTransactionDetail);
 router
-	.route('/:transaction_id/apply-coupon')
+	.route('/:bucket_id/:transaction_id/verify-payment')
+	.post(PaymentController.confirmTransaction);
+router
+	.route('/:bucket_id/:transaction_id/apply-coupon')
 	.all(VerifyClientID)
 	.post(PaymentController.applyCoupon);
 router
-	.route('/:transaction_id/remove-coupon')
+	.route('/:bucket_id/:transaction_id/remove-coupon')
 	.all(VerifyClientID)
 	.post(PaymentController.removeCoupon);
 router
-	.route('/:transaction_id/initiate-razorpay')
+	.route('/:bucket_id/:transaction_id/initiate-razorpay')
 	.all(VerifyClientID)
-	.post(PaymentController.initializeRazorpayPayment);
+	.post(PaymentController.initializeBucketPayment);
 
 export default router;

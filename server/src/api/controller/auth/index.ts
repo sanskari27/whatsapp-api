@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
+import { UserService } from '../../../database/services';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
-import { Respond } from '../../../utils/ExpressUtils';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
-import { PaymentService, UserService } from '../../../database/services';
 import DateUtils from '../../../utils/DateUtils';
+import { Respond } from '../../../utils/ExpressUtils';
 
 async function validateClientID(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.headers['client-id'] as string;
@@ -33,9 +33,9 @@ async function details(req: Request, res: Response, next: NextFunction) {
 	if (!whatsapp.isReady()) {
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
-	const paymentService = new PaymentService(req.locals.user);
-	const currentPayment = await paymentService.getRunningPayment();
-	const paymentRecords = await paymentService.getPaymentRecords();
+	const userService = new UserService(req.locals.user);
+	const currentPayment = await userService.getRunningPayment();
+	const paymentRecords = await userService.getPaymentRecords();
 
 	const client = whatsapp.getClient();
 	const contact = whatsapp.getContact();

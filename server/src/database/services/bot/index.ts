@@ -14,16 +14,16 @@ import { IUser } from '../../../types/user';
 import DateUtils from '../../../utils/DateUtils';
 import { BotResponseDB } from '../../repository/bot';
 import BotDB from '../../repository/bot/Bot';
-import PaymentService from '../payments';
+import UserService from '../user';
 
 export default class BotService {
 	private user: IUser;
-	private paymentService: PaymentService;
+	private userService: UserService;
 	private whatsapp: WhatsappProvider | undefined;
 
 	public constructor(user: IUser) {
 		this.user = user;
-		this.paymentService = new PaymentService(user);
+		this.userService = new UserService(user);
 	}
 
 	public attachWhatsappProvider(whatsapp_provider: WhatsappProvider) {
@@ -148,7 +148,8 @@ export default class BotService {
 		if (!this.whatsapp) {
 			throw new Error('Whatsapp Provider not attached.');
 		}
-		const { isSubscribed, isNew } = await this.paymentService.isSubscribed();
+
+		const { isSubscribed, isNew } = await this.userService.isSubscribed();
 		if (!isSubscribed && !isNew) {
 			return;
 		}

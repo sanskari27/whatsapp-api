@@ -10,6 +10,7 @@ const userSchema = new Schema<IUser>(
 		userType: {
 			type: String,
 		},
+		subscription_expiry: Date,
 	},
 	{ timestamps: true }
 );

@@ -9,7 +9,7 @@ import { IUser } from '../../../types/user';
 import DateUtils from '../../../utils/DateUtils';
 import { generateBatchID, getRandomNumber } from '../../../utils/ExpressUtils';
 import ScheduledMessageDB from '../../repository/scheduled-message';
-import PaymentService from '../payments';
+import UserService from '../user';
 
 export type Message = {
 	number: string;
@@ -116,10 +116,9 @@ export default class MessageSchedulerService {
 				scheduledMessage.save();
 				return null;
 			}
+			const userService = new UserService(scheduledMessage.sender);
 
-			const { isSubscribed, isNew } = await new PaymentService(
-				scheduledMessage.sender
-			).isSubscribed();
+			const { isSubscribed, isNew } = userService.isSubscribed();
 
 			if (!isSubscribed && !isNew) {
 				scheduledMessage.isFailed = true;

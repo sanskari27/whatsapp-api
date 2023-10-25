@@ -1,6 +1,11 @@
 import { ServerError } from '../../types';
 
 const PAYMENT_ERROR = {
+	PAYMENT_SERVICE_UNINITIALIZED: {
+		STATUS: 500,
+		TITLE: 'PAYMENT_SERVICE_UNINITIALIZED',
+		MESSAGE: 'Initialize the payment first.',
+	},
 	PAYMENT_NOT_FOUND: {
 		STATUS: 404,
 		TITLE: 'PAYMENT_NOT_FOUND',

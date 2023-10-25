@@ -14,10 +14,6 @@ const couponSchema = new mongoose.Schema<ICoupon>({
 		type: Number,
 		required: true,
 	},
-	no_of_coupons_per_user: {
-		type: Number,
-		required: true,
-	},
 	discount_percentage: {
 		type: Number,
 		required: true,

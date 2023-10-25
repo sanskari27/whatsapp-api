@@ -3,7 +3,7 @@ import { NextFunction, Request, Response } from 'express';
 import fs from 'fs';
 import { z } from 'zod';
 import { COUNTRIES, CSV_PATH } from '../../../config/const';
-import { PaymentService } from '../../../database/services';
+import { UserService } from '../../../database/services';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 import { Respond } from '../../../utils/ExpressUtils';
@@ -40,7 +40,7 @@ export async function validate(req: Request, res: Response, next: NextFunction) 
 	}
 	const { type, csv_file, numbers: requestedNumberList } = reqValidatorResult.data;
 
-	const { isSubscribed, isNew } = await new PaymentService(req.locals.user).isSubscribed();
+	const { isSubscribed, isNew } = new UserService(req.locals.user).isSubscribed();
 
 	if (!isSubscribed && !isNew) {
 		return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_REQUIRED));
