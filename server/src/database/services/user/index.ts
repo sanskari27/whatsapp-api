@@ -21,10 +21,14 @@ export default class UserService {
 		return new UserService(user);
 	}
 
-	static async createUser(phone: string, { isBusiness = false }) {
+	static async createUser(phone: string, isBusiness?: boolean) {
 		const user = await UserDB.findOne({ phone });
 
 		if (user) {
+			if (isBusiness !== undefined && user.userType !== (isBusiness ? 'BUSINESS' : 'PERSONAL')) {
+				user.userType = isBusiness ? 'BUSINESS' : 'PERSONAL';
+				await user.save();
+			}
 			return new UserService(user);
 		}
 
@@ -119,6 +123,14 @@ export default class UserService {
 			isSubscribed: isPaymentValid,
 			isNew: isNew,
 		};
+	}
+
+	async addMonthToExpiry(months: number = 1) {
+		this.user.subscription_expiry = DateUtils.getMoment(this.user.subscription_expiry)
+			.add(months, 'months')
+			.toDate();
+
+		await this.user.save();
 	}
 
 	async getPaymentRecords() {

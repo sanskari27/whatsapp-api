@@ -2,12 +2,13 @@ import { Types } from 'mongoose';
 import { BILLING_PLANS_DETAILS, WALLET_TRANSACTION_STATUS } from '../../../config/const';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 import RazorpayProvider from '../../../provider/razorpay';
+import { RAZORPAY_API_KEY } from '../../../provider/razorpay/config/const';
 import IPayment from '../../../types/payment';
 import IPaymentBucket from '../../../types/payment-bucket';
 import DateUtils from '../../../utils/DateUtils';
 import CouponDB from '../../repository/coupon';
 import PaymentDB from '../../repository/payments';
-import { RAZORPAY_API_KEY } from '../../../provider/razorpay/config/const';
+import UserService from '../user';
 
 export default class PaymentService {
 	private bucket: IPaymentBucket;
@@ -174,7 +175,11 @@ export default class PaymentService {
 		}
 
 		this.walletTransaction.transaction_status = WALLET_TRANSACTION_STATUS.SUCCESS;
-		//TODO
+
+		const month = this.bucket.plan_name.includes('MONTH') ? 1 : 12;
+		for (const number of this.bucket.whatsapp_numbers) {
+			UserService.createUser(number).then((service) => service.addMonthToExpiry(month));
+		}
 		await this.walletTransaction.save();
 	}
 
