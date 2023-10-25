@@ -7,6 +7,7 @@ import IPaymentBucket from '../../../types/payment-bucket';
 import DateUtils from '../../../utils/DateUtils';
 import CouponDB from '../../repository/coupon';
 import PaymentDB from '../../repository/payments';
+import { RAZORPAY_API_KEY } from '../../../provider/razorpay/config/const';
 
 export default class PaymentService {
 	private bucket: IPaymentBucket;
@@ -147,7 +148,7 @@ export default class PaymentService {
 					contact: this.bucket.phone_number,
 					email: this.bucket.email,
 				},
-				key: '',
+				key: RAZORPAY_API_KEY,
 				theme: {
 					color: '#4CB072',
 				},
