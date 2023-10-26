@@ -5,7 +5,7 @@ export const ROUTES = {
 	HOME: '/',
 	PRIVACY_POLICY: '/privacy-policy',
 	PRICING: '/pricing',
-	PAYMENT: ':plan',
+	PLANS: ':plan',
 	TERMS_AND_CONDITIONS: '/terms-and-conditions',
 };
 

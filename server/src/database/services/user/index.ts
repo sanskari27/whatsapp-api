@@ -126,9 +126,13 @@ export default class UserService {
 	}
 
 	async addMonthToExpiry(months: number = 1) {
-		this.user.subscription_expiry = DateUtils.getMoment(this.user.subscription_expiry)
-			.add(months, 'months')
-			.toDate();
+		if (this.user.subscription_expiry) {
+			this.user.subscription_expiry = DateUtils.getMoment(this.user.subscription_expiry)
+				.add(months, 'months')
+				.toDate();
+		} else {
+			this.user.subscription_expiry = DateUtils.getMomentNow().add(months, 'months').toDate();
+		}
 
 		await this.user.save();
 	}

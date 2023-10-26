@@ -17,7 +17,7 @@ function App() {
 					<Route path={ROUTES.INITIATE_RAZORPAY_PAYMENT} element={<InitiateRazorpayPayment />} />
 					<Route path={ROUTES.TERMS_AND_CONDITIONS} element={<Terms />} />
 					<Route path={ROUTES.PRICING} element={<PricePage />}>
-						<Route path={ROUTES.PAYMENT} element={<PaymentPage />} />
+						<Route path={ROUTES.PLANS} element={<PaymentPage />} />
 					</Route>
 
 					<Route path='*' element={<Navigate to={ROUTES.HOME} />} />
