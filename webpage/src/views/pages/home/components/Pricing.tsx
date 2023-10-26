@@ -1,7 +1,9 @@
 import { Box, Button, Flex, Text } from '@chakra-ui/react';
-import { THEME } from '../../../../utils/const';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES, THEME } from '../../../../utils/const';
 
 export default function Pricing() {
+	const navigate = useNavigate();
 	return (
 		<Flex id='pricing' direction={'column'} py={'4rem'} px={'1rem'} alignItems={'center'}>
 			<Text textAlign={'center'} fontSize={'2xl'} fontWeight={'medium'} pb={'2rem'}>
@@ -210,9 +212,7 @@ export default function Pricing() {
 						boxShadow={'0px 0px 10px 5px #0080001f'}
 						mt={'1rem'}
 						onClick={() => {
-							window.open(
-								'https://chrome.google.com/webstore/detail/whatsleads/fcgjgjellnemnioihojklppanoldamnd?hl=en-GB&authuser=0'
-							);
+							navigate(ROUTES.PRICING);
 						}}
 					>
 						Upgrade To Premium
