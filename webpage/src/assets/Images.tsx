@@ -13,5 +13,6 @@ export { default as INSTAGRAM } from "./images/instagram.svg";
 export { default as LOGO } from "./images/logo.svg";
 export { default as RATING } from "./images/rating.png";
 export { default as CUSTOMER } from "./images/service.png";
+export { default as TRANSACTION } from "./images/transaction.png";
 export { default as TWITTER } from "./images/twitter.svg";
 export { default as WHATSAPP } from "./images/whatsapp.svg";
