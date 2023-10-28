@@ -6,9 +6,16 @@ import ReportsRoute from './report';
 import TemplateRoute from './template';
 import CouponRoute from './token';
 import UploadsRoute from './uploads';
+import WebhooksRoute from './webhooks';
 import WhatsappRoute from './whatsapp';
 
 const router = express.Router();
+
+// Next routes will be webhooks routes
+
+router.use('/webhooks', WebhooksRoute);
+
+// Next rotes are common routes
 
 router.use('/token', CouponRoute);
 

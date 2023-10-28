@@ -20,7 +20,7 @@ export default function InitiateRazorpayPayment() {
 			currency: 'INR',
 			amount: 177000,
 			name: 'Whatsapp Helper',
-			order_id: 'order_MsQBPSKyiZDATe',
+			order_id: 'order_MthiouYutRZePB',
 			prefill: {
 				name: 'Sanskar',
 				contact: '+917546027568',
@@ -30,18 +30,20 @@ export default function InitiateRazorpayPayment() {
 			theme: {
 				color: '#4CB072',
 			},
-			handler: function () {
-				fetch(
-					`${SERVER_URL}/payment/6538fa1a8f6648789fc4d62b/6538fa1a8f6648789fc4d62d/verify-payment`,
-					{
-						method: 'POST',
-					}
-				).finally(() => {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			handler: function (response: any) {
+				const order_id = response.razorpay_order_id;
+				const payment_id = response.razorpay_payment_id;
+				fetch(`${SERVER_URL}/payment/653d2321b67b62260150d8af/verify-payment`, {
+					method: 'POST',
+					body: JSON.stringify({
+						order_id: order_id,
+						payment_id: payment_id,
+					}),
+				}).finally(() => {
 					setTransactionCompleted(true);
 				});
 			},
-
-			callback_url: `${SERVER_URL}/payment/6538fa1a8f6648789fc4d62b/6538fa1a8f6648789fc4d62d/verify-payment`,
 		});
 
 		rzp1.open();

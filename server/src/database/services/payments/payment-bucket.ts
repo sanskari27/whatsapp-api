@@ -2,8 +2,10 @@ import { Types } from 'mongoose';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 import IPaymentBucket from '../../../types/payment/payment-bucket';
 import CouponDB from '../../repository/payments/coupon';
+import PaymentDB from '../../repository/payments/payment';
 import PaymentBucketDB from '../../repository/payments/payment-bucket';
 import PlanDB from '../../repository/payments/plan';
+import SubscriptionDB from '../../repository/payments/subscription';
 import PaymentService from './payment';
 
 export default class PaymentBucketService {
@@ -45,6 +47,24 @@ export default class PaymentBucketService {
 			throw new InternalError(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND);
 		}
 		return new PaymentBucketService(bucket);
+	}
+	static async getBucketBySubscription(id: string) {
+		const subscription = await SubscriptionDB.findOne({ subscription_id: id }).populate(
+			'bucket bucket.plan bucket.discount_coupon'
+		);
+		if (!subscription) {
+			throw new InternalError(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND);
+		}
+		return new PaymentBucketService(subscription.bucket);
+	}
+	static async getBucketByOrderID(id: string) {
+		const subscription = await PaymentDB.findOne({ order_id: id }).populate(
+			'bucket bucket.plan bucket.discount_coupon'
+		);
+		if (!subscription) {
+			throw new InternalError(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND);
+		}
+		return new PaymentBucketService(subscription.bucket);
 	}
 
 	getBucket() {
