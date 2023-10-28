@@ -4,7 +4,7 @@ import { IAuthDetail, IUser } from '../../../types/user';
 import DateUtils from '../../../utils/DateUtils';
 import ScheduledMessageDB from '../../repository/scheduled-message';
 import { AuthDetailDB, UserDB } from '../../repository/user';
-import PaymentService from '../payments';
+import { PaymentService } from '../payments';
 
 export default class UserService {
 	private user: IUser;

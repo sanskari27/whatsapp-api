@@ -1,7 +1,8 @@
+import crypto from 'crypto';
 import { Request, Response } from 'express';
 import { Types } from 'mongoose';
 import { z } from 'zod';
-import crypto from 'crypto';
+import { SUBSCRIPTION_STATUS } from '../config/const';
 type ResponseData = {
 	res: Response;
 	status: 200 | 201 | 400 | 401 | 403 | 404 | 500;
@@ -51,4 +52,26 @@ export function getRandomNumber(min: number, max: number) {
 	const randomInRange = min + randomDecimal * (max - min);
 
 	return randomInRange;
+}
+
+export function parseSubscriptionStatus(text: string) {
+	if (text === SUBSCRIPTION_STATUS.ACTIVE) {
+		return SUBSCRIPTION_STATUS.ACTIVE;
+	} else if (text === SUBSCRIPTION_STATUS.AUTHENTICATED) {
+		return SUBSCRIPTION_STATUS.AUTHENTICATED;
+	} else if (text === SUBSCRIPTION_STATUS.CANCELLED) {
+		return SUBSCRIPTION_STATUS.CANCELLED;
+	} else if (text === SUBSCRIPTION_STATUS.COMPLETED) {
+		return SUBSCRIPTION_STATUS.COMPLETED;
+	} else if (text === SUBSCRIPTION_STATUS.CREATED) {
+		return SUBSCRIPTION_STATUS.CREATED;
+	} else if (text === SUBSCRIPTION_STATUS.EXPIRED) {
+		return SUBSCRIPTION_STATUS.EXPIRED;
+	} else if (text === SUBSCRIPTION_STATUS.HALTED) {
+		return SUBSCRIPTION_STATUS.HALTED;
+	} else if (text === SUBSCRIPTION_STATUS.PENDING) {
+		return SUBSCRIPTION_STATUS.PENDING;
+	} else {
+		return SUBSCRIPTION_STATUS.UNDER_CREATION;
+	}
 }

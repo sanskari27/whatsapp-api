@@ -24,12 +24,26 @@ export const COUNTRIES: {
 	[key: string]: string;
 } = countries;
 
-export enum WALLET_TRANSACTION_STATUS {
+export enum TRANSACTION_STATUS {
 	SUCCESS = 'success',
 	FAILED = 'failed',
 	PENDING = 'pending',
 	CANCELLED = 'cancelled',
+	RECURRING = 'recurring',
 }
+
+export enum SUBSCRIPTION_STATUS {
+	UNDER_CREATION = 'under-creation',
+	CREATED = 'created',
+	AUTHENTICATED = 'authenticated',
+	ACTIVE = 'active',
+	PENDING = 'pending',
+	HALTED = 'halted',
+	CANCELLED = 'cancelled',
+	COMPLETED = 'completed',
+	EXPIRED = 'expired',
+}
+
 export enum BILLING_PLANS_TYPE {
 	SILVER_MONTH = 'SILVER_MONTH',
 	GOLD_MONTH = 'GOLD_MONTH',
@@ -39,12 +53,28 @@ export enum BILLING_PLANS_TYPE {
 	PLATINUM_YEAR = 'PLATINUM_YEAR',
 }
 export const BILLING_PLANS_DETAILS = {
-	[BILLING_PLANS_TYPE.SILVER_MONTH]: { amount: 1500, user_count: 1 },
-	[BILLING_PLANS_TYPE.GOLD_MONTH]: { amount: 2500, user_count: 2 },
-	[BILLING_PLANS_TYPE.PLATINUM_MONTH]: { amount: 3000, user_count: 4 },
-	[BILLING_PLANS_TYPE.SILVER_YEAR]: { amount: 15000, user_count: 1 },
-	[BILLING_PLANS_TYPE.GOLD_YEAR]: { amount: 20000, user_count: 2 },
-	[BILLING_PLANS_TYPE.PLATINUM_YEAR]: { amount: 30000, user_count: 4 },
+	[BILLING_PLANS_TYPE.SILVER_MONTH]: {
+		amount: 1500,
+		user_count: 1,
+		plan_id: 'plan_MtXgVPSDQrYvMd',
+	},
+	[BILLING_PLANS_TYPE.GOLD_MONTH]: { amount: 2500, user_count: 2, plan_id: 'plan_MtXgVPSDQrYvMd' },
+	[BILLING_PLANS_TYPE.PLATINUM_MONTH]: {
+		amount: 3000,
+		user_count: 4,
+		plan_id: 'plan_MtXgVPSDQrYvMd',
+	},
+	[BILLING_PLANS_TYPE.SILVER_YEAR]: {
+		amount: 15000,
+		user_count: 1,
+		plan_id: 'plan_MtXgVPSDQrYvMd',
+	},
+	[BILLING_PLANS_TYPE.GOLD_YEAR]: { amount: 20000, user_count: 2, plan_id: 'plan_MtXgVPSDQrYvMd' },
+	[BILLING_PLANS_TYPE.PLATINUM_YEAR]: {
+		amount: 30000,
+		user_count: 4,
+		plan_id: 'plan_MtXgVPSDQrYvMd',
+	},
 };
 
 export enum BOT_TRIGGER_OPTIONS {

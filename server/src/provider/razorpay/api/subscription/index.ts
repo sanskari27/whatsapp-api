@@ -27,9 +27,9 @@ async function createSubscription({ plan_id, email, phone, offer_id, data = {} }
 		plan_id: subscription.plan_id,
 		offer_id: subscription.offer_id,
 
-		total_count: subscription.total_count,
-		remaining_count: subscription.remaining_count,
-		plan_count: subscription.paid_count,
+		total_count: Number(subscription.total_count),
+		remaining_count: Number(subscription.remaining_count),
+		plan_count: Number(subscription.paid_count),
 
 		short_url: subscription.short_url,
 		status: subscription.status,
@@ -44,9 +44,9 @@ async function getSubscription(subscription_id: string) {
 		plan_id: subscription.plan_id,
 		offer_id: subscription.offer_id,
 
-		total_count: subscription.total_count,
-		remaining_count: subscription.remaining_count,
-		plan_count: subscription.paid_count,
+		total_count: Number(subscription.total_count),
+		remaining_count: Number(subscription.remaining_count),
+		plan_count: Number(subscription.paid_count),
 
 		short_url: subscription.short_url,
 		status: subscription.status,

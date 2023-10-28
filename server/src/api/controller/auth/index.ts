@@ -53,7 +53,7 @@ async function details(req: Request, res: Response, next: NextFunction) {
 			userType: contact.isBusiness ? 'BUSINESS' : 'PERSONAL',
 			paymentRecords: paymentRecords.map((payment) => ({
 				date: DateUtils.getMoment(payment.transaction_date).format('DD/MM/YYYY'),
-				amount: payment.total_amount,
+				amount: payment.amount,
 			})),
 		},
 	});

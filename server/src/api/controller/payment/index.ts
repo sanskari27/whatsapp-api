@@ -1,22 +1,19 @@
 import { NextFunction, Request, Response } from 'express';
 import { z } from 'zod';
 import { BILLING_PLANS_DETAILS, BILLING_PLANS_TYPE } from '../../../config/const';
-import { PaymentService } from '../../../database/services';
-import PaymentBucketService from '../../../database/services/payment-bucket';
+import PaymentBucketService from '../../../database/services/payments/payment-bucket';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 import { Respond, idValidator } from '../../../utils/ExpressUtils';
 
 async function fetchTransactionDetail(req: Request, res: Response, next: NextFunction) {
-	const [isTransactionValid, transaction_id] = idValidator(req.params.transaction_id);
 	const [isBucketValid, bucket_id] = idValidator(req.params.bucket_id);
 
-	if (!isTransactionValid || !isBucketValid) {
+	if (!isBucketValid) {
 		return next(new APIError(INTERNAL_ERRORS.COMMON_ERRORS.INVALID_FIELD));
 	}
 	try {
 		const paymentBucketService = await PaymentBucketService.getBucketById(bucket_id);
-		await paymentBucketService.initialize(transaction_id);
 
 		const transactionDetails = paymentBucketService.getTransactionDetails();
 
@@ -25,7 +22,6 @@ async function fetchTransactionDetail(req: Request, res: Response, next: NextFun
 			status: 200,
 			data: {
 				bucket_id: transactionDetails.bucket_id,
-				transaction_id: transactionDetails.transaction_id,
 				gross_amount: transactionDetails.gross_amount,
 				tax: transactionDetails.tax,
 				discount: transactionDetails.discount,
@@ -50,6 +46,7 @@ async function createPaymentBucket(req: Request, res: Response, next: NextFuncti
 			email: z.string(),
 			phone_number: z.string(),
 			whatsapp_numbers: z.string().array(),
+			type: z.enum(['one-time', 'subscription']),
 			plan_name: z.enum([
 				BILLING_PLANS_TYPE.SILVER_MONTH,
 				BILLING_PLANS_TYPE.GOLD_MONTH,
@@ -80,7 +77,6 @@ async function createPaymentBucket(req: Request, res: Response, next: NextFuncti
 	try {
 		const paymentBucketService = await PaymentBucketService.createBucket(reqValidatorResult.data);
 
-		await paymentBucketService.initialize();
 		const transactionDetails = paymentBucketService.getTransactionDetails();
 
 		return Respond({
@@ -88,7 +84,6 @@ async function createPaymentBucket(req: Request, res: Response, next: NextFuncti
 			status: 200,
 			data: {
 				bucket_id: transactionDetails.bucket_id,
-				transaction_id: transactionDetails.transaction_id,
 				gross_amount: transactionDetails.gross_amount,
 				tax: transactionDetails.tax,
 				discount: transactionDetails.discount,
@@ -101,7 +96,6 @@ async function createPaymentBucket(req: Request, res: Response, next: NextFuncti
 }
 
 async function applyCoupon(req: Request, res: Response, next: NextFunction) {
-	const [isTransactionValid, transaction_id] = idValidator(req.params.transaction_id);
 	const [isBucketValid, bucket_id] = idValidator(req.params.bucket_id);
 
 	const couponValidator = z.object({
@@ -109,7 +103,7 @@ async function applyCoupon(req: Request, res: Response, next: NextFunction) {
 	});
 	const validationResult = couponValidator.safeParse(req.body);
 
-	if (!isTransactionValid || !isBucketValid || !validationResult.success) {
+	if (!isBucketValid || !validationResult.success) {
 		return next(new APIError(INTERNAL_ERRORS.COMMON_ERRORS.INVALID_FIELD));
 	}
 
@@ -117,18 +111,15 @@ async function applyCoupon(req: Request, res: Response, next: NextFunction) {
 
 	try {
 		const bucketService = await PaymentBucketService.getBucketById(bucket_id);
-		const paymentService = new PaymentService(bucketService.getBucket());
-		await paymentService.initialize(transaction_id);
 
-		await paymentService.applyCoupon(couponCode);
-		const transactionDetails = paymentService.getTransactionDetails();
+		await bucketService.applyCoupon(couponCode);
+		const transactionDetails = bucketService.getTransactionDetails();
 
 		return Respond({
 			res,
 			status: 200,
 			data: {
 				bucket_id: transactionDetails.bucket_id,
-				transaction_id: transactionDetails.transaction_id,
 				gross_amount: transactionDetails.gross_amount,
 				tax: transactionDetails.tax,
 				discount: transactionDetails.discount,
@@ -149,27 +140,23 @@ async function applyCoupon(req: Request, res: Response, next: NextFunction) {
 	}
 }
 async function removeCoupon(req: Request, res: Response, next: NextFunction) {
-	const [isTransactionValid, transaction_id] = idValidator(req.params.transaction_id);
 	const [isBucketValid, bucket_id] = idValidator(req.params.bucket_id);
 
-	if (!isTransactionValid || !isBucketValid) {
+	if (!isBucketValid) {
 		return next(new APIError(INTERNAL_ERRORS.COMMON_ERRORS.INVALID_FIELD));
 	}
 
 	try {
 		const bucketService = await PaymentBucketService.getBucketById(bucket_id);
-		const paymentService = new PaymentService(bucketService.getBucket());
-		await paymentService.initialize(transaction_id);
 
-		await paymentService.removeCoupon();
-		const transactionDetails = paymentService.getTransactionDetails();
+		await bucketService.removeCoupon();
+		const transactionDetails = bucketService.getTransactionDetails();
 
 		return Respond({
 			res,
 			status: 200,
 			data: {
 				bucket_id: transactionDetails.bucket_id,
-				transaction_id: transactionDetails.transaction_id,
 				gross_amount: transactionDetails.gross_amount,
 				tax: transactionDetails.tax,
 				discount: transactionDetails.discount,
@@ -191,29 +178,21 @@ async function removeCoupon(req: Request, res: Response, next: NextFunction) {
 }
 
 async function initializeBucketPayment(req: Request, res: Response, next: NextFunction) {
-	const [isTransactionValid, transaction_id] = idValidator(req.params.transaction_id);
 	const [isBucketValid, bucket_id] = idValidator(req.params.bucket_id);
 
-	if (!isTransactionValid || !isBucketValid) {
+	if (!isBucketValid) {
 		return next(new APIError(INTERNAL_ERRORS.COMMON_ERRORS.INVALID_FIELD));
 	}
 
 	try {
 		const bucketService = await PaymentBucketService.getBucketById(bucket_id);
-		const paymentService = new PaymentService(bucketService.getBucket());
-		await paymentService.initialize(transaction_id);
 
-		const paymentDetails = await paymentService.initializeRazorpay();
+		const paymentDetails = await bucketService.generatePaymentLink();
 
 		return Respond({
 			res,
 			status: 200,
-			data: {
-				bucket_id: bucket_id,
-				transaction_id: paymentDetails.transaction_id,
-				order_id: paymentDetails.order_id,
-				razorpay_options: paymentDetails.razorpay_options,
-			},
+			data: paymentDetails,
 		});
 	} catch (err) {
 		console.log(err);
@@ -228,18 +207,29 @@ async function initializeBucketPayment(req: Request, res: Response, next: NextFu
 }
 
 async function confirmTransaction(req: Request, res: Response, next: NextFunction) {
-	const [isTransactionValid, transaction_id] = idValidator(req.params.transaction_id);
 	const [isBucketValid, bucket_id] = idValidator(req.params.bucket_id);
+	const order_id = req.body.order_id;
+	const subscription_id = req.body.subscription_id;
+	const payment_id = req.body.payment_id;
 
-	if (!isTransactionValid || !isBucketValid) {
+	if (!isBucketValid) {
 		return next(new APIError(INTERNAL_ERRORS.COMMON_ERRORS.INVALID_FIELD));
 	}
 
 	try {
 		const bucketService = await PaymentBucketService.getBucketById(bucket_id);
-		const paymentService = new PaymentService(bucketService.getBucket());
-		await paymentService.initialize(transaction_id);
-		await paymentService.confirmTransaction();
+		const paymentService = bucketService.getPaymentService();
+		if (bucketService.getTransactionDetails().type === 'one-time') {
+			if (!order_id || !payment_id) {
+				return next(new APIError(INTERNAL_ERRORS.COMMON_ERRORS.INVALID_FIELD));
+			}
+			await paymentService.confirmOneTimePayment(order_id, payment_id);
+		} else {
+			if (!subscription_id || !payment_id) {
+				return next(new APIError(INTERNAL_ERRORS.COMMON_ERRORS.INVALID_FIELD));
+			}
+			await paymentService.acceptSubscriptionPayment(subscription_id, payment_id);
+		}
 
 		return Respond({
 			res,
