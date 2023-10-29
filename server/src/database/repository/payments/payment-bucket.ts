@@ -57,6 +57,7 @@ const paymentBucketSchema = new mongoose.Schema<IPaymentBucket>({
 	transaction_status: {
 		type: String,
 		enum: Object.values(TRANSACTION_STATUS),
+		default: TRANSACTION_STATUS.PENDING,
 	},
 });
 

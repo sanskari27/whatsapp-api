@@ -155,14 +155,38 @@ export default class PaymentService {
 		await this.bucket.save();
 	}
 
-	static async getRunningPayment(phone_number: string) {
-		return PaymentDB.findOne({
-			'bucket.whatsapp_numbers': phone_number,
-		}).sort({ transaction_date: -1 });
-	}
 	static async getPaymentRecords(phone_number: string) {
-		return PaymentDB.find({
+		const _payments = await PaymentDB.find({
 			'bucket.whatsapp_numbers': phone_number,
 		});
+
+		const _subscriptions = await SubscriptionDB.find({
+			'bucket.whatsapp_numbers': phone_number,
+			subscription_status: {
+				$in: [SUBSCRIPTION_STATUS.ACTIVE, SUBSCRIPTION_STATUS.HALTED, SUBSCRIPTION_STATUS.PENDING],
+			},
+		}).populate('plan bucket');
+
+		const payments = _payments.map((payment) => ({
+			id: payment._id,
+			amount: payment.amount,
+			transaction_date: DateUtils.getMoment(payment.transaction_date).format('DD/MM/YYYY'),
+			order_id: payment.order_id,
+			payment_id: payment.payment_id,
+		}));
+
+		const subscriptions = _subscriptions.map((subscription) => ({
+			id: subscription._id,
+			status: subscription.subscription_status,
+			link: subscription.subscription_link,
+			action_supported: subscription.bucket.admin_number === phone_number,
+			canPause: subscription.subscription_status === SUBSCRIPTION_STATUS.ACTIVE,
+			canResume: subscription.subscription_status === SUBSCRIPTION_STATUS.PAUSED,
+			plan: subscription.plan.code,
+			plan_price: subscription.plan.amount,
+			transaction_date: DateUtils.getMoment(subscription.createdAt).format('DD/MM/YYYY'),
+		}));
+
+		return { subscriptions, payments };
 	}
 }

@@ -1,6 +1,5 @@
-import { Types } from 'mongoose';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
-import { IAuthDetail, IUser } from '../../../types/user';
+import { IUser } from '../../../types/user';
 import DateUtils from '../../../utils/DateUtils';
 import ScheduledMessageDB from '../../repository/scheduled-message';
 import { AuthDetailDB, UserDB } from '../../repository/user';
@@ -125,6 +124,10 @@ export default class UserService {
 		};
 	}
 
+	getExpiration() {
+		return DateUtils.getMoment(this.user.subscription_expiry);
+	}
+
 	async addMonthToExpiry(months: number = 1) {
 		if (this.user.subscription_expiry) {
 			this.user.subscription_expiry = DateUtils.getMoment(this.user.subscription_expiry)
@@ -139,10 +142,6 @@ export default class UserService {
 
 	async getPaymentRecords() {
 		return PaymentService.getPaymentRecords(this.user.phone);
-	}
-
-	async getRunningPayment() {
-		return PaymentService.getRunningPayment(this.user.phone);
 	}
 
 	static async getUser(phone: string) {
@@ -170,42 +169,21 @@ export default class UserService {
 	static async getInactiveSessions() {
 		const revokable = await AuthDetailDB.find({
 			isRevoked: false,
-			revoke_at: {
-				$lt: DateUtils.getMomentNow().toDate(),
+			last_active: {
+				$lt: DateUtils.getMomentNow().subtract(12, 'hours').toDate(),
 			},
 		});
 
 		const scheduled = await ScheduledMessageDB.find({
 			isSent: false,
 			isFailed: false,
-		});
+		}).distinct('client_id');
 
-		const scheduleMap = scheduled.reduce(
-			(acc, item) => {
-				acc[item.sender_client_id] = true;
-				return acc;
-			},
-			{} as {
-				[key: string]: true;
-			}
-		);
+		const scheduledSet = new Set(scheduled);
 
-		const sessionsPromise = revokable.map(async (auth) => {
-			if (
-				DateUtils.getMoment(auth.last_active).add(12, 'hours').isBefore(DateUtils.getMomentNow())
-			) {
-				if (!scheduleMap[auth.client_id]) {
-					return auth;
-				}
-			}
-			return null;
-		});
+		const sessions = revokable.filter((auth) => !scheduledSet.has(auth.client_id));
 
-		const sessions = (await Promise.all(sessionsPromise)).filter((auth) => auth !== null);
-
-		return sessions as (IAuthDetail & {
-			_id: Types.ObjectId;
-		})[];
+		return sessions;
 	}
 
 	static async sessionDisconnected(client_id: string) {

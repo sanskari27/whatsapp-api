@@ -23,6 +23,7 @@ export default class PaymentBucketService {
 		name: string;
 		email: string;
 		type: 'subscription' | 'one-time';
+		admin_number: string;
 		whatsapp_numbers: string[];
 		billing_address: {
 			street: string;
@@ -135,21 +136,4 @@ export default class PaymentBucketService {
 		this.bucket.discount_coupon = null;
 		await this.bucket.save();
 	}
-
-	// static async getPaymentRecords(phone_number: string) {
-	// 	return PaymentDB.find({
-	// 		'bucket.whatsapp_numbers': phone_number,
-	// 		transaction_status: TRANSACTION_STATUS.SUCCESS,
-	// 	});
-	// }
-
-	// static async getRunningPayment(phone_number: string) {
-	// 	return PaymentDB.findOne({
-	// 		'bucket.whatsapp_numbers': phone_number,
-	// 		transaction_status: TRANSACTION_STATUS.SUCCESS,
-	// 		expires_at: {
-	// 			$gte: DateUtils.getMomentNow().toDate(),
-	// 		},
-	// 	});
-	// }
 }

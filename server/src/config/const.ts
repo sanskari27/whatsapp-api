@@ -37,6 +37,7 @@ export enum SUBSCRIPTION_STATUS {
 	CREATED = 'created',
 	AUTHENTICATED = 'authenticated',
 	ACTIVE = 'active',
+	PAUSED = 'paused',
 	PENDING = 'pending',
 	HALTED = 'halted',
 	CANCELLED = 'cancelled',

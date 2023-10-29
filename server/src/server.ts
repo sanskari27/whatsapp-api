@@ -9,6 +9,7 @@ import connectDB from './config/DB';
 import logger from './config/Logger';
 import cache from './config/cache';
 import { PORT } from './config/const';
+import { AuthDetailDB } from './database/repository/user';
 import { SocketServerProvider } from './socket';
 import Date from './utils/DateUtils';
 import ErrorReporter from './utils/ErrorReporter';
@@ -32,6 +33,18 @@ connectDB()
 const server = app.listen(PORT, async () => {
 	SocketServerProvider.getInstance(server);
 	await cache.connect();
+	AuthDetailDB.find({
+		// isSent: false,
+		// isFailed: false,
+	})
+		.distinct('client_id')
+		.exec(function (err, uniqueFieldValues) {
+			if (err) {
+				console.error(err);
+			} else {
+				console.log(new Set(uniqueFieldValues));
+			}
+		});
 	logger.info(`Server started on port ${PORT}`, {
 		label: 'Running Status',
 	});

@@ -45,6 +45,7 @@ async function createPaymentBucket(req: Request, res: Response, next: NextFuncti
 			name: z.string(),
 			email: z.string(),
 			phone_number: z.string(),
+			admin_number: z.string(),
 			whatsapp_numbers: z.string().array(),
 			type: z.enum(['one-time', 'subscription']),
 			plan_name: z.enum([

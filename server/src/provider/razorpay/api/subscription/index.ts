@@ -55,7 +55,16 @@ async function getSubscription(subscription_id: string) {
 
 async function getSubscriptionStatus(subscription_id: string) {
 	const subscription = await getSubscription(subscription_id);
-	return subscription.status;
+	return subscription.status as
+		| 'created'
+		| 'authenticated'
+		| 'active'
+		| 'pending'
+		| 'halted'
+		| 'cancelled'
+		| 'completed'
+		| 'expired'
+		| 'paused';
 }
 
 export default {

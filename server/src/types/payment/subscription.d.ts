@@ -16,4 +16,6 @@ export default interface ISubscription extends Document {
 	remaining_count: number;
 
 	subscription_status: SUBSCRIPTION_STATUS;
+
+	createdAt: Date;
 }
