@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { z } from 'zod';
 import { BILLING_PLANS_DETAILS, BILLING_PLANS_TYPE } from '../../../config/const';
+import { UserService } from '../../../database/services';
 import PaymentBucketService from '../../../database/services/payments/payment-bucket';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
@@ -251,6 +252,50 @@ async function confirmTransaction(req: Request, res: Response, next: NextFunctio
 	}
 }
 
+async function pauseSubscription(req: Request, res: Response, next: NextFunction) {
+	const [isSubscriptionIdValid, subscription_id] = idValidator(req.params.subscription_id);
+
+	if (!isSubscriptionIdValid) {
+		return next(new APIError(INTERNAL_ERRORS.COMMON_ERRORS.INVALID_FIELD));
+	}
+
+	try {
+		const userService = new UserService(req.locals.user);
+		await userService.pauseSubscription(subscription_id);
+	} catch (err) {
+		if (err instanceof InternalError) {
+			if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND)) {
+				return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_NOT_FOUND));
+			} else if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.ACCESS_DENIED)) {
+				return next(new APIError(API_ERRORS.PAYMENT_ERRORS.ACCESS_DENIED));
+			}
+		}
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
+	}
+}
+
+async function resumeSubscription(req: Request, res: Response, next: NextFunction) {
+	const [isSubscriptionIdValid, subscription_id] = idValidator(req.params.subscription_id);
+
+	if (!isSubscriptionIdValid) {
+		return next(new APIError(INTERNAL_ERRORS.COMMON_ERRORS.INVALID_FIELD));
+	}
+
+	try {
+		const userService = new UserService(req.locals.user);
+		await userService.resumeSubscription(subscription_id);
+	} catch (err) {
+		if (err instanceof InternalError) {
+			if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND)) {
+				return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_NOT_FOUND));
+			} else if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.ACCESS_DENIED)) {
+				return next(new APIError(API_ERRORS.PAYMENT_ERRORS.ACCESS_DENIED));
+			}
+		}
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
+	}
+}
+
 const TokenController = {
 	fetchTransactionDetail,
 	createPaymentBucket,
@@ -258,6 +303,8 @@ const TokenController = {
 	removeCoupon,
 	initializeBucketPayment,
 	confirmTransaction,
+	pauseSubscription,
+	resumeSubscription,
 };
 
 export default TokenController;

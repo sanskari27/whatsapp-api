@@ -11,4 +11,7 @@ router.route('/:bucket_id/apply-coupon').post(PaymentController.applyCoupon);
 router.route('/:bucket_id/remove-coupon').post(PaymentController.removeCoupon);
 router.route('/:bucket_id/initiate-razorpay').post(PaymentController.initializeBucketPayment);
 
+router.route('/:subscription_id/pause').post(PaymentController.pauseSubscription);
+router.route('/:subscription_id/resume').post(PaymentController.resumeSubscription);
+
 export default router;

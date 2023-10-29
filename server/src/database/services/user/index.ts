@@ -1,3 +1,4 @@
+import { Types } from 'mongoose';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 import { IUser } from '../../../types/user';
 import DateUtils from '../../../utils/DateUtils';
@@ -140,8 +141,16 @@ export default class UserService {
 		await this.user.save();
 	}
 
-	async getPaymentRecords() {
+	getPaymentRecords() {
 		return PaymentService.getPaymentRecords(this.user.phone);
+	}
+
+	pauseSubscription(id: Types.ObjectId) {
+		return PaymentService.pauseSubscription(id, this.user.phone);
+	}
+
+	resumeSubscription(id: Types.ObjectId) {
+		return PaymentService.resumeSubscription(id, this.user.phone);
 	}
 
 	static async getUser(phone: string) {

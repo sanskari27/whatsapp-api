@@ -31,6 +31,11 @@ const PAYMENT_ERROR = {
 		TITLE: 'PAYMENT_REQUIRED',
 		MESSAGE: 'You need to make a payment to access this feature.',
 	},
+	ACCESS_DENIED: {
+		STATUS: 400,
+		TITLE: 'ACCESS_DENIED',
+		MESSAGE: 'You are not authorized to access this feature',
+	},
 } satisfies {
 	[error: string]: ServerError;
 };
