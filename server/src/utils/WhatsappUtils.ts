@@ -216,7 +216,7 @@ export default class WhatsappUtils {
 	static async removeInactiveSessions() {
 		const sessions = await UserService.getInactiveSessions();
 		for (const session of sessions) {
-			await WhatsappProvider.getInstance(session.client_id).logoutClient();
+			WhatsappProvider.getInstance(session.client_id).logoutClient();
 		}
 		logger.info(`Removed ${sessions.length} inactive sessions`);
 	}

@@ -1,5 +1,32 @@
 const START = 'BEGIN:VCARD\nVERSION:3.0\n';
 const END = 'END:VCARD';
+
+type VCardDetails = {
+	first_name: string;
+	last_name: string;
+	title: string;
+	organization: string;
+	email_work: string;
+	links: string[];
+	street: string;
+	city: string;
+	state: string;
+	country: string;
+	pincode: string;
+	contact_details_phone: {
+		whatsapp_id?: string;
+		contact_number: string;
+	};
+	contact_details_work: {
+		whatsapp_id?: string;
+		contact_number: string;
+	};
+	contact_details_other: {
+		whatsapp_id?: string;
+		contact_number: string;
+	}[];
+};
+
 export default class VCardBuilder {
 	private first_name: string;
 	private last_name: string;
@@ -15,11 +42,15 @@ export default class VCardBuilder {
 		whatsapp_id?: string;
 		contact_number: string;
 	};
+	private contact_details_other: {
+		whatsapp_id?: string;
+		contact_number: string;
+	}[];
 
 	private email_personal?: string;
 	private email_work: string;
 
-	private link: string;
+	private links: string[];
 
 	private street: string;
 	private city: string;
@@ -27,18 +58,21 @@ export default class VCardBuilder {
 	private country: string;
 	private pincode: string;
 
-	constructor() {
-		this.first_name = '';
-		this.last_name = '';
-		this.title = '';
-		this.organization = '';
-		this.email_work = '';
-		this.link = '';
-		this.street = '';
-		this.city = '';
-		this.state = '';
-		this.country = '';
-		this.pincode = '';
+	constructor(details: Partial<VCardDetails>) {
+		this.first_name = details.first_name ?? '';
+		this.last_name = details.last_name ?? '';
+		this.title = details.title ?? '';
+		this.organization = details.organization ?? '';
+		this.email_work = details.email_work ?? '';
+		this.links = details.links ?? [];
+		this.street = details.street ?? '';
+		this.city = details.city ?? '';
+		this.state = details.state ?? '';
+		this.country = details.country ?? '';
+		this.pincode = details.pincode ?? '';
+		this.contact_details_other = details.contact_details_other ?? [];
+		this.contact_details_phone = details.contact_details_phone ?? undefined;
+		this.contact_details_work = details.contact_details_work ?? undefined;
 	}
 
 	public build(): string {
@@ -79,10 +113,23 @@ export default class VCardBuilder {
 			vCardString += '\n';
 		}
 
+		for (const contact of this.contact_details_other) {
+			const { whatsapp_id: waid, contact_number: c_no } = contact;
+			vCardString += 'TEL;TYPE=OTHER';
+			if (waid) {
+				vCardString += `;waid=${waid}:${c_no}`;
+			} else {
+				vCardString += `,VOICE:${c_no}`;
+			}
+			vCardString += '\n';
+		}
+
 		//Add Personal and Work email to vcard
 		if (this.email_personal) vCardString += `EMAIL;type=HOME,INTERNET:${this.email_personal}\n`;
 		if (this.email_work) vCardString += `EMAIL;type=WORK,INTERNET:${this.email_work}\n`;
-		if (this.link) vCardString += `URL;CHARSET=UTF-8:${this.link}\r\n`;
+		for (const link of this.links) {
+			vCardString += `URL;CHARSET=UTF-8:${link}\r\n`;
+		}
 
 		if (this.street || this.city || this.state || this.pincode || this.country) {
 			vCardString += `ADR;type=WORK:;;`;
@@ -131,6 +178,13 @@ export default class VCardBuilder {
 		};
 		return this;
 	}
+	public addContactOther(contact_number: string, whatsapp_id?: string) {
+		this.contact_details_other.push({
+			contact_number,
+			whatsapp_id,
+		});
+		return this;
+	}
 	public setEmail(email: string) {
 		this.email_personal = email;
 		return this;
@@ -162,8 +216,8 @@ export default class VCardBuilder {
 		this.pincode = pincode;
 		return this;
 	}
-	public setLink(link: string) {
-		this.link = link;
+	public addLink(link: string) {
+		this.links.push(link);
 		return this;
 	}
 }

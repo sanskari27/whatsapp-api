@@ -64,9 +64,19 @@ async function createPaymentBucket(req: Request, res: Response, next: NextFuncti
 				state: z.string(),
 				country: z.string(),
 				pincode: z.string(),
+				gstin: z.string().default(''),
 			}),
 		})
 		.refine((obj) => {
+			if (obj.billing_address.gstin !== '') {
+				const expr = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+				if (!expr.test(obj.billing_address.gstin)) {
+					return false;
+				}
+			}
+			if (!obj.whatsapp_numbers.includes(obj.admin_number)) {
+				return false;
+			}
 			const applicable_users = BILLING_PLANS_DETAILS[obj.plan_name].user_count;
 			return obj.whatsapp_numbers.length <= applicable_users;
 		});

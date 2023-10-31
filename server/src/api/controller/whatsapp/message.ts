@@ -40,7 +40,8 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 					email_work: z.string().default(''),
 					contact_number_phone: z.string().default(''),
 					contact_number_work: z.string().default(''),
-					link: z.string().default(''),
+					contact_number_other: z.string().array().default([]),
+					links: z.string().array().default([]),
 					street: z.string().default(''),
 					city: z.string().default(''),
 					state: z.string().default(''),
@@ -194,14 +195,13 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 	);
 
 	const contact_cards_promise = shared_contact_cards.map(async (detail) => {
-		const vcard = new VCardBuilder()
+		const vcard = new VCardBuilder(detail)
 			.setFirstName(detail.first_name)
 			.setLastName(detail.last_name)
 			.setTitle(detail.title)
 			.setOrganization(detail.organization)
 			.setEmail(detail.email_personal)
 			.setWorkEmail(detail.email_work)
-			.setLink(detail.link)
 			.setStreet(detail.street)
 			.setCity(detail.city)
 			.setState(detail.state)
@@ -231,6 +231,22 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 				vcard.setContactPhone(`+${number}`);
 			}
 		}
+
+		for (const number of detail.contact_number_other) {
+			const formattedNumber = number.startsWith('+') ? number.substring(1) : number;
+			const numberId = await whatsapp.getClient().getNumberId(formattedNumber);
+			if (numberId) {
+				vcard.addContactOther(`+${numberId.user}`, numberId.user);
+			} else {
+				vcard.addContactOther(`+${formattedNumber}`);
+			}
+		}
+
+		for (const link of detail.links) {
+			vcard.addLink(link);
+		}
+
+		return vcard.build();
 
 		return vcard.build();
 	});
