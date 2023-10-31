@@ -54,6 +54,7 @@ const PaymentPage = () => {
             state: "",
             pincode: "",
             country: "",
+            gstin: "",
         },
     });
 
@@ -61,6 +62,7 @@ const PaymentPage = () => {
         name: "",
         phone_number: "",
         email: "",
+        type: "one-time",
         billing_address: {
             street: "",
             city: "",
@@ -68,6 +70,7 @@ const PaymentPage = () => {
             state: "",
             pincode: "",
             country: "",
+            gstin: "",
         },
     });
 
@@ -75,16 +78,20 @@ const PaymentPage = () => {
         []
     );
 
+    const [loading, setLoading] = useState(false);
+
     const {
         name,
         phone_number,
+        email,
+        type,
         billing_address: { city },
         billing_address: { country },
         billing_address: { district },
         billing_address: { pincode },
         billing_address: { state },
         billing_address: { street },
-        email,
+        billing_address: { gstin },
     } = userDetails;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -101,11 +108,19 @@ const PaymentPage = () => {
                 state: "",
                 pincode: "",
                 country: "",
+                gstin: "",
             },
         });
         setUsersDetails((prev) => ({
             ...prev,
             [e.target.name]: e.target.value,
+        }));
+    };
+
+    const handlePaymentType = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setUsersDetails((prev) => ({
+            ...prev,
+            type: e.target.checked ? "subscription" : "one-time",
         }));
     };
 
@@ -124,7 +139,6 @@ const PaymentPage = () => {
                 return;
             }
             if (phone_number === "") {
-                console.log(error);
                 setError({
                     ...error,
                     phone_number: "Phone Number is required",
@@ -218,6 +232,7 @@ const PaymentPage = () => {
                 pincode: "",
                 state: "",
                 street: "",
+                gstin: "",
             },
         });
         setUsersDetails((prev) => {
@@ -249,6 +264,7 @@ const PaymentPage = () => {
                 state: "",
                 pincode: "",
                 country: "",
+                gstin: "",
             },
         });
         setWhatsappNumbers((prev) =>
@@ -261,16 +277,29 @@ const PaymentPage = () => {
         );
     };
 
-    const getpincodeData = async () => {
+    const getpincodeData = async (pincode: string) => {
+        setLoading(true);
+        setUsersDetails((prev) => ({
+            ...prev,
+            billing_address: {
+                ...prev.billing_address,
+                state: "",
+                country: "",
+                district: "",
+            },
+        }));
+        if (pincode.length !== 6) {
+            setLoading(false);
+            return;
+        }
         const data = await fetch(
             `https://api.postalpincode.in/pincode/${pincode}`
         );
         const dataJson = await data.json();
-        console.log(dataJson);
         const { PostOffice } = dataJson[0];
         const { Message } = dataJson[0];
-        console.log(Message);
         if (Message === "No records found") {
+            setLoading(false);
             setError({
                 ...error,
                 billing_address: {
@@ -293,16 +322,53 @@ const PaymentPage = () => {
         handleChangeBillingAddress({
             target: { name: "district", value: District },
         } as React.ChangeEvent<HTMLInputElement>);
+        setLoading(false);
     };
 
     useEffect(() => {
+        setLoading(true);
+        setUsersDetails((prev) => ({
+            ...prev,
+            billing_address: {
+                ...prev.billing_address,
+                state: "",
+                country: "",
+                district: "",
+            },
+        }));
         const getData = setTimeout(() => {
-            getpincodeData();
+            getpincodeData(pincode);
         }, 1000);
         return () => {
             clearTimeout(getData);
         };
     }, [pincode]);
+
+    useEffect(() => {
+        setLoading(true);
+        const checkGST = setTimeout(() => {
+            if (gstin.length === 0) {
+                setLoading(false);
+                return;
+            }
+
+            const expr =
+                /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+            if (!expr.test(gstin)) {
+                setError({
+                    ...error,
+                    billing_address: {
+                        ...error.billing_address,
+                        gstin: "Invalid GSTIN",
+                    },
+                });
+            }
+            setLoading(false);
+        }, 1000);
+        return () => {
+            clearTimeout(checkGST);
+        };
+    }, [gstin]);
 
     useEffect(() => {
         if (
@@ -334,6 +400,100 @@ const PaymentPage = () => {
     }
 
     const plan_details = BILLING_PLANS_DETAILS[plan_name as BILLING_PLANS_TYPE];
+
+    const handleSubmit = () => {
+        if (activeStep === 2) {
+            if (street === "") {
+                setError({
+                    ...error,
+                    billing_address: {
+                        ...error.billing_address,
+                        street: "Street is required",
+                    },
+                });
+                return;
+            }
+            if (city === "") {
+                setError({
+                    ...error,
+                    billing_address: {
+                        ...error.billing_address,
+                        city: "City is required",
+                    },
+                });
+                return;
+            }
+            if (district === "") {
+                setError({
+                    ...error,
+                    billing_address: {
+                        ...error.billing_address,
+                        district: "District is required",
+                    },
+                });
+                return;
+            }
+            if (state === "") {
+                setError({
+                    ...error,
+                    billing_address: {
+                        ...error.billing_address,
+                        state: "State is required",
+                    },
+                });
+                return;
+            }
+            if (pincode === "") {
+                setError({
+                    ...error,
+                    billing_address: {
+                        ...error.billing_address,
+                        pincode: "Pincode is required",
+                    },
+                });
+                return;
+            }
+            if (country === "") {
+                setError({
+                    ...error,
+                    billing_address: {
+                        ...error.billing_address,
+                        country: "Country is required",
+                    },
+                });
+                return;
+            }
+            if (gstin === "") {
+                setError({
+                    ...error,
+                    billing_address: {
+                        ...error.billing_address,
+                        gstin: "GST number required",
+                    },
+                });
+                return;
+            }
+        }
+
+        console.log({
+            name,
+            email,
+            phone_number,
+            type,
+            billing_address: {
+                city,
+                country,
+                district,
+                pincode,
+                state,
+                street,
+                gstin,
+            },
+            whatsapp_numbers,
+            plan_name,
+            admin_number: `+${whatsapp_numbers[0].country_code}${whatsapp_numbers[0].phone_number}`,
+        });
+    };
 
     return (
         <HStack pt={"2rem"} width={"full"} justifyContent={"space-around"}>
@@ -378,8 +538,10 @@ const PaymentPage = () => {
                             name={name}
                             email={email}
                             phone_number={phone_number}
+                            type={type}
                             error={error}
                             handleChange={handleChange}
+                            handlePaymentType={handlePaymentType}
                             handleNext={handleNext}
                         />
                     )}
@@ -405,7 +567,10 @@ const PaymentPage = () => {
                             pincode={pincode}
                             state={state}
                             street={street}
+                            gstin={gstin}
                             handleBack={handleBack}
+                            handleSubmit={handleSubmit}
+                            loading={loading}
                         />
                     )}
                 </Flex>
