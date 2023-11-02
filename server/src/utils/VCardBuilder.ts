@@ -3,6 +3,7 @@ const END = 'END:VCARD';
 
 type VCardDetails = {
 	first_name: string;
+	middle_name: string;
 	last_name: string;
 	title: string;
 	organization: string;
@@ -30,6 +31,7 @@ type VCardDetails = {
 export default class VCardBuilder {
 	private first_name: string;
 	private last_name: string;
+	private middle_name: string;
 
 	private title: string;
 	private organization: string;
@@ -60,6 +62,7 @@ export default class VCardBuilder {
 
 	constructor(details: Partial<VCardDetails>) {
 		this.first_name = details.first_name ?? '';
+		this.middle_name = details.middle_name ?? '';
 		this.last_name = details.last_name ?? '';
 		this.title = details.title ?? '';
 		this.organization = details.organization ?? '';
@@ -81,9 +84,9 @@ export default class VCardBuilder {
 		// Add Name to the card
 
 		if (this.first_name || this.last_name) {
-			const full_name = `${this.first_name} ${this.last_name}`.trim();
+			const full_name = `${this.first_name} ${this.middle_name} ${this.last_name}`.trim();
 			vCardString += `FN:${full_name}\n`;
-			vCardString += `N;${this.last_name};${this.first_name}\n`;
+			vCardString += `N;${this.last_name};${this.first_name};${this.middle_name}\n`;
 		}
 
 		//Add Title and organization to vcard
@@ -151,6 +154,11 @@ export default class VCardBuilder {
 
 	public setLastName(name: string) {
 		this.last_name = name;
+		return this;
+	}
+
+	public setMiddleName(name: string) {
+		this.middle_name = name;
 		return this;
 	}
 

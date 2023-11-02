@@ -247,8 +247,6 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 		}
 
 		return vcard.build();
-
-		return vcard.build();
 	});
 
 	const contact_cards = await Promise.all(contact_cards_promise);
