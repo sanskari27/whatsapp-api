@@ -1,4 +1,5 @@
 import {
+    Box,
     Button,
     FormControl,
     FormErrorMessage,
@@ -48,9 +49,9 @@ const WaNumber = ({
                 Device Numbers
             </Text>
             {whatsapp_numbers.map(({ country_code, phone_number }, index) => (
-                <>
+                <Box key={index}>
                     <Text>Whatsapp Number {index + 1}</Text>
-                    <InputGroup key={index} pb={"1rem"}>
+                    <InputGroup pb={"1rem"}>
                         <InputLeftAddon
                             width={"80px"}
                             paddingX={0}
@@ -82,7 +83,7 @@ const WaNumber = ({
                             }
                         />
                     </InputGroup>
-                </>
+                </Box>
             ))}
             <Input
                 backgroundColor={"#E8E8E8"}

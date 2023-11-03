@@ -16,6 +16,7 @@ type BillingProps = {
     state: string;
     pincode: string;
     country: string;
+    gstin: string;
     error: {
         street: string;
         city: string;
@@ -23,11 +24,14 @@ type BillingProps = {
         state: string;
         pincode: string;
         country: string;
+        gstin: string;
     };
+    loading: boolean;
     handleChangeBillingAddress: (
         e: React.ChangeEvent<HTMLInputElement>
     ) => void;
     handleBack: () => void;
+    handleSubmit: () => void;
 };
 
 const Billing = ({
@@ -37,9 +41,12 @@ const Billing = ({
     pincode,
     state,
     street,
+    gstin,
     error,
+    loading,
     handleChangeBillingAddress,
     handleBack,
+    handleSubmit,
 }: BillingProps) => {
     return (
         <FormControl
@@ -49,7 +56,8 @@ const Billing = ({
                 !!error.district ||
                 !!error.pincode ||
                 !!error.state ||
-                !!error.street
+                !!error.street ||
+                !!error.gstin
             }
         >
             <Text
@@ -58,7 +66,7 @@ const Billing = ({
                 pt={"1rem"}
                 textAlign={"center"}
             >
-                Personal Details
+                Billing Address
             </Text>
             <Text pt={"1rem"}>Address Line 1</Text>
             <Input
@@ -136,7 +144,17 @@ const Billing = ({
                     />
                 </Box>
             </HStack>
-            <FormErrorMessage>{`${error.city} ${error.country} ${error.district} ${error.pincode} ${error.state} ${error.street} `}</FormErrorMessage>
+            <Text>GSTIN</Text>
+            <Input
+                backgroundColor={"#E8E8E8"}
+                placeholder={"Enter GSTIN"}
+                isInvalid={!!error.gstin}
+                value={gstin}
+                onChange={handleChangeBillingAddress}
+                name="gstin"
+                mb={"1rem"}
+            />
+            <FormErrorMessage>{`${error.city} ${error.country} ${error.district} ${error.pincode} ${error.state} ${error.street} ${error.gstin} `}</FormErrorMessage>
             <HStack>
                 <Button
                     backgroundColor={THEME.THEME_GREEN}
@@ -152,7 +170,8 @@ const Billing = ({
                     color={"white"}
                     width={"full"}
                     _hover={{ backgroundColor: "green.500" }}
-                    // onClick={handleNext}
+                    onClick={handleSubmit}
+                    isLoading={loading}
                 >
                     Pay
                 </Button>
