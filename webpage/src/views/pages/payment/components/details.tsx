@@ -1,4 +1,4 @@
-import { Box, FormControl, FormErrorMessage, HStack, Input, Text } from '@chakra-ui/react';
+import { Box, FormControl, HStack, Input, Text } from '@chakra-ui/react';
 import { forwardRef, useImperativeHandle, useState } from 'react';
 import { validatePersonalDetails } from '../validators';
 
@@ -117,9 +117,6 @@ const Details = forwardRef<DetailsRef, Props>(({ isHidden }, ref) => {
 					<Text>Subscription</Text>
 				</HStack>
 			</Box>
-			{error.name && <FormErrorMessage>{error.name}</FormErrorMessage>}
-			{error.phone_number && <FormErrorMessage>{error.phone_number}</FormErrorMessage>}
-			{error.email && <FormErrorMessage>{error.email}</FormErrorMessage>}
 		</FormControl>
 	);
 });

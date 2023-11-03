@@ -1,4 +1,4 @@
-import { Box, FormControl, FormErrorMessage, HStack, Input, Text } from '@chakra-ui/react';
+import { Box, FormControl, HStack, Input, Text } from '@chakra-ui/react';
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { validateBillingDetails, validatePincode } from '../validators';
 
@@ -179,14 +179,6 @@ const Billing = forwardRef<BillingRef, Props>(({ isHidden }, ref) => {
 					/>
 				</Box>
 			</HStack>
-
-			{error.street && <FormErrorMessage>{error.street}</FormErrorMessage>}
-			{error.city && <FormErrorMessage>{error.city}</FormErrorMessage>}
-			{error.district && <FormErrorMessage>{error.district}</FormErrorMessage>}
-			{error.pincode && <FormErrorMessage>{error.pincode}</FormErrorMessage>}
-			{error.country && <FormErrorMessage>{error.country}</FormErrorMessage>}
-			{error.state && <FormErrorMessage>{error.state}</FormErrorMessage>}
-			{error.gstin && <FormErrorMessage>{error.gstin}</FormErrorMessage>}
 		</FormControl>
 	);
 });
