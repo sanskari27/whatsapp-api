@@ -82,6 +82,7 @@ const Details = forwardRef<DetailsRef, Props>(({ isHidden }, ref) => {
                 Personal Details
             </Text>
 
+
             <Text pt={"1rem"}>Full Name</Text>
             <Input
                 backgroundColor={"#E8E8E8"}
