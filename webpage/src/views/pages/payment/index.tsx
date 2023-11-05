@@ -1,13 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { CheckIcon, CloseIcon, WarningTwoIcon } from "@chakra-ui/icons";
 import {
+    AlertDialog,
+    AlertDialogBody,
+    AlertDialogContent,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogOverlay,
     Box,
     Button,
-    Divider,
     Flex,
     HStack,
     Image,
-    Input,
     Step,
     StepIcon,
     StepIndicator,
@@ -16,11 +19,11 @@ import {
     StepStatus,
     Stepper,
     Text,
+    useDisclosure,
     useSteps,
 } from "@chakra-ui/react";
 import { useRef, useState } from "react";
-import { Navigate, useParams } from "react-router-dom";
-import { useInterval } from "react-use";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { TRANSACTION } from "../../../assets/Images";
 import PaymentService from "../../../services/payment.service";
 import {
@@ -31,7 +34,7 @@ import {
     THEME,
     TRANSACTION_STATUS,
 } from "../../../utils/const";
-import { Billing, Details, WANumber } from "./components";
+import { Billing, Checkout, Details, WANumber } from "./components";
 import { BillingRef } from "./components/Billing";
 import { DetailsRef } from "./components/Details";
 import { WANumbersRef } from "./components/WANumber";
@@ -64,14 +67,19 @@ export type UserDetailsType = typeof userDetailsInit;
 const PaymentPage = () => {
     const { plan: plan_name } = useParams();
 
+    const navigate = useNavigate();
+
     const detailsRef = useRef<DetailsRef>(null);
     const waNumbersRef = useRef<WANumbersRef>(null);
     const billingRef = useRef<BillingRef>(null);
+    const cancelRef = useRef<HTMLButtonElement>(null);
 
     const { activeStep, setActiveStep } = useSteps({
         index: 0,
         count: steps.length,
     });
+
+    const { isOpen, onOpen, onClose } = useDisclosure();
 
     const [loading, setLoading] = useState(false);
 
@@ -97,6 +105,31 @@ const PaymentPage = () => {
             [TRANSACTION_STATUS.TRANSACTION_ERROR]: "",
             [TRANSACTION_STATUS.STATUS]: false,
         }));
+        if (activeStep === 3) {
+            if (!transaction[TRANSACTION_STATUS.CODE]) return;
+            PaymentService.removeCoupon(
+                transaction[TRANSACTION_STATUS.BUCKET_ID]
+            ).then((res) => {
+                if (!res) {
+                    setTransaction((prevState) => ({
+                        ...prevState,
+                        [TRANSACTION_STATUS.COUPON_ERROR]:
+                            "Unable to remove coupon",
+                    }));
+                    return;
+                }
+                setTransaction((prevState) => ({
+                    ...prevState,
+                    [TRANSACTION_STATUS.TRANSACTION_ID]: res.transaction_id,
+                    [TRANSACTION_STATUS.GROSS_AMOUNT]: res.gross_amount,
+                    [TRANSACTION_STATUS.TAX]: res.tax,
+                    [TRANSACTION_STATUS.DISCOUNT]: res.discount,
+                    [TRANSACTION_STATUS.TOTAL_AMOUNT]: res.total_amount,
+                    [TRANSACTION_STATUS.CODE]: "",
+                    [TRANSACTION_STATUS.COUPON_VALID]: false,
+                }));
+            });
+        }
     };
     const handleNext = () => {
         if (
@@ -182,7 +215,7 @@ const PaymentPage = () => {
 
     const plan_details = BILLING_PLANS_DETAILS[plan_name as BILLING_PLANS_TYPE];
 
-    const { CODE, COUPON_VALID, COUPON_ERROR, CHECKING_COUPON } = transaction;
+    const { COUPON_VALID, COUPON_ERROR } = transaction;
 
     const handleApplyCoupon = (CODE: string) => {
         if (COUPON_VALID) {
@@ -292,7 +325,9 @@ const PaymentPage = () => {
                                         payment_id: payment_id,
                                     }),
                                 }
-                            ).finally(() => {});
+                            ).finally(() => {
+                                onOpen();
+                            });
                         },
                     });
 
@@ -326,26 +361,6 @@ const PaymentPage = () => {
                 });
         }
     };
-
-    useInterval(() => {
-        console.log("called");
-        if (!transaction[TRANSACTION_STATUS.BUCKET_ID]) return;
-        PaymentService.details(
-            transaction[TRANSACTION_STATUS.BUCKET_ID],
-            transaction[TRANSACTION_STATUS.TRANSACTION_ID]
-        )
-            .then((res) => {
-                if (!res) return;
-                setTransaction((prevState) => ({
-                    ...prevState,
-                    [TRANSACTION_STATUS.TRANSACTION_ERROR]: res.error,
-                    [TRANSACTION_STATUS.STATUS]: res.status,
-                }));
-            })
-            .catch((err) => {
-                console.log(err);
-            });
-    }, 2000);
 
     return (
         <HStack pt={"2rem"} width={"full"} justifyContent={"space-around"}>
@@ -393,168 +408,16 @@ const PaymentPage = () => {
                         isHidden={activeStep !== 1}
                     />
                     <Billing ref={billingRef} isHidden={activeStep !== 2} />
-                    {transaction[TRANSACTION_STATUS.STATUS] ? (
-                        <>
-                            <Text
-                                fontSize={"2xl"}
-                                fontWeight={"medium"}
-                                textAlign={"center"}
-                            >
-                                Have A{" "}
-                                <Box as="span" color={THEME.THEME_GREEN}>
-                                    Coupon?
-                                </Box>
-                            </Text>
-                            <HStack
-                                backgroundColor={"green.500"}
-                                rounded={"md"}
-                                py={"0.5rem"}
-                                pl={"1rem"}
-                                mt={"1rem"}
-                                mb="0.5rem"
-                            >
-                                {/* <Image src={COUPON} alt="" width={"2rem"} /> */}
-                                <Input
-                                    variant={"unstyled"}
-                                    textColor={"white"}
-                                    textAlign={"center"}
-                                    value={CODE}
-                                    placeholder={"Enter Coupon Code"}
-                                    _placeholder={{
-                                        color: "gray.200",
-                                    }}
-                                    isDisabled={COUPON_VALID && !!CODE}
-                                    onChange={(e) =>
-                                        handleChange({
-                                            name: TRANSACTION_STATUS.CODE,
-                                            value: e.target.value.toUpperCase(),
-                                        })
-                                    }
-                                />
-
-                                <Button
-                                    variant={"link"}
-                                    onClick={() => handleApplyCoupon(CODE)}
-                                    isDisabled={!CODE}
-                                    isLoading={CHECKING_COUPON}
-                                >
-                                    {COUPON_VALID ? (
-                                        <CloseIcon
-                                            color={"gray.400"}
-                                            height="1rem"
-                                            width={"1rem"}
-                                        />
-                                    ) : COUPON_ERROR ? (
-                                        <WarningTwoIcon
-                                            color={"red.400"}
-                                            height="1rem"
-                                            width={"1rem"}
-                                        />
-                                    ) : (
-                                        <CheckIcon
-                                            color={"white"}
-                                            height="1rem"
-                                            width={"1rem"}
-                                        />
-                                    )}
-                                </Button>
-                            </HStack>
-                            <Text
-                                textColor="red.400"
-                                fontWeight={"semibold"}
-                                fontSize={"sm"}
-                                mt={"0.5rem"}
-                                alignSelf={"flex-end"}
-                            >
-                                {COUPON_ERROR}
-                            </Text>
-                            <Box
-                                className="bg-[#ECECEC] dark:bg-[#535353]"
-                                p={"1rem"}
-                                borderRadius={"10px"}
-                                mt={"0.5rem"}
-                            >
-                                <Flex
-                                    width={"full"}
-                                    justifyContent={"space-between"}
-                                >
-                                    <Text className="text-black dark:text-white">
-                                        Gross Amount
-                                    </Text>
-                                    <Text className="text-black dark:text-white">
-                                        {
-                                            transaction[
-                                                TRANSACTION_STATUS.GROSS_AMOUNT
-                                            ]
-                                        }
-                                    </Text>
-                                </Flex>
-                                <Flex
-                                    width={"full"}
-                                    justifyContent={"space-between"}
-                                >
-                                    <Text className="text-black dark:text-white">
-                                        Tax
-                                    </Text>
-                                    <Text className="text-black dark:text-white">
-                                        {transaction[TRANSACTION_STATUS.TAX]}
-                                    </Text>
-                                </Flex>
-                                {COUPON_VALID ||
-                                transaction[TRANSACTION_STATUS.DISCOUNT] ? (
-                                    <Flex
-                                        width={"full"}
-                                        justifyContent={"space-between"}
-                                    >
-                                        <Text className="text-black dark:text-white">
-                                            Discount
-                                        </Text>
-                                        <Text className="text-[#4CB072]">
-                                            -
-                                            {
-                                                transaction[
-                                                    TRANSACTION_STATUS.DISCOUNT
-                                                ]
-                                            }
-                                        </Text>
-                                    </Flex>
-                                ) : null}
-                                <Divider
-                                    orientation="horizontal"
-                                    my={"0.5rem"}
-                                />
-                                <Flex
-                                    width={"full"}
-                                    justifyContent={"space-between"}
-                                    fontWeight={"semibold"}
-                                >
-                                    <Text className="text-black dark:text-white">
-                                        Total Amount
-                                    </Text>
-                                    <Text className="text-[#4CB072]">
-                                        {
-                                            transaction[
-                                                TRANSACTION_STATUS.TOTAL_AMOUNT
-                                            ]
-                                        }
-                                    </Text>
-                                </Flex>
-                            </Box>
-
-                            <Text
-                                textColor="red.400"
-                                textAlign={"center"}
-                                fontWeight={"semibold"}
-                                fontSize={"sm"}
-                            >
-                                {
-                                    transaction[
-                                        TRANSACTION_STATUS.TRANSACTION_ERROR
-                                    ]
-                                }
-                            </Text>
-                        </>
-                    ) : null}
+                    <Checkout
+                        transaction={transaction}
+                        handleChange={handleChange}
+                        handleApplyCoupon={handleApplyCoupon}
+                        type={
+                            detailsRef.current?.getData()?.type as
+                                | "one-time"
+                                | "subscription"
+                        }
+                    />
                     <HStack>
                         <Button
                             backgroundColor={THEME.THEME_GREEN}
@@ -578,16 +441,45 @@ const PaymentPage = () => {
                             {activeStep === 2
                                 ? "Submit & Pay"
                                 : activeStep === 3
-                                ? `Pay ${
-                                      transaction[
-                                          TRANSACTION_STATUS.TOTAL_AMOUNT
-                                      ]
-                                  }`
+                                ? `Pay ${transaction[
+                                      TRANSACTION_STATUS.TOTAL_AMOUNT
+                                  ]
+                                      .toString()
+                                      .substring(0, 7)}`
                                 : "Next"}
                         </Button>
                     </HStack>
                 </Flex>
             </Box>
+            <AlertDialog
+                closeOnOverlayClick={false}
+                motionPreset="slideInBottom"
+                onClose={onClose}
+                isOpen={isOpen}
+                leastDestructiveRef={cancelRef}
+                isCentered
+            >
+                <AlertDialogOverlay />
+
+                <AlertDialogContent>
+                    <AlertDialogHeader>Payment Successfull !</AlertDialogHeader>
+                    <AlertDialogBody>
+                        Your payment has been successfull. Please check your
+                        email for the payment receipt.
+                    </AlertDialogBody>
+                    <AlertDialogFooter>
+                        <Button
+                            colorScheme="green"
+                            ml={3}
+                            onClick={() => {
+                                navigate(ROUTES.HOME);
+                            }}
+                        >
+                            Ok
+                        </Button>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </HStack>
     );
 };
