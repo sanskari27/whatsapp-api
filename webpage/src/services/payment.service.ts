@@ -153,4 +153,19 @@ export default class PaymentService {
             return null;
         }
     }
+
+    static async verifyPayment(
+        bucket_id: string,
+        order_id: string,
+        payment_id: string
+    ) {
+        try {
+            await APIInstance.post(`/payment/${bucket_id}/verify-payment`, {
+                order_id,
+                payment_id,
+            });
+        } catch (err) {
+            //ignore
+        }
+    }
 }

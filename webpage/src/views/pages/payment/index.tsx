@@ -30,7 +30,6 @@ import {
     BILLING_PLANS_DETAILS,
     BILLING_PLANS_TYPE,
     ROUTES,
-    SERVER_URL,
     THEME,
     TRANSACTION_STATUS,
 } from "../../../utils/const";
@@ -79,7 +78,7 @@ const PaymentPage = () => {
         count: steps.length,
     });
 
-    const { isOpen, onOpen, onClose } = useDisclosure();
+    const { isOpen, onOpen: openPaymentComplete, onClose } = useDisclosure();
 
     const [loading, setLoading] = useState(false);
 
@@ -289,76 +288,42 @@ const PaymentPage = () => {
 
     const handlePaymentClick = async () => {
         setLoading(true);
-        if (detailsRef.current?.getData()?.type === "one-time") {
-            if (!transaction[TRANSACTION_STATUS.BUCKET_ID]) return;
-            PaymentService.initiateRazorpay(
-                transaction[TRANSACTION_STATUS.BUCKET_ID]
-            )
-                .then((res) => {
-                    setLoading(false);
-                    const rzp1 = new (window as any).Razorpay({
-                        description: res?.razorpay_options.description,
-                        currency: res?.razorpay_options.currency,
-                        amount: res?.razorpay_options.amount,
-                        name: res?.razorpay_options.name,
-                        order_id: res?.order_id,
-                        prefill: {
-                            name: res?.razorpay_options.prefill.name,
-                            contact: res?.razorpay_options.prefill.contact,
-                            email: res?.razorpay_options.prefill.email,
-                        },
-                        key: res?.razorpay_options.key,
-                        theme: {
-                            color: res?.razorpay_options.theme.color,
-                        },
-                        handler: function (response: any) {
-                            const order_id = response.razorpay_order_id;
-                            const payment_id = response.razorpay_payment_id;
-                            fetch(
-                                `${SERVER_URL}/payment/${
-                                    transaction[TRANSACTION_STATUS.BUCKET_ID]
-                                }/verify-payment`,
-                                {
-                                    method: "POST",
-                                    body: JSON.stringify({
-                                        order_id: order_id,
-                                        payment_id: payment_id,
-                                    }),
-                                }
-                            ).finally(() => {
-                                onOpen();
-                            });
-                        },
-                    });
 
-                    rzp1.open();
-                })
-                .catch((err) => {
-                    console.log(err);
-                });
-        } else {
-            PaymentService.initiateRazorpay(
-                transaction[TRANSACTION_STATUS.BUCKET_ID]
-            )
-                .then((res) => {
-                    setLoading(false);
-                    if (!res) {
-                        setTransaction((prevState) => ({
-                            ...prevState,
-                            [TRANSACTION_STATUS.TRANSACTION_ERROR]:
-                                "Unable to initiate payment",
-                        }));
-                    }
-                    window.open(
-                        res?.payment_link,
-                        "_blank",
-                        "rel=noopener noreferrer"
-                    );
-                })
-                .catch((err) => {
-                    setLoading(false);
-                    console.log(err);
-                });
+        const result = await PaymentService.initiateRazorpay(
+            transaction[TRANSACTION_STATUS.BUCKET_ID]
+        );
+
+        if (!result) {
+            setLoading(false);
+            return;
+        }
+
+        if (
+            detailsRef.current?.getData()?.type === "one-time" &&
+            result.razorpay_options
+        ) {
+            const rzp1 = new (window as any).Razorpay({
+                ...result.razorpay_options,
+                handler: function (response: any) {
+                    const order_id = response.razorpay_order_id;
+                    const payment_id = response.razorpay_payment_id;
+                    PaymentService.verifyPayment(
+                        transaction[TRANSACTION_STATUS.BUCKET_ID],
+                        order_id,
+                        payment_id
+                    ).then(() => {
+                        openPaymentComplete();
+                    });
+                },
+            });
+
+            rzp1.open();
+        } else if (
+            detailsRef.current?.getData()?.type === "subscription" &&
+            result.payment_link
+        ) {
+            window.open(result.payment_link, "_blank");
+            openPaymentComplete();
         }
     };
 
