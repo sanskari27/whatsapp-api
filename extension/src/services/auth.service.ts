@@ -16,6 +16,7 @@ export default class AuthService {
 				name: data.name,
 				phoneNumber: data.phoneNumber,
 				isSubscribed: data.isSubscribed,
+				canSendMessage: data.canSendMessage,
 				subscriptionExpiration: data.subscriptionExpiration,
 				userType: data.userType as 'BUSINESS' | 'PERSONAL',
 				paymentRecords: data.paymentRecords,

@@ -6,11 +6,11 @@ import { PiExportBold, PiFileCsvLight } from 'react-icons/pi';
 import { useNavigate } from 'react-router-dom';
 import { EXPORTS_TYPE, NAVIGATION } from '../../../config/const';
 import { logout, startAuth, useAuth } from '../../../hooks/useAuth';
+import AuthService from '../../../services/auth.service';
 import ContactService from '../../../services/contact.service';
 import ExportsService from '../../../services/exports.service';
 import GroupService from '../../../services/group.service';
 import LabelService from '../../../services/label.service';
-import PaymentService from '../../../services/payment.service';
 import CheckButton from '../../components/check-button';
 import LoginModal, { LoginHandle } from '../../components/login';
 
@@ -198,7 +198,7 @@ const Exports = () => {
 					labelLoading: false,
 				}));
 			});
-		PaymentService.isPaymentVerified().then((res) => {
+		AuthService.getUserDetails().then((res) => {
 			setUIDetails((prevState) => ({
 				...prevState,
 				paymentVerified: res.isSubscribed,

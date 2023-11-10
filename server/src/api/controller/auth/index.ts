@@ -34,7 +34,7 @@ async function details(req: Request, res: Response, next: NextFunction) {
 	}
 	const userService = new UserService(req.locals.user);
 	const paymentRecords = await userService.getPaymentRecords();
-	const { isSubscribed } = userService.isSubscribed();
+	const { isSubscribed, isNew } = userService.isSubscribed();
 
 	const client = whatsapp.getClient();
 	const contact = whatsapp.getContact();
@@ -46,6 +46,7 @@ async function details(req: Request, res: Response, next: NextFunction) {
 			name: client.info.pushname,
 			phoneNumber: client.info.wid.user,
 			isSubscribed: isSubscribed,
+			canSendMessage: isSubscribed || isNew,
 			subscriptionExpiration: isSubscribed ? userService.getExpiration().format('DD/MM/YYYY') : '',
 			userType: contact.isBusiness ? 'BUSINESS' : 'PERSONAL',
 			paymentRecords: paymentRecords,
