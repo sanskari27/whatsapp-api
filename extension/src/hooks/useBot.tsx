@@ -28,7 +28,8 @@ export default function useBot() {
             email_work?: string;
             contact_number_phone?: string;
             contact_number_work?: string;
-            link?: string;
+            contact_number_others?: string[];
+            link?: string[];
             street?: string;
             city?: string;
             state?: string;

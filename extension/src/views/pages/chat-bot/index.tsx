@@ -25,7 +25,6 @@ import { NAVIGATION } from "../../../config/const";
 import useAttachment from "../../../hooks/useAttachment";
 import { startAuth, useAuth } from "../../../hooks/useAuth";
 import useBot from "../../../hooks/useBot";
-import PaymentService from "../../../services/payment.service";
 import AttachmentDetailsInputDialog from "../../components/attachment-details-input-dialog";
 import CheckButton from "../../components/check-button";
 import ContactDetailInputDialog from "../../components/contact-detail-input-dialog";
@@ -51,7 +50,8 @@ export type ChatBotDetails = {
         email_work?: string;
         contact_number_phone?: string;
         contact_number_work?: string;
-        link?: string;
+        contact_number_others?: string[];
+        link?: string[];
         street?: string;
         city?: string;
         state?: string;
@@ -93,15 +93,15 @@ const ChatBot = () => {
         }
     }, [qrGenerated]);
 
-    useEffect(() => {
-        if (!isAuthenticated) return;
-        PaymentService.isPaymentVerified().then((res) => {
-            setUIDetails((prevState) => ({
-                ...prevState,
-                paymentVerified: res.can_send_message,
-            }));
-        });
-    }, [isAuthenticated]);
+    // useEffect(() => {
+    //     if (!isAuthenticated) return;
+    //     PaymentService.isPaymentVerified().then((res) => {
+    //         setUIDetails((prevState) => ({
+    //             ...prevState,
+    //             paymentVerified: res.can_send_message,
+    //         }));
+    //     });
+    // }, [isAuthenticated]);
 
     const handleAttachmentInput = (e: ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
@@ -164,7 +164,8 @@ const ChatBot = () => {
         email_work?: string;
         contact_number_phone?: string;
         contact_number_work?: string;
-        link?: string;
+        contact_number_others?: string[];
+        link?: string[];
         street?: string;
         city?: string;
         state?: string;
@@ -188,7 +189,8 @@ const ChatBot = () => {
         email_work?: string;
         contact_number_phone?: string;
         contact_number_work?: string;
-        link?: string;
+        contact_number_others?: string[];
+        link?: string[];
         street?: string;
         city?: string;
         state?: string;

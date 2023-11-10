@@ -1,7 +1,10 @@
+import { AddIcon } from "@chakra-ui/icons";
 import {
     Box,
     Button,
     HStack,
+    IconButton,
+    Image,
     Input,
     Modal,
     ModalBody,
@@ -10,9 +13,13 @@ import {
     ModalFooter,
     ModalHeader,
     ModalOverlay,
+    Tag,
+    TagCloseButton,
+    TagLabel,
     Text,
 } from "@chakra-ui/react";
 import { useState } from "react";
+import { USER } from "../../../assets/Images";
 
 const ContactDetailInputDialog = ({
     isOpen,
@@ -22,14 +29,15 @@ const ContactDetailInputDialog = ({
     onClose: () => void;
     onConfirm: (contact: {
         first_name?: string;
+        middle_name?: string;
         last_name?: string;
-        title?: string;
         organization?: string;
         email_personal?: string;
         email_work?: string;
         contact_number_phone?: string;
         contact_number_work?: string;
-        link?: string;
+        contact_number_others?: string[];
+        link?: string[];
         street?: string;
         city?: string;
         state?: string;
@@ -47,13 +55,17 @@ const ContactDetailInputDialog = ({
         email_work: "",
         contact_number_phone: "",
         contact_number_work: "",
-        link: "",
+        contact_number_others: [] as string[],
+        link: [] as string[],
         street: "",
         city: "",
         state: "",
         country: "",
         pincode: "",
     });
+
+    const [contactOthers, setContactOthers] = useState<string>();
+    const [contactLinks, setContactLinks] = useState<string>();
 
     const handleDialogClose = () => {
         setContact({
@@ -65,31 +77,87 @@ const ContactDetailInputDialog = ({
             email_work: "",
             contact_number_phone: "",
             contact_number_work: "",
-            link: "",
+            contact_number_others: [],
+            link: [],
             street: "",
             city: "",
             state: "",
             country: "",
             pincode: "",
         });
+        console.log(contact);
         onClose();
+    };
+
+    const handleChange = (e: any) => {
+        setContact({
+            ...contact,
+            [e.target.name]: e.target.value,
+        });
+    };
+
+    const addContactLinks = () => {
+        if (!contactLinks) return;
+        setContact({
+            ...contact,
+            link: [...contact.link, contactLinks],
+        });
+        setContactLinks("");
+    };
+
+    const addContactOthers = () => {
+        if (!contactOthers) return;
+        setContact({
+            ...contact,
+            contact_number_others: [
+                ...contact.contact_number_others,
+                contactOthers,
+            ],
+        });
+        setContactOthers("");
+    };
+
+    const removeContactLinks = (link: string) => {
+        setContact({
+            ...contact,
+            link: contact.link.filter((link_name) => link_name !== link),
+        });
+    };
+
+    const removeContactOthers = (number: string) => {
+        setContact({
+            ...contact,
+            contact_number_others: contact.contact_number_others.filter(
+                (number_name) => number_name !== number
+            ),
+        });
     };
 
     return (
         <Modal
-            size={"xs"}
+            size={"sm"}
             isOpen={isOpen}
             onClose={onClose}
             scrollBehavior="inside"
-            colorScheme="dark"
+            onCloseComplete={handleDialogClose}
         >
             <ModalOverlay />
-            <ModalContent>
-                <ModalHeader>Add Contact</ModalHeader>
-                <ModalCloseButton />
-                <ModalBody>
+            <ModalContent
+                backgroundColor={"#252525"}
+                borderColor={"green"}
+                borderWidth={"1px"}
+                rounded={"md"}
+            >
+                <ModalHeader>
+                    <HStack>
+                        <Image src={USER} alt="user" />
+                        <Text color={"green"}>Add Contact</Text>
+                    </HStack>
+                </ModalHeader>
+                <ModalCloseButton color={"green"} />
+                <ModalBody className="modal-body-wrapper">
                     <Box>
-                        <Text>First Name</Text>
+                        <Text color={"#7D7D7D"}>First Name</Text>
                         <Input
                             width={"full"}
                             placeholder="e.g. John"
@@ -99,19 +167,15 @@ const ContactDetailInputDialog = ({
                             className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]"
                             _focus={{ border: "none", outline: "none" }}
                             value={contact.first_name}
-                            name="contact.first_name"
-                            onChange={(e) => {
-                                setContact({
-                                    ...contact,
-                                    first_name: e.target.value,
-                                });
-                            }}
+                            name="first_name"
+                            onChange={handleChange}
                         />
                     </Box>
                     <HStack>
                         <Box>
-                            <Text>Middle Name</Text>
+                            <Text color={"#7D7D7D"}>Middle Name</Text>
                             <Input
+                                placeholder="Fitzgerald"
                                 width={"full"}
                                 size={"sm"}
                                 rounded={"md"}
@@ -119,17 +183,14 @@ const ContactDetailInputDialog = ({
                                 className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]"
                                 _focus={{ border: "none", outline: "none" }}
                                 value={contact.middle_name}
-                                onChange={(e) => {
-                                    setContact({
-                                        ...contact,
-                                        middle_name: e.target.value,
-                                    });
-                                }}
+                                name="middle_name"
+                                onChange={handleChange}
                             />
                         </Box>
                         <Box>
-                            <Text>Last Name</Text>
+                            <Text color={"#7D7D7D"}>Last Name</Text>
                             <Input
+                                placeholder="Kennedy "
                                 width={"full"}
                                 size={"sm"}
                                 rounded={"md"}
@@ -137,37 +198,67 @@ const ContactDetailInputDialog = ({
                                 className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]"
                                 _focus={{ border: "none", outline: "none" }}
                                 value={contact.last_name}
-                                onChange={(e) => {
-                                    setContact({
-                                        ...contact,
-                                        last_name: e.target.value,
-                                    });
-                                }}
+                                name="last_name"
+                                onChange={handleChange}
                             />
                         </Box>
                     </HStack>
-                    <Box>
-                        <Text>URL</Text>
-                        <Input
-                            width={"full"}
+                    <HStack alignItems={"end"}>
+                        <Box width={"full"}>
+                            <Text color={"#7D7D7D"}>URL</Text>
+                            <Input
+                                placeholder="www.example.com"
+                                width={"full"}
+                                size={"sm"}
+                                rounded={"md"}
+                                border={"none"}
+                                className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]"
+                                _focus={{ border: "none", outline: "none" }}
+                                value={contactLinks ?? ""}
+                                onChange={(e) => {
+                                    setContactLinks(e.target.value);
+                                }}
+                            />
+                        </Box>
+                        <IconButton
                             size={"sm"}
-                            rounded={"md"}
-                            border={"none"}
-                            className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]"
-                            _focus={{ border: "none", outline: "none" }}
-                            value={contact.organization}
-                            onChange={(e) => {
-                                setContact({
-                                    ...contact,
-                                    organization: e.target.value,
-                                });
+                            colorScheme="green"
+                            backgroundColor={"transparent"}
+                            rounded={"full"}
+                            borderWidth={"1px"}
+                            borderColor={"green.400"}
+                            icon={<AddIcon color={"green.400"} />}
+                            _hover={{
+                                opacity: 1,
+                                borderColor: "green.500",
                             }}
+                            aria-label="Add Contact Link"
+                            onClick={addContactLinks}
                         />
+                    </HStack>
+                    <Box>
+                        {contact.link.map((link, index) => (
+                            <Tag
+                                size={"xs"}
+                                m={"0.25rem"}
+                                p={"0.5rem"}
+                                key={index}
+                                borderRadius="md"
+                                variant="solid"
+                                colorScheme="green"
+                            >
+                                <TagLabel>{link.substring(0, 7)}</TagLabel>
+                                <TagCloseButton
+                                    onClick={() => removeContactLinks(link)}
+                                />
+                            </Tag>
+                        ))}
                     </Box>
                     <HStack>
                         <Box>
-                            <Text>Personal Email</Text>
+                            <Text color={"#7D7D7D"}>Personal Email</Text>
                             <Input
+                                placeholder="example@example.com"
                                 width={"full"}
                                 size={"sm"}
                                 rounded={"md"}
@@ -175,17 +266,14 @@ const ContactDetailInputDialog = ({
                                 className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]"
                                 _focus={{ border: "none", outline: "none" }}
                                 value={contact.email_personal ?? ""}
-                                onChange={(e) => {
-                                    setContact({
-                                        ...contact,
-                                        email_personal: e.target.value,
-                                    });
-                                }}
+                                name="email_personal"
+                                onChange={handleChange}
                             />
                         </Box>
                         <Box>
-                            <Text>Work Email</Text>
+                            <Text color={"#7D7D7D"}>Work Email</Text>
                             <Input
+                                placeholder="example@example.com"
                                 width={"full"}
                                 size={"sm"}
                                 rounded={"md"}
@@ -193,18 +281,16 @@ const ContactDetailInputDialog = ({
                                 className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]"
                                 _focus={{ border: "none", outline: "none" }}
                                 value={contact.email_work}
-                                onChange={(e) => {
-                                    setContact({
-                                        ...contact,
-                                        email_work: e.target.value,
-                                    });
-                                }}
+                                name="email_work"
+                                onChange={handleChange}
                             />
                         </Box>
                     </HStack>
                     <Box>
-                        <Text>Phone Number</Text>
+                        <Text color={"#7D7D7D"}>Phone Number</Text>
                         <Input
+                            type="tel"
+                            placeholder="eg. +9189XXXXXX43"
                             width={"full"}
                             size={"sm"}
                             rounded={"md"}
@@ -221,8 +307,10 @@ const ContactDetailInputDialog = ({
                         />
                     </Box>
                     <Box>
-                        <Text>Work Number</Text>
+                        <Text color={"#7D7D7D"}>Work Number</Text>
                         <Input
+                            type="tel"
+                            placeholder="eg. +9189XXXXXX43"
                             width={"full"}
                             size={"sm"}
                             rounded={"md"}
@@ -238,9 +326,61 @@ const ContactDetailInputDialog = ({
                             }}
                         />
                     </Box>
+                    <HStack alignItems={"end"}>
+                        <Box width={"full"}>
+                            <Text color={"#7D7D7D"}>Other Numbers</Text>
+                            <Input
+                                placeholder="eg. +9189XXXXXX43"
+                                width={"full"}
+                                size={"sm"}
+                                rounded={"md"}
+                                border={"none"}
+                                className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]"
+                                _focus={{ border: "none", outline: "none" }}
+                                value={contactOthers}
+                                onChange={(e) => {
+                                    setContactOthers(e.target.value);
+                                }}
+                            />
+                        </Box>
+                        <IconButton
+                            size={"sm"}
+                            colorScheme="green"
+                            backgroundColor={"transparent"}
+                            rounded={"full"}
+                            borderWidth={"1px"}
+                            borderColor={"green.400"}
+                            icon={<AddIcon color={"green.400"} />}
+                            _hover={{
+                                opacity: 1,
+                                borderColor: "green.500",
+                            }}
+                            aria-label="Add Contact Link"
+                            onClick={addContactOthers}
+                        />
+                    </HStack>
                     <Box>
-                        <Text>Street</Text>
+                        {contact.contact_number_others.map((number, index) => (
+                            <Tag
+                                size={"xs"}
+                                m={"0.25rem"}
+                                p={"0.5rem"}
+                                key={index}
+                                borderRadius="md"
+                                variant="solid"
+                                colorScheme="gray"
+                            >
+                                <TagLabel>{number}</TagLabel>
+                                <TagCloseButton
+                                    onClick={() => removeContactOthers(number)}
+                                />
+                            </Tag>
+                        ))}
+                    </Box>
+                    <Box>
+                        <Text color={"#7D7D7D"}>Street</Text>
                         <Input
+                            placeholder="Address line 1"
                             width={"full"}
                             size={"sm"}
                             rounded={"md"}
@@ -258,8 +398,9 @@ const ContactDetailInputDialog = ({
                     </Box>
                     <HStack>
                         <Box>
-                            <Text>City</Text>
+                            <Text color={"#7D7D7D"}>City</Text>
                             <Input
+                                placeholder="eg. Mumbai"
                                 width={"full"}
                                 size={"sm"}
                                 rounded={"md"}
@@ -276,8 +417,9 @@ const ContactDetailInputDialog = ({
                             />
                         </Box>
                         <Box>
-                            <Text>State</Text>
+                            <Text color={"#7D7D7D"}>State</Text>
                             <Input
+                                placeholder="eg. Maharashtra"
                                 width={"full"}
                                 size={"sm"}
                                 rounded={"md"}
@@ -296,8 +438,9 @@ const ContactDetailInputDialog = ({
                     </HStack>
                     <HStack>
                         <Box>
-                            <Text>Country</Text>
+                            <Text color={"#7D7D7D"}>Country</Text>
                             <Input
+                                placeholder="eg. India"
                                 width={"full"}
                                 size={"sm"}
                                 rounded={"md"}
@@ -314,8 +457,9 @@ const ContactDetailInputDialog = ({
                             />
                         </Box>
                         <Box>
-                            <Text>Pincode</Text>
+                            <Text color={"#7D7D7D"}>Pincode</Text>
                             <Input
+                                placeholder="eg. 400001"
                                 width={"full"}
                                 size={"sm"}
                                 rounded={"md"}
@@ -336,13 +480,11 @@ const ContactDetailInputDialog = ({
 
                 <ModalFooter>
                     <Button
-                        colorScheme="blue"
-                        mr={3}
-                        onClick={handleDialogClose}
+                        width={"full"}
+                        colorScheme="green"
+                        onClick={() => onConfirm(contact)}
+                        size={"sm"}
                     >
-                        Close
-                    </Button>
-                    <Button variant="ghost" onClick={() => onConfirm(contact)}>
                         Add Contact
                     </Button>
                 </ModalFooter>
