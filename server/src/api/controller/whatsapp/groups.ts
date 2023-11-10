@@ -96,7 +96,7 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 			res,
 			status: 200,
 			data: {
-				participants: await Promise.all(participants_promise),
+				participants: (await Promise.all(participants_promise)).flat(),
 			},
 		});
 	} catch (err) {

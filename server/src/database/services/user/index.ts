@@ -2,6 +2,7 @@ import { Types } from 'mongoose';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 import { IUser } from '../../../types/user';
 import DateUtils from '../../../utils/DateUtils';
+import { BotResponseDB } from '../../repository/bot';
 import ScheduledMessageDB from '../../repository/scheduled-message';
 import { AuthDetailDB, UserDB } from '../../repository/user';
 import { PaymentService } from '../payments';
@@ -113,7 +114,7 @@ export default class UserService {
 	}
 
 	isSubscribed() {
-		const isPaymentValid = !this.user.subscription_expiry
+		const isPaymentValid = this.user.subscription_expiry
 			? DateUtils.getMoment(this.user.subscription_expiry).isAfter(DateUtils.getMomentNow())
 			: false;
 		const isNew = DateUtils.getMoment(this.user.createdAt)
@@ -187,10 +188,14 @@ export default class UserService {
 			isSent: false,
 			isFailed: false,
 		}).distinct('client_id');
+		const responseUsers = await BotResponseDB.find().distinct('user');
 
 		const scheduledSet = new Set(scheduled);
+		const responseSet = new Set(responseUsers);
 
-		const sessions = revokable.filter((auth) => !scheduledSet.has(auth.client_id));
+		const sessions = revokable.filter(
+			(auth) => !scheduledSet.has(auth.client_id) && !responseSet.has(auth.user)
+		);
 
 		return sessions;
 	}

@@ -150,7 +150,7 @@ export default class MessageSchedulerService {
 				});
 			});
 
-			if (isNew) {
+			if (isNew && !isSubscribed) {
 				whatsapp.getClient().sendMessage(scheduledMessage.receiver, PROMOTIONAL_MESSAGE);
 			}
 
