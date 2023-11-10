@@ -255,7 +255,6 @@ export default class WhatsappUtils {
 		) as string[];
 
 		active_client_ids.forEach((client_id) => {
-			console.log(client_id);
 			const instance = WhatsappProvider.getInstance(client_id);
 			instance.initialize();
 
