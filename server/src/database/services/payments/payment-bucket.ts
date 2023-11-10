@@ -1,12 +1,30 @@
 import { Types } from 'mongoose';
+import { SUBSCRIPTION_STATUS } from '../../../config/const';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 import IPaymentBucket from '../../../types/payment/payment-bucket';
+import { IUser } from '../../../types/user';
+import DateUtils from '../../../utils/DateUtils';
 import CouponDB from '../../repository/payments/coupon';
 import PaymentDB from '../../repository/payments/payment';
 import PaymentBucketDB from '../../repository/payments/payment-bucket';
 import PlanDB from '../../repository/payments/plan';
 import SubscriptionDB from '../../repository/payments/subscription';
 import PaymentService from './payment';
+
+type PaymentRecord = {
+	type: 'payment';
+	id: string;
+	date: string;
+	amount: number;
+};
+
+type SubscriptionRecord = {
+	type: 'subscription';
+	id: string;
+	plan: string;
+	isActive: boolean;
+	isPaused: boolean;
+};
 
 export default class PaymentBucketService {
 	private bucket: IPaymentBucket;
@@ -135,5 +153,40 @@ export default class PaymentBucketService {
 		this.bucket.discount = 0;
 		this.bucket.discount_coupon = null;
 		await this.bucket.save();
+	}
+
+	static async getPaymentRecords(user: IUser) {
+		const paymentRecords = await PaymentDB.find({
+			'bucket.user': user,
+			payment_id: { $ne: null },
+		});
+
+		const subscriptionRecords = await SubscriptionDB.find({
+			'bucket.user': user,
+		}).populate('plan');
+
+		const records: (PaymentRecord | SubscriptionRecord)[] = [];
+		const _paymentRecords = paymentRecords.map(
+			(paymentRecord): PaymentRecord => ({
+				type: 'payment',
+				id: paymentRecord._id.toString(),
+				date: DateUtils.getMoment(paymentRecord.transaction_date).format('DD MMM yyyy'),
+				amount: paymentRecord.amount,
+			})
+		);
+
+		const _subscriptionRecords = subscriptionRecords.map(
+			(paymentRecord): SubscriptionRecord => ({
+				type: 'subscription',
+				id: paymentRecord._id.toString(),
+				plan: paymentRecord.plan.code,
+				isActive: paymentRecord.subscription_status === SUBSCRIPTION_STATUS.ACTIVE,
+				isPaused: paymentRecord.subscription_status === SUBSCRIPTION_STATUS.PAUSED,
+			})
+		);
+
+		records.push(..._paymentRecords);
+		records.push(..._subscriptionRecords);
+		return records;
 	}
 }
