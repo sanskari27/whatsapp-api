@@ -241,10 +241,8 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 				vcard.addContactOther(`+${formattedNumber}`);
 			}
 		}
-
-		for (const link of detail.links) {
-			const formattedLink = link.startsWith('https://') ? link : `https://${link}`;
-			vcard.addLink(formattedLink);
+		for (let i = 0; i < detail.links.length; i++) {
+			vcard.addLink(detail.links[i]);
 		}
 
 		return vcard.build();
