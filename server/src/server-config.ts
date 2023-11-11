@@ -8,6 +8,7 @@ import logger from './config/Logger';
 import { ATTACHMENTS_PATH, CSV_PATH, IS_PRODUCTION, UPLOADS_PATH } from './config/const';
 import { MessageSchedulerService } from './database/services';
 import APIError from './errors/api-errors';
+import { WhatsappProvider } from './provider/whatsapp_provider';
 import ErrorReporter from './utils/ErrorReporter';
 import WhatsappUtils from './utils/WhatsappUtils';
 
@@ -36,6 +37,7 @@ export default function (app: Express) {
 	app.route('/api-status').get((req, res) => {
 		res.status(200).json({
 			success: true,
+			'active-instances-count': WhatsappProvider.getInstancesCount(),
 		});
 	});
 	app.use(routes);

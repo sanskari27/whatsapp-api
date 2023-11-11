@@ -260,4 +260,8 @@ export class WhatsappProvider {
 	static deleteSession(client_id: string) {
 		WhatsappProvider.clientsMap.delete(client_id);
 	}
+
+	static getInstancesCount(): number {
+		return WhatsappProvider.clientsMap.size;
+	}
 }
