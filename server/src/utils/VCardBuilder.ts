@@ -140,7 +140,7 @@ export default class VCardBuilder {
 		if (this.email_personal) vCardString += `EMAIL;type=HOME,INTERNET:${this.email_personal}\n`;
 		if (this.email_work) vCardString += `EMAIL;type=WORK,INTERNET:${this.email_work}\n`;
 		for (const link of this.links) {
-			vCardString += `URL;OTHER;${link}\r\n`;
+			vCardString += `URL;OTHER:${link}\r\n`;
 		}
 
 		if (this.street || this.city || this.state || this.pincode || this.country) {
