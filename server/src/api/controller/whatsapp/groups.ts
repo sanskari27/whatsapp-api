@@ -100,8 +100,6 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 			},
 		});
 	} catch (err) {
-		console.log(err);
-
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
 }

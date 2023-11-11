@@ -68,8 +68,6 @@ async function exportLabels(req: Request, res: Response, next: NextFunction) {
 			data: { entries: participants },
 		});
 	} catch (err) {
-		console.log(err);
-
 		return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
 	}
 }

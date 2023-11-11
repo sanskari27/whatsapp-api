@@ -228,8 +228,6 @@ async function initializeBucketPayment(req: Request, res: Response, next: NextFu
 			data: paymentDetails,
 		});
 	} catch (err) {
-		console.log(err);
-
 		if (err instanceof InternalError) {
 			if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND)) {
 				return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_NOT_FOUND));
