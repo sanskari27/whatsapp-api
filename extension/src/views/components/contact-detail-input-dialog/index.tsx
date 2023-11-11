@@ -36,8 +36,8 @@ const ContactDetailInputDialog = ({
         email_work?: string;
         contact_number_phone?: string;
         contact_number_work?: string;
-        contact_number_others?: string[];
-        link?: string[];
+        contact_number_other?: string[];
+        links?: string[];
         street?: string;
         city?: string;
         state?: string;
@@ -55,8 +55,8 @@ const ContactDetailInputDialog = ({
         email_work: "",
         contact_number_phone: "",
         contact_number_work: "",
-        contact_number_others: [] as string[],
-        link: [] as string[],
+        contact_number_other: [] as string[],
+        links: [] as string[],
         street: "",
         city: "",
         state: "",
@@ -77,15 +77,14 @@ const ContactDetailInputDialog = ({
             email_work: "",
             contact_number_phone: "",
             contact_number_work: "",
-            contact_number_others: [],
-            link: [],
+            contact_number_other: [],
+            links: [],
             street: "",
             city: "",
             state: "",
             country: "",
             pincode: "",
         });
-        console.log(contact);
         onClose();
     };
 
@@ -100,7 +99,7 @@ const ContactDetailInputDialog = ({
         if (!contactLinks) return;
         setContact({
             ...contact,
-            link: [...contact.link, contactLinks],
+            links: [...contact.links, contactLinks],
         });
         setContactLinks("");
     };
@@ -109,8 +108,8 @@ const ContactDetailInputDialog = ({
         if (!contactOthers) return;
         setContact({
             ...contact,
-            contact_number_others: [
-                ...contact.contact_number_others,
+            contact_number_other: [
+                ...contact.contact_number_other,
                 contactOthers,
             ],
         });
@@ -120,14 +119,14 @@ const ContactDetailInputDialog = ({
     const removeContactLinks = (link: string) => {
         setContact({
             ...contact,
-            link: contact.link.filter((link_name) => link_name !== link),
+            links: contact.links.filter((link_name) => link_name !== link),
         });
     };
 
     const removeContactOthers = (number: string) => {
         setContact({
             ...contact,
-            contact_number_others: contact.contact_number_others.filter(
+            contact_number_other: contact.contact_number_other.filter(
                 (number_name) => number_name !== number
             ),
         });
@@ -143,7 +142,7 @@ const ContactDetailInputDialog = ({
         >
             <ModalOverlay />
             <ModalContent
-                backgroundColor={"#252525"}
+                className="bg-white dark:bg-[#252525]"
                 borderColor={"green"}
                 borderWidth={"1px"}
                 rounded={"md"}
@@ -155,7 +154,7 @@ const ContactDetailInputDialog = ({
                     </HStack>
                 </ModalHeader>
                 <ModalCloseButton color={"green"} />
-                <ModalBody className="modal-body-wrapper">
+                <ModalBody className="custom-scrollbar">
                     <Box>
                         <Text color={"#7D7D7D"}>First Name</Text>
                         <Input
@@ -237,7 +236,7 @@ const ContactDetailInputDialog = ({
                         />
                     </HStack>
                     <Box>
-                        {contact.link.map((link, index) => (
+                        {contact.links.map((link, index) => (
                             <Tag
                                 size={"xs"}
                                 m={"0.25rem"}
@@ -360,7 +359,7 @@ const ContactDetailInputDialog = ({
                         />
                     </HStack>
                     <Box>
-                        {contact.contact_number_others.map((number, index) => (
+                        {contact.contact_number_other.map((number, index) => (
                             <Tag
                                 size={"xs"}
                                 m={"0.25rem"}

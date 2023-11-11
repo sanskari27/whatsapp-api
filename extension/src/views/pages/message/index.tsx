@@ -17,11 +17,12 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import { BiMessageSquareDetail } from "react-icons/bi";
-import { useNavigate } from "react-router-dom";
-import { NAVIGATION } from "../../../config/const";
+import { MessageProps } from "../../../background/background";
+import { CHROME_ACTION } from "../../../config/const";
 import { startAuth, useAuth } from "../../../hooks/useAuth";
 import AuthService from "../../../services/auth.service";
 import MessageService from "../../../services/message.service";
+import { getActiveTabURL } from "../../../utils/ChromeUtils";
 import LoginModal, { LoginHandle } from "../../components/login";
 import DelaySection from "./components/DelaySection";
 import MessageSection from "./components/MessageSection";
@@ -44,8 +45,8 @@ export type SchedulerDetails = {
         email_work?: string;
         contact_number_phone?: string;
         contact_number_work?: string;
-        contact_number_others?: string[];
-        link?: string[];
+        contact_number_other?: string[];
+        links?: string[];
         street?: string;
         city?: string;
         state?: string;
@@ -65,7 +66,6 @@ export type SchedulerDetails = {
 const steps = ["Name", "Message", "Delay"];
 
 const Message = () => {
-    const navigate = useNavigate();
     const loginModelRef = useRef<LoginHandle>(null);
 
     const { isAuthenticated, isAuthenticating, qrCode, qrGenerated } =
@@ -219,8 +219,8 @@ const Message = () => {
         email_work?: string;
         contact_number_phone?: string;
         contact_number_work?: string;
-        contact_number_others?: string[];
-        link?: string[];
+        contact_number_other?: string[];
+        links?: string[];
         street?: string;
         city?: string;
         state?: string;
@@ -240,8 +240,8 @@ const Message = () => {
                     email_work: data.email_work,
                     contact_number_phone: data.contact_number_phone,
                     contact_number_work: data.contact_number_work,
-                    contact_number_others: data.contact_number_others,
-                    link: data.link,
+                    contact_number_other: data.contact_number_other,
+                    links: data.links,
                     street: data.street,
                     city: data.city,
                     state: data.state,
@@ -261,8 +261,8 @@ const Message = () => {
         email_work?: string;
         contact_number_phone?: string;
         contact_number_work?: string;
-        contact_number_others?: string[];
-        link?: string[];
+        contact_number_other?: string[];
+        links?: string[];
         street?: string;
         city?: string;
         state?: string;
@@ -321,6 +321,19 @@ const Message = () => {
                 apiError: "",
             }));
         });
+    };
+
+    const handleSubscription = async () => {
+        const activeTab = await getActiveTabURL();
+        const message: MessageProps = {
+            action: CHROME_ACTION.OPEN_URL,
+            tabId: activeTab.id,
+            url: activeTab.url,
+            data: {
+                url: "https://whatsleads.in/pricing",
+            },
+        };
+        await chrome.runtime.sendMessage(message);
     };
 
     return (
@@ -443,7 +456,7 @@ const Message = () => {
                     _hover={{
                         bgColor: "yellow.500",
                     }}
-                    onClick={() => navigate(NAVIGATION.FEATURES)}
+                    onClick={handleSubscription}
                 >
                     <Flex gap={"0.5rem"}>
                         <Text color={"white"}>Subscribe</Text>

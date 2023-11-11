@@ -1,13 +1,13 @@
-.modal-body-wrapper::-webkit-scrollbar {
+.custom-scrollbar::-webkit-scrollbar {
 	width: 8px;
 	height: 8px;
 	transition: 0.5s;
 }
-.modal-body-wrapper::-webkit-scrollbar-thumb:hover {
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
 	background: #888888;
 }
 
-.modal-body-wrapper::-webkit-scrollbar-thumb {
+.custom-scrollbar::-webkit-scrollbar-thumb {
 	border-radius: 20px;
 	background: #8888882a;
 }
