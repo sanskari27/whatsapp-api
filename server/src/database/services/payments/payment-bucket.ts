@@ -185,8 +185,8 @@ export default class PaymentBucketService {
 			})
 		);
 
-		records.push(..._paymentRecords);
 		records.push(..._subscriptionRecords);
+		records.push(..._paymentRecords);
 		return records;
 	}
 }
