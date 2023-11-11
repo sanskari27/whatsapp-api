@@ -52,8 +52,8 @@ const MessageSection = ({
             email_work?: string;
             contact_number_phone?: string;
             contact_number_work?: string;
-            contact_number_others?: string[];
-            link?: string[];
+            contact_number_other?: string[];
+            links?: string[];
             street?: string;
             city?: string;
             state?: string;
@@ -79,8 +79,8 @@ const MessageSection = ({
         email_work?: string;
         contact_number_phone?: string;
         contact_number_work?: string;
-        contact_number_others?: string[];
-        link?: string[];
+        contact_number_other?: string[];
+        links?: string[];
         street?: string;
         city?: string;
         state?: string;
@@ -96,8 +96,8 @@ const MessageSection = ({
         email_work?: string;
         contact_number_phone?: string;
         contact_number_work?: string;
-        contact_number_others?: string[];
-        link?: string[];
+        contact_number_other?: string[];
+        links?: string[];
         street?: string;
         city?: string;
         state?: string;
@@ -107,7 +107,6 @@ const MessageSection = ({
     error: string;
     isHidden: boolean;
 }) => {
-    console.log(details);
     const { templates, add: addToTemplate, addingTemplate } = useTemplate();
     const {
         attachments: allAttachments,
@@ -153,8 +152,8 @@ const MessageSection = ({
         email_work?: string;
         contact_number_phone?: string;
         contact_number_work?: string;
-        contact_number_others?: string[];
-        link?: string[];
+        contact_number_other?: string[];
+        links?: string[];
         street?: string;
         city?: string;
         state?: string;
