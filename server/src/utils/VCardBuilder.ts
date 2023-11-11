@@ -95,8 +95,8 @@ export default class VCardBuilder {
 			full_name += this.last_name.trim() + '';
 		}
 
-		vCardString += `FN:CHARSET=utf-8:${full_name.trim()}\n`;
-		vCardString += `N:CHARSET=utf-8:${this.last_name};${this.first_name};${this.middle_name};;\n`;
+		vCardString += `FN:${full_name.trim()}\n`;
+		vCardString += `N:${this.last_name};${this.first_name};${this.middle_name};;\n`;
 
 		//Add Title and organization to vcard
 		if (this.organization) vCardString += `ORG:CHARSET=utf-8:${this.organization}\n`;
