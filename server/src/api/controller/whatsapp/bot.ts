@@ -5,25 +5,28 @@ import { BOT_TRIGGER_OPTIONS, BOT_TRIGGER_TO } from '../../../config/const';
 import BotService from '../../../database/services/bot';
 import UploadService from '../../../database/services/uploads';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
-import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
+import InternalError, {
+    INTERNAL_ERRORS,
+} from '../../../errors/internal-errors';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 import { Respond, idValidator } from '../../../utils/ExpressUtils';
 import VCardBuilder from '../../../utils/VCardBuilder';
 
 async function allBots(req: Request, res: Response, next: NextFunction) {
-	const botService = new BotService(req.locals.user);
-	const bots = await botService.allBots();
+    const botService = new BotService(req.locals.user);
+    const bots = await botService.allBots();
 
-	return Respond({
-		res,
-		status: 200,
-		data: {
-			bots: bots,
-		},
-	});
+    return Respond({
+        res,
+        status: 200,
+        data: {
+            bots: bots,
+        },
+    });
 }
 
 async function createBot(req: Request, res: Response, next: NextFunction) {
+
 	const client_id = req.locals.client_id;
 
 	const whatsapp = WhatsappProvider.getInstance(client_id);
@@ -157,54 +160,56 @@ async function createBot(req: Request, res: Response, next: NextFunction) {
 	});
 }
 async function toggleActive(req: Request, res: Response, next: NextFunction) {
-	const [isIDValid, id] = idValidator(req.params.id);
+    const [isIDValid, id] = idValidator(req.params.id);
 
-	if (!isIDValid) {
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
-	}
+    if (!isIDValid) {
+        return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
+    }
 
-	try {
-		const botService = new BotService(req.locals.user);
-		const bot = await botService.toggleActive(id);
+    try {
+        const botService = new BotService(req.locals.user);
+        const bot = await botService.toggleActive(id);
 
-		return Respond({
-			res,
-			status: 200,
-			data: {
-				bot: bot,
-			},
-		});
-	} catch (err) {
-		if (err instanceof InternalError) {
-			if (err.isSameInstanceof(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND)) {
-				return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
-			}
-		}
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR));
-	}
+        return Respond({
+            res,
+            status: 200,
+            data: {
+                bot: bot,
+            },
+        });
+    } catch (err) {
+        if (err instanceof InternalError) {
+            if (err.isSameInstanceof(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND)) {
+                return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
+            }
+        }
+        return next(
+            new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR)
+        );
+    }
 }
 async function deleteBot(req: Request, res: Response, next: NextFunction) {
-	const [isIDValid, id] = idValidator(req.params.id);
+    const [isIDValid, id] = idValidator(req.params.id);
 
-	if (!isIDValid) {
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
-	}
+    if (!isIDValid) {
+        return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
+    }
 
-	const botService = new BotService(req.locals.user);
-	botService.deleteBot(id);
+    const botService = new BotService(req.locals.user);
+    botService.deleteBot(id);
 
-	return Respond({
-		res,
-		status: 200,
-		data: {},
-	});
+    return Respond({
+        res,
+        status: 200,
+        data: {},
+    });
 }
 
 const BotController = {
-	allBots,
-	createBot,
-	toggleActive,
-	deleteBot,
+    allBots,
+    createBot,
+    toggleActive,
+    deleteBot,
 };
 
 export default BotController;

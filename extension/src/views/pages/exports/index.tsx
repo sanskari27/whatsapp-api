@@ -1,23 +1,21 @@
-import { InfoOutlineIcon } from "@chakra-ui/icons";
-import { Box, Button, Flex, Icon, Text } from "@chakra-ui/react";
-import Multiselect from "multiselect-react-dropdown";
-import { useEffect, useRef, useState } from "react";
-import { PiExportBold, PiFileCsvLight } from "react-icons/pi";
-import { useNavigate } from "react-router-dom";
-import { MessageProps } from "../../../background/background";
-import { CHROME_ACTION, EXPORTS_TYPE } from "../../../config/const";
-import { logout, startAuth, useAuth } from "../../../hooks/useAuth";
-import AuthService from "../../../services/auth.service";
-import ContactService from "../../../services/contact.service";
-import ExportsService from "../../../services/exports.service";
-import GroupService from "../../../services/group.service";
-import LabelService from "../../../services/label.service";
-import { getActiveTabURL } from "../../../utils/ChromeUtils";
-import CheckButton from "../../components/check-button";
-import LoginModal, { LoginHandle } from "../../components/login";
+import { InfoOutlineIcon } from '@chakra-ui/icons';
+import { Box, Button, Flex, Icon, Text } from '@chakra-ui/react';
+import Multiselect from 'multiselect-react-dropdown';
+import { useEffect, useRef, useState } from 'react';
+import { PiExportBold, PiFileCsvLight } from 'react-icons/pi';
+import { MessageProps } from '../../../background/background';
+import { CHROME_ACTION, EXPORTS_TYPE } from '../../../config/const';
+import { logout, startAuth, useAuth } from '../../../hooks/useAuth';
+import AuthService from '../../../services/auth.service';
+import ContactService from '../../../services/contact.service';
+import ExportsService from '../../../services/exports.service';
+import GroupService from '../../../services/group.service';
+import LabelService from '../../../services/label.service';
+import { getActiveTabURL } from '../../../utils/ChromeUtils';
+import CheckButton from '../../components/check-button';
+import LoginModal, { LoginHandle } from '../../components/login';
 
 const Exports = () => {
-    const navigate = useNavigate();
     const loginModelRef = useRef<LoginHandle>(null);
     const [export_criteria, setExportCriteria] = useState({
         [EXPORTS_TYPE.ALL]: false,
@@ -77,14 +75,14 @@ const Exports = () => {
 
     const [groups, setGroups] = useState([
         {
-            id: "",
-            name: "No Group Selected!",
+            id: '',
+            name: 'No Group Selected!',
         },
     ]);
     const [labels, setLabels] = useState([
         {
-            id: "",
-            name: "No Label Selected!",
+            id: '',
+            name: 'No Label Selected!',
         },
     ]);
 
@@ -194,7 +192,7 @@ const Exports = () => {
         LabelService.listLabels()
             .then(setLabels)
             .catch((err) => {
-                if (err === "BUSINESS_ACCOUNT_REQUIRED") {
+                if (err === 'BUSINESS_ACCOUNT_REQUIRED') {
                     setUIDetails((prevState) => ({
                         ...prevState,
                         isBusiness: false,
@@ -230,7 +228,7 @@ const Exports = () => {
             tabId: activeTab.id,
             url: activeTab.url,
             data: {
-                url: "https://whatsleads.in/pricing",
+                url: 'https://whatsleads.in/pricing',
             },
         };
         await chrome.runtime.sendMessage(message);
@@ -238,18 +236,18 @@ const Exports = () => {
 
     return (
         <Flex
-            direction={"column"}
-            gap={"0.5rem"}
-            justifyContent={"space-between"}
-            height={"full"}
+            direction={'column'}
+            gap={'0.5rem'}
+            justifyContent={'space-between'}
+            height={'full'}
         >
-            <Flex direction={"column"} gap={"0.5rem"}>
-                <Flex alignItems="center" gap={"0.5rem"} mt={"1.5rem"}>
+            <Flex direction={'column'} gap={'0.5rem'}>
+                <Flex alignItems="center" gap={'0.5rem'} mt={'1.5rem'}>
                     <Icon
                         as={PiFileCsvLight}
                         height={5}
                         width={5}
-                        color={"green.400"}
+                        color={'green.400'}
                     />
                     <Text className="text-black dark:text-white" fontSize="md">
                         Exports
@@ -257,21 +255,21 @@ const Exports = () => {
                 </Flex>
                 <Box
                     className="bg-[#ECECEC] dark:bg-[#535353]"
-                    p={"0.5rem"}
-                    borderRadius={"20px"}
-                    mb={"1rem"}
+                    p={'0.5rem'}
+                    borderRadius={'20px'}
+                    mb={'1rem'}
                 >
                     <Flex
-                        flexDirection={"column"}
-                        gap={"0.5rem"}
-                        width={"full"}
+                        flexDirection={'column'}
+                        gap={'0.5rem'}
+                        width={'full'}
                     >
                         <Flex
                             alignItems="flex-end"
-                            justifyContent={"space-between"}
+                            justifyContent={'space-between'}
                         >
                             <CheckButton
-                                name={"ALL"}
+                                name={'ALL'}
                                 label="All Chat Contacts"
                                 value={ALL}
                                 onChange={handleChange}
@@ -281,7 +279,7 @@ const Exports = () => {
                                 className="text-black dark:text-white"
                             >
                                 {Loading.contactLoading
-                                    ? "Loading..."
+                                    ? 'Loading...'
                                     : `${
                                           contactsCount[EXPORTS_TYPE.ALL]
                                       } Contacts`}
@@ -289,10 +287,10 @@ const Exports = () => {
                         </Flex>
                         <Flex
                             alignItems="flex-end"
-                            justifyContent={"space-between"}
+                            justifyContent={'space-between'}
                         >
                             <CheckButton
-                                name={"SAVED"}
+                                name={'SAVED'}
                                 label="All Saved Contacts"
                                 value={SAVED}
                                 onChange={handleChange}
@@ -302,7 +300,7 @@ const Exports = () => {
                                 className="text-black dark:text-white"
                             >
                                 {Loading.contactLoading
-                                    ? "Loading..."
+                                    ? 'Loading...'
                                     : `${
                                           contactsCount[EXPORTS_TYPE.SAVED]
                                       } Contacts`}
@@ -310,10 +308,10 @@ const Exports = () => {
                         </Flex>
                         <Flex
                             alignItems="flex-end"
-                            justifyContent={"space-between"}
+                            justifyContent={'space-between'}
                         >
                             <CheckButton
-                                name={"UNSAVED"}
+                                name={'UNSAVED'}
                                 label="All Unsaved Contacts"
                                 value={UNSAVED}
                                 onChange={handleChange}
@@ -323,7 +321,7 @@ const Exports = () => {
                                 className="text-black dark:text-white"
                             >
                                 {Loading.contactLoading
-                                    ? "Loading..."
+                                    ? 'Loading...'
                                     : `${
                                           contactsCount[EXPORTS_TYPE.UNSAVED]
                                       } Contacts`}
@@ -331,10 +329,10 @@ const Exports = () => {
                         </Flex>
                         <Flex
                             alignItems="flex-end"
-                            justifyContent={"space-between"}
+                            justifyContent={'space-between'}
                         >
                             <CheckButton
-                                name={"GROUP"}
+                                name={'GROUP'}
                                 label="Group Contacts"
                                 value={GROUP}
                                 onChange={handleChange}
@@ -345,7 +343,7 @@ const Exports = () => {
                                 hidden={!isAuthenticated}
                             >
                                 {Loading.groupLoading
-                                    ? "Loading..."
+                                    ? 'Loading...'
                                     : `${groups.length} Groups`}
                             </Text>
                         </Flex>
@@ -379,7 +377,7 @@ const Exports = () => {
                                 options={groups}
                                 style={{
                                     searchBox: {
-                                        border: "none",
+                                        border: 'none',
                                     },
                                 }}
                                 className="!w-[300px] !mr-2 !bg-[#A6A6A6] dark:!bg-[#252525] rounded-md border-none "
@@ -387,7 +385,7 @@ const Exports = () => {
                             <Button
                                 onClick={() => {
                                     handleChange({
-                                        name: "GROUP_ALL",
+                                        name: 'GROUP_ALL',
                                         value: !export_criteria[
                                             EXPORTS_TYPE.GROUP_ALL
                                         ],
@@ -404,22 +402,22 @@ const Exports = () => {
                                 size="sm"
                                 className={`${
                                     uiDetails.selectAllGroups
-                                        ? "!bg-green-400"
-                                        : "!bg-[#A6A6A6] dark:!bg-[#252525]"
+                                        ? '!bg-green-400'
+                                        : '!bg-[#A6A6A6] dark:!bg-[#252525]'
                                 } !text-white`}
-                                color={"white"}
+                                color={'white'}
                             >
                                 {uiDetails.selectAllGroups
-                                    ? "Deselect All"
-                                    : "Select All"}
+                                    ? 'Deselect All'
+                                    : 'Select All'}
                             </Button>
                         </Flex>
                         <Flex
                             alignItems="flex-end"
-                            justifyContent={"space-between"}
+                            justifyContent={'space-between'}
                         >
                             <CheckButton
-                                name={"LABEL"}
+                                name={'LABEL'}
                                 label="Label Contacts"
                                 value={LABEL}
                                 isDisabled={!uiDetails.isBusiness}
@@ -433,7 +431,7 @@ const Exports = () => {
                                 }
                             >
                                 {Loading.labelLoading
-                                    ? "Loading..."
+                                    ? 'Loading...'
                                     : `${labels.length} Labels`}
                             </Text>
                         </Flex>
@@ -449,8 +447,8 @@ const Exports = () => {
                                 displayValue="name"
                                 placeholder={
                                     uiDetails.isBusiness
-                                        ? "Select Label"
-                                        : "For Business Account Only"
+                                        ? 'Select Label'
+                                        : 'For Business Account Only'
                                 }
                                 onRemove={(selectedList) =>
                                     setSelectedLabel(
@@ -471,10 +469,10 @@ const Exports = () => {
                                 options={labels}
                                 style={{
                                     searchBox: {
-                                        border: "none",
+                                        border: 'none',
                                     },
                                     inputField: {
-                                        width: "100%",
+                                        width: '100%',
                                     },
                                 }}
                                 className="!w-[300px] !mr-2 !bg-[#A6A6A6] dark:!bg-[#252525] rounded-md border-none "
@@ -482,7 +480,7 @@ const Exports = () => {
                             <Button
                                 onClick={() => {
                                     handleChange({
-                                        name: "LABEL_ALL",
+                                        name: 'LABEL_ALL',
                                         value: !export_criteria[
                                             EXPORTS_TYPE.LABEL_ALL
                                         ],
@@ -499,56 +497,56 @@ const Exports = () => {
                                 size="sm"
                                 className={`${
                                     uiDetails.selectAllLabels
-                                        ? "!bg-green-400"
-                                        : "!bg-[#A6A6A6] dark:!bg-[#252525]"
+                                        ? '!bg-green-400'
+                                        : '!bg-[#A6A6A6] dark:!bg-[#252525]'
                                 } !text-white`}
-                                color={"white"}
+                                color={'white'}
                             >
                                 {uiDetails.selectAllLabels
-                                    ? "Deselect All"
-                                    : "Select All"}
+                                    ? 'Deselect All'
+                                    : 'Select All'}
                             </Button>
                         </Flex>
                     </Flex>
                 </Box>
             </Flex>
             {!isAuthenticated ? (
-                <Flex gap={"0.5rem"} direction={"column"}>
+                <Flex gap={'0.5rem'} direction={'column'}>
                     <Text className="text-black text-center dark:text-white">
-                        <InfoOutlineIcon marginRight={"0.25rem"} />
+                        <InfoOutlineIcon marginRight={'0.25rem'} />
                         Disclaimer: Please wait 5 minutes for contacts to sync
                         after login.
                     </Text>
                     <Button
-                        bgColor={"blue.300"}
+                        bgColor={'blue.300'}
                         _hover={{
-                            bgColor: "blue.400",
+                            bgColor: 'blue.400',
                         }}
                         onClick={startAuth}
                         isLoading={isAuthenticating}
                     >
-                        <Flex gap={"0.5rem"}>
-                            <Text color={"white"}>Login</Text>
+                        <Flex gap={'0.5rem'}>
+                            <Text color={'white'}>Login</Text>
                         </Flex>
                     </Button>
                 </Flex>
             ) : !uiDetails.paymentVerified ? (
                 <Button
-                    bgColor={"yellow.400"}
+                    bgColor={'yellow.400'}
                     _hover={{
-                        bgColor: "yellow.500",
+                        bgColor: 'yellow.500',
                     }}
                     onClick={handleSubscription}
                 >
-                    <Flex gap={"0.5rem"}>
-                        <Text color={"white"}>Subscribe</Text>
+                    <Flex gap={'0.5rem'}>
+                        <Text color={'white'}>Subscribe</Text>
                     </Flex>
                 </Button>
             ) : !uiDetails.exportClicked ? (
                 <Button
-                    bgColor={"green.300"}
+                    bgColor={'green.300'}
                     _hover={{
-                        bgColor: "green.400",
+                        bgColor: 'green.400',
                     }}
                     onClick={() =>
                         setUIDetails((prevState) => ({
@@ -557,39 +555,39 @@ const Exports = () => {
                         }))
                     }
                 >
-                    <Flex gap={"0.5rem"}>
+                    <Flex gap={'0.5rem'}>
                         <Icon
                             as={PiExportBold}
                             width={5}
                             height={5}
-                            color={"white"}
+                            color={'white'}
                         />
-                        <Text color={"white"}>Export</Text>
+                        <Text color={'white'}>Export</Text>
                     </Flex>
                 </Button>
             ) : (
-                <Flex justifyContent={"space-between"} alignItems={"center"}>
+                <Flex justifyContent={'space-between'} alignItems={'center'}>
                     <Button
-                        bgColor={"green.300"}
+                        bgColor={'green.300'}
                         _hover={{
-                            bgColor: "green.400",
+                            bgColor: 'green.400',
                         }}
-                        width={"48%"}
+                        width={'48%'}
                         onClick={exportExcel}
                         isLoading={exporting.CSV}
                     >
-                        <Text color={"white"}>CSV</Text>
+                        <Text color={'white'}>CSV</Text>
                     </Button>
                     <Button
-                        bgColor={"yellow.400"}
+                        bgColor={'yellow.400'}
                         _hover={{
-                            bgColor: "yellow.500",
+                            bgColor: 'yellow.500',
                         }}
-                        width={"48%"}
+                        width={'48%'}
                         isLoading={exporting.VCF}
                         onClick={exportVCF}
                     >
-                        <Text color={"white"}>VCF</Text>
+                        <Text color={'white'}>VCF</Text>
                     </Button>
                 </Flex>
             )}
