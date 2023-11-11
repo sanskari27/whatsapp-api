@@ -95,17 +95,17 @@ export default class VCardBuilder {
 			full_name += this.last_name.trim() + '';
 		}
 
-		vCardString += `FN:${full_name.trim()}\n`;
-		vCardString += `N:${this.last_name};${this.first_name};${this.middle_name};;\n`;
+		vCardString += `FN;CHARSET=utf-8:${full_name.trim()}\n`;
+		vCardString += `N;CHARSET=utf-8:${this.last_name};${this.first_name};${this.middle_name};;\n`;
 
 		//Add Title and organization to vcard
-		if (this.title) vCardString += `TITLE:${this.title}\n`;
-		if (this.organization) vCardString += `ORG:${this.organization}\n`;
+		if (this.title) vCardString += `TITLE;CHARSET=utf-8:${this.title}\n`;
+		if (this.organization) vCardString += `ORG;CHARSET=utf-8:${this.organization}\n`;
 
 		// Add Contact details
 		if (this.contact_details_phone) {
 			const { whatsapp_id: waid, contact_number: c_no } = this.contact_details_phone;
-			vCardString += 'TEL:TYPE=PHONE';
+			vCardString += 'TEL;TYPE=PHONE';
 			if (waid) {
 				vCardString += `;waid=${waid}:${c_no}`;
 			} else {
@@ -116,7 +116,7 @@ export default class VCardBuilder {
 
 		if (this.contact_details_work) {
 			const { whatsapp_id: waid, contact_number: c_no } = this.contact_details_work;
-			vCardString += 'TEL:TYPE=WORK';
+			vCardString += 'TEL;TYPE=WORK';
 			if (waid) {
 				vCardString += `;waid=${waid}:${c_no}`;
 			} else {
@@ -127,7 +127,7 @@ export default class VCardBuilder {
 
 		for (const contact of this.contact_details_other) {
 			const { whatsapp_id: waid, contact_number: c_no } = contact;
-			vCardString += 'TEL:TYPE=OTHER';
+			vCardString += 'TEL;TYPE=OTHER';
 			if (waid) {
 				vCardString += `;waid=${waid}:${c_no}`;
 			} else {
@@ -137,14 +137,15 @@ export default class VCardBuilder {
 		}
 
 		//Add Personal and Work email to vcard
-		if (this.email_personal) vCardString += `EMAIL:type=HOME,INTERNET:${this.email_personal}\n`;
-		if (this.email_work) vCardString += `EMAIL:type=WORK,INTERNET:${this.email_work}\n`;
+		if (this.email_personal) vCardString += `EMAIL;type=HOME,INTERNET:${this.email_personal}\n`;
+		if (this.email_work) vCardString += `EMAIL;type=WORK,INTERNET:${this.email_work}\n`;
 		for (const link of this.links) {
-			vCardString += `URL:CHARSET=UTF-8:${link}\r\n`;
+			
+			vCardString += `URL;CHARSET=UTF-8:${link}\r\n`;
 		}
 
 		if (this.street || this.city || this.state || this.pincode || this.country) {
-			vCardString += `ADR:type=WORK:;;`;
+			vCardString += `ADR;type=WORK:;;`;
 			vCardString += `${this.street};`;
 			vCardString += `${this.city};`;
 			vCardString += `${this.state};`;

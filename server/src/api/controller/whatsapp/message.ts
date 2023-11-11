@@ -226,9 +226,9 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 				: detail.contact_number_work;
 			const numberId = await whatsapp.getClient().getNumberId(number);
 			if (numberId) {
-				vcard.setContactPhone(`+${numberId.user}`, numberId.user);
+				vcard.setContactWork(`+${numberId.user}`, numberId.user);
 			} else {
-				vcard.setContactPhone(`+${number}`);
+				vcard.setContactWork(`+${number}`);
 			}
 		}
 
@@ -243,7 +243,8 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 		}
 
 		for (const link of detail.links) {
-			vcard.addLink(link);
+			const formattedLink = link.startsWith('https://') ? link : `https://${link}`;
+			vcard.addLink(formattedLink);
 		}
 
 		return vcard.build();
