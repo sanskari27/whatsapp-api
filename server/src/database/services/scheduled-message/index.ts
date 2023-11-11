@@ -161,7 +161,7 @@ export default class MessageSchedulerService {
 
 	async allCampaigns() {
 		const messages = await ScheduledMessageDB.aggregate([
-			{ $match: { sender: this.user, campaign_id: { $exists: true } } },
+			{ $match: { sender: this.user._id, campaign_id: { $exists: true } } },
 			{
 				$group: {
 					_id: '$campaign_id', // Group by campaign_id
@@ -201,6 +201,7 @@ export default class MessageSchedulerService {
 				},
 			},
 		]);
+
 		return messages as {
 			campaign_id: string;
 			campaignName: string;
