@@ -14,6 +14,7 @@ const paymentSchema = new mongoose.Schema<IPayment>({
 	payment_id: {
 		type: String,
 		unique: true,
+		sparse: true,
 	},
 	transaction_date: {
 		type: Date,
