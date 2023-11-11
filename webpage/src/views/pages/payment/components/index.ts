@@ -1,4 +1,4 @@
-export { default as Billing } from "./Billing";
-export { default as Checkout } from "./Checkout";
-export { default as Details } from "./Details";
-export { default as WANumber } from "./WANumber";
+export { default as Billing } from './BillingTab';
+export { default as Checkout } from './CheckoutTab';
+export { default as Details } from './DetailsTab';
+export { default as WANumber } from './WANumberTab';

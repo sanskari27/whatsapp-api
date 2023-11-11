@@ -1,4 +1,4 @@
-import { WhatsappNumber } from '../components/waNumber';
+import { WhatsappNumber } from '../components/WANumberTab';
 
 export const validatePersonalDetails = (userDetails: {
 	name: string;
