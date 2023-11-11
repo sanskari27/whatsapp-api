@@ -37,12 +37,12 @@ async function createSubscription({ plan_id, email, phone, offer_id, data = {} }
 }
 
 async function resumeSubscription(subscription_id: string) {
-	await RazorpayAPI.subscriptions.resume(subscription_id, {
+	return await RazorpayAPI.subscriptions.resume(subscription_id, {
 		resume_at: 'now',
 	});
 }
 async function pauseSubscription(subscription_id: string) {
-	await RazorpayAPI.subscriptions.pause(subscription_id, {
+	return await RazorpayAPI.subscriptions.pause(subscription_id, {
 		pause_at: 'now',
 	});
 }

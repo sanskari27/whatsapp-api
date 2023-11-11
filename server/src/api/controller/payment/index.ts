@@ -40,6 +40,27 @@ async function fetchTransactionDetail(req: Request, res: Response, next: NextFun
 	}
 }
 
+async function fetchTransactions(req: Request, res: Response, next: NextFunction) {
+	try {
+		const payments = await PaymentBucketService.getPaymentRecords(req.locals.user);
+
+		return Respond({
+			res,
+			status: 200,
+			data: {
+				payments,
+			},
+		});
+	} catch (err) {
+		if (err instanceof InternalError) {
+			if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND)) {
+				return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_NOT_FOUND));
+			}
+		}
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
+	}
+}
+
 async function createPaymentBucket(req: Request, res: Response, next: NextFunction) {
 	const reqValidator = z
 		.object({
@@ -272,6 +293,10 @@ async function pauseSubscription(req: Request, res: Response, next: NextFunction
 	try {
 		const userService = new UserService(req.locals.user);
 		await userService.pauseSubscription(subscription_id);
+		return Respond({
+			res,
+			status: 200,
+		});
 	} catch (err) {
 		if (err instanceof InternalError) {
 			if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND)) {
@@ -294,6 +319,10 @@ async function resumeSubscription(req: Request, res: Response, next: NextFunctio
 	try {
 		const userService = new UserService(req.locals.user);
 		await userService.resumeSubscription(subscription_id);
+		return Respond({
+			res,
+			status: 200,
+		});
 	} catch (err) {
 		if (err instanceof InternalError) {
 			if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND)) {
@@ -302,12 +331,14 @@ async function resumeSubscription(req: Request, res: Response, next: NextFunctio
 				return next(new APIError(API_ERRORS.PAYMENT_ERRORS.ACCESS_DENIED));
 			}
 		}
+
 		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
 	}
 }
 
 const TokenController = {
 	fetchTransactionDetail,
+	fetchTransactions,
 	createPaymentBucket,
 	applyCoupon,
 	removeCoupon,

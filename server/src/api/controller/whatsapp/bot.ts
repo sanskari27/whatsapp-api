@@ -118,9 +118,9 @@ async function createBot(req: Request, res: Response, next: NextFunction) {
 				: detail.contact_number_work;
 			const numberId = await whatsapp.getClient().getNumberId(number);
 			if (numberId) {
-				vcard.setContactPhone(`+${numberId.user}`, numberId.user);
+				vcard.setContactWork(`+${numberId.user}`, numberId.user);
 			} else {
-				vcard.setContactPhone(`+${number}`);
+				vcard.setContactWork(`+${number}`);
 			}
 		}
 
@@ -135,7 +135,8 @@ async function createBot(req: Request, res: Response, next: NextFunction) {
 		}
 
 		for (const link of detail.links) {
-			vcard.addLink(link);
+			const formattedLink = link.startsWith('https://') ? link : `https://${link}`;
+			vcard.addLink(formattedLink);
 		}
 
 		return vcard.build();

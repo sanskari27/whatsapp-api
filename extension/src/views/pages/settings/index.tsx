@@ -1,3 +1,4 @@
+import { InfoOutlineIcon, WarningTwoIcon } from '@chakra-ui/icons';
 import {
 	Box,
 	Button,
@@ -11,16 +12,16 @@ import {
 	Thead,
 	Tr,
 } from '@chakra-ui/react';
-import Header from '../../components/header';
 import { useEffect, useRef, useState } from 'react';
-import { NAVIGATION, SETTINGS } from '../../../config/const';
-import { InfoOutlineIcon, WarningTwoIcon } from '@chakra-ui/icons';
-import AuthService from '../../../services/auth.service';
-import { logout, useAuth } from '../../../hooks/useAuth';
-import LoginModal, { LoginHandle } from '../../components/login';
-import ExportsService from '../../../services/exports.service';
 import { useNavigate } from 'react-router-dom';
+import { NAVIGATION, SETTINGS } from '../../../config/const';
+import { logout, useAuth } from '../../../hooks/useAuth';
+import AuthService from '../../../services/auth.service';
+import ExportsService from '../../../services/exports.service';
+import PaymentService from '../../../services/payment.service';
 import { saveClientID } from '../../../utils/ChromeUtils';
+import Header from '../../components/header';
+import LoginModal, { LoginHandle } from '../../components/login';
 
 export default function Settings() {
 	const { isAuthenticated, isAuthenticating, qrCode, qrGenerated } = useAuth();
@@ -33,11 +34,25 @@ export default function Settings() {
 		[SETTINGS.IS_SUBSCRIBED]: false,
 		[SETTINGS.SUBSCRIPTION_EXPIRATION]: '',
 		[SETTINGS.USER_TYPE]: '',
-		[SETTINGS.PAYMENT_RECORDS]: [] as {
-			date: string;
-			amount: number;
-		}[],
 	});
+
+	const [PAYMENT_RECORDS, setPaymentRecords] = useState<
+		(
+			| {
+					type: 'payment';
+					id: string;
+					date: string;
+					amount: number;
+			  }
+			| {
+					type: 'subscription';
+					id: string;
+					plan: string;
+					isActive: boolean;
+					isPaused: boolean;
+			  }
+		)[]
+	>([]);
 
 	useEffect(() => {
 		if (!isAuthenticated) return;
@@ -48,13 +63,12 @@ export default function Settings() {
 				[SETTINGS.IS_SUBSCRIBED]: res.isSubscribed,
 				[SETTINGS.SUBSCRIPTION_EXPIRATION]: res.subscriptionExpiration,
 				[SETTINGS.USER_TYPE]: res.userType,
-				[SETTINGS.PAYMENT_RECORDS]: res.paymentRecords,
 			});
 		});
+		PaymentService.paymentRecords().then(setPaymentRecords);
 	}, [isAuthenticated]);
 
-	const { NAME, PHONE_NUMBER, IS_SUBSCRIBED, SUBSCRIPTION_EXPIRATION, USER_TYPE, PAYMENT_RECORDS } =
-		details;
+	const { NAME, PHONE_NUMBER, IS_SUBSCRIBED, SUBSCRIPTION_EXPIRATION, USER_TYPE } = details;
 
 	useEffect(() => {
 		if (!!qrGenerated) {
@@ -162,7 +176,19 @@ export default function Settings() {
 									backgroundColor={'green.500'}
 									marginX={'auto'}
 									color={'white'}
-									onClick={() => ExportsService.exportPaymentsExcel(PAYMENT_RECORDS)}
+									onClick={() =>
+										ExportsService.exportPaymentsExcel(
+											PAYMENT_RECORDS.map((payment) => {
+												if (payment.type === 'payment') {
+													return {
+														date: payment.date,
+														amount: payment.amount,
+													};
+												}
+												return null;
+											}).filter((payment) => payment !== null) as { date: string; amount: number }[]
+										)
+									}
 									_hover={{
 										backgroundColor: 'green.600',
 									}}
@@ -185,12 +211,28 @@ export default function Settings() {
 											</Tr>
 										</Thead>
 										<Tbody>
-											{PAYMENT_RECORDS.map((record, index) => (
-												<Tr key={index}>
-													<Td>{record.date}</Td>
-													<Td isNumeric>{record.amount}</Td>
-												</Tr>
-											))}
+											{PAYMENT_RECORDS.map((record, index) => {
+												if (record.type === 'subscription')
+													return (
+														<Tr key={index}>
+															<Td>Subscription - {record.plan}</Td>
+															<Td isNumeric>
+																{record.isActive
+																	? 'active'
+																	: record.isPaused
+																	? 'paused'
+																	: 'on-hold'}
+															</Td>
+														</Tr>
+													);
+												else
+													return (
+														<Tr key={index}>
+															<Td>{record.date}</Td>
+															<Td isNumeric>{record.amount}</Td>
+														</Tr>
+													);
+											})}
 										</Tbody>
 									</Table>
 								</TableContainer>

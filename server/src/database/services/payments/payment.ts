@@ -137,6 +137,8 @@ export default class PaymentService {
 		const subscription = await RazorpayProvider.subscription.getSubscription(subscription_id);
 
 		if (parseSubscriptionStatus(subscription.status) !== SUBSCRIPTION_STATUS.ACTIVE) {
+			subscription_doc.subscription_status = subscription.status;
+			subscription_doc.save();
 			return;
 		}
 		const payment = await RazorpayProvider.payments.getPayment(payment_id);
@@ -200,13 +202,14 @@ export default class PaymentService {
 		} else if (subscription.subscription_status !== SUBSCRIPTION_STATUS.ACTIVE) {
 			throw new InternalError(INTERNAL_ERRORS.PAYMENT_ERROR.ACCESS_DENIED);
 		}
-		await RazorpayProvider.subscription.pauseSubscription(subscription.subscription_id);
+		RazorpayProvider.subscription.pauseSubscription(subscription.subscription_id);
 		subscription.subscription_status = SUBSCRIPTION_STATUS.PAUSED;
-		await subscription.save();
+		subscription.save();
 	}
 
 	static async resumeSubscription(id: Types.ObjectId, phone_number: string) {
 		const subscription = await SubscriptionDB.findById(id).populate('bucket');
+
 		if (!subscription) {
 			throw new InternalError(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND);
 		} else if (subscription.bucket.admin_number !== phone_number) {
@@ -214,8 +217,8 @@ export default class PaymentService {
 		} else if (subscription.subscription_status !== SUBSCRIPTION_STATUS.PAUSED) {
 			throw new InternalError(INTERNAL_ERRORS.PAYMENT_ERROR.ACCESS_DENIED);
 		}
-		await RazorpayProvider.subscription.resumeSubscription(subscription.subscription_id);
+		RazorpayProvider.subscription.resumeSubscription(subscription.subscription_id);
 		subscription.subscription_status = SUBSCRIPTION_STATUS.ACTIVE;
-		await subscription.save();
+		subscription.save();
 	}
 }
