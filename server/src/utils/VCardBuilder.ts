@@ -95,12 +95,12 @@ export default class VCardBuilder {
 			full_name += this.last_name.trim() + '';
 		}
 
-		vCardString += `FN;CHARSET=utf-8:${full_name.trim()}\n`;
-		vCardString += `N;CHARSET=utf-8:${this.last_name};${this.first_name};${this.middle_name};;\n`;
+		vCardString += `FN:CHARSET=utf-8:${full_name.trim()}\n`;
+		vCardString += `N:CHARSET=utf-8:${this.last_name};${this.first_name};${this.middle_name};;\n`;
 
 		//Add Title and organization to vcard
-		if (this.title) vCardString += `TITLE;CHARSET=utf-8:${this.title}\n`;
-		if (this.organization) vCardString += `ORG;CHARSET=utf-8:${this.organization}\n`;
+		if (this.organization) vCardString += `ORG:CHARSET=utf-8:${this.organization}\n`;
+		if (this.title) vCardString += `TITLE:CHARSET=utf-8:${this.title}\n`;
 
 		// Add Contact details
 		if (this.contact_details_phone) {
@@ -140,8 +140,7 @@ export default class VCardBuilder {
 		if (this.email_personal) vCardString += `EMAIL;type=HOME,INTERNET:${this.email_personal}\n`;
 		if (this.email_work) vCardString += `EMAIL;type=WORK,INTERNET:${this.email_work}\n`;
 		for (const link of this.links) {
-			
-			vCardString += `URL;CHARSET=UTF-8:${link}\r\n`;
+			vCardString += `URL;OTHER;${link}\r\n`;
 		}
 
 		if (this.street || this.city || this.state || this.pincode || this.country) {
