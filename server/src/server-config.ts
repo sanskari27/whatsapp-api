@@ -45,7 +45,11 @@ export default function (app: Express) {
 	app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 		if (err instanceof APIError) {
 			if (err.status === 500) {
-				ErrorReporter.reportServerError(err.error);
+				if (err.error) {
+					ErrorReporter.reportServerError(err.error);
+				} else {
+					ErrorReporter.report(err);
+				}
 			}
 			return res.status(err.status).json({
 				success: false,
