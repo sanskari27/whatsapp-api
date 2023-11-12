@@ -121,7 +121,6 @@ const Billing = forwardRef<BillingRef, Props>(({ isHidden }, ref) => {
 				onChange={handleChangeBillingAddress}
 				name='city'
 				mb={'1rem'}
-				type='tel'
 			/>
 			<HStack width={'full'}>
 				<Box width={'full'}>
@@ -134,6 +133,7 @@ const Billing = forwardRef<BillingRef, Props>(({ isHidden }, ref) => {
 						onChange={handleChangeBillingAddress}
 						name='pincode'
 						mb={'1rem'}
+						type='number'
 					/>
 				</Box>
 				<Box width={'full'}>
