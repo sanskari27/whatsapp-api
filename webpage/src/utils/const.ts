@@ -46,10 +46,10 @@ export enum TRANSACTION_DETAIL {
 	BUCKET_ID = 'BUCKET_ID',
 }
 
-// export const APP_URL = 'https://www.whatsleads.in';
-// export const SERVER_URL = 'https://api.whatsleads.in';
-export const APP_URL = 'http://localhost:8282';
-export const SERVER_URL = 'http://localhost:8282';
+export const APP_URL = 'https://www.whatsleads.in';
+export const SERVER_URL = 'https://api.whatsleads.in';
+// export const APP_URL = 'http://localhost:8282';
+// export const SERVER_URL = 'http://localhost:8282';
 export const RAZORPAY_KEY_ID = import.meta.env.RAZORPAY_KEY_ID;
 
 export const COUNTRIES: {
