@@ -78,7 +78,7 @@ export default class PaymentService {
 			throw new InternalError(INTERNAL_ERRORS.RAZORPAY_ERRORS.ORDER_PENDING);
 		}
 
-		walletTransaction.amount = order.amount / 100;
+		walletTransaction.amount = order.amount;
 		walletTransaction.payment_id = payment_id;
 		walletTransaction.save();
 
