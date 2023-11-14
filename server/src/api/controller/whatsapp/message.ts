@@ -213,13 +213,13 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 				? detail.contact_number_phone.substring(1)
 				: detail.contact_number_phone;
 			if (!validatePhoneNumber(number)) {
-				vcard.setContactPhone(`+${number}`);
+				vcard.setContactWork(`+${number}`);
 			} else {
 				const numberId = await whatsapp.getClient().getNumberId(number);
 				if (numberId) {
-					vcard.setContactPhone(`+${numberId.user}`, numberId.user);
+					vcard.setContactWork(`+${numberId.user}`, numberId.user);
 				} else {
-					vcard.setContactPhone(`+${number}`);
+					vcard.setContactWork(`+${number}`);
 				}
 			}
 		}
@@ -243,13 +243,13 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 		for (const number of detail.contact_number_other) {
 			const formattedNumber = number.startsWith('+') ? number.substring(1) : number;
 			if (!validatePhoneNumber(formattedNumber)) {
-				vcard.setContactPhone(`+${formattedNumber}`);
+				vcard.addContactOther(`+${formattedNumber}`);
 			} else {
 				const numberId = await whatsapp.getClient().getNumberId(formattedNumber);
 				if (numberId) {
-					vcard.setContactPhone(`+${numberId.user}`, numberId.user);
+					vcard.addContactOther(`+${numberId.user}`, numberId.user);
 				} else {
-					vcard.setContactPhone(`+${formattedNumber}`);
+					vcard.addContactOther(`+${formattedNumber}`);
 				}
 			}
 		}
