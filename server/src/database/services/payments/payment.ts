@@ -102,7 +102,6 @@ export default class PaymentService {
 			email: this.bucket.email,
 			phone: this.bucket.phone_number,
 			plan_id: subscription_doc.plan.plan_id,
-			offer_id: subscription_doc.coupon?.offer_id,
 		});
 
 		subscription_doc.subscription_status = SUBSCRIPTION_STATUS.ACTIVE;

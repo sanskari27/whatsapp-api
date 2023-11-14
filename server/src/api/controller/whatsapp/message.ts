@@ -8,7 +8,7 @@ import { MessageSchedulerService, UserService } from '../../../database/services
 import UploadService from '../../../database/services/uploads';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
-import { Respond, generateBatchID } from '../../../utils/ExpressUtils';
+import { Respond, generateBatchID, validatePhoneNumber } from '../../../utils/ExpressUtils';
 import VCardBuilder from '../../../utils/VCardBuilder';
 import WhatsappUtils from '../../../utils/WhatsappUtils';
 
@@ -212,11 +212,15 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 			const number = detail.contact_number_phone.startsWith('+')
 				? detail.contact_number_phone.substring(1)
 				: detail.contact_number_phone;
-			const numberId = await whatsapp.getClient().getNumberId(number);
-			if (numberId) {
-				vcard.setContactPhone(`+${numberId.user}`, numberId.user);
-			} else {
+			if (!validatePhoneNumber(number)) {
 				vcard.setContactPhone(`+${number}`);
+			} else {
+				const numberId = await whatsapp.getClient().getNumberId(number);
+				if (numberId) {
+					vcard.setContactPhone(`+${numberId.user}`, numberId.user);
+				} else {
+					vcard.setContactPhone(`+${number}`);
+				}
 			}
 		}
 
@@ -224,21 +228,29 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 			const number = detail.contact_number_work.startsWith('+')
 				? detail.contact_number_work.substring(1)
 				: detail.contact_number_work;
-			const numberId = await whatsapp.getClient().getNumberId(number);
-			if (numberId) {
-				vcard.setContactWork(`+${numberId.user}`, numberId.user);
+			if (!validatePhoneNumber(number)) {
+				vcard.setContactPhone(`+${number}`);
 			} else {
-				vcard.setContactWork(`+${number}`);
+				const numberId = await whatsapp.getClient().getNumberId(number);
+				if (numberId) {
+					vcard.setContactPhone(`+${numberId.user}`, numberId.user);
+				} else {
+					vcard.setContactPhone(`+${number}`);
+				}
 			}
 		}
 
 		for (const number of detail.contact_number_other) {
 			const formattedNumber = number.startsWith('+') ? number.substring(1) : number;
-			const numberId = await whatsapp.getClient().getNumberId(formattedNumber);
-			if (numberId) {
-				vcard.addContactOther(`+${numberId.user}`, numberId.user);
+			if (!validatePhoneNumber(formattedNumber)) {
+				vcard.setContactPhone(`+${formattedNumber}`);
 			} else {
-				vcard.addContactOther(`+${formattedNumber}`);
+				const numberId = await whatsapp.getClient().getNumberId(formattedNumber);
+				if (numberId) {
+					vcard.setContactPhone(`+${numberId.user}`, numberId.user);
+				} else {
+					vcard.setContactPhone(`+${formattedNumber}`);
+				}
 			}
 		}
 		for (let i = 0; i < detail.links.length; i++) {
