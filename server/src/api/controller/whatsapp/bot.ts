@@ -87,18 +87,7 @@ async function createBot(req: Request, res: Response, next: NextFunction) {
 	);
 
 	const contact_cards_promise = data.shared_contact_cards.map(async (detail) => {
-		const vcard = new VCardBuilder(detail)
-			.setFirstName(detail.first_name)
-			.setLastName(detail.last_name)
-			.setTitle(detail.title)
-			.setOrganization(detail.organization)
-			.setEmail(detail.email_personal)
-			.setWorkEmail(detail.email_work)
-			.setStreet(detail.street)
-			.setCity(detail.city)
-			.setState(detail.state)
-			.setPincode(detail.pincode)
-			.setCountry(detail.country);
+		const vcard = new VCardBuilder(detail);
 
 		if (detail.contact_number_phone) {
 			const number = detail.contact_number_phone.startsWith('+')
@@ -144,9 +133,6 @@ async function createBot(req: Request, res: Response, next: NextFunction) {
 					vcard.setContactPhone(`+${formattedNumber}`);
 				}
 			}
-		}
-		for (let i = 0; i < detail.links.length; i++) {
-			vcard.addLink(detail.links[i]);
 		}
 
 		return vcard.build();

@@ -237,4 +237,8 @@ export default class VCardBuilder {
 		this.links.push(link);
 		return this;
 	}
+	public addLinks(links: string[]) {
+		this.links.push(...links);
+		return this;
+	}
 }

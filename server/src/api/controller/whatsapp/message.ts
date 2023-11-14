@@ -253,9 +253,6 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 				}
 			}
 		}
-		for (let i = 0; i < detail.links.length; i++) {
-			vcard.addLink(detail.links[i]);
-		}
 
 		return vcard.build();
 	});
