@@ -1,7 +1,7 @@
 import QRCode from 'qrcode';
 import { Socket } from 'socket.io';
 import WAWebJS, { Client, LocalAuth } from 'whatsapp-web.js';
-import { CHROMIUM_PATH, IS_PRODUCTION, SOCKET_RESPONSES } from '../../config/const';
+import { CHROMIUM_PATH, SOCKET_RESPONSES } from '../../config/const';
 import { UserService } from '../../database/services';
 import BotService from '../../database/services/bot';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
@@ -58,9 +58,7 @@ export class WhatsappProvider {
 			puppeteer: {
 				headless: true,
 				args: PUPPETEER_ARGS,
-				executablePath: IS_PRODUCTION
-					? CHROMIUM_PATH
-					: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+				executablePath: CHROMIUM_PATH,
 			},
 
 			authStrategy: new LocalAuth({
