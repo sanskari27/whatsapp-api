@@ -12,6 +12,7 @@ import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 import IUpload from '../../../types/uploads';
 import { IUser } from '../../../types/user';
 import DateUtils from '../../../utils/DateUtils';
+import ErrorReporter from '../../../utils/ErrorReporter';
 import { BotResponseDB } from '../../repository/bot';
 import BotDB from '../../repository/bot/Bot';
 import UserService from '../user';
@@ -163,7 +164,12 @@ export default class BotService {
 			this.responseSent(bot.bot_id, message_from);
 
 			if (bot.message.length > 0) {
-				whatsapp.getClient().sendMessage(message.from, bot.message);
+				whatsapp
+					.getClient()
+					.sendMessage(message.from, bot.message)
+					.catch((err) => {
+						ErrorReporter.report(err);
+					});
 			}
 
 			for (const mediaObject of bot.attachments) {
@@ -175,17 +181,32 @@ export default class BotService {
 				if (mediaObject.name) {
 					media.filename = mediaObject.name + path.substring(path.lastIndexOf('.'));
 				}
-				whatsapp.getClient().sendMessage(message.from, media, {
-					caption: mediaObject.caption,
-				});
+				whatsapp
+					.getClient()
+					.sendMessage(message.from, media, {
+						caption: mediaObject.caption,
+					})
+					.catch((err) => {
+						ErrorReporter.report(err);
+					});
 			}
 
 			(bot.shared_contact_cards ?? []).forEach(async (card) => {
-				whatsapp.getClient().sendMessage(message.from, card);
+				whatsapp
+					.getClient()
+					.sendMessage(message.from, card)
+					.catch((err) => {
+						ErrorReporter.report(err);
+					});
 			});
 
 			if (!isSubscribed && isNew) {
-				whatsapp.getClient().sendMessage(message.from, PROMOTIONAL_MESSAGE);
+				whatsapp
+					.getClient()
+					.sendMessage(message.from, PROMOTIONAL_MESSAGE)
+					.catch((err) => {
+						ErrorReporter.report(err);
+					});
 			}
 		});
 	}

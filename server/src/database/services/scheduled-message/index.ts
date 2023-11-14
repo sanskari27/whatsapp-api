@@ -7,6 +7,7 @@ import IScheduledMessage from '../../../types/scheduled-message';
 import IUpload from '../../../types/uploads';
 import { IUser } from '../../../types/user';
 import DateUtils from '../../../utils/DateUtils';
+import ErrorReporter from '../../../utils/ErrorReporter';
 import { generateBatchID, getRandomNumber } from '../../../utils/ExpressUtils';
 import ScheduledMessageDB from '../../repository/scheduled-message';
 import UserService from '../user';
@@ -127,11 +128,21 @@ export default class MessageSchedulerService {
 			}
 
 			if (scheduledMessage.message) {
-				whatsapp.getClient().sendMessage(scheduledMessage.receiver, scheduledMessage.message);
+				whatsapp
+					.getClient()
+					.sendMessage(scheduledMessage.receiver, scheduledMessage.message)
+					.catch((err) => {
+						ErrorReporter.report(err);
+					});
 			}
 
 			scheduledMessage.shared_contact_cards.forEach(async (card) => {
-				whatsapp.getClient().sendMessage(scheduledMessage.receiver, card);
+				whatsapp
+					.getClient()
+					.sendMessage(scheduledMessage.receiver, card)
+					.catch((err) => {
+						ErrorReporter.report(err);
+					});
 			});
 
 			scheduledMessage.attachments.forEach(async (attachment) => {
@@ -145,13 +156,23 @@ export default class MessageSchedulerService {
 				if (name) {
 					media.filename = name + path.substring(path.lastIndexOf('.'));
 				}
-				whatsapp.getClient().sendMessage(scheduledMessage.receiver, media, {
-					caption,
-				});
+				whatsapp
+					.getClient()
+					.sendMessage(scheduledMessage.receiver, media, {
+						caption,
+					})
+					.catch((err) => {
+						ErrorReporter.report(err);
+					});;
 			});
 
 			if (isNew && !isSubscribed) {
-				whatsapp.getClient().sendMessage(scheduledMessage.receiver, PROMOTIONAL_MESSAGE);
+				whatsapp
+					.getClient()
+					.sendMessage(scheduledMessage.receiver, PROMOTIONAL_MESSAGE)
+					.catch((err) => {
+						ErrorReporter.report(err);
+					});;
 			}
 
 			scheduledMessage.isSent = true;
