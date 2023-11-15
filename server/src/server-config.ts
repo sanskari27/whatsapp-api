@@ -81,6 +81,9 @@ export default function (app: Express) {
 	cron.schedule('* * * * * *', function () {
 		MessageSchedulerService.sendScheduledMessage();
 	});
+	cron.schedule('30 3 * * *', function () {
+		process.exit(0);
+	});
 }
 
 function createDir() {
