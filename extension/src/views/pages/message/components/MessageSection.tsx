@@ -130,13 +130,17 @@ const MessageSection = ({
     } = useDisclosure();
 
     const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+    const [fileError, setFileError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>();
 
     const handleAttachmentInput = (e: ChangeEvent<HTMLInputElement>) => {
+        setFileError(null);
         const files = e.target.files;
         if (files === null) return;
         if (files.length === 0) return;
         if (files[0] === null) return;
+        if (files[0].size > 62914560)
+            return setFileError('File size should be less than 60MB');
         const file = files[0];
         if (fileInputRef.current) fileInputRef.current.value = '';
         setAttachmentFile(file);
@@ -412,54 +416,13 @@ const MessageSection = ({
                     ))}
                 </Box>
             </Box>
-            {/* <Modal
-                size={"xs"}
-                isOpen={isContactInputOpen}
-                onClose={closeContactInput}
-            >
-                <ModalOverlay />
-                <ModalContent>
-                    <ModalHeader>Modal Title</ModalHeader>
-                    <ModalCloseButton />
-                    <ModalBody>
-                        <Input
-                            width={"full"}
-                            placeholder="91XXXXXXXX09"
-                            size={"sm"}
-                            rounded={"md"}
-                            border={"none"}
-                            className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]"
-                            _focus={{ border: "none", outline: "none" }}
-                            value={contact.first_name ?? ""}
-                            onChange={(e) =>
-                                setContact({
-                                    ...contact,
-                                    first_name: e.target.value,
-                                })
-                            }
-                        />
-                    </ModalBody>
-
-                    <ModalFooter>
-                        <Button
-                            colorScheme="blue"
-                            mr={3}
-                            onClick={closeContactInput}
-                        >
-                            Close
-                        </Button>
-                        <Button variant="ghost" onClick={handleContactInput}>
-                            Add Contact
-                        </Button>
-                    </ModalFooter>
-                </ModalContent>
-            </Modal> */}
 
             {error && (
                 <FormErrorMessage mt={-2} textAlign={'center'}>
                     {error}
                 </FormErrorMessage>
             )}
+            {fileError && <Text color={'tomato'}>{fileError}</Text>}
         </FormControl>
     );
 };

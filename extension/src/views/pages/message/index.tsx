@@ -151,8 +151,7 @@ const Message = () => {
 
     const handleNextClick = () => {
         if (activeStep >= 3) {
-            // scheduleMessage();
-            console.log(details);
+            scheduleMessage();
             return;
         }
         if (activeStep === 1) {
