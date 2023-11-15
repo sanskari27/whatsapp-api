@@ -1,13 +1,11 @@
 /* eslint-disable no-var */
 
-import { Document, Types } from 'mongoose';
-import winston from 'winston';
 import { IUser } from './user';
 
 export { APIError } from './server-error';
 
 declare global {
-	var logger: winston.Logger;
+	var logger: Logger;
 	var __basedir: string;
 	var __augmont_auth_token: string;
 
@@ -25,4 +23,4 @@ export interface Locals {
 	user: IUser;
 }
 
-export { default as ServerError, APIError } from './server-error';
+export { APIError, default as ServerError } from './server-error';

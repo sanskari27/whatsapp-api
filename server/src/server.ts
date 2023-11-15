@@ -6,12 +6,10 @@ import express from 'express';
 import configServer from './server-config';
 
 import connectDB from './config/DB';
-import logger from './config/Logger';
 import cache from './config/cache';
 import { PORT } from './config/const';
 import { SocketServerProvider } from './socket';
-import Date from './utils/DateUtils';
-import ErrorReporter from './utils/ErrorReporter';
+import { Logger } from './utils/logger';
 
 //  ------------------------- Setup Variables
 const app = express();
@@ -20,25 +18,20 @@ configServer(app);
 
 connectDB()
 	.then(() => {
-		logger.info('Database connected');
+		Logger.status('Running Status', 'Database connected');
 	})
 	.catch((err) => {
-		logger.error(err.message, {
-			label: 'Running Status - Database Connection Failed',
-		});
+		Logger.critical('Database Connection Failed', err);
 		process.exit();
 	});
 
 const server = app.listen(PORT, async () => {
 	SocketServerProvider.getInstance(server);
 	await cache.connect();
-	logger.info(`Server started on port ${PORT}`, {
-		label: 'Running Status',
-	});
+	Logger.status('Running Status', `Server started on port ${PORT}`);
 });
 
 process.on('unhandledRejection', (err: Error) => {
-	ErrorReporter.report(err);
-	logger.error(`Logged Error at ${Date.dateTime()}: ${err.message}`);
+	Logger.critical('Unhandled rejection', err);
 	server.close(() => process.exit(1));
 });

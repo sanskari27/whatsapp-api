@@ -5,18 +5,19 @@ import express, { Express, NextFunction, Request, Response } from 'express';
 import fs from 'fs';
 import cron from 'node-cron';
 import routes from './api/routes';
-import logger from './config/Logger';
+
 import { ATTACHMENTS_PATH, CSV_PATH, IS_PRODUCTION, UPLOADS_PATH } from './config/const';
 import { MessageSchedulerService } from './database/services';
 import APIError from './errors/api-errors';
 import { WhatsappProvider } from './provider/whatsapp_provider';
 import ErrorReporter from './utils/ErrorReporter';
 import WhatsappUtils from './utils/WhatsappUtils';
+import { Logger } from './utils/logger';
 
 export default function (app: Express) {
 	//Defines all global variables and constants
 
-	global.logger = logger;
+	global.logger = Logger;
 	let basedir = __dirname.slice(0, __dirname.lastIndexOf('/'));
 	if (IS_PRODUCTION) {
 		basedir = basedir.slice(0, basedir.lastIndexOf('/'));
