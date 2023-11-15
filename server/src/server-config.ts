@@ -1,3 +1,4 @@
+import { exec } from 'child_process';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express, { Express, NextFunction, Request, Response } from 'express';
@@ -82,7 +83,14 @@ export default function (app: Express) {
 		MessageSchedulerService.sendScheduledMessage();
 	});
 	cron.schedule('30 3 * * *', function () {
-		process.exit(0);
+		exec('pgrep chrome | xargs kill -9', (error, stdout, stderr) => {
+			if (error) {
+				logger.error(`Unable to kill chrome instances`);
+				return;
+			}
+			logger.error(`All Chrome instances have been killed`);
+			process.exit(0);
+		});
 	});
 }
 
