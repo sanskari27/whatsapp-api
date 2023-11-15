@@ -1,4 +1,4 @@
-import { AddIcon, AttachmentIcon } from "@chakra-ui/icons";
+import { AddIcon, AttachmentIcon } from '@chakra-ui/icons';
 import {
     AlertDialog,
     AlertDialogBody,
@@ -21,14 +21,14 @@ import {
     Text,
     Textarea,
     useDisclosure,
-} from "@chakra-ui/react";
-import Multiselect from "multiselect-react-dropdown";
-import React, { ChangeEvent, useRef, useState } from "react";
-import { SchedulerDetails } from "..";
-import useAttachment from "../../../../hooks/useAttachment";
-import useTemplate from "../../../../hooks/useTemplate";
-import AttachmentDetailsInputDialog from "../../../components/attachment-details-input-dialog";
-import ContactDetailInputDialog from "../../../components/contact-detail-input-dialog";
+} from '@chakra-ui/react';
+import Multiselect from 'multiselect-react-dropdown';
+import React, { ChangeEvent, useRef, useState } from 'react';
+import { SchedulerDetails } from '..';
+import useAttachment from '../../../../hooks/useAttachment';
+import useTemplate from '../../../../hooks/useTemplate';
+import AttachmentDetailsInputDialog from '../../../components/attachment-details-input-dialog';
+import ContactDetailInputDialog from '../../../components/contact-detail-input-dialog';
 
 const MessageSection = ({
     details,
@@ -39,7 +39,7 @@ const MessageSection = ({
     removeContact,
     isHidden,
 }: {
-    type: "NUMBERS" | "CSV" | "GROUP" | "LABEL";
+    type: 'NUMBERS' | 'CSV' | 'GROUP' | 'LABEL';
     details: {
         message: string;
         variables: string[];
@@ -138,7 +138,7 @@ const MessageSection = ({
         if (files.length === 0) return;
         if (files[0] === null) return;
         const file = files[0];
-        if (fileInputRef.current) fileInputRef.current.value = "";
+        if (fileInputRef.current) fileInputRef.current.value = '';
         setAttachmentFile(file);
         openAttachmentDetailsInput();
     };
@@ -168,43 +168,52 @@ const MessageSection = ({
     return (
         <FormControl
             isInvalid={!!error}
-            display={"flex"}
-            flexDirection={"column"}
+            display={'flex'}
+            flexDirection={'column'}
             gap={2}
             hidden={isHidden}
         >
-            <Box justifyContent={"space-between"}>
+            <Box justifyContent={'space-between'}>
                 <Text
                     fontSize="xs"
                     className="text-gray-700 dark:text-gray-400"
                 >
                     Select Template
                 </Text>
-                <Flex gap={3} alignItems={"center"}>
+                <Flex gap={3} alignItems={'center'}>
                     <Select
-                        placeholder="Select template!"
                         className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
-                        border={"none"}
-                        size={"sm"}
-                        rounded={"md"}
+                        border={'none'}
+                        size={'sm'}
+                        rounded={'md'}
                         onChange={(e) =>
                             handleChange({
-                                name: "message",
+                                name: 'message',
                                 value: e.target.value,
                             })
                         }
                     >
+                        <option
+                            className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
+                            value={''}
+                        >
+                            Select template!
+                        </option>
                         {(templates ?? []).map(({ name, message }, index) => (
-                            <option value={message} key={index}>
+                            <option
+                                className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
+                                value={message}
+                                key={index}
+                            >
                                 {name}
                             </option>
                         ))}
                     </Select>
                     <IconButton
-                        size={"sm"}
+                        size={'sm'}
                         colorScheme="green"
                         aria-label="Add Template"
-                        rounded={"md"}
+                        rounded={'md'}
                         icon={<AddIcon />}
                         isLoading={addingTemplate}
                         onClick={() => {
@@ -225,27 +234,27 @@ const MessageSection = ({
             </Box>
             <Box>
                 <Textarea
-                    width={"full"}
-                    minHeight={"80px"}
-                    size={"sm"}
-                    rounded={"md"}
+                    width={'full'}
+                    minHeight={'80px'}
+                    size={'sm'}
+                    rounded={'md'}
                     placeholder={
-                        type === "CSV"
-                            ? "Type your message here. \nex. Hello {{name}}, you are invited to join fanfest on {{date}}"
-                            : "Type your message here. \nex. You are invited to join fanfest"
+                        type === 'CSV'
+                            ? 'Type your message here. \nex. Hello {{name}}, you are invited to join fanfest on {{date}}'
+                            : 'Type your message here. \nex. You are invited to join fanfest'
                     }
-                    border={"none"}
+                    border={'none'}
                     className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]"
-                    _placeholder={{ opacity: 0.4, color: "inherit" }}
-                    _focus={{ border: "none", outline: "none" }}
-                    value={details.message ?? ""}
+                    _placeholder={{ opacity: 0.4, color: 'inherit' }}
+                    _focus={{ border: 'none', outline: 'none' }}
+                    value={details.message ?? ''}
                     onChange={(e) =>
-                        handleChange({ name: "message", value: e.target.value })
+                        handleChange({ name: 'message', value: e.target.value })
                     }
                 />
             </Box>
 
-            <Box hidden={type !== "CSV"}>
+            <Box hidden={type !== 'CSV'}>
                 <Text
                     fontSize="xs"
                     className="text-gray-700 dark:text-gray-400"
@@ -255,13 +264,20 @@ const MessageSection = ({
                 <Box>
                     {details.variables.map((variable, index) => (
                         <Tag
-                            size={"sm"}
-                            m={"0.25rem"}
-                            p={"0.5rem"}
+                            size={'sm'}
+                            m={'0.25rem'}
+                            p={'0.5rem'}
                             key={index}
                             borderRadius="md"
                             variant="solid"
                             colorScheme="gray"
+                            _hover={{ cursor: 'pointer' }}
+                            onClick={() =>
+                                handleChange({
+                                    name: 'message',
+                                    value: `${details.message} ${variable}`,
+                                })
+                            }
                         >
                             <TagLabel>{variable}</TagLabel>
                         </Tag>
@@ -275,13 +291,13 @@ const MessageSection = ({
                 >
                     Attachments
                 </Text>
-                <Flex gap={2} alignItems={"center"}>
+                <Flex gap={2} alignItems={'center'}>
                     <Multiselect
                         displayValue="displayValue"
-                        placeholder={"Select Attachments"}
+                        placeholder={'Select Attachments'}
                         onRemove={(selectedList: typeof allAttachments) =>
                             handleChange({
-                                name: "attachments",
+                                name: 'attachments',
                                 value: selectedList.map(
                                     (attachment) => attachment.id
                                 ),
@@ -289,7 +305,7 @@ const MessageSection = ({
                         }
                         onSelect={(selectedList: typeof allAttachments) =>
                             handleChange({
-                                name: "attachments",
+                                name: 'attachments',
                                 value: selectedList.map(
                                     (attachment) => attachment.id
                                 ),
@@ -303,31 +319,31 @@ const MessageSection = ({
                         }))}
                         style={{
                             searchBox: {
-                                border: "none",
+                                border: 'none',
                             },
                             inputField: {
-                                width: "100%",
+                                width: '100%',
                             },
                         }}
                         className="!w-[370px] bg-[#ECECEC] dark:bg-[#535353] rounded-md border-none "
                     />
                     <IconButton
-                        size={"sm"}
+                        size={'sm'}
                         colorScheme="green"
-                        backgroundColor={"transparent"}
-                        rounded={"full"}
-                        borderWidth={"1px"}
-                        borderColor={"green.400"}
-                        icon={<AttachmentIcon color={"green.400"} />}
+                        backgroundColor={'transparent'}
+                        rounded={'full'}
+                        borderWidth={'1px'}
+                        borderColor={'green.400'}
+                        icon={<AttachmentIcon color={'green.400'} />}
                         _hover={{
                             opacity: 1,
-                            borderColor: "green.500",
+                            borderColor: 'green.500',
                         }}
                         aria-label="Add Attachment"
                         isLoading={addingAttachment}
                         onClick={() => {
                             document
-                                .getElementById("attachment-file-input")
+                                .getElementById('attachment-file-input')
                                 ?.click();
                         }}
                     />
@@ -362,9 +378,9 @@ const MessageSection = ({
                     Share Contact
                 </Text>
                 <Button
-                    size={"sm"}
-                    width={"full"}
-                    variant={"outline"}
+                    size={'sm'}
+                    width={'full'}
+                    variant={'outline'}
                     colorScheme="green"
                     onClick={openContactInput}
                 >
@@ -378,9 +394,9 @@ const MessageSection = ({
                 <Box>
                     {details.shared_contact_cards.map((contact, index) => (
                         <Tag
-                            size={"sm"}
-                            m={"0.25rem"}
-                            p={"0.5rem"}
+                            size={'sm'}
+                            m={'0.25rem'}
+                            p={'0.5rem'}
                             key={index}
                             borderRadius="md"
                             variant="solid"
@@ -440,7 +456,7 @@ const MessageSection = ({
             </Modal> */}
 
             {error && (
-                <FormErrorMessage mt={-2} textAlign={"center"}>
+                <FormErrorMessage mt={-2} textAlign={'center'}>
                     {error}
                 </FormErrorMessage>
             )}
@@ -457,7 +473,7 @@ const InputDialog = ({
     onConfirm: (text: string) => void;
     isOpen: boolean;
 }) => {
-    const [name, setName] = React.useState("");
+    const [name, setName] = React.useState('');
     const cancelRef = React.useRef<any>();
     return (
         <AlertDialog
@@ -469,19 +485,19 @@ const InputDialog = ({
         >
             <AlertDialogOverlay />
 
-            <AlertDialogContent width={"80%"}>
-                <AlertDialogHeader fontSize={"sm"}>
+            <AlertDialogContent width={'80%'}>
+                <AlertDialogHeader fontSize={'sm'}>
                     Assign a name.
                 </AlertDialogHeader>
                 <AlertDialogCloseButton />
                 <AlertDialogBody>
                     <Input
-                        width={"full"}
-                        placeholder={"template name..."}
-                        border={"none"}
+                        width={'full'}
+                        placeholder={'template name...'}
+                        border={'none'}
                         className="text-black !bg-[#ECECEC] "
-                        _placeholder={{ opacity: 0.4, color: "inherit" }}
-                        _focus={{ border: "none", outline: "none" }}
+                        _placeholder={{ opacity: 0.4, color: 'inherit' }}
+                        _focus={{ border: 'none', outline: 'none' }}
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                     />
@@ -491,7 +507,7 @@ const InputDialog = ({
                         ref={cancelRef}
                         colorScheme="red"
                         onClick={onClose}
-                        size={"sm"}
+                        size={'sm'}
                     >
                         Cancel
                     </Button>
@@ -499,7 +515,7 @@ const InputDialog = ({
                         colorScheme="green"
                         onClick={() => onConfirm(name)}
                         ml={3}
-                        size={"sm"}
+                        size={'sm'}
                     >
                         Save
                     </Button>
