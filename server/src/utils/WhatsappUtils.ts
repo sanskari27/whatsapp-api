@@ -34,16 +34,20 @@ export default class WhatsappUtils {
 		return (await Promise.all(numbersPromise)).filter((number) => number !== null) as string[];
 	}
 
-	async getChatIdsWithNumberByNumbers(numbers: string[]) {
+	async getNumberWithIds(numbers: string[]) {
 		const numbersPromise = numbers.map(async (number) => {
-			const numberID = await this.whatsapp.getClient().getNumberId(number);
-			if (!numberID) {
+			try {
+				const numberID = await this.whatsapp.getClient().getNumberId(number);
+				if (!numberID) {
+					return null;
+				}
+				return {
+					number,
+					numberId: numberID._serialized,
+				};
+			} catch (err) {
 				return null;
 			}
-			return {
-				number,
-				numberId: numberID._serialized,
-			};
 		});
 
 		return (await Promise.all(numbersPromise)).filter((number) => number !== null) as {

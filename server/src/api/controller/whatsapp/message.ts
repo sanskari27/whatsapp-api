@@ -141,9 +141,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 			return acc;
 		}, {});
 
-		const numbersWithId = await whatsappUtils.getChatIdsWithNumberByNumbers(
-			Object.keys(parsed_csv_mapped)
-		);
+		const numbersWithId = await whatsappUtils.getNumberWithIds(Object.keys(parsed_csv_mapped));
 		numbers = numbersWithId.map((item) => item.numberId);
 
 		if (variables !== undefined && message !== undefined) {
