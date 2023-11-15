@@ -1,3 +1,4 @@
+import { InfoOutlineIcon } from '@chakra-ui/icons';
 import {
     AlertDialog,
     AlertDialogBody,
@@ -346,7 +347,15 @@ const NameSection = ({
                                 }
                             />
                         </Flex>
-
+                        <Box py={'0.5rem'}>
+                            <Text size={'sm'} color={'tomato'}>
+                                <InfoOutlineIcon marginRight={'0.25rem'} />
+                                The first column header should be "number" and
+                                should contain numbers with country codes.
+                                Remaining column headers can be of variables in
+                                message
+                            </Text>
+                        </Box>
                         <Button
                             variant={'outline'}
                             colorScheme="yellow"

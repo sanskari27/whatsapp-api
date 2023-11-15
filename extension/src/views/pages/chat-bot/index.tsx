@@ -106,10 +106,19 @@ const ChatBot = () => {
     }, [isAuthenticated]);
 
     const handleAttachmentInput = (e: ChangeEvent<HTMLInputElement>) => {
+        setError((prevState) => ({
+            ...prevState,
+            message: '',
+        }));
         const files = e.target.files;
         if (files === null) return;
         if (files.length === 0) return;
         if (files[0] === null) return;
+        if (files[0].size > 60000000)
+            return setError((prevState) => ({
+                ...prevState,
+                message: 'File size should be less than 60MB',
+            }));
         const file = files[0];
         if (fileInputRef.current) fileInputRef.current.value = '';
         setAttachmentFile(file);
