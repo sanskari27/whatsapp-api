@@ -6,6 +6,7 @@ import APIError, { API_ERRORS } from '../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../errors/internal-errors';
 import { WhatsappProvider } from '../provider/whatsapp_provider';
 import { IContact } from '../types/whatsapp';
+import Logger from './logger';
 
 export type MappedContacts = {
 	[contact_number: string]: IContact;
@@ -210,7 +211,7 @@ export default class WhatsappUtils {
 			WhatsappUtils.deleteSession(session.client_id);
 			session.remove();
 		}
-		logger.info(`Removed ${sessions.length} unwanted sessions`);
+		Logger.info('WHATSAPP-CLEANER', `Removed ${sessions.length} unwanted sessions`);
 	}
 
 	static async removeInactiveSessions() {
@@ -218,7 +219,7 @@ export default class WhatsappUtils {
 		for (const session of sessions) {
 			WhatsappProvider.getInstance(session.client_id).logoutClient();
 		}
-		logger.info(`Removed ${sessions.length} inactive sessions`);
+		Logger.info('WHATSAPP-CLEANER', `Removed ${sessions.length} inactive sessions`);
 	}
 
 	static deleteSession(client_id: string) {

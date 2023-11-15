@@ -5,7 +5,6 @@ import { IUser } from './user';
 export { APIError } from './server-error';
 
 declare global {
-	var logger: Logger;
 	var __basedir: string;
 	var __augmont_auth_token: string;
 

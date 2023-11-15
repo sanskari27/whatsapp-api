@@ -12,12 +12,11 @@ import APIError from './errors/api-errors';
 import { WhatsappProvider } from './provider/whatsapp_provider';
 import ErrorReporter from './utils/ErrorReporter';
 import WhatsappUtils from './utils/WhatsappUtils';
-import { Logger } from './utils/logger';
+import Logger from './utils/logger';
 
 export default function (app: Express) {
 	//Defines all global variables and constants
 
-	global.logger = Logger;
 	let basedir = __dirname.slice(0, __dirname.lastIndexOf('/'));
 	if (IS_PRODUCTION) {
 		basedir = basedir.slice(0, basedir.lastIndexOf('/'));
@@ -86,10 +85,10 @@ export default function (app: Express) {
 	cron.schedule('30 3 * * *', function () {
 		exec('pgrep chrome | xargs kill -9', (error, stdout, stderr) => {
 			if (error) {
-				logger.error(`Unable to kill chrome instances`);
+				Logger.error('CRON - Chrome', error);
 				return;
 			}
-			logger.error(`All Chrome instances have been killed`);
+			Logger.info('CRON - Chrome', `All Chrome instances have been killed`);
 			process.exit(0);
 		});
 	});

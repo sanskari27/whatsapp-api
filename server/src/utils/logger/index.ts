@@ -11,8 +11,8 @@ const Logger = {
 	critical: function (label: string, err: Error) {
 		winston.log(LogLevel.CRITICAL, { label, err });
 	},
-	status: function (label: string, message: string) {
-		winston.log(LogLevel.STATUS, { label: label, message });
+	error: function (label: string, err: Error) {
+		winston.log(LogLevel.ERROR, { label: label, err });
 	},
 	http: function (message: string | object, opts?: { label?: string }) {
 		winston.log(LogLevel.HTTP, { label: opts ? opts.label : undefined, message });
@@ -26,4 +26,6 @@ const Logger = {
 	},
 };
 
-export { LogLevel, Logger };
+export default Logger;
+
+export { LogLevel };

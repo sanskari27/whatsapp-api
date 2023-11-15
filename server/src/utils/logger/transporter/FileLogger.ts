@@ -1,8 +1,14 @@
-import { transports } from 'winston';
+import DailyRotateFile from 'winston-daily-rotate-file';
 
-export default class FileLogger extends transports.File {
-	constructor(options: transports.FileTransportOptions) {
-		super(options);
+export default class FileLogger extends DailyRotateFile {
+	constructor(options: DailyRotateFile.DailyRotateFileTransportOptions) {
+		super({
+			...options,
+			datePattern: 'YYYY-MM',
+			zippedArchive: true,
+			maxSize: '20m',
+			maxFiles: '30d',
+		});
 		this.level = options.level as string;
 	}
 

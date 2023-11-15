@@ -2,6 +2,7 @@ import winston from 'winston';
 import { LogLevel } from '.';
 import { CustomLevels, LEVEL } from './config';
 import ConsoleLogger from './transporter/ConsoleLogger';
+import ErrorConsoleLogger from './transporter/ErrorConsoleLogger';
 import FileLogger from './transporter/FileLogger';
 
 function prettyPrint() {
@@ -9,21 +10,6 @@ function prettyPrint() {
 }
 function json() {
 	return winston.format.combine(winston.format.json({ maximumDepth: 30 }));
-}
-
-function formatWithColor(color: string): winston.Logform.Format {
-	return winston.format.combine(
-		winston.format.printf((info) => {
-			const { message, timestamp, label } = info;
-			let logLine = '';
-			if (!label) {
-				logLine = `[${timestamp}]: ${message}`;
-			} else {
-				logLine = `[${timestamp}]: ${label}: ${message}`;
-			}
-			return `${color}${logLine}${CustomLevels.colors.RESET}`;
-		})
-	);
 }
 
 const logger = winston.createLogger({
@@ -36,41 +22,46 @@ const logger = winston.createLogger({
 		winston.format.prettyPrint({ colorize: true })
 	),
 	transports: [
-		new ConsoleLogger({
-			level: LEVEL.CRITICAL,
-			format: winston.format.combine(winston.format.prettyPrint({ colorize: true })),
-		}),
-		new ConsoleLogger({
-			level: LEVEL.HTTP,
-			format: formatWithColor(CustomLevels.colors.HTTP),
-		}),
-		new ConsoleLogger({
-			level: LEVEL.STATUS,
-			format: formatWithColor(CustomLevels.colors.STATUS),
-		}),
+		new ErrorConsoleLogger({ level: LEVEL.CRITICAL, color: CustomLevels.colors.CRITICAL }),
+		new ErrorConsoleLogger({ level: LEVEL.ERROR, color: CustomLevels.colors.ERROR }),
 		new ConsoleLogger({
 			level: LEVEL.INFO,
-			format: formatWithColor(CustomLevels.colors.INFO),
+			format: winston.format.combine(
+				winston.format.printf((info) => {
+					const { message, timestamp, label } = info;
+					let logLine = '';
+					if (!label) {
+						logLine = `[${timestamp}]: ${message}`;
+					} else {
+						logLine = `[${timestamp}]: ${label}: ${message}`;
+					}
+					return `${CustomLevels.colors.INFO}${logLine}${CustomLevels.colors.RESET}`;
+				})
+			),
 		}),
-		new FileLogger({
+		new ConsoleLogger({
 			level: LEVEL.DEBUG,
-			filename: `logs/${LEVEL.CRITICAL.toLowerCase()}.log`,
+			format: winston.format.prettyPrint({ colorize: true }),
+		}),
+		new FileLogger({
+			level: LEVEL.CRITICAL,
+			filename: `logs/${LEVEL.CRITICAL.toLowerCase()}-%DATE%.log`,
+			format: prettyPrint(),
+		}),
+		new FileLogger({
+			level: LEVEL.ERROR,
+			filename: `logs/${LEVEL.ERROR.toLowerCase()}-%DATE%.log`,
+			format: prettyPrint(),
+		}),
+		new FileLogger({
+			level: LEVEL.HTTP,
+			filename: `logs/${LEVEL.HTTP.toLowerCase()}-%DATE%.log`,
 			format: prettyPrint(),
 		}),
 		new FileLogger({
 			level: LEVEL.INFO,
-			filename: `logs/${LEVEL.INFO.toLowerCase()}.log`,
-			format: prettyPrint(),
-		}),
-		new FileLogger({
-			level: LEVEL.STATUS,
-			filename: `logs/${LEVEL.STATUS.toLowerCase()}.log`,
+			filename: `logs/${LEVEL.INFO.toLowerCase()}-%DATE%.log`,
 			format: json(),
-		}),
-		new FileLogger({
-			level: LEVEL.HTTP,
-			filename: `logs/${LEVEL.HTTP.toLowerCase()}.log`,
-			format: prettyPrint(),
 		}),
 	],
 });
