@@ -8,4 +8,5 @@ export default interface ICoupon extends Document {
 	available_coupons: number;
 	total_coupons: number;
 	discount_percentage: number;
+	count_per_user: number;
 }

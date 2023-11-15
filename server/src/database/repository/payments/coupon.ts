@@ -15,6 +15,11 @@ const couponSchema = new mongoose.Schema<ICoupon>({
 		type: mongoose.Schema.Types.ObjectId,
 		ref: 'Plan',
 	},
+	count_per_user: {
+		type: Number,
+		required: true,
+		default: 9999,
+	},
 	available_coupons: {
 		type: Number,
 		required: true,

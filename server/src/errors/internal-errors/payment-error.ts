@@ -16,6 +16,11 @@ const PAYMENT_ERROR = {
 		TITLE: 'COUPON_NOT_FOUND',
 		MESSAGE: 'The coupon you entered is invalid.',
 	},
+	COUPON_USAGE_EXCEEDED: {
+		STATUS: 400,
+		TITLE: 'COUPON_USAGE_EXCEEDED',
+		MESSAGE: 'You can use this coupon a certain amount to time.',
+	},
 	COUPON_EXPIRED: {
 		STATUS: 400,
 		TITLE: 'COUPON_EXPIRED',

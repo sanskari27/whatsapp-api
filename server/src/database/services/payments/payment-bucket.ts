@@ -131,8 +131,18 @@ export default class PaymentBucketService {
 		if (couponDetails === null) {
 			throw new InternalError(INTERNAL_ERRORS.PAYMENT_ERROR.COUPON_NOT_FOUND);
 		}
+
 		if (this.bucket.discount_coupon) {
 			await this.removeCoupon();
+		}
+
+		const applied_by_user = await PaymentBucketDB.count({
+			discount_coupon: couponDetails._id,
+			whatsapp_numbers: { $in: this.bucket.whatsapp_numbers },
+		});
+
+		if (applied_by_user >= couponDetails.count_per_user) {
+			throw new InternalError(INTERNAL_ERRORS.PAYMENT_ERROR.COUPON_USAGE_EXCEEDED);
 		}
 
 		this.bucket.discount = couponDetails.discount_percentage * this.bucket.gross_amount;
