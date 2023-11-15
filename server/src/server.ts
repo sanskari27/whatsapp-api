@@ -19,9 +19,6 @@ configServer(app);
 connectDB()
 	.then(() => {
 		Logger.info('Running Status', 'Database connected');
-		Logger.debug('Running Status', { label: 'Database connected' });
-		Logger.error('Unhandled rejection', new Error('Unhandled rejection'));
-		Logger.critical('Unhandled rejection', new Error('Unhandled rejection'));
 	})
 	.catch((err) => {
 		Logger.critical('Database Connection Failed', err);

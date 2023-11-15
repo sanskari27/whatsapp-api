@@ -64,7 +64,7 @@ export async function validate(req: Request, res: Response, next: NextFunction) 
 		numbers_to_be_checked = requestedNumberList as string[];
 	}
 
-	const chat_ids = await whatsappUtils.getChatIdsByNumbers(numbers_to_be_checked);
+	const chat_ids = await whatsappUtils.getNumberIds(numbers_to_be_checked);
 
 	const valid_contacts = chat_ids.map(async (chat_id) => {
 		const contact = await whatsapp.getClient().getContactById(chat_id);

@@ -120,7 +120,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 	}
 
 	if (type === 'NUMBERS') {
-		numbers = await whatsappUtils.getChatIdsByNumbers(requestedNumberList as string[]);
+		numbers = await whatsappUtils.getNumberIds(requestedNumberList as string[]);
 	} else if (type === 'CSV') {
 		const csvFilePath = __basedir + CSV_PATH + csv_file;
 		if (!fs.existsSync(csvFilePath)) {

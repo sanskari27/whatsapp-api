@@ -11,9 +11,9 @@ export default class ErrorConsoleLogger extends transports.Console {
 					const { err, timestamp, label } = info;
 					let logLine = '';
 					if (!label) {
-						logLine = `[${timestamp}]: Error Logged: \n${(err as Error).stack}`;
+						logLine = `[${timestamp}]: Error Logged: \n${(err as Error)?.stack}`;
 					} else {
-						logLine = `[${timestamp}]: Error Logged: ${label}: \n${(err as Error).stack}`;
+						logLine = `[${timestamp}]: Error Logged: ${label}: \n${(err as Error)?.stack}`;
 					}
 					return `${options?.color ?? CustomLevels.colors.ERROR}${logLine}${
 						CustomLevels.colors.RESET

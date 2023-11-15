@@ -10,7 +10,6 @@ import { ATTACHMENTS_PATH, CSV_PATH, IS_PRODUCTION, UPLOADS_PATH } from './confi
 import { MessageSchedulerService } from './database/services';
 import APIError from './errors/api-errors';
 import { WhatsappProvider } from './provider/whatsapp_provider';
-import ErrorReporter from './utils/ErrorReporter';
 import WhatsappUtils from './utils/WhatsappUtils';
 import Logger from './utils/logger';
 
@@ -29,17 +28,25 @@ export default function (app: Express) {
 	app.use(cors());
 	app.use(cookieParser());
 	app.use(express.static(__basedir + 'static'));
-	app.use((req: Request, res: Response, next: NextFunction) => {
-		req.locals = {
-			...req.locals,
-		};
-		next();
-	});
 	app.route('/api-status').get((req, res) => {
 		res.status(200).json({
 			success: true,
 			'active-instances-count': WhatsappProvider.getInstancesCount(),
 		});
+	});
+	app.use((req: Request, res: Response, next: NextFunction) => {
+		req.locals = {
+			...req.locals,
+		};
+		const { headers, body, url } = req;
+		res.locals.request_id = Date.now().toString();
+		Logger.http(url, {
+			headers,
+			body,
+			label: headers['client-id'] as string,
+			request_id: res.locals.request_id,
+		});
+		next();
 	});
 	app.use(routes);
 
@@ -47,9 +54,13 @@ export default function (app: Express) {
 		if (err instanceof APIError) {
 			if (err.status === 500) {
 				if (err.error) {
-					ErrorReporter.reportServerError(err.error);
+					Logger.error(`API Error`, err.error, {
+						request_id: res.locals.request_id,
+					});
 				} else {
-					ErrorReporter.report(err);
+					Logger.error(`API Error`, err, {
+						request_id: res.locals.request_id,
+					});
 				}
 			}
 
@@ -61,7 +72,9 @@ export default function (app: Express) {
 			});
 		}
 
-		ErrorReporter.report(err);
+		Logger.error(`Internal Server Error`, err, {
+			request_id: res.locals.request_id,
+		});
 		res.status(500).json({
 			success: false,
 			status: 'error',

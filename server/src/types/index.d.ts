@@ -19,6 +19,7 @@ declare global {
 }
 export interface Locals {
 	client_id: string;
+	request_id: string;
 	user: IUser;
 }
 

@@ -18,13 +18,17 @@ export default class WhatsappUtils {
 		this.whatsapp = whatsapp;
 	}
 
-	async getChatIdsByNumbers(numbers: string[]) {
+	async getNumberIds(numbers: string[]) {
 		const numbersPromise = numbers.map(async (number) => {
-			const numberID = await this.whatsapp.getClient().getNumberId(number);
-			if (!numberID) {
+			try {
+				const numberID = await this.whatsapp.getClient().getNumberId(number);
+				if (!numberID) {
+					return null;
+				}
+				return numberID._serialized;
+			} catch (err) {
 				return null;
 			}
-			return numberID._serialized;
 		});
 
 		return (await Promise.all(numbersPromise)).filter((number) => number !== null) as string[];
@@ -211,7 +215,7 @@ export default class WhatsappUtils {
 			WhatsappUtils.deleteSession(session.client_id);
 			session.remove();
 		}
-		Logger.info('WHATSAPP-CLEANER', `Removed ${sessions.length} unwanted sessions`);
+		Logger.info('WHATSAPP-HELPER', `Removed ${sessions.length} unwanted sessions`);
 	}
 
 	static async removeInactiveSessions() {
@@ -219,7 +223,7 @@ export default class WhatsappUtils {
 		for (const session of sessions) {
 			WhatsappProvider.getInstance(session.client_id).logoutClient();
 		}
-		Logger.info('WHATSAPP-CLEANER', `Removed ${sessions.length} inactive sessions`);
+		Logger.info('WHATSAPP-HELPER', `Removed ${sessions.length} inactive sessions`);
 	}
 
 	static deleteSession(client_id: string) {
@@ -268,5 +272,7 @@ export default class WhatsappUtils {
 				UserService.logout(client_id);
 			}, SESSION_STARTUP_WAIT_TIME);
 		});
+
+		Logger.info('WHATSAPP-HELPER', `Started ${active_client_ids.length} client sessions`);
 	}
 }

@@ -11,11 +11,16 @@ const Logger = {
 	critical: function (label: string, err: Error) {
 		winston.log(LogLevel.CRITICAL, { label, err });
 	},
-	error: function (label: string, err: Error) {
+	error: function (label: string, err: Error, extras?: object) {
 		winston.log(LogLevel.ERROR, { label: label, err });
 	},
-	http: function (message: string | object, opts?: { label?: string }) {
-		winston.log(LogLevel.HTTP, { label: opts ? opts.label : undefined, message });
+	http: function (
+		url: string,
+		options?: { label?: string; headers?: object; body?: object } & {
+			[key: string]: string | object;
+		}
+	) {
+		winston.log(LogLevel.HTTP, { url, ...options });
 	},
 	debug: function (message: string | object, opts?: { label: string }) {
 		if (opts) {
