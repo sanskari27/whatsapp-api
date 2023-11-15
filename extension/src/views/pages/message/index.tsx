@@ -1,4 +1,4 @@
-import { InfoIcon, InfoOutlineIcon } from "@chakra-ui/icons";
+import { InfoIcon, InfoOutlineIcon } from '@chakra-ui/icons';
 import {
     Box,
     Button,
@@ -14,22 +14,22 @@ import {
     Stepper,
     Text,
     useSteps,
-} from "@chakra-ui/react";
-import { useEffect, useRef, useState } from "react";
-import { BiMessageSquareDetail } from "react-icons/bi";
-import { MessageProps } from "../../../background/background";
-import { CHROME_ACTION } from "../../../config/const";
-import { startAuth, useAuth } from "../../../hooks/useAuth";
-import AuthService from "../../../services/auth.service";
-import MessageService from "../../../services/message.service";
-import { getActiveTabURL } from "../../../utils/ChromeUtils";
-import LoginModal, { LoginHandle } from "../../components/login";
-import DelaySection from "./components/DelaySection";
-import MessageSection from "./components/MessageSection";
-import NameSection from "./components/NameSection";
+} from '@chakra-ui/react';
+import { useEffect, useRef, useState } from 'react';
+import { BiMessageSquareDetail } from 'react-icons/bi';
+import { MessageProps } from '../../../background/background';
+import { CHROME_ACTION } from '../../../config/const';
+import { startAuth, useAuth } from '../../../hooks/useAuth';
+import AuthService from '../../../services/auth.service';
+import MessageService from '../../../services/message.service';
+import { getActiveTabURL } from '../../../utils/ChromeUtils';
+import LoginModal, { LoginHandle } from '../../components/login';
+import DelaySection from './components/DelaySection';
+import MessageSection from './components/MessageSection';
+import NameSection from './components/NameSection';
 
 export type SchedulerDetails = {
-    type: "NUMBERS" | "CSV" | "GROUP" | "LABEL";
+    type: 'NUMBERS' | 'CSV' | 'GROUP' | 'LABEL';
     numbers?: string[];
     csv_file: string;
     group_ids: string[];
@@ -63,7 +63,7 @@ export type SchedulerDetails = {
     batch_size: number;
 };
 
-const steps = ["Name", "Message", "Delay"];
+const steps = ['Name', 'Message', 'Delay'];
 
 const Message = () => {
     const loginModelRef = useRef<LoginHandle>(null);
@@ -83,7 +83,7 @@ const Message = () => {
         AuthService.getUserDetails().then((res) => {
             setUIDetails((prevState) => ({
                 ...prevState,
-                isBusiness: res.userType === "BUSINESS",
+                isBusiness: res.userType === 'BUSINESS',
                 paymentVerified: res.canSendMessage,
             }));
         });
@@ -94,20 +94,20 @@ const Message = () => {
         count: 3,
     });
     const [details, setDetails] = useState<SchedulerDetails>({
-        type: "NUMBERS",
+        type: 'CSV',
         numbers: [],
-        csv_file: "",
+        csv_file: '',
         group_ids: [],
         label_ids: [],
-        message: "",
+        message: '',
         variables: [],
         shared_contact_cards: [],
         attachments: [],
-        campaign_name: "",
+        campaign_name: '',
         min_delay: 1,
         max_delay: 60,
-        startTime: "00:00",
-        endTime: "23:59",
+        startTime: '00:00',
+        endTime: '23:59',
         batch_delay: 120,
         batch_size: 10,
     });
@@ -117,10 +117,10 @@ const Message = () => {
         paymentVerified: false,
         schedulingMessages: false,
         isBusiness: true,
-        nameError: "",
-        messageError: "",
-        delayError: "",
-        apiError: "",
+        nameError: '',
+        messageError: '',
+        delayError: '',
+        apiError: '',
     });
 
     const handleChange = async ({
@@ -136,16 +136,16 @@ const Message = () => {
         }));
         setUIDetails((prevState) => ({
             ...prevState,
-            nameError: "",
-            messageError: "",
+            nameError: '',
+            messageError: '',
         }));
     };
 
     const setSelectedRecipients = (ids: string[]) => {
-        if (details.type === "GROUP") {
-            handleChange({ name: "group_ids", value: ids });
-        } else if (details.type === "LABEL") {
-            handleChange({ name: "label_ids", value: ids });
+        if (details.type === 'GROUP') {
+            handleChange({ name: 'group_ids', value: ids });
+        } else if (details.type === 'LABEL') {
+            handleChange({ name: 'label_ids', value: ids });
         }
     };
 
@@ -158,23 +158,28 @@ const Message = () => {
             if (!details.campaign_name) {
                 setUIDetails((prev) => ({
                     ...prev,
-                    nameError: "Campaign name required.",
+                    nameError: 'Campaign name required.',
                 }));
                 return;
             }
             let isError = false;
             if (!details.type) {
                 isError = true;
-            } else if (details.type === "CSV" && !details.csv_file) {
+            } else if (details.type === 'CSV' && !details.csv_file) {
                 isError = true;
             } else if (
-                details.type === "GROUP" &&
+                details.type === 'GROUP' &&
                 details.group_ids.length === 0
             ) {
                 isError = true;
             } else if (
-                details.type === "LABEL" &&
+                details.type === 'LABEL' &&
                 details.label_ids.length === 0
+            ) {
+                isError = true;
+            } else if (
+                details.type === 'CSV' &&
+                details.csv_file === 'select'
             ) {
                 isError = true;
             }
@@ -182,7 +187,7 @@ const Message = () => {
             if (isError) {
                 setUIDetails((prev) => ({
                     ...prev,
-                    nameError: "Recipients required.",
+                    nameError: 'Recipients required.',
                 }));
                 return;
             }
@@ -191,7 +196,7 @@ const Message = () => {
             if (!details.message && details.attachments.length === 0) {
                 setUIDetails((prev) => ({
                     ...prev,
-                    messageError: "Message or attachment required.",
+                    messageError: 'Message or attachment required.',
                 }));
                 return;
             }
@@ -200,7 +205,7 @@ const Message = () => {
             if (!details.min_delay && details.max_delay === 0) {
                 setUIDetails((prev) => ({
                     ...prev,
-                    messageError: "Delay required.",
+                    messageError: 'Delay required.',
                 }));
                 return;
             }
@@ -286,27 +291,27 @@ const Message = () => {
             if (!success) {
                 setUIDetails((prev) => ({
                     ...prev,
-                    apiError: "Unable to schedule messages",
+                    apiError: 'Unable to schedule messages',
                     schedulingMessages: false,
                 }));
                 return;
             }
             setActiveStep(1);
             setDetails({
-                type: "NUMBERS",
+                type: 'NUMBERS',
                 numbers: [],
-                csv_file: "",
+                csv_file: '',
                 group_ids: [],
                 label_ids: [],
-                message: "",
+                message: '',
                 variables: [],
                 shared_contact_cards: [],
                 attachments: [],
-                campaign_name: "",
+                campaign_name: '',
                 min_delay: 1,
                 max_delay: 60,
-                startTime: "00:00",
-                endTime: "23:59",
+                startTime: '00:00',
+                endTime: '23:59',
                 batch_delay: 120,
                 batch_size: 10,
             });
@@ -315,10 +320,10 @@ const Message = () => {
                 paymentVerified: prev.paymentVerified,
                 schedulingMessages: false,
                 isBusiness: prev.isBusiness,
-                nameError: "",
-                messageError: "",
-                delayError: "",
-                apiError: "",
+                nameError: '',
+                messageError: '',
+                delayError: '',
+                apiError: '',
             }));
         });
     };
@@ -330,7 +335,7 @@ const Message = () => {
             tabId: activeTab.id,
             url: activeTab.url,
             data: {
-                url: "https://whatsleads.in/pricing",
+                url: 'https://whatsleads.in/pricing',
             },
         };
         await chrome.runtime.sendMessage(message);
@@ -338,18 +343,18 @@ const Message = () => {
 
     return (
         <Flex
-            direction={"column"}
-            gap={"0.5rem"}
-            justifyContent={"space-between"}
-            height={"full"}
+            direction={'column'}
+            gap={'0.5rem'}
+            justifyContent={'space-between'}
+            height={'full'}
         >
-            <Flex direction={"column"} gap={"0.5rem"}>
-                <Flex alignItems="center" gap={"0.5rem"} mt={"1.5rem"}>
+            <Flex direction={'column'} gap={'0.5rem'}>
+                <Flex alignItems="center" gap={'0.5rem'} mt={'1.5rem'}>
                     <Icon
                         as={BiMessageSquareDetail}
                         height={5}
                         width={5}
-                        color={"green.400"}
+                        color={'green.400'}
                     />
                     <Text className="text-black dark:text-white" fontSize="md">
                         Schedule Messages
@@ -358,8 +363,8 @@ const Message = () => {
 
                 <Stepper
                     index={activeStep}
-                    size={"sm"}
-                    mx={"0.5rem"}
+                    size={'sm'}
+                    mx={'0.5rem'}
                     colorScheme="green"
                 >
                     {steps.map((step, index) => (
@@ -385,13 +390,13 @@ const Message = () => {
                 <Box
                     // className='bg-[#ECECEC] dark:bg-[#535353]'
                     // px={'0.5rem'}
-                    borderRadius={"20px"}
-                    mb={"1rem"}
+                    borderRadius={'20px'}
+                    mb={'1rem'}
                 >
                     <Flex
-                        flexDirection={"column"}
-                        gap={"0.5rem"}
-                        width={"full"}
+                        flexDirection={'column'}
+                        gap={'0.5rem'}
+                        width={'full'}
                     >
                         <NameSection
                             handleChange={handleChange}
@@ -425,63 +430,63 @@ const Message = () => {
             </Flex>
 
             {uiDetails.apiError && (
-                <Text mt={-2} color="red.400" textAlign={"center"}>
+                <Text mt={-2} color="red.400" textAlign={'center'}>
                     <InfoIcon /> {uiDetails.apiError}
                 </Text>
             )}
 
             {!isAuthenticated ? (
-                <Flex gap={"0.5rem"} direction={"column"}>
+                <Flex gap={'0.5rem'} direction={'column'}>
                     <Text className="text-black text-center dark:text-white">
-                        <InfoOutlineIcon marginRight={"0.25rem"} />
+                        <InfoOutlineIcon marginRight={'0.25rem'} />
                         Disclaimer: Please wait 5 minutes for contacts to sync
                         after login.
                     </Text>
                     <Button
-                        bgColor={"blue.300"}
+                        bgColor={'blue.300'}
                         _hover={{
-                            bgColor: "blue.400",
+                            bgColor: 'blue.400',
                         }}
                         onClick={startAuth}
                         isLoading={isAuthenticating}
                     >
-                        <Flex gap={"0.5rem"}>
-                            <Text color={"white"}>Login</Text>
+                        <Flex gap={'0.5rem'}>
+                            <Text color={'white'}>Login</Text>
                         </Flex>
                     </Button>
                 </Flex>
             ) : !uiDetails.paymentVerified && activeStep === 1 ? (
                 <Button
-                    bgColor={"yellow.400"}
+                    bgColor={'yellow.400'}
                     _hover={{
-                        bgColor: "yellow.500",
+                        bgColor: 'yellow.500',
                     }}
                     onClick={handleSubscription}
                 >
-                    <Flex gap={"0.5rem"}>
-                        <Text color={"white"}>Subscribe</Text>
+                    <Flex gap={'0.5rem'}>
+                        <Text color={'white'}>Subscribe</Text>
                     </Flex>
                 </Button>
             ) : (
-                <Flex justifyContent={"space-between"} alignItems={"center"}>
+                <Flex justifyContent={'space-between'} alignItems={'center'}>
                     {activeStep > 1 && (
                         <Button
-                            bgColor={"yellow.300"}
+                            bgColor={'yellow.300'}
                             _hover={{
-                                bgColor: "yellow.400",
+                                bgColor: 'yellow.400',
                             }}
-                            width={"48%"}
+                            width={'48%'}
                             onClick={goToPrevious}
                         >
-                            <Text color={"white"}>Back</Text>
+                            <Text color={'white'}>Back</Text>
                         </Button>
                     )}
                     <Button
-                        bgColor={"green.300"}
+                        bgColor={'green.300'}
                         _hover={{
-                            bgColor: "green.400",
+                            bgColor: 'green.400',
                         }}
-                        width={activeStep > 1 ? "48%" : "100%"}
+                        width={activeStep > 1 ? '48%' : '100%'}
                         onClick={handleNextClick}
                         isLoading={
                             uiDetails.recipientsLoading ||
@@ -489,8 +494,8 @@ const Message = () => {
                         }
                         isDisabled={!isAuthenticated}
                     >
-                        <Text color={"white"}>
-                            {activeStep === 3 ? "Schedule" : "Next"}
+                        <Text color={'white'}>
+                            {activeStep === 3 ? 'Schedule' : 'Next'}
                         </Text>
                     </Button>
                 </Flex>
