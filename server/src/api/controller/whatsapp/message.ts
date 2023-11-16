@@ -9,7 +9,6 @@ import { Respond, generateBatchID, validatePhoneNumber } from '../../../utils/Ex
 import VCardBuilder from '../../../utils/VCardBuilder';
 import WhatsappUtils from '../../../utils/WhatsappUtils';
 import { FileUtils } from '../../../utils/files';
-import Logger from '../../../utils/logger';
 
 export async function scheduleMessage(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
