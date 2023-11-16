@@ -61,6 +61,29 @@ export type UserDetailsType = typeof userDetailsInit;
 
 const PaymentPage = () => {
 	const { plan: plan_name } = useParams();
+	const [razorpay_options, setRazorpayOptions] = useState<{
+		subscription_id: string;
+		payment_link: string;
+		bucket_id: string;
+		transaction_id: string;
+		order_id: string;
+		razorpay_options: {
+			description: string;
+			currency: string;
+			amount: number;
+			name: string;
+			order_id: string;
+			prefill: {
+				contact: string;
+				name: string;
+				email: string;
+			};
+			key: string;
+			theme: {
+				color: string;
+			};
+		};
+	} | null>(null);
 
 	const navigate = useNavigate();
 
@@ -93,6 +116,7 @@ const PaymentPage = () => {
 		setActiveStep((prev) => prev - 1);
 		if (activeStep === 3) {
 			checkoutRef.current?.resetCouponDetails();
+			setRazorpayOptions(null);
 		}
 	};
 
@@ -158,13 +182,17 @@ const PaymentPage = () => {
 	};
 
 	const handlePaymentClick = async () => {
-		setLoading(true);
-
-		const result = await PaymentService.initiateRazorpay(bucket_id);
-
+		let result = razorpay_options;
 		if (!result) {
-			setLoading(false);
-			return;
+			setLoading(true);
+
+			result = await PaymentService.initiateRazorpay(bucket_id);
+
+			if (!result) {
+				setLoading(false);
+				return;
+			}
+			setRazorpayOptions(result);
 		}
 
 		if (detailsRef.current?.getData()?.type === 'one-time' && result.razorpay_options) {
@@ -176,6 +204,11 @@ const PaymentPage = () => {
 					PaymentService.verifyPayment(bucket_id, order_id, payment_id).then(() => {
 						openPaymentComplete();
 					});
+				},
+				modal: {
+					ondismiss: function () {
+						setLoading(false);
+					},
 				},
 			});
 
@@ -232,7 +265,11 @@ const PaymentPage = () => {
 						isHidden={activeStep !== 1}
 					/>
 					<Billing ref={billingRef} isHidden={activeStep !== 2} />
-					<Checkout ref={checkoutRef} isHidden={activeStep !== 3} />
+					<Checkout
+						ref={checkoutRef}
+						isHidden={activeStep !== 3}
+						onDataChanged={() => setRazorpayOptions(null)}
+					/>
 					<HStack>
 						<Button
 							backgroundColor={THEME.THEME_GREEN}
