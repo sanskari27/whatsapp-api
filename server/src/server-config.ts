@@ -70,17 +70,12 @@ export default function (app: Express) {
 	app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 		if (err instanceof APIError) {
 			if (err.status === 500) {
-				if (err.error) {
-					Logger.error(`API Error`, err.error, {
-						type: 'error',
-						request_id: res.locals.request_id,
-					});
-				} else {
-					Logger.error(`API Error`, err, {
-						type: 'error',
-						request_id: res.locals.request_id,
-					});
-				}
+				Logger.http(res.locals.url, {
+					type: 'response-error',
+					request_id: res.locals.request_id,
+					status: 500,
+					response: err.error || err,
+				});
 			}
 
 			return res.status(err.status).json({

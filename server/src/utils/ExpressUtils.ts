@@ -15,7 +15,7 @@ export const Respond = ({ res, status, data = {} }: ResponseData) => {
 		type: 'response',
 		request_id: res.locals.request_id,
 		response: data,
-		status: status.toString(),
+		status: status,
 	});
 
 	if (status === 200 || status === 201) {

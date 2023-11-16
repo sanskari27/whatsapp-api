@@ -16,8 +16,14 @@ const Logger = {
 	},
 	http: function (
 		url: string,
-		options?: { label?: string; headers?: object; body?: object } & {
-			[key: string]: string | object;
+		options?: {
+			label?: string;
+			headers?: object;
+			body?: object;
+			status?: number;
+			response?: object;
+		} & {
+			[key: string]: string | number | object;
 		}
 	) {
 		winston.log(LogLevel.HTTP, { url, ...options });
