@@ -48,9 +48,16 @@ export default function (app: Express) {
 		req.locals = {
 			...req.locals,
 		};
+		res.locals = {
+			...res.locals,
+		};
 		const { headers, body, url } = req;
 		res.locals.request_id = Date.now().toString();
+		res.locals.url = url;
+		res.locals.client_id = headers['client-id'] as string;
+
 		Logger.http(url, {
+			type: 'request',
 			headers,
 			body,
 			label: headers['client-id'] as string,
@@ -65,10 +72,12 @@ export default function (app: Express) {
 			if (err.status === 500) {
 				if (err.error) {
 					Logger.error(`API Error`, err.error, {
+						type: 'error',
 						request_id: res.locals.request_id,
 					});
 				} else {
 					Logger.error(`API Error`, err, {
+						type: 'error',
 						request_id: res.locals.request_id,
 					});
 				}
@@ -83,6 +92,7 @@ export default function (app: Express) {
 		}
 
 		Logger.error(`Internal Server Error`, err, {
+			type: 'error',
 			request_id: res.locals.request_id,
 		});
 		res.status(500).json({

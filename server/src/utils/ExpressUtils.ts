@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { Types } from 'mongoose';
 import { z } from 'zod';
 import { SUBSCRIPTION_STATUS } from '../config/const';
+import Logger from './logger';
 type ResponseData = {
 	res: Response;
 	status: 200 | 201 | 400 | 401 | 403 | 404 | 500;
@@ -10,6 +11,13 @@ type ResponseData = {
 };
 
 export const Respond = ({ res, status, data = {} }: ResponseData) => {
+	Logger.http(res.locals.url, {
+		type: 'response',
+		request_id: res.locals.request_id,
+		response: data,
+		status: status.toString(),
+	});
+
 	if (status === 200 || status === 201) {
 		return res.status(status).json({ ...data, success: true });
 	}

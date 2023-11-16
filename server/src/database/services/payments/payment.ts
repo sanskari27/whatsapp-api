@@ -38,16 +38,16 @@ export default class PaymentService {
 		});
 
 		payment.order_id = order.id;
-		payment.save();
+		await payment.save();
 
 		return {
 			transaction_id: payment._id,
 			order_id: order.id,
 			razorpay_options: {
-				description: 'Subscription',
+				description: 'Whatsleads One Time Payment',
 				currency: order.currency,
 				amount: order.amount * 100,
-				name: 'Whatsapp Helper',
+				name: 'Whatsleads',
 				order_id: order.id,
 				prefill: {
 					name: this.bucket.name,
