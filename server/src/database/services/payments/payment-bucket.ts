@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import { SUBSCRIPTION_STATUS } from '../../../config/const';
+import { SUBSCRIPTION_STATUS, TRANSACTION_STATUS } from '../../../config/const';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 import IPaymentBucket from '../../../types/payment/payment-bucket';
 import { IUser } from '../../../types/user';
@@ -138,6 +138,7 @@ export default class PaymentBucketService {
 
 		const applied_by_user = await PaymentBucketDB.count({
 			discount_coupon: couponDetails._id,
+			transaction_status: TRANSACTION_STATUS.SUCCESS,
 			whatsapp_numbers: { $in: this.bucket.whatsapp_numbers },
 		});
 
