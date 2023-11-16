@@ -2,6 +2,7 @@ import { Types } from 'mongoose';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 import { IUser } from '../../../types/user';
 import DateUtils from '../../../utils/DateUtils';
+import Logger from '../../../utils/logger';
 import { BotResponseDB } from '../../repository/bot';
 import ScheduledMessageDB from '../../repository/scheduled-message';
 import { AuthDetailDB, UserDB } from '../../repository/user';
@@ -120,6 +121,13 @@ export default class UserService {
 		const isNew = DateUtils.getMoment(this.user.createdAt)
 			.add(28, 'days')
 			.isAfter(DateUtils.getMomentNow());
+		Logger.debug({
+			subscription_expiry: this.user.subscription_expiry,
+			createdAt: DateUtils.getMoment(this.user.createdAt),
+			now: DateUtils.getMomentNow(),
+			isSubscribed: isPaymentValid,
+			isNew: isNew,
+		});
 		return {
 			isSubscribed: isPaymentValid,
 			isNew: isNew,

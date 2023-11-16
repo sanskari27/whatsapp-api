@@ -21,7 +21,7 @@ import {
 	useDisclosure,
 } from '@chakra-ui/react';
 import Multiselect from 'multiselect-react-dropdown';
-import React, { ChangeEvent, useRef, useState } from 'react';
+import React, { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { FiFilter } from 'react-icons/fi';
 import { GrDocumentCsv } from 'react-icons/gr';
 import { SchedulerDetails } from '..';
@@ -86,58 +86,61 @@ const NameSection = ({
 		onClose: closeCSVNameInput,
 	} = useDisclosure();
 
-	function fetchRecipients(type: string) {
-		setUIDetails((prevState) => ({
-			...prevState,
-			recipientsLoading: true,
-		}));
-		if (type === 'GROUP') {
-			GroupService.listGroups()
-				.then(setRecipientsOptions)
-				.finally(() => {
-					setUIDetails((prevState) => ({
-						...prevState,
-						recipientsLoading: false,
-					}));
-				});
-		} else if (type === 'GROUP_INDIVIDUAL') {
-			GroupService.listGroups()
-				.then(setRecipientsOptions)
-				.finally(() => {
-					setUIDetails((prevState) => ({
-						...prevState,
-						recipientsLoading: false,
-					}));
-				});
-		} else if (type === 'LABEL') {
-			LabelService.listLabels()
-				.then(setRecipientsOptions)
-				.catch((err) => {
-					if (err === 'BUSINESS_ACCOUNT_REQUIRED') {
-						handleChange({ name: 'type', value: 'NUMBERS' });
+	const fetchRecipients = useCallback(
+		function (type: string) {
+			setUIDetails((prevState) => ({
+				...prevState,
+				recipientsLoading: true,
+			}));
+			if (type === 'GROUP') {
+				GroupService.listGroups()
+					.then(setRecipientsOptions)
+					.finally(() => {
 						setUIDetails((prevState) => ({
 							...prevState,
-							isBusiness: false,
+							recipientsLoading: false,
 						}));
-					}
-				})
-				.finally(() => {
-					setUIDetails((prevState) => ({
-						...prevState,
-						recipientsLoading: false,
-					}));
-				});
-		} else if (type === 'CSV') {
-			UploadsService.listCSV()
-				.then(setRecipientsOptions)
-				.finally(() => {
-					setUIDetails((prevState) => ({
-						...prevState,
-						recipientsLoading: false,
-					}));
-				});
-		}
-	}
+					});
+			} else if (type === 'GROUP_INDIVIDUAL') {
+				GroupService.listGroups()
+					.then(setRecipientsOptions)
+					.finally(() => {
+						setUIDetails((prevState) => ({
+							...prevState,
+							recipientsLoading: false,
+						}));
+					});
+			} else if (type === 'LABEL') {
+				LabelService.listLabels()
+					.then(setRecipientsOptions)
+					.catch((err) => {
+						if (err === 'BUSINESS_ACCOUNT_REQUIRED') {
+							handleChange({ name: 'type', value: 'NUMBERS' });
+							setUIDetails((prevState) => ({
+								...prevState,
+								isBusiness: false,
+							}));
+						}
+					})
+					.finally(() => {
+						setUIDetails((prevState) => ({
+							...prevState,
+							recipientsLoading: false,
+						}));
+					});
+			} else if (type === 'CSV') {
+				UploadsService.listCSV()
+					.then(setRecipientsOptions)
+					.finally(() => {
+						setUIDetails((prevState) => ({
+							...prevState,
+							recipientsLoading: false,
+						}));
+					});
+			}
+		},
+		[handleChange]
+	);
 
 	const handleCSVFileInput = (e: ChangeEvent<HTMLInputElement>) => {
 		const files = e.target.files;
@@ -192,6 +195,10 @@ const NameSection = ({
 		});
 	}
 
+	useEffect(() => {
+		fetchRecipients('CSV');
+	}, [fetchRecipients]);
+
 	return (
 		<FormControl
 			isInvalid={!!error}
@@ -230,7 +237,6 @@ const NameSection = ({
 						details.type ? ' text-black dark:text-white' : ' text-gray-700 dark:text-gray-400'
 					}`}
 					border={'none'}
-					placeholder='Recipients'
 					value={details.type}
 					onChange={(e) => {
 						handleChange({ name: 'type', value: e.target.value });
@@ -261,7 +267,7 @@ const NameSection = ({
 			<Box
 				alignItems='flex-end'
 				justifyContent={'space-between'}
-				hidden={!['CSV', 'GROUP', 'LABEL'].includes(type)}
+				hidden={!['CSV', 'GROUP', 'GROUP_INDIVIDUAL', 'LABEL'].includes(type)}
 			>
 				<Text fontSize='xs' className='text-gray-700 dark:text-gray-400'>
 					Choose
@@ -384,6 +390,8 @@ const NameSection = ({
 						displayValue='displayValue'
 						placeholder={
 							type === 'GROUP'
+								? 'Select Groups'
+								: type === 'GROUP_INDIVIDUAL'
 								? 'Select Groups'
 								: type === 'LABEL'
 								? 'Select Labels'

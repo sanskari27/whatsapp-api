@@ -108,7 +108,7 @@ export default class MessageSchedulerService {
 			isSent: false,
 			isFailed: false,
 			isPaused: false,
-		}).populate('attachments');
+		}).populate('attachments sender');
 
 		scheduledMessages.forEach(async (scheduledMessage) => {
 			const whatsapp = WhatsappProvider.getInstance(scheduledMessage.sender_client_id);
@@ -163,7 +163,7 @@ export default class MessageSchedulerService {
 					})
 					.catch((err) => {
 						ErrorReporter.report(err);
-					});;
+					});
 			});
 
 			if (isNew && !isSubscribed) {
@@ -172,7 +172,7 @@ export default class MessageSchedulerService {
 					.sendMessage(scheduledMessage.receiver, PROMOTIONAL_MESSAGE)
 					.catch((err) => {
 						ErrorReporter.report(err);
-					});;
+					});
 			}
 
 			scheduledMessage.isSent = true;
