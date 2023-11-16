@@ -232,6 +232,10 @@ export default class MessageSchedulerService {
 		}[];
 	}
 
+	async deleteCampaign(campaign_id: string) {
+		await ScheduledMessageDB.deleteMany({ sender: this.user, campaign_id });
+	}
+
 	async pauseCampaign(campaign_id: string) {
 		await ScheduledMessageDB.updateMany(
 			{ sender: this.user, campaign_id },

@@ -22,6 +22,15 @@ async function pauseCampaign(req: Request, res: Response, next: NextFunction) {
 		data: {},
 	});
 }
+async function deleteCampaign(req: Request, res: Response, next: NextFunction) {
+	new MessageSchedulerService(req.locals.user).deleteCampaign(req.params.campaign_id);
+
+	return Respond({
+		res,
+		status: 200,
+		data: {},
+	});
+}
 async function resumeCampaign(req: Request, res: Response, next: NextFunction) {
 	new MessageSchedulerService(req.locals.user).resumeCampaign(req.params.campaign_id);
 
@@ -36,6 +45,7 @@ const ReportController = {
 	listCampaigns,
 	pauseCampaign,
 	resumeCampaign,
+	deleteCampaign,
 };
 
 export default ReportController;
