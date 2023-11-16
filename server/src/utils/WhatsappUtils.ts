@@ -56,9 +56,15 @@ export default class WhatsappUtils {
 		}[];
 	}
 
-	async getChatIdsByGroup(group_id: string) {
+	async getChat(group_id: string) {
 		const chat = await this.whatsapp.getClient().getChatById(group_id);
-		if (!chat.isGroup) {
+		if (!chat) return null;
+		return chat;
+	}
+
+	async getChatIdsByGroup(group_id: string) {
+		const chat = await this.getChat(group_id);
+		if (!chat || !chat.isGroup) {
 			throw new InternalError(INTERNAL_ERRORS.WHATSAPP_ERROR.INVALID_GROUP_ID);
 		}
 

@@ -1,8 +1,9 @@
+import csv from 'csvtojson/v2';
 import fs from 'fs';
+import { CSV_PATH } from '../../config/const';
 
 const moveFile = (from: string, to: string) => {
 	try {
-		
 		fs.renameSync(from, to);
 		return true;
 	} catch (err) {
@@ -36,4 +37,27 @@ const base64ToJPG = async (base64: string, path: string) => {
 	fs.writeFileSync(path, base64Data, 'base64');
 };
 
-export default { moveFile, deleteFile, exists, base64ToJPG, base64ToPDF };
+const readCSV = async (path: string) => {
+	const csvFilePath = __basedir + CSV_PATH + path;
+	if (!fs.existsSync(csvFilePath)) {
+		return null;
+	}
+	const parsed_csv = await csv().fromFile(csvFilePath);
+
+	if (!parsed_csv) {
+		return null;
+	}
+	const parsed_csv_mapped: {
+		[key: string]: {
+			[key: string]: string;
+			number: string;
+		};
+	} = parsed_csv.reduce((acc, item) => {
+		acc[item.number] = item;
+		return acc;
+	}, {});
+
+	return parsed_csv_mapped;
+};
+
+export default { moveFile, deleteFile, exists, base64ToJPG, base64ToPDF, readCSV };
