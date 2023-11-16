@@ -196,8 +196,8 @@ const NameSection = ({
 	}
 
 	useEffect(() => {
-		fetchRecipients('CSV');
-	}, [fetchRecipients]);
+		fetchRecipients(type);
+	}, [fetchRecipients, type]);
 
 	return (
 		<FormControl

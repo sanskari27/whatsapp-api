@@ -34,6 +34,16 @@ export default function (app: Express) {
 			'active-instances-count': WhatsappProvider.getInstancesCount(),
 		});
 	});
+	app.route('/clear-cached-ram').get((req, res) => {
+		exec('pgrep chrome | xargs kill -9', (error, stdout, stderr) => {
+			if (error) {
+				Logger.error('CRON - Chrome', error);
+				return;
+			}
+			Logger.info('CRON - Chrome', `All Chrome instances have been killed`);
+			process.exit(0);
+		});
+	});
 	app.use((req: Request, res: Response, next: NextFunction) => {
 		req.locals = {
 			...req.locals,
