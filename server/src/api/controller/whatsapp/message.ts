@@ -82,8 +82,6 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 	const reqValidatorResult = reqValidator.safeParse(req.body);
 
 	if (!reqValidatorResult.success) {
-		Logger.debug(reqValidatorResult.error);
-		Logger.debug(req.body);
 		return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
 	}
 	const {
