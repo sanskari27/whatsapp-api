@@ -281,8 +281,8 @@ const ChatBot = () => {
             setDetails({
                 trigger: '',
                 message: '',
-                respond_to: '',
-                options: '',
+                respond_to: 'ALL',
+                options: 'EXACT_IGNORE_CASE',
                 shared_contact_cards: [],
                 attachments: [],
                 trigger_gap_seconds: 1,

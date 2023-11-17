@@ -161,7 +161,7 @@ export default function Settings() {
                                 className={`${
                                     IS_SUBSCRIBED
                                         ? 'dark:bg-[#235C39] bg-[#B4FED0]'
-                                        : 'dark:bg-[#FFC9C9] bg-[#541919]'
+                                        : 'dark:bg-[#541919] bg-[#FFC9C9]'
                                 }`}
                                 paddingX={'1rem'}
                                 paddingY={'0.5rem'}
