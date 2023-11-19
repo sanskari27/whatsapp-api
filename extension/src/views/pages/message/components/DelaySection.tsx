@@ -131,6 +131,7 @@ const DelaySection = ({
 							Start At
 						</Text>
 						<Input
+						type="time"
 							width={'full'}
 							placeholder='00:00'
 							size={'sm'}
@@ -147,6 +148,7 @@ const DelaySection = ({
 							End At
 						</Text>
 						<Input
+						type='time'
 							width={'full'}
 							placeholder='23:59'
 							size={'sm'}
