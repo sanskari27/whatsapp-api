@@ -58,12 +58,6 @@ export default class MessageSchedulerService {
 		const startMoment = DateUtils.getMoment(opts.startTime ?? '00:00', 'HH:mm');
 		const endMoment = DateUtils.getMoment(opts.endTime ?? '23:59', 'HH:mm');
 		const scheduledTime = DateUtils.getMomentNow();
-		if (opts.startTime) {
-			startMoment.add(330, 'minutes');
-		}
-		if (opts.endTime) {
-			endMoment.add(330, 'minutes');
-		}
 		if (startMoment !== undefined && scheduledTime.isBefore(startMoment)) {
 			scheduledTime
 				.hours(startMoment.hours())
