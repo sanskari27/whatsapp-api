@@ -187,4 +187,35 @@ export default class ExcelUtils {
 		a.click();
 		document.body.removeChild(a);
 	}
+
+	static async downloadTemplate() {
+		const keys = [
+			{
+				field: 'number',
+				title: 'number',
+			},
+			{
+				field: 'extra_variable',
+				title: 'extra_variable',
+			},
+		];
+
+		const csv = await json2csv(
+			[{ number: '91790XXXX890', extra_variable: 'This can be used for message Customization' }],
+			{
+				keys: keys,
+				emptyFieldValue: '',
+			}
+		);
+
+		const blob = new Blob([csv], { type: 'text/csv' });
+		const url = window.URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.setAttribute('hidden', '');
+		a.setAttribute('href', url);
+		a.setAttribute('download', 'payments.csv');
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+	}
 }
