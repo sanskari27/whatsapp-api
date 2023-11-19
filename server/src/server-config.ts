@@ -6,12 +6,12 @@ import fs from 'fs';
 import cron from 'node-cron';
 import routes from './api/routes';
 
+import Logger from 'n23-logger';
 import { ATTACHMENTS_PATH, CSV_PATH, IS_PRODUCTION, UPLOADS_PATH } from './config/const';
 import { MessageSchedulerService } from './database/services';
 import APIError from './errors/api-errors';
 import { WhatsappProvider } from './provider/whatsapp_provider';
 import WhatsappUtils from './utils/WhatsappUtils';
-import Logger from 'n23-logger';
 
 export default function (app: Express) {
 	//Defines all global variables and constants
@@ -52,9 +52,6 @@ export default function (app: Express) {
 			...res.locals,
 		};
 		const { headers, body, url } = req;
-		res.locals.request_id = Date.now().toString();
-		res.locals.url = url;
-		res.locals.client_id = headers['client-id'] as string;
 
 		Logger.http(url, {
 			type: 'request',
@@ -75,6 +72,9 @@ export default function (app: Express) {
 					request_id: res.locals.request_id,
 					status: 500,
 					response: err.error || err,
+					headers: req.headers,
+					body: req.body,
+					label: req.headers['client-id'] as string,
 				});
 			}
 
