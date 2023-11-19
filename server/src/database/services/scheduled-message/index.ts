@@ -42,7 +42,7 @@ export default class MessageSchedulerService {
 		this.user = user;
 	}
 	async alreadyExists(name: string) {
-		const exists = await ScheduledMessageDB.exists({ user: this.user._id, campaign_name: name });
+		const exists = await ScheduledMessageDB.exists({ sender: this.user, campaign_name: name });
 		return exists !== null;
 	}
 
