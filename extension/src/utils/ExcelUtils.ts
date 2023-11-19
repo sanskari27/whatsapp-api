@@ -213,7 +213,7 @@ export default class ExcelUtils {
 		const a = document.createElement('a');
 		a.setAttribute('hidden', '');
 		a.setAttribute('href', url);
-		a.setAttribute('download', 'payments.csv');
+		a.setAttribute('download', 'template.csv');
 		document.body.appendChild(a);
 		a.click();
 		document.body.removeChild(a);
