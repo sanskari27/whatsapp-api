@@ -11,6 +11,11 @@ const COMMON_ERRORS = {
 		TITLE: 'INVALID_FIELD',
 		MESSAGE: 'The request contains an invalid field.',
 	},
+	ALREADY_EXISTS: {
+		STATUS: 400,
+		TITLE: 'ALREADY_EXISTS',
+		MESSAGE: 'The requested resource already exists',
+	},
 } satisfies {
 	[error: string]: ServerError;
 };

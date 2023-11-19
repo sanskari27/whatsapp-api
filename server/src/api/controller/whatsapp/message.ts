@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { MessageSchedulerService, UserService } from '../../../database/services';
 import UploadService from '../../../database/services/uploads';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
+import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 import { Respond, generateBatchID, validatePhoneNumber } from '../../../utils/ExpressUtils';
 import VCardBuilder from '../../../utils/VCardBuilder';
@@ -102,9 +103,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 		numbers: requestedNumberList,
 	} = reqValidatorResult.data;
 
-	let messages: {
-		[key: string]: string;
-	} | null = null;
+	let messages: string[] | null = null;
 	let numbers: string[] = [];
 
 	const { isSubscribed, isNew } = new UserService(req.locals.user).isSubscribed();
@@ -122,32 +121,32 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 	if (type === 'NUMBERS') {
 		numbers = await whatsappUtils.getNumberIds(requestedNumberList as string[]);
 	} else if (type === 'CSV') {
-		const parsed_csv_mapped = await FileUtils.readCSV(csv_file);
-		if (!parsed_csv_mapped) {
+		const parsed_csv = await FileUtils.readCSV(csv_file);
+		if (!parsed_csv) {
 			return next(new APIError(API_ERRORS.COMMON_ERRORS.ERROR_PARSING_CSV));
 		}
 
-		const numbersWithId = await whatsappUtils.getNumberWithIds(Object.keys(parsed_csv_mapped));
-		numbers = numbersWithId.map((item) => item.numberId);
+		numbers = [];
+		messages = [];
 
-		if (variables !== undefined && message !== undefined) {
-			messages = numbersWithId.reduce(
-				(acc, { number, numberId }) => {
-					let _message = message;
-					const row = parsed_csv_mapped[number];
-					for (const variable of variables) {
-						const _variable = variable.substring(2, variable.length - 2);
-						_message = _message.replace(variable, row[_variable] ?? '');
-					}
-					acc[numberId] = _message;
+		const promises = parsed_csv.map(async (row) => {
+			const numberWithId = await whatsappUtils.getNumberWithId(row.number);
+			if (!numberWithId) {
+				return; // Skips to the next iteration
+			}
 
-					return acc;
-				},
-				{} as {
-					[key: string]: string;
-				}
-			);
-		}
+			numbers.push(numberWithId.numberId);
+			let _message = message;
+
+			for (const variable of variables) {
+				const _variable = variable.substring(2, variable.length - 2);
+				_message = _message.replace(variable, row[_variable] ?? '');
+			}
+
+			messages?.push(_message);
+		});
+
+		await Promise.all(promises);
 	} else if (type === 'GROUP_INDIVIDUAL') {
 		try {
 			numbers = (
@@ -259,8 +258,8 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 
 	const contact_cards = await Promise.all(contact_cards_promise);
 
-	const sendMessageList = numbers.map(async (number) => {
-		const _message = messages !== null ? messages[number] : message ?? '';
+	const sendMessageList = numbers.map(async (number, index) => {
+		const _message = messages !== null ? messages[index] : message ?? '';
 
 		return {
 			number,
@@ -272,6 +271,10 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 
 	try {
 		const messageSchedulerService = new MessageSchedulerService(req.locals.user);
+		const campaign_exists = await messageSchedulerService.alreadyExists(campaign_name);
+		if (campaign_exists) {
+			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.ALREADY_EXISTS);
+		}
 		const campaign_id = generateBatchID();
 		messageSchedulerService.scheduleBatch(await Promise.all(sendMessageList), {
 			campaign_id,
@@ -293,8 +296,13 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 				campaign_id: campaign_id,
 			},
 		});
-	} catch (e) {
-		next(new APIError(API_ERRORS.WHATSAPP_ERROR.MESSAGE_SENDING_FAILED, e));
+	} catch (err) {
+		if (err instanceof InternalError) {
+			if (err.isSameInstanceof(INTERNAL_ERRORS.COMMON_ERRORS.ALREADY_EXISTS)) {
+				return next(new APIError(API_ERRORS.COMMON_ERRORS.ALREADY_EXISTS));
+			}
+		}
+		next(new APIError(API_ERRORS.WHATSAPP_ERROR.MESSAGE_SENDING_FAILED, err));
 	}
 }
 

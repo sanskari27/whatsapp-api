@@ -21,7 +21,11 @@ export default class UploadService {
 		}));
 	}
 
-	addCSV(name: string, filename: string, headers: string[]) {
+	async addCSV(name: string, filename: string, headers: string[]) {
+		const exists = await UploadDB.exists({name,user:this.user,type: 'NUMBERS'});
+		if(exists){
+			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.ALREADY_EXISTS)
+		}
 		const csv_doc = new UploadDB({ user: this.user, name, filename, type: 'NUMBERS', headers });
 		csv_doc.save();
 		return {

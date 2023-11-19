@@ -41,6 +41,10 @@ export default class MessageSchedulerService {
 	public constructor(user: IUser) {
 		this.user = user;
 	}
+	async alreadyExists(name: string) {
+		const exists = await ScheduledMessageDB.exists({ user: this.user, campaign_name: name });
+		return exists !== null;
+	}
 
 	async scheduleBatch(messages: Message[], opts: Batch) {
 		const docPromise: Promise<
@@ -54,6 +58,12 @@ export default class MessageSchedulerService {
 		const startMoment = DateUtils.getMoment(opts.startTime ?? '00:00', 'HH:mm');
 		const endMoment = DateUtils.getMoment(opts.endTime ?? '23:59', 'HH:mm');
 		const scheduledTime = DateUtils.getMomentNow();
+		if (opts.startTime) {
+			startMoment.add(330, 'minutes');
+		}
+		if (opts.endTime) {
+			endMoment.add(330, 'minutes');
+		}
 		if (startMoment !== undefined && scheduledTime.isBefore(startMoment)) {
 			scheduledTime
 				.hours(startMoment.hours())
@@ -218,18 +228,21 @@ export default class MessageSchedulerService {
 			},
 			{
 				$sort: {
-					campaignName: 1, // Sort by campaignName in ascending order (1)
+					createdAt: -1, // Sort by campaignName in ascending order (1)
 				},
 			},
 		]);
 
-		return messages as {
-			campaign_id: string;
-			campaignName: string;
-			sent: number;
-			failed: number;
-			pending: number;
-		}[];
+		const _messages = messages.map((message) => ({
+			campaign_id: message.campaign_id as string,
+			campaignName: message.campaignName as string,
+			sent: message.sent as number,
+			failed: message.failed as number,
+			pending: message.pending as number,
+			createdAt: DateUtils.format(message.createdAt) as string,
+		}));
+
+		return _messages;
 	}
 
 	async deleteCampaign(campaign_id: string) {

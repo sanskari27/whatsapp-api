@@ -47,17 +47,10 @@ const readCSV = async (path: string) => {
 	if (!parsed_csv) {
 		return null;
 	}
-	const parsed_csv_mapped: {
-		[key: string]: {
-			[key: string]: string;
-			number: string;
-		};
-	} = parsed_csv.reduce((acc, item) => {
-		acc[item.number] = item;
-		return acc;
-	}, {});
-
-	return parsed_csv_mapped;
+	return parsed_csv as {
+		[key: string]: string;
+		number: string;
+	}[];
 };
 
 export default { moveFile, deleteFile, exists, base64ToJPG, base64ToPDF, readCSV };

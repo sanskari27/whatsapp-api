@@ -34,6 +34,21 @@ export default class WhatsappUtils {
 		return (await Promise.all(numbersPromise)).filter((number) => number !== null) as string[];
 	}
 
+	async getNumberWithId(number: string) {
+		try {
+			const numberID = await this.whatsapp.getClient().getNumberId(number);
+			if (!numberID) {
+				return null;
+			}
+			return {
+				number,
+				numberId: numberID._serialized,
+			};
+		} catch (err) {
+			return null;
+		}
+	}
+
 	async getNumberWithIds(numbers: string[]) {
 		const numbersPromise = numbers.map(async (number) => {
 			try {

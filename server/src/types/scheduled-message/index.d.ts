@@ -24,4 +24,5 @@ export default interface IScheduledMessage extends Document {
 
 	isPaused: boolean;
 	pausedAt: Date;
+	createdAt: Date;
 }

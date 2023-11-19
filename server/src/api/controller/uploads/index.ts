@@ -16,9 +16,11 @@ export async function saveCSV(req: Request, res: Response, next: NextFunction) {
 		},
 	};
 
+	let destination = '';
+
 	try {
 		const uploadedFile = await FileUpload.SingleFileUpload(req, res, fileUploadOptions);
-		const destination = __basedir + CSV_PATH + uploadedFile.filename;
+		destination = __basedir + CSV_PATH + uploadedFile.filename;
 		FileUtils.moveFile(uploadedFile.path, destination);
 		const parsed_csv = await csv().fromFile(destination);
 
@@ -27,10 +29,13 @@ export async function saveCSV(req: Request, res: Response, next: NextFunction) {
 		}
 
 		const headers: string[] = Object.keys(parsed_csv[0]) ?? [];
+		if (!headers.includes('number')) {
+			return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
+		}
 
 		const name = req.body.name;
 
-		new UploadService(req.locals.user).addCSV(name, uploadedFile.filename, headers);
+		await new UploadService(req.locals.user).addCSV(name, uploadedFile.filename, headers);
 		return Respond({
 			res,
 			status: 200,
@@ -41,6 +46,12 @@ export async function saveCSV(req: Request, res: Response, next: NextFunction) {
 			},
 		});
 	} catch (err: unknown) {
+		if (err instanceof InternalError) {
+			if (err.isSameInstanceof(INTERNAL_ERRORS.COMMON_ERRORS.ALREADY_EXISTS)) {
+				FileUtils.deleteFile(destination);
+				return next(new APIError(API_ERRORS.COMMON_ERRORS.ALREADY_EXISTS));
+			}
+		}
 		return next(new APIError(API_ERRORS.COMMON_ERRORS.FILE_UPLOAD_ERROR, err));
 	}
 }
