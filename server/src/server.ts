@@ -9,7 +9,7 @@ import connectDB from './config/DB';
 import cache from './config/cache';
 import { PORT } from './config/const';
 import { SocketServerProvider } from './socket';
-import Logger from './utils/logger';
+import Logger from 'n23-logger';
 
 //  ------------------------- Setup Variables
 const app = express();

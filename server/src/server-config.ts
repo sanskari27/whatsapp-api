@@ -11,7 +11,7 @@ import { MessageSchedulerService } from './database/services';
 import APIError from './errors/api-errors';
 import { WhatsappProvider } from './provider/whatsapp_provider';
 import WhatsappUtils from './utils/WhatsappUtils';
-import Logger from './utils/logger';
+import Logger from 'n23-logger';
 
 export default function (app: Express) {
 	//Defines all global variables and constants

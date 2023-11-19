@@ -1,9 +1,9 @@
 import crypto from 'crypto';
 import { Request, Response } from 'express';
 import { Types } from 'mongoose';
+import Logger from 'n23-logger';
 import { z } from 'zod';
 import { SUBSCRIPTION_STATUS } from '../config/const';
-import Logger from './logger';
 type ResponseData = {
 	res: Response;
 	status: 200 | 201 | 400 | 401 | 403 | 404 | 500;

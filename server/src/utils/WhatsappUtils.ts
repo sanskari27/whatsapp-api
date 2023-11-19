@@ -1,4 +1,5 @@
 import fs from 'fs';
+import Logger from 'n23-logger';
 import WAWebJS, { GroupChat } from 'whatsapp-web.js';
 import { COUNTRIES, IS_PRODUCTION, SESSION_STARTUP_WAIT_TIME } from '../config/const';
 import { UserService } from '../database/services';
@@ -6,7 +7,6 @@ import APIError, { API_ERRORS } from '../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../errors/internal-errors';
 import { WhatsappProvider } from '../provider/whatsapp_provider';
 import { IContact } from '../types/whatsapp';
-import Logger from './logger';
 
 export type MappedContacts = {
 	[contact_number: string]: IContact;
