@@ -658,7 +658,7 @@ const ChatBot = () => {
                                     onClick={openContactInput}
                                     isDisabled={!isAuthenticated}
                                 >
-                                    Share Contact
+                                    Create Contact
                                 </Button>
                                 <ContactDetailInputDialog
                                     isOpen={isContactDetailsOpen}
