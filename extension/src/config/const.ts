@@ -1,3 +1,5 @@
+import countries from './countries.json';
+
 export const SERVER_URL = 'https://api.whatsleads.in/';
 export const WEBPAGE_URL = 'https://whatsleads.in/';
 // export const SERVER_URL = 'http://localhost:8282/';
@@ -65,3 +67,7 @@ export enum SETTINGS {
     USER_TYPE = 'USER_TYPE',
     PAYMENT_RECORDS = 'PAYMENT_RECORDS',
 }
+
+export const COUNTRIES: {
+    [country_code: string]: string;
+} = countries;
