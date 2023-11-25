@@ -103,13 +103,15 @@ export async function addAttachment(req: Request, res: Response, next: NextFunct
 		const destination = __basedir + ATTACHMENTS_PATH + uploadedFile.filename;
 		FileUtils.moveFile(uploadedFile.path, destination);
 
-		const name = req.body.name;
-		const caption = req.body.caption;
+		const name = req.body.name as string;
+		const caption = req.body.caption as string;
+		const custom_caption = req.body.custom_caption as boolean;
 
 		const attachment = new UploadService(req.locals.user).addAttachment(
 			name,
 			caption,
-			uploadedFile.filename
+			uploadedFile.filename,
+			custom_caption
 		);
 
 		return Respond({

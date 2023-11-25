@@ -22,11 +22,17 @@ export default class UploadService {
 	}
 
 	async addCSV(name: string, filename: string, headers: string[]) {
-		const exists = await UploadDB.exists({name,user:this.user,type: 'NUMBERS'});
-		if(exists){
-			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.ALREADY_EXISTS)
+		const exists = await UploadDB.exists({ name, user: this.user, type: 'NUMBERS' });
+		if (exists) {
+			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.ALREADY_EXISTS);
 		}
-		const csv_doc = new UploadDB({ user: this.user, name, filename, type: 'NUMBERS', headers });
+		const csv_doc = new UploadDB({
+			user: this.user,
+			name,
+			filename,
+			type: 'NUMBERS',
+			headers,
+		});
 		csv_doc.save();
 		return {
 			id: csv_doc._id as string,
@@ -57,17 +63,19 @@ export default class UploadService {
 				caption: attachment.caption,
 				filename: attachment.filename,
 				name: attachment.name ?? '',
+				custom_caption: attachment.custom_caption ?? false,
 			})),
 			attachments,
 		] as [{ id: string; caption: string; filename: string; name: string }[], IUpload[]];
 	}
-	addAttachment(name: string, caption: string, filename: string) {
+	addAttachment(name: string, caption: string, filename: string, custom_caption: boolean = false) {
 		const attachment = new UploadDB({
 			user: this.user,
 			name,
 			filename,
 			type: 'ATTACHMENT',
 			caption,
+			custom_caption,
 		});
 		attachment.save();
 		return {

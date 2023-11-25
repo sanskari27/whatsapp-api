@@ -165,7 +165,7 @@ export default class UserService {
 			revoke_at: {
 				$lt: DateUtils.getMomentNow().toDate(),
 			},
-		});
+		}).populate('user');
 
 		const sessions = revokable.filter((auth) => {
 			const userService = new UserService(auth.user);

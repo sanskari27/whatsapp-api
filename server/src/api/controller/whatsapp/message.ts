@@ -105,6 +105,13 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 
 	let messages: string[] | null = null;
 	let numbers: string[] = [];
+	let _attachments: {
+		[key: string]: {
+			filename: string;
+			caption: string;
+			name: string;
+		}[];
+	} | null = null;
 
 	const { isSubscribed, isNew } = new UserService(req.locals.user).isSubscribed();
 
@@ -118,6 +125,10 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
 
+	const [uploaded_attachments, media_attachments] = await new UploadService(
+		req.locals.user
+	).listAttachments(attachments);
+
 	if (type === 'NUMBERS') {
 		numbers = await whatsappUtils.getNumberIds(requestedNumberList as string[]);
 	} else if (type === 'CSV') {
@@ -128,6 +139,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 
 		numbers = [];
 		messages = [];
+		_attachments = {};
 
 		const promises = parsed_csv.map(async (row) => {
 			const numberWithId = await whatsappUtils.getNumberWithId(row.number);
@@ -141,6 +153,20 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 			for (const variable of variables) {
 				const _variable = variable.substring(2, variable.length - 2);
 				_message = _message.replace(variable, row[_variable] ?? '');
+			}
+
+			_attachments![numberWithId.numberId] = [];
+			for (const attachment of uploaded_attachments) {
+				let _caption = attachment.caption;
+				for (const variable of variables) {
+					const _variable = variable.substring(2, variable.length - 2);
+					_caption = _caption.replace(variable, row[_variable] ?? '');
+				}
+				_attachments![numberWithId.numberId].push({
+					filename: attachment.filename,
+					caption: _caption,
+					name: attachment.name,
+				});
 			}
 
 			messages?.push(_message);
@@ -188,10 +214,6 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 			return next(new APIError(API_ERRORS.WHATSAPP_ERROR.BUSINESS_ACCOUNT_REQUIRED));
 		}
 	}
-
-	const [_, media_attachments] = await new UploadService(req.locals.user).listAttachments(
-		attachments
-	);
 
 	const contact_cards_promise = shared_contact_cards.map(async (detail) => {
 		const vcard = new VCardBuilder(detail)
@@ -260,11 +282,21 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 
 	const sendMessageList = numbers.map(async (number, index) => {
 		const _message = messages !== null ? messages[index] : message ?? '';
+		const attachments =
+			media_attachments.length !== 0
+				? type === 'CSV'
+					? _attachments![number]
+					: media_attachments.map((attachment) => ({
+							name: attachment.name,
+							filename: attachment.filename,
+							caption: attachment.caption,
+					  }))
+				: null;
 
 		return {
 			number,
 			message: _message,
-			attachments: media_attachments,
+			attachments: attachments ?? [],
 			shared_contact_cards: contact_cards ?? [],
 		};
 	});

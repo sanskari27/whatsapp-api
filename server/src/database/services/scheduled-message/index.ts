@@ -4,7 +4,6 @@ import { MessageMedia } from 'whatsapp-web.js';
 import { ATTACHMENTS_PATH, PROMOTIONAL_MESSAGE } from '../../../config/const';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 import IScheduledMessage from '../../../types/scheduled-message';
-import IUpload from '../../../types/uploads';
 import { IUser } from '../../../types/user';
 import DateUtils from '../../../utils/DateUtils';
 import ErrorReporter from '../../../utils/ErrorReporter';
@@ -15,7 +14,11 @@ import UserService from '../user';
 export type Message = {
 	number: string;
 	message: TextMessage;
-	attachments: IUpload[];
+	attachments: {
+		name: string;
+		filename: string;
+		caption: string | undefined;
+	}[];
 	shared_contact_cards: ContactCardMessage;
 };
 

@@ -25,8 +25,9 @@ const scheduledMessageSchema = new mongoose.Schema<IScheduledMessage>({
 	message: String,
 	attachments: [
 		{
-			type: Schema.Types.ObjectId,
-			ref: 'Upload',
+			name: String,
+			filename: String,
+			caption: String,
 		},
 	],
 	shared_contact_cards: [String],

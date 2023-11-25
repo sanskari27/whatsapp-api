@@ -1,5 +1,4 @@
 import { Document } from 'mongoose';
-import { type } from 'os';
 import { IUser } from '../user';
 
 export default interface IUpload extends Document {
@@ -7,6 +6,7 @@ export default interface IUpload extends Document {
 	name: string;
 	filename: string;
 	caption?: string;
+	custom_caption: boolean;
 	type: 'NUMBERS' | 'ATTACHMENT';
 	headers: string[];
 }

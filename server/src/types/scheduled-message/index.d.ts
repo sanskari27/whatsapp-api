@@ -1,5 +1,4 @@
 import { Document } from 'mongoose';
-import IUpload from '../uploads';
 import { IUser } from '../users';
 
 export default interface IScheduledMessage extends Document {
@@ -10,7 +9,11 @@ export default interface IScheduledMessage extends Document {
 
 	message: string;
 
-	attachments: IUpload[];
+	attachments: {
+		name: string;
+		filename: string;
+		caption: string;
+	}[];
 
 	shared_contact_cards: string[];
 
