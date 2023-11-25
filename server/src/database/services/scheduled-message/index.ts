@@ -65,6 +65,8 @@ export default class MessageSchedulerService {
 				.seconds(startMoment.seconds() + 1);
 		}
 
+		const time_now = DateUtils.getMomentNow();
+
 		for (let i = 0; i < messages.length; i++) {
 			const message = messages[i];
 			if (
@@ -99,6 +101,7 @@ export default class MessageSchedulerService {
 					batch_id: batch_id,
 					campaign_name: opts.campaign_name,
 					campaign_id: opts.campaign_id,
+					campaign_created_at: time_now.toDate(),
 				})
 			);
 		}
@@ -222,7 +225,7 @@ export default class MessageSchedulerService {
 			},
 			{
 				$sort: {
-					createdAt: -1, // Sort by campaignName in ascending order (1)
+					campaign_created_at: -1, // Sort by campaignName in ascending order (1)
 				},
 			},
 		]);
@@ -234,6 +237,7 @@ export default class MessageSchedulerService {
 			failed: message.failed as number,
 			pending: message.pending as number,
 			createdAt: DateUtils.format(message.createdAt) as string,
+			isPaused: message.isPaused as boolean,
 		}));
 
 		return _messages;
