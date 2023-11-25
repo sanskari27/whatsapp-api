@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { Types } from 'mongoose';
+import Logger from 'n23-logger';
 import { z } from 'zod';
 import { MessageSchedulerService, UserService } from '../../../database/services';
 import UploadService from '../../../database/services/uploads';
@@ -283,20 +284,17 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 	const sendMessageList = numbers.map(async (number, index) => {
 		const _message = messages !== null ? messages[index] : message ?? '';
 		const attachments =
-			media_attachments.length !== 0
-				? type === 'CSV'
-					? _attachments![number]
-					: media_attachments.map((attachment) => ({
-							name: attachment.name,
-							filename: attachment.filename,
-							caption: attachment.caption,
-					  }))
-				: null;
-
+			type === 'CSV'
+				? _attachments![number]
+				: media_attachments.map((attachment) => ({
+						name: attachment.name,
+						filename: attachment.filename,
+						caption: attachment.caption,
+				  }));
 		return {
 			number,
 			message: _message,
-			attachments: attachments ?? [],
+			attachments: attachments,
 			shared_contact_cards: contact_cards ?? [],
 		};
 	});
@@ -308,6 +306,8 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.ALREADY_EXISTS);
 		}
 		const campaign_id = generateBatchID();
+		const messages = await Promise.all(sendMessageList);
+		Logger.debug(messages, { label: 'Messages' });
 		messageSchedulerService.scheduleBatch(await Promise.all(sendMessageList), {
 			campaign_id,
 			campaign_name,
