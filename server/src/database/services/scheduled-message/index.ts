@@ -50,8 +50,6 @@ export default class MessageSchedulerService {
 	}
 
 	async scheduleBatch(messages: Message[], opts: Batch) {
-		console.log(messages);
-
 		const docPromise: Promise<
 			IScheduledMessage & {
 				_id: Types.ObjectId;
