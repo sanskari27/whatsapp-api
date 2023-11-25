@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
 import { Types } from 'mongoose';
-import Logger from 'n23-logger';
 import { z } from 'zod';
 import { MessageSchedulerService, UserService } from '../../../database/services';
 import UploadService from '../../../database/services/uploads';
@@ -307,7 +306,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 		}
 		const campaign_id = generateBatchID();
 		const messages = await Promise.all(sendMessageList);
-		Logger.debug(messages, { label: 'Messages' });
+		console.log(messages);
 		messageSchedulerService.scheduleBatch(await Promise.all(sendMessageList), {
 			campaign_id,
 			campaign_name,
