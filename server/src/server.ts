@@ -5,11 +5,11 @@ dotenv.config();
 import express from 'express';
 import configServer from './server-config';
 
+import Logger from 'n23-logger';
 import connectDB from './config/DB';
 import cache from './config/cache';
 import { PORT } from './config/const';
 import { SocketServerProvider } from './socket';
-import Logger from 'n23-logger';
 
 //  ------------------------- Setup Variables
 const app = express();

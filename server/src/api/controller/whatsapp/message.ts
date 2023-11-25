@@ -305,9 +305,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.ALREADY_EXISTS);
 		}
 		const campaign_id = generateBatchID();
-		const scheduled_messages = await Promise.all(sendMessageList);
-		console.log(scheduled_messages);
-		messageSchedulerService.scheduleBatch(scheduled_messages, {
+		messageSchedulerService.scheduleBatch(await Promise.all(sendMessageList), {
 			campaign_id,
 			campaign_name,
 			min_delay,
