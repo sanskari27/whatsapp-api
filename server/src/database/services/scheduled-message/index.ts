@@ -232,7 +232,11 @@ export default class MessageSchedulerService {
 
 		const _messages = messages
 			.sort((a, b) =>
-				DateUtils.getMoment(a.created_at).isAfter(DateUtils.getMoment(b.created_at)) ? 1 : -1
+				DateUtils.getMoment(a.campaign_created_at).isAfter(
+					DateUtils.getMoment(b.campaign_created_at)
+				)
+					? 1
+					: -1
 			)
 			.map((message) => ({
 				campaign_id: message.campaign_id as string,
