@@ -239,7 +239,7 @@ export default class MessageSchedulerService {
 			sent: message.sent as number,
 			failed: message.failed as number,
 			pending: message.pending as number,
-			createdAt: DateUtils.format(message.createdAt) as string,
+			createdAt: DateUtils.format(message.campaign_created_at) as string,
 			isPaused: message.isPaused as boolean,
 		}));
 
