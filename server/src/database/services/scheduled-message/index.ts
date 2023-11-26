@@ -194,9 +194,15 @@ export default class MessageSchedulerService {
 		const messages = await ScheduledMessageDB.aggregate([
 			{ $match: { sender: this.user._id, campaign_id: { $exists: true } } },
 			{
+				$sort: {
+					campaign_created_at: -1, // Sort by campaignName in ascending order (1)
+				},
+			},
+			{
 				$group: {
 					_id: '$campaign_id', // Group by campaign_id
 					campaignName: { $first: '$campaign_name' }, // Get the first campaign_name
+					campaign_created_at: { $first: '$campaign_created_at' }, // Get the first campaign_name
 					sent: { $sum: { $cond: ['$isSent', 1, 0] } }, // Count isSent = true
 					failed: { $sum: { $cond: ['$isFailed', 1, 0] } }, // Count isFailed = true
 					pending: {
@@ -225,11 +231,6 @@ export default class MessageSchedulerService {
 					pending: 1,
 					isPaused: 1,
 					campaign_created_at: 1,
-				},
-			},
-			{
-				$sort: {
-					campaign_created_at: -1, // Sort by campaignName in ascending order (1)
 				},
 			},
 		]);
