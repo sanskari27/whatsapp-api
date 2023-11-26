@@ -224,6 +224,7 @@ export default class MessageSchedulerService {
 					failed: 1,
 					pending: 1,
 					isPaused: 1,
+					campaign_created_at: 1,
 				},
 			},
 			{
