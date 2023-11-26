@@ -235,8 +235,8 @@ export default class MessageSchedulerService {
 				DateUtils.getMoment(a.campaign_created_at).isAfter(
 					DateUtils.getMoment(b.campaign_created_at)
 				)
-					? 1
-					: -1
+					? -1
+					: 1
 			)
 			.map((message) => ({
 				campaign_id: message.campaign_id as string,
