@@ -191,10 +191,10 @@ export default class UserService {
 		const responseUsers = await BotResponseDB.find().distinct('user');
 
 		const scheduledSet = new Set(scheduled);
-		const responseSet = new Set(responseUsers);
+		const responseSet = new Set(responseUsers.map((user) => user.toString()));
 
 		const sessions = revokable.filter(
-			(auth) => !scheduledSet.has(auth.client_id) && !responseSet.has(auth.user)
+			(auth) => !scheduledSet.has(auth.client_id) && !responseSet.has(auth.user.toString())
 		);
 
 		return sessions;
