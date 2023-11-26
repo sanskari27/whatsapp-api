@@ -8,6 +8,7 @@ import {
     Button,
     Center,
     Flex,
+    HStack,
     Icon,
     Text,
 } from '@chakra-ui/react';
@@ -97,17 +98,52 @@ const Reports = () => {
                                             {campaign.failed} Failed
                                         </Text>
                                     </Flex>
-                                    <Center
-                                        hidden={campaign.pending === 0}
+                                    <HStack
                                         pt={'0.5rem'}
+                                        justifyContent={'center'}
                                     >
-                                        {campaign.isPaused ? (
+                                        <Box hidden={campaign.pending === 0}>
+                                            {campaign.isPaused ? (
+                                                <Button
+                                                    colorScheme="blue"
+                                                    variant="outline"
+                                                    size={'xs'}
+                                                    onClick={async () => {
+                                                        await ReportsService.resumeCampaign(
+                                                            campaign.campaign_id
+                                                        );
+                                                        ReportsService.generateAllCampaigns().then(
+                                                            setCampaigns
+                                                        );
+                                                    }}
+                                                >
+                                                    Resume
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    colorScheme="blue"
+                                                    variant="outline"
+                                                    size={'xs'}
+                                                    onClick={async () => {
+                                                        await ReportsService.pauseCampaign(
+                                                            campaign.campaign_id
+                                                        );
+                                                        ReportsService.generateAllCampaigns().then(
+                                                            setCampaigns
+                                                        );
+                                                    }}
+                                                >
+                                                    Pause
+                                                </Button>
+                                            )}
+                                        </Box>
+                                        <Center>
                                             <Button
-                                                colorScheme="blue"
+                                                colorScheme="red"
                                                 variant="outline"
                                                 size={'xs'}
                                                 onClick={async () => {
-                                                    await ReportsService.resumeCampaign(
+                                                    await ReportsService.deleteCampaign(
                                                         campaign.campaign_id
                                                     );
                                                     ReportsService.generateAllCampaigns().then(
@@ -115,46 +151,10 @@ const Reports = () => {
                                                     );
                                                 }}
                                             >
-                                                Resume
+                                                Delete Campaign
                                             </Button>
-                                        ) : (
-                                            <Button
-                                                colorScheme="blue"
-                                                variant="outline"
-                                                size={'xs'}
-                                                onClick={async () => {
-                                                    await ReportsService.pauseCampaign(
-                                                        campaign.campaign_id
-                                                    );
-                                                    ReportsService.generateAllCampaigns().then(
-                                                        setCampaigns
-                                                    );
-                                                }}
-                                            >
-                                                Pause
-                                            </Button>
-                                        )}
-                                    </Center>
-                                    <Center
-                                        hidden={campaign.pending !== 0}
-                                        pt={'0.5rem'}
-                                    >
-                                        <Button
-                                            colorScheme="red"
-                                            variant="outline"
-                                            size={'xs'}
-                                            onClick={async () => {
-                                                await ReportsService.deleteCampaign(
-                                                    campaign.campaign_id
-                                                );
-                                                ReportsService.generateAllCampaigns().then(
-                                                    setCampaigns
-                                                );
-                                            }}
-                                        >
-                                            Delete Campaign
-                                        </Button>
-                                    </Center>
+                                        </Center>
+                                    </HStack>
                                 </AccordionPanel>
                             </AccordionItem>
                         ))}

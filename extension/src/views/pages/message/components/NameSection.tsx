@@ -184,6 +184,12 @@ const NameSection = ({
                         uploadingCSV: false,
                         messageError: res.id,
                     }));
+                    setTimeout(() => {
+                        setUIDetails((prev) => ({
+                            ...prev,
+                            messageError: '',
+                        }));
+                    }, 5000);
                     return;
                 }
                 setRecipientsOptions((prev) => [res, ...prev]);
@@ -381,10 +387,12 @@ const NameSection = ({
                                         className="dark:invert"
                                     />
                                 }
-                                // onClick={() => {
-                                // 	ExcelUtils.downloadExcelTemplate();
-
-                                // }
+                                onClick={() => {
+                                    window.open(
+                                        'https://docs.google.com/spreadsheets/d/1qj7u0e8OhrFHYj6bHlPAnORC5uRpKI3xoxW7PRAjxWM/edit#gid=0',
+                                        '_blank'
+                                    );
+                                }}
                             />
                         </Flex>
                         <Box py={'0.5rem'}>

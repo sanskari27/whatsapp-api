@@ -1,5 +1,11 @@
 import { InfoIcon, InfoOutlineIcon } from '@chakra-ui/icons';
 import {
+    AlertDialog,
+    AlertDialogBody,
+    AlertDialogContent,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogOverlay,
     Box,
     Button,
     Flex,
@@ -13,6 +19,7 @@ import {
     StepTitle,
     Stepper,
     Text,
+    useDisclosure,
     useSteps,
 } from '@chakra-ui/react';
 import { useEffect, useRef, useState } from 'react';
@@ -67,6 +74,7 @@ const steps = ['Name', 'Message', 'Delay'];
 
 const Message = () => {
     const loginModelRef = useRef<LoginHandle>(null);
+    const { isOpen, onOpen, onClose } = useDisclosure();
 
     const { isAuthenticated, isAuthenticating, qrCode, qrGenerated } =
         useAuth();
@@ -316,8 +324,15 @@ const Message = () => {
                     apiError: errorMessage,
                     schedulingMessages: false,
                 }));
+                setTimeout(() => {
+                    setUIDetails((prev) => ({
+                        ...prev,
+                        apiError: '',
+                    }));
+                }, 5000);
                 return;
             }
+            onOpen();
             setActiveStep(1);
             setDetails({
                 type: 'CSV',
@@ -337,7 +352,6 @@ const Message = () => {
                 batch_delay: 120,
                 batch_size: 1,
             });
-            console.log('stage 5');
             setUIDetails((prev) => ({
                 recipientsLoading: false,
                 paymentVerified: prev.paymentVerified,
@@ -348,7 +362,6 @@ const Message = () => {
                 delayError: '',
                 apiError: '',
             }));
-            console.log('stage 6');
         });
     };
 
@@ -500,7 +513,13 @@ const Message = () => {
                                 bgColor: 'yellow.400',
                             }}
                             width={'48%'}
-                            onClick={goToPrevious}
+                            onClick={() => {
+                                setUIDetails((prev) => ({
+                                    ...prev,
+                                    apiError: '',
+                                }));
+                                goToPrevious();
+                            }}
                         >
                             <Text color={'white'}>Back</Text>
                         </Button>
@@ -524,9 +543,52 @@ const Message = () => {
                     </Button>
                 </Flex>
             )}
-
+            <InputDialog isOpen={isOpen} onClose={onClose} />
             <LoginModal ref={loginModelRef} qr={qrCode} />
         </Flex>
+    );
+};
+
+const InputDialog = ({
+    isOpen,
+    onClose,
+}: {
+    onClose: () => void;
+    isOpen: boolean;
+}) => {
+    const cancelRef = useRef<any>();
+    return (
+        <AlertDialog
+            motionPreset="slideInBottom"
+            leastDestructiveRef={cancelRef}
+            onClose={onClose}
+            isOpen={isOpen}
+            isCentered
+            size={'sm'}
+        >
+            <AlertDialogOverlay />
+
+            <AlertDialogContent width={'80%'}>
+                <AlertDialogHeader>
+                    <Text size={'2xl'} textAlign={'center'}>
+                        Successfully created campaign.
+                    </Text>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <Button
+                        bgColor={'green.300'}
+                        _hover={{
+                            bgColor: 'green.400',
+                        }}
+                        width={'100%'}
+                        onClick={onClose}
+                    >
+                        <Text color={'white'}>OK</Text>
+                    </Button>
+                </AlertDialogFooter>
+                <AlertDialogBody></AlertDialogBody>
+            </AlertDialogContent>
+        </AlertDialog>
     );
 };
 
