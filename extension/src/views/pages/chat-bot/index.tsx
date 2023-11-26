@@ -271,6 +271,16 @@ const ChatBot = () => {
             }));
             return;
         }
+        if (
+            !trigger_details.trigger_gap_time ||
+            trigger_details.trigger_gap_time <= 0
+        ) {
+            setError((prevState) => ({
+                ...prevState,
+                message: 'Trigger is required',
+            }));
+            return;
+        }
         const trigger_gap_seconds =
             trigger_details.trigger_gap_type === 'HOUR'
                 ? trigger_details.trigger_gap_time * 3600
@@ -598,7 +608,7 @@ const ChatBot = () => {
                                     border={'none'}
                                     className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]"
                                     _focus={{ border: 'none', outline: 'none' }}
-                                    value={details.trigger_gap_seconds.toString()}
+                                    value={trigger_details.trigger_gap_time}
                                     onChange={(e) => {
                                         handleTriggerTimeUpdate({
                                             name: 'trigger_gap_time',

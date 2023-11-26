@@ -363,6 +363,7 @@ const MessageSection = ({
                         addAttachment(name, caption, attachmentFile);
                         closeAttachmentDetailsInput();
                     }}
+                    variables={details.variables}
                 />
                 <input
                     type="file"
