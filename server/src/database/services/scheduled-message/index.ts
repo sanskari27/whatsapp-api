@@ -194,11 +194,6 @@ export default class MessageSchedulerService {
 		const messages = await ScheduledMessageDB.aggregate([
 			{ $match: { sender: this.user._id, campaign_id: { $exists: true } } },
 			{
-				$sort: {
-					campaign_created_at: -1, // Sort by campaignName in ascending order (1)
-				},
-			},
-			{
 				$group: {
 					_id: '$campaign_id', // Group by campaign_id
 					campaignName: { $first: '$campaign_name' }, // Get the first campaign_name
@@ -235,16 +230,19 @@ export default class MessageSchedulerService {
 			},
 		]);
 
-		const _messages = messages.map((message) => ({
-			campaign_id: message.campaign_id as string,
-			campaignName: message.campaignName as string,
-			sent: message.sent as number,
-			failed: message.failed as number,
-			pending: message.pending as number,
-			createdAt: DateUtils.format(message.campaign_created_at) as string,
-			isPaused: message.isPaused as boolean,
-		}));
-
+		const _messages = messages
+			.sort((a, b) =>
+				DateUtils.getMoment(a.created_at).isAfter(DateUtils.getMoment(b.created_at)) ? 1 : -1
+			)
+			.map((message) => ({
+				campaign_id: message.campaign_id as string,
+				campaignName: message.campaignName as string,
+				sent: message.sent as number,
+				failed: message.failed as number,
+				pending: message.pending as number,
+				createdAt: DateUtils.format(message.campaign_created_at) as string,
+				isPaused: message.isPaused as boolean,
+			}));
 		return _messages;
 	}
 
