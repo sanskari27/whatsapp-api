@@ -47,7 +47,9 @@ async function createCustomer(details: {
 async function fetchCustomerByContact(number: string) {
 	const customers = await RazorpayAPI.customers.all();
 
-	const customer = customers.items.find((customer) => customer.contact === number);
+	const customer = customers.items.find((customer) =>
+		customer.contact?.toString().includes(number)
+	);
 	if (!customer) {
 		return null;
 	}
