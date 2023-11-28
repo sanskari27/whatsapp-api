@@ -289,7 +289,9 @@ const NameSection = ({
                     >
                         Group Individuals
                     </option>
-                    {isBusiness ? <option value="LABEL">Labels</option> : null}
+                    {isBusiness ? <option
+                        className="'text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
+                        value="LABEL">Labels</option> : null}
                 </Select>
             </Box>
             <Box
@@ -365,6 +367,7 @@ const NameSection = ({
                                 flexGrow={1}
                                 variant={'outline'}
                                 colorScheme="blue"
+                                isDisabled={isDisabled}
                                 onClick={() =>
                                     document
                                         .getElementById('csv-file-input')

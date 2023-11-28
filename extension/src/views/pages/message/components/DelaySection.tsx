@@ -54,7 +54,7 @@ const DelaySection = ({
                             fontSize="xs"
                             className="text-gray-700 dark:text-gray-400"
                         >
-                            Min Delay
+                            Min Delay (in sec)
                         </Text>
                         <Input
                             width={'full'}
@@ -80,7 +80,7 @@ const DelaySection = ({
                             fontSize="xs"
                             className="text-gray-700 dark:text-gray-400"
                         >
-                            Max Delay
+                            Max Delay (in sec)
                         </Text>
                         <Input
                             width={'full'}
@@ -144,7 +144,7 @@ const DelaySection = ({
                             fontSize="xs"
                             className="text-gray-700 dark:text-gray-400"
                         >
-                            Batch Delay
+                            Batch Delay (in sec)
                         </Text>
                         <Input
                             width={'full'}
