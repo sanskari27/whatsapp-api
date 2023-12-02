@@ -68,6 +68,8 @@ export default class UploadsService {
         } catch (err: any) {
             if (err.response.data.title === 'ALREADY_EXISTS')
                 return { name: 'ERROR', id: 'File name already exists' };
+            if (err.response.data.title === 'INVALID_FIELDS')
+                return { name: 'ERROR', id: 'Invalid Fields in CSV' }
 
             return { name: 'ERROR', id: 'Something went wrong' };
         }

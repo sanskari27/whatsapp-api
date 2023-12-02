@@ -277,7 +277,7 @@ const ChatBot = () => {
         ) {
             setError((prevState) => ({
                 ...prevState,
-                message: 'Trigger is required',
+                message: 'Invalid Message Delay',
             }));
             return;
         }
@@ -287,7 +287,7 @@ const ChatBot = () => {
                 : trigger_details.trigger_gap_type === 'MINUTE'
                 ? trigger_details.trigger_gap_time * 60
                 : trigger_details.trigger_gap_time;
-        addBot({ ...details, trigger_gap_seconds }).then(() => {
+        addBot({ ...details, trigger_gap_seconds:Number(trigger_gap_seconds) }).then(() => {
             setDetails({
                 trigger: '',
                 message: '',
@@ -729,17 +729,9 @@ const ChatBot = () => {
                                         justifyContent={'space-between'}
                                     >
                                         <Box className="text-background-dark dark:text-background">
-                                            {bot.trigger.length > 15
-                                                ? bot.trigger
-                                                      .substring(0, 15)
-                                                      .concat('...')
-                                                : bot.trigger}
+                                            {bot.trigger}
                                             {' : '}
-                                            {bot.message.length > 15
-                                                ? bot.message
-                                                      .substring(0, 15)
-                                                      .concat('...')
-                                                : bot.message}
+                                            {bot.message}
                                             {bot.attachments.length > 0
                                                 ? `- ${bot.attachments.length} Attachments`
                                                 : ''}
