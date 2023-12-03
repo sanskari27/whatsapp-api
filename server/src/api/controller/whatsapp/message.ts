@@ -105,13 +105,13 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 
 	let messages: string[] | null = null;
 	let numbers: string[] = [];
-	let _attachments: {
-		[key: string]: {
-			filename: string;
-			caption: string;
-			name: string;
-		}[];
-	} | null = null;
+	let _attachments:
+		| {
+				filename: string;
+				caption: string;
+				name: string;
+		  }[][]
+		| null = null;
 
 	const { isSubscribed, isNew } = new UserService(req.locals.user).isSubscribed();
 
@@ -139,7 +139,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 
 		numbers = [];
 		messages = [];
-		_attachments = {};
+		_attachments = [];
 
 		const promises = parsed_csv.map(async (row) => {
 			const numberWithId = await whatsappUtils.getNumberWithId(row.number);
@@ -154,15 +154,14 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 				const _variable = variable.substring(2, variable.length - 2);
 				_message = _message.replace(variable, row[_variable] ?? '');
 			}
-
-			_attachments![numberWithId.numberId] = [];
+			_attachments!.push([]);
 			for (const attachment of uploaded_attachments) {
 				let _caption = attachment.caption;
 				for (const variable of variables) {
 					const _variable = variable.substring(2, variable.length - 2);
 					_caption = _caption.replace(variable, row[_variable] ?? '');
 				}
-				_attachments![numberWithId.numberId].push({
+				_attachments!.at(-1)?.push({
 					filename: attachment.filename,
 					caption: _caption,
 					name: attachment.name,
@@ -284,7 +283,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 		const _message = messages !== null ? messages[index] : message ?? '';
 		const attachments =
 			type === 'CSV'
-				? _attachments![number]
+				? _attachments![index]
 				: media_attachments.map((attachment) => ({
 						name: attachment.name,
 						filename: attachment.filename,
