@@ -287,7 +287,10 @@ const ChatBot = () => {
                 : trigger_details.trigger_gap_type === 'MINUTE'
                 ? trigger_details.trigger_gap_time * 60
                 : trigger_details.trigger_gap_time;
-        addBot({ ...details, trigger_gap_seconds:Number(trigger_gap_seconds) }).then(() => {
+        addBot({
+            ...details,
+            trigger_gap_seconds: Number(trigger_gap_seconds),
+        }).then(() => {
             setDetails({
                 trigger: '',
                 message: '',
@@ -530,20 +533,10 @@ const ChatBot = () => {
                                         ),
                                     })
                                 }
-                                showCheckbox={true}
-                                hideSelectedList={true}
                                 options={allAttachments.map((item, index) => ({
                                     ...item,
                                     displayValue: `${index + 1}. ${item.name}`,
                                 }))}
-                                style={{
-                                    searchBox: {
-                                        border: 'none',
-                                    },
-                                    inputField: {
-                                        width: '100%',
-                                    },
-                                }}
                                 className="!w-[375px] bg-[#ECECEC] dark:bg-[#535353] rounded-md border-none "
                             />
                             <IconButton

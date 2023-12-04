@@ -1,4 +1,4 @@
-import { InfoOutlineIcon } from '@chakra-ui/icons';
+import { DeleteIcon, InfoOutlineIcon } from '@chakra-ui/icons';
 import {
     AlertDialog,
     AlertDialogBody,
@@ -13,6 +13,7 @@ import {
     Flex,
     FormControl,
     FormErrorMessage,
+    HStack,
     Icon,
     IconButton,
     Input,
@@ -68,13 +69,14 @@ const NameSection = ({
     isHidden: boolean;
 }) => {
     const [recipients, setRecipientsOptions] = useState<
-        { id: string; name: string; headers?: string[] }[]
+        { id: string; name: string; headers?: string[]; _id?: string }[]
     >([]);
     const fileInputRef = useRef<HTMLInputElement | null>();
     const [uiDetails, setUIDetails] = useState({
         recipientsLoading: false,
         uploadingCSV: false,
         loadingVerifiedContacts: false,
+        deletingCSV: false,
         messageError: '',
     });
 
@@ -289,9 +291,14 @@ const NameSection = ({
                     >
                         Group Individuals
                     </option>
-                    {isBusiness ? <option
-                        className="'text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
-                        value="LABEL">Labels</option> : null}
+                    {isBusiness ? (
+                        <option
+                            className="'text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
+                            value="LABEL"
+                        >
+                            Labels
+                        </option>
+                    ) : null}
                 </Select>
             </Box>
             <Box
@@ -399,7 +406,7 @@ const NameSection = ({
                             />
                         </Flex>
                         <Box py={'0.5rem'}>
-                            <Text size={'sm'} color={'tomato'}>
+                            <Text size={'sm'} color={'yellow.300'}>
                                 <InfoOutlineIcon marginRight={'0.25rem'} />
                                 The first column header should be "number" and
                                 should contain numbers with country codes.
@@ -407,48 +414,90 @@ const NameSection = ({
                                 message
                             </Text>
                         </Box>
-                        <Button
-                            variant={'outline'}
-                            colorScheme="yellow"
-                            onClick={exportFilteredNumbers}
-                            hidden={
-                                !details.csv_file ||
-                                details.csv_file === 'select'
-                            }
-                            isLoading={uiDetails.loadingVerifiedContacts}
-                            leftIcon={<FiFilter />}
-                            disabled={isDisabled}
-                        >
-                            <Text>Filter Numbers</Text>
-                        </Button>
+                        <HStack width={'full'}>
+                            <Button
+                                width={'full'}
+                                variant={'outline'}
+                                colorScheme="red"
+                                onClick={() => {
+                                    setUIDetails((prev) => ({
+                                        ...prev,
+                                        deletingCSV: true,
+                                    }));
+                                    recipients.forEach((recipient) => {
+                                        if (recipient.id === details.csv_file) {
+                                            if (!recipient._id) return;
+                                            UploadsService.deleteCSV(
+                                                recipient._id
+                                            ).finally(() => {
+                                                setUIDetails((prev) => ({
+                                                    ...prev,
+                                                    deletingCSV: false,
+                                                }));
+                                                handleChange({
+                                                    name: 'csv_file',
+                                                    value: 'select',
+                                                });
+                                                fetchRecipients('CSV');
+                                            });
+                                        }
+                                    });
+                                }}
+                                hidden={
+                                    !details.csv_file ||
+                                    details.csv_file === 'select'
+                                }
+                                isLoading={uiDetails.deletingCSV}
+                                leftIcon={<DeleteIcon />}
+                                disabled={isDisabled}
+                            >
+                                <Text>Delete</Text>
+                            </Button>
 
-                        <input
-                            type="file"
-                            name="csv-file-input"
-                            id="csv-file-input"
-                            className="invisible h-[1px] absolute"
-                            multiple={false}
-                            accept=".csv"
-                            ref={(ref) => (fileInputRef.current = ref)}
-                            onInput={handleCSVFileInput}
-                        />
-                        <CSVNameInputDialog
-                            isOpen={isCSVNameInputOpen}
-                            onClose={() => {
-                                closeCSVNameInput();
-                                setNewCSVDetails({ file: null, name: '' });
-                            }}
-                            onConfirm={() => {
-                                uploadNewCSV();
-                                closeCSVNameInput();
-                            }}
-                            handleTextChange={(text) =>
-                                setNewCSVDetails((prev) => ({
-                                    ...prev,
-                                    name: text,
-                                }))
-                            }
-                        />
+                            <Button
+                                width={'full'}
+                                variant={'outline'}
+                                colorScheme="yellow"
+                                onClick={exportFilteredNumbers}
+                                hidden={
+                                    !details.csv_file ||
+                                    details.csv_file === 'select'
+                                }
+                                isLoading={uiDetails.loadingVerifiedContacts}
+                                leftIcon={<FiFilter />}
+                                disabled={isDisabled}
+                            >
+                                <Text>Filter Numbers</Text>
+                            </Button>
+
+                            <input
+                                type="file"
+                                name="csv-file-input"
+                                id="csv-file-input"
+                                className="invisible h-[1px] absolute"
+                                multiple={false}
+                                accept=".csv"
+                                ref={(ref) => (fileInputRef.current = ref)}
+                                onInput={handleCSVFileInput}
+                            />
+                            <CSVNameInputDialog
+                                isOpen={isCSVNameInputOpen}
+                                onClose={() => {
+                                    closeCSVNameInput();
+                                    setNewCSVDetails({ file: null, name: '' });
+                                }}
+                                onConfirm={() => {
+                                    uploadNewCSV();
+                                    closeCSVNameInput();
+                                }}
+                                handleTextChange={(text) =>
+                                    setNewCSVDetails((prev) => ({
+                                        ...prev,
+                                        name: text,
+                                    }))
+                                }
+                            />
+                        </HStack>
                     </Flex>
                 ) : (
                     <Multiselect

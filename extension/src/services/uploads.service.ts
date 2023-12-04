@@ -69,7 +69,7 @@ export default class UploadsService {
             if (err.response.data.title === 'ALREADY_EXISTS')
                 return { name: 'ERROR', id: 'File name already exists' };
             if (err.response.data.title === 'INVALID_FIELDS')
-                return { name: 'ERROR', id: 'Invalid Fields in CSV' }
+                return { name: 'ERROR', id: 'Invalid Fields in CSV' };
 
             return { name: 'ERROR', id: 'Something went wrong' };
         }
@@ -88,6 +88,7 @@ export default class UploadsService {
                 name: csv.name,
                 id: csv.filename,
                 headers: csv.headers,
+                _id: csv.id,
             }));
         } catch (err) {
             return [];

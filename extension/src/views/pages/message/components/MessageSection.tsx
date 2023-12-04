@@ -315,20 +315,18 @@ const MessageSection = ({
                                 ),
                             })
                         }
-                        showCheckbox={true}
-                        hideSelectedList={true}
                         options={allAttachments.map((item, index) => ({
                             ...item,
                             displayValue: `${index + 1}. ${item.name}`,
                         }))}
-                        style={{
-                            searchBox: {
-                                border: 'none',
-                            },
-                            inputField: {
-                                width: '100%',
-                            },
-                        }}
+                        // style={{
+                        //     searchBox: {
+                        //         border: 'none',
+                        //     },
+                        //     inputField: {
+                        //         width: '100%',
+                        //     },
+                        // }}
                         className="!w-[370px] bg-[#ECECEC] dark:bg-[#535353] rounded-md border-none "
                     />
                     <IconButton
