@@ -2,7 +2,7 @@ import { Types } from 'mongoose';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 import { IUser } from '../../../types/user';
 import DateUtils from '../../../utils/DateUtils';
-import { BotResponseDB } from '../../repository/bot';
+import { BotDB } from '../../repository/bot';
 import ScheduledMessageDB from '../../repository/scheduled-message';
 import { AuthDetailDB, UserDB } from '../../repository/user';
 import { PaymentService } from '../payments';
@@ -188,7 +188,7 @@ export default class UserService {
 			isSent: false,
 			isFailed: false,
 		}).distinct('client_id');
-		const responseUsers = await BotResponseDB.find().distinct('user');
+		const responseUsers = await BotDB.find().distinct('user');
 
 		const scheduledSet = new Set(scheduled);
 		const responseSet = new Set(responseUsers.map((user) => user.toString()));
