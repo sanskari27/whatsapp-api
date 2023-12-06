@@ -46,7 +46,7 @@ async function resumeCampaign(req: Request, res: Response, next: NextFunction) {
 async function generateReport(req: Request, res: Response, next: NextFunction) {
 	try {
 		const scheduler = new MessageSchedulerService(req.locals.user);
-		const report = scheduler.generateReport(req.params.campaign_id);
+		const report = await scheduler.generateReport(req.params.campaign_id);
 
 		return Respond({
 			res,
