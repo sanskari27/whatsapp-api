@@ -722,12 +722,86 @@ const ChatBot = () => {
                                         justifyContent={'space-between'}
                                     >
                                         <Box className="text-background-dark dark:text-background">
-                                            {bot.trigger}
-                                            {' : '}
-                                            {bot.message}
-                                            {bot.attachments.length > 0
-                                                ? `- ${bot.attachments.length} Attachments`
-                                                : ''}
+                                            <Box className="flex flex-row">
+                                                <Box>
+                                                    {bot.trigger}
+                                                    {' : '}
+                                                </Box>
+                                                <Box>
+                                                    <Box ml={'0.25rem'}>
+                                                        {' '}
+                                                        {bot.message.length >
+                                                        10 ? (
+                                                            <Box as="span">
+                                                                {`${bot.message.substring(
+                                                                    0,
+                                                                    10
+                                                                )}...`}
+                                                            </Box>
+                                                        ) : (
+                                                            <Box as="span">
+                                                                {bot.message}
+                                                            </Box>
+                                                        )}
+                                                        {bot.attachments
+                                                            .length > 0
+                                                            ? `- ${bot.attachments.length} Attachments`
+                                                            : ''}
+                                                    </Box>
+                                                </Box>
+                                            </Box>
+                                            <Box>
+                                                {`${bot.respond_to}, ${
+                                                    bot.options
+                                                }, ${
+                                                    bot.trigger_gap_seconds < 60
+                                                        ? `${
+                                                              bot.trigger_gap_seconds
+                                                          } second${
+                                                              bot.trigger_gap_seconds !==
+                                                              1
+                                                                  ? 's'
+                                                                  : ''
+                                                          }`
+                                                        : bot.trigger_gap_seconds <
+                                                          3600
+                                                        ? `${Math.floor(
+                                                              bot.trigger_gap_seconds /
+                                                                  60
+                                                          )} minute${
+                                                              Math.floor(
+                                                                  bot.trigger_gap_seconds /
+                                                                      60
+                                                              ) !== 1
+                                                                  ? 's'
+                                                                  : ''
+                                                          }`
+                                                        : bot.trigger_gap_seconds <
+                                                          86400
+                                                        ? `${Math.floor(
+                                                              bot.trigger_gap_seconds /
+                                                                  3600
+                                                          )} hour${
+                                                              Math.floor(
+                                                                  bot.trigger_gap_seconds /
+                                                                      3600
+                                                              ) !== 1
+                                                                  ? 's'
+                                                                  : ''
+                                                          }`
+                                                        : `${Math.floor(
+                                                              bot.trigger_gap_seconds /
+                                                                  86400
+                                                          )} day${
+                                                              Math.floor(
+                                                                  bot.trigger_gap_seconds /
+                                                                      86400
+                                                              ) !== 1
+                                                                  ? 's'
+                                                                  : ''
+                                                          }`
+                                                }`}
+                                            </Box>
                                         </Box>
                                         <Box>
                                             <Icon
