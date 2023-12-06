@@ -731,11 +731,11 @@ const ChatBot = () => {
                                                     <Box ml={'0.25rem'}>
                                                         {' '}
                                                         {bot.message.length >
-                                                        10 ? (
+                                                        15 ? (
                                                             <Box as="span">
                                                                 {`${bot.message.substring(
                                                                     0,
-                                                                    10
+                                                                    15
                                                                 )}...`}
                                                             </Box>
                                                         ) : (
