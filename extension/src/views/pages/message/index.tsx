@@ -22,6 +22,7 @@ import {
     useDisclosure,
     useSteps,
 } from '@chakra-ui/react';
+import Multiselect from 'multiselect-react-dropdown';
 import { useEffect, useRef, useState } from 'react';
 import { BiMessageSquareDetail } from 'react-icons/bi';
 import { MessageProps } from '../../../background/background';
@@ -74,6 +75,7 @@ const steps = ['Name', 'Message', 'Delay'];
 
 const Message = () => {
     const loginModelRef = useRef<LoginHandle>(null);
+    const multiselectRef = useRef<Multiselect | null>();
     const { isOpen, onOpen, onClose } = useDisclosure();
 
     const { isAuthenticated, isAuthenticating, qrCode, qrGenerated } =
@@ -332,6 +334,7 @@ const Message = () => {
                 }, 5000);
                 return;
             }
+            multiselectRef.current?.resetSelectedValues();
             onOpen();
             setActiveStep(1);
             setDetails({
@@ -455,6 +458,7 @@ const Message = () => {
                             isHidden={activeStep !== 2}
                             addContact={addContact}
                             removeContact={removeContact}
+                            multiselectRef={multiselectRef}
                         />
                         <DelaySection
                             handleChange={handleChange}

@@ -112,7 +112,11 @@ const AttachmentDetailsInputDialog = ({
                     </Button>
                     <Button
                         colorScheme="green"
-                        onClick={() => onConfirm(name, caption)}
+                        onClick={() => {
+                            setName('');
+                            setCaption('');
+                            onConfirm(name, caption);
+                        }}
                         ml={3}
                         size={'sm'}
                     >
