@@ -66,6 +66,7 @@ export type ChatBotDetails = {
 
 const ChatBot = () => {
     const loginModelRef = useRef<LoginHandle>(null);
+    const multiselectRef = useRef<Multiselect | null>();
     const {
         attachments: allAttachments,
         add: addAttachment,
@@ -291,6 +292,7 @@ const ChatBot = () => {
             ...details,
             trigger_gap_seconds: Number(trigger_gap_seconds),
         }).then(() => {
+            multiselectRef.current?.resetSelectedValues();
             setDetails({
                 trigger: '',
                 message: '',
@@ -537,6 +539,12 @@ const ChatBot = () => {
                                     ...item,
                                     displayValue: `${index + 1}. ${item.name}`,
                                 }))}
+                                ref={
+                                    multiselectRef
+                                        ? (ref) =>
+                                              (multiselectRef.current = ref)
+                                        : null
+                                }
                                 className="!w-[375px] bg-[#ECECEC] dark:bg-[#535353] rounded-md border-none "
                             />
                             <IconButton

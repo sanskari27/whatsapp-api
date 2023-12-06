@@ -38,6 +38,7 @@ const MessageSection = ({
     addContact,
     removeContact,
     isHidden,
+    multiselectRef,
 }: {
     type: 'NUMBERS' | 'CSV' | 'GROUP' | 'LABEL' | 'GROUP_INDIVIDUAL';
     details: {
@@ -106,6 +107,7 @@ const MessageSection = ({
     }) => void;
     error: string;
     isHidden: boolean;
+    multiselectRef: React.MutableRefObject<Multiselect | null | undefined>;
 }) => {
     const { templates, add: addToTemplate, addingTemplate } = useTemplate();
     const {
@@ -132,6 +134,7 @@ const MessageSection = ({
     const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
     const [fileError, setFileError] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>();
+    // const multiselectRef = useRef<Multiselect | null>();
 
     const handleAttachmentInput = (e: ChangeEvent<HTMLInputElement>) => {
         setFileError(null);
@@ -319,14 +322,11 @@ const MessageSection = ({
                             ...item,
                             displayValue: `${index + 1}. ${item.name}`,
                         }))}
-                        // style={{
-                        //     searchBox: {
-                        //         border: 'none',
-                        //     },
-                        //     inputField: {
-                        //         width: '100%',
-                        //     },
-                        // }}
+                        ref={
+                            multiselectRef
+                                ? (ref) => (multiselectRef.current = ref)
+                                : null
+                        }
                         className="!w-[370px] bg-[#ECECEC] dark:bg-[#535353] rounded-md border-none "
                     />
                     <IconButton
