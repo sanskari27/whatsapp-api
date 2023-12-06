@@ -256,12 +256,16 @@ export default class MessageSchedulerService {
 
 	async pauseCampaign(campaign_id: string) {
 		await ScheduledMessageDB.updateMany(
-			{ sender: this.user, campaign_id },
+			{ sender: this.user, campaign_id, isSent: false },
 			{ $set: { isPaused: true, pausedAt: DateUtils.getMomentNow().toDate() } }
 		);
 	}
 	async resumeCampaign(campaign_id: string) {
-		const campaigns = await ScheduledMessageDB.find({ sender: this.user, campaign_id });
+		const campaigns = await ScheduledMessageDB.find({
+			sender: this.user,
+			campaign_id,
+			isPaused: true,
+		});
 		campaigns.forEach((campaign) => {
 			campaign.isPaused = false; // Resume the campaign by setting isPaused to false
 
@@ -274,5 +278,18 @@ export default class MessageSchedulerService {
 			campaign.sendAt = sendAt.toDate();
 			campaign.save();
 		});
+	}
+
+	async generateReport(campaign_id: Types.ObjectId) {
+		const campaigns = await ScheduledMessageDB.find({ sender: this.user, campaign_id });
+
+		return campaigns.map((campaign) => ({
+			message: campaign.message,
+			receiver: campaign.receiver.split('@')[0],
+			attachments: campaign.attachments.length,
+			contacts: campaign.shared_contact_cards.length,
+			campaign_name: campaign.campaign_name,
+			status: campaign.isSent ? 'Sent' : campaign.isPaused ? 'Paused' : 'Pending',
+		}));
 	}
 }
