@@ -11,7 +11,7 @@ type Props = {
 async function createSubscription({ plan_id, email, phone, offer_id, data = {} }: Props) {
 	const subscription = await RazorpayAPI.subscriptions.create({
 		plan_id: plan_id,
-		total_count: 120,
+		total_count: 60,
 		notify_info: {
 			notify_email: email,
 			notify_phone: phone,
