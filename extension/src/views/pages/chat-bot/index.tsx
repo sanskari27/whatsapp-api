@@ -724,7 +724,19 @@ const ChatBot = () => {
                                         <Box className="text-background-dark dark:text-background">
                                             <Box className="flex flex-row">
                                                 <Box>
-                                                    {bot.trigger}
+                                                {bot.trigger.length >
+                                                        15 ? (
+                                                            <Box as="span">
+                                                                {`${bot.trigger.substring(
+                                                                    0,
+                                                                    15
+                                                                )}...`}
+                                                            </Box>
+                                                        ) : (
+                                                            <Box as="span">
+                                                                {bot.trigger}
+                                                            </Box>
+                                                        )}
                                                     {' : '}
                                                 </Box>
                                                 <Box>
