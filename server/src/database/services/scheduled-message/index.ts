@@ -280,7 +280,7 @@ export default class MessageSchedulerService {
 		});
 	}
 
-	async generateReport(campaign_id: Types.ObjectId) {
+	async generateReport(campaign_id: string) {
 		const campaigns = await ScheduledMessageDB.find({ sender: this.user, campaign_id });
 
 		return campaigns.map((campaign) => ({
