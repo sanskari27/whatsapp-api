@@ -4,6 +4,7 @@ import ContactService from './contact.service';
 import GroupService from './group.service';
 import LabelService from './label.service';
 import NumbersValidatorService from './numbers.service';
+import ReportsService from './reports.service';
 
 type ExportContactParams = {
 	allContacts?: boolean;
@@ -99,5 +100,10 @@ export default class ExportsService {
 		try {
 			ExcelUtils.exportPayments(records);
 		} catch (err) {}
+	}
+
+	static async exportCampaignReport(campaign_id: string) {
+		const campaign = await ReportsService.generateReport(campaign_id);
+		ExcelUtils.exportReport(campaign);
 	}
 }

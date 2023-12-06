@@ -188,6 +188,60 @@ export default class ExcelUtils {
 		document.body.removeChild(a);
 	}
 
+	static async exportReport(
+		reports: {
+			message: string;
+			receiver: string;
+			attachments: number;
+			contacts: number;
+			campaign_name: string;
+			status: string;
+		}[]
+	) {
+		const keys = [
+			{
+				field: 'campaign_name',
+				title: 'Campaign Name',
+			},
+			{
+				field: 'receiver',
+				title: 'Recipient',
+			},
+			{
+				field: 'message',
+				title: 'Message',
+			},
+
+			{
+				field: 'attachments',
+				title: 'Attachments',
+			},
+			{
+				field: 'contacts',
+				title: 'Contacts',
+			},
+			{
+				field: 'status',
+				title: 'Status',
+			},
+		];
+
+		const csv = await json2csv(reports, {
+			keys: keys,
+			emptyFieldValue: '',
+		});
+
+		const blob = new Blob([csv], { type: 'text/csv' });
+		const url = window.URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.setAttribute('hidden', '');
+		a.setAttribute('href', url);
+		a.setAttribute('download', 'campaign-report.csv');
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+	}
+
 	static async downloadTemplate() {
 		const keys = [
 			{
