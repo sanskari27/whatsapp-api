@@ -22,22 +22,41 @@ const initialState: SchedulerState = {
 		batch_delay: 120,
 		batch_size: 1,
 	},
+	isRecipientsLoading: false,
+	isBusinessAccount: false,
+	recipients: [],
 };
 
-const AthleteSlice = createSlice({
-	name: StoreNames.ATHLETE,
+const SchedulerSlice = createSlice({
+	name: StoreNames.SCHEDULER,
 	initialState,
 	reducers: {
 		reset: (state) => {
 			state.all_campaigns = initialState.all_campaigns;
 			state.details = initialState.details;
+			state.isRecipientsLoading = initialState.isRecipientsLoading;
+			state.isBusinessAccount = initialState.isBusinessAccount;
+			state.recipients = initialState.recipients;
 		},
 		setRecipientsFrom: (state, action: PayloadAction<typeof initialState.details.type>) => {
 			state.details.type = action.payload;
 		},
+		setRecipientsLoading: (
+			state,
+			action: PayloadAction<typeof initialState.isRecipientsLoading>
+		) => {
+			state.isRecipientsLoading = action.payload;
+		},
+		setBusinessAccount: (state, action: PayloadAction<typeof initialState.isBusinessAccount>) => {
+			state.isBusinessAccount = action.payload;
+		},
+		setRecipients: (state, action: PayloadAction<typeof initialState.recipients>) => {
+			state.recipients = action.payload;
+		},
 	},
 });
 
-export const { reset, setRecipientsFrom } = AthleteSlice.actions;
+export const { reset, setRecipientsFrom, setRecipientsLoading, setBusinessAccount, setRecipients } =
+	SchedulerSlice.actions;
 
-export default AthleteSlice.reducer;
+export default SchedulerSlice.reducer;

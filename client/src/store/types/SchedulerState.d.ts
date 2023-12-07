@@ -4,6 +4,7 @@ export type SchedulerState = {
 
 	recipients: { id: string; name: string; headers?: string[]; _id?: string }[];
 	isRecipientsLoading: boolean;
+	isBusinessAccount: boolean;
 };
 
 export type ScheduledCampaign = {

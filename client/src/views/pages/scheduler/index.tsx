@@ -1,9 +1,16 @@
 import { Box, Flex, FormControl, FormLabel, Heading, Input, Select } from '@chakra-ui/react';
 import { useCallback, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { useTheme } from '../../../hooks/useTheme';
+import { useDispatch, useSelector } from 'react-redux';
 import GroupService from '../../../services/group.service';
+import LabelService from '../../../services/label.service';
+import UploadsService from '../../../services/uploads.service';
 import { StoreNames, StoreState } from '../../../store';
+import {
+	setBusinessAccount,
+	setRecipients,
+	setRecipientsFrom,
+	setRecipientsLoading,
+} from '../../../store/reducers/SchedulerReducer';
 
 export type SchedulerDetails = {
 	type: 'NUMBERS' | 'CSV' | 'GROUP' | 'LABEL' | 'GROUP_INDIVIDUAL';
@@ -41,70 +48,47 @@ export type SchedulerDetails = {
 };
 
 export default function Scheduler() {
-	const theme = useTheme();
-
-	const { isRecipientsLoading, details } = useSelector(
+	const dispatch = useDispatch();
+	const { details, isBusinessAccount } = useSelector(
 		(state: StoreState) => state[StoreNames.SCHEDULER]
 	);
 
-	const handleChange = useCallback(function (name: keyof SchedulerDetails, value: string | number) {
-		setDetails((prev) => ({ ...prev, [name]: value }));
-	}, []);
-
 	const fetchRecipients = useCallback(
 		function (type: string) {
-			setUIDetails((prevState) => ({
-				...prevState,
-				recipientsLoading: true,
-			}));
+			dispatch(setRecipientsLoading(true));
 			if (type === 'GROUP') {
 				GroupService.listGroups()
-					.then(setRecipientsOptions)
+					.then((data) => dispatch(setRecipients(data)))
 					.finally(() => {
-						setUIDetails((prevState) => ({
-							...prevState,
-							recipientsLoading: false,
-						}));
+						dispatch(setRecipientsLoading(false));
 					});
 			} else if (type === 'GROUP_INDIVIDUAL') {
 				GroupService.listGroups()
-					.then(setRecipientsOptions)
+					.then((data) => dispatch(setRecipients(data)))
 					.finally(() => {
-						setUIDetails((prevState) => ({
-							...prevState,
-							recipientsLoading: false,
-						}));
+						dispatch(setRecipientsLoading(false));
 					});
 			} else if (type === 'LABEL') {
 				LabelService.listLabels()
-					.then(setRecipientsOptions)
+					.then((data) => dispatch(setRecipients(data)))
 					.catch((err) => {
 						if (err === 'BUSINESS_ACCOUNT_REQUIRED') {
-							handleChange({ name: 'type', value: 'NUMBERS' });
-							setUIDetails((prevState) => ({
-								...prevState,
-								isBusiness: false,
-							}));
+							dispatch(setRecipientsFrom('NUMBERS'));
+							dispatch(setBusinessAccount(false));
 						}
 					})
 					.finally(() => {
-						setUIDetails((prevState) => ({
-							...prevState,
-							recipientsLoading: false,
-						}));
+						dispatch(setRecipientsLoading(false));
 					});
 			} else if (type === 'CSV') {
 				UploadsService.listCSV()
-					.then(setRecipientsOptions)
+					.then((data) => dispatch(setRecipients(data)))
 					.finally(() => {
-						setUIDetails((prevState) => ({
-							...prevState,
-							recipientsLoading: false,
-						}));
+						dispatch(setRecipientsLoading(false));
 					});
 			}
 		},
-		[handleChange]
+		[dispatch]
 	);
 
 	useEffect(() => {
@@ -132,7 +116,11 @@ export default function Scheduler() {
 								border={'none'}
 								value={details.type}
 								onChange={(e) => {
-									handleChange('type', e.target.value);
+									dispatch(
+										setRecipientsFrom(
+											e.target.value as 'NUMBERS' | 'CSV' | 'GROUP' | 'LABEL' | 'GROUP_INDIVIDUAL'
+										)
+									);
 									fetchRecipients(e.target.value);
 								}}
 							>
@@ -154,7 +142,7 @@ export default function Scheduler() {
 								>
 									Group Individuals
 								</option>
-								{isBusiness ? (
+								{isBusinessAccount ? (
 									<option
 										className="'text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
 										value='LABEL'
