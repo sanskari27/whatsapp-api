@@ -34,7 +34,7 @@
 		"razorpay": "^2.9.2",
 		"redis": "^4.6.10",
 		"socket.io": "^4.7.2",
-		"whatsapp-web.js": "1.22.2-alpha.0",
+		"whatsapp-web.js": "1.23.0",
 		"zod": "^3.21.4"
 	},
 	"devDependencies": {
