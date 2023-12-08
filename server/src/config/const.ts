@@ -96,7 +96,7 @@ export const UPLOADS_PATH = '/static/uploads/';
 export const CSV_PATH = '/static/csv/';
 export const ATTACHMENTS_PATH = '/static/attachments/';
 
-export const PROMOTIONAL_MESSAGE = 'Powered by Whatsleads.in';
+export const PROMOTIONAL_MESSAGE = '*Created on wa.savemyvcard.com*';
 
 export const SESSION_STARTUP_WAIT_TIME = 5 * 60 * 1000; //milis
 export const CACHE_TIMEOUT = 10 * 60; //seconds
