@@ -67,7 +67,7 @@ async function generateReport(req: Request, res: Response, next: NextFunction) {
 
 async function listPolls(req: Request, res: Response, next: NextFunction) {
 	const service = new VoteResponseService(req.locals.user);
-	const { title, options, isMultiSelect } = req.query;
+	const { title, options, isMultiSelect, export_csv } = req.query;
 
 	if (!title || !options || !isMultiSelect) {
 		const polls = await service.allPolls();
@@ -85,6 +85,13 @@ async function listPolls(req: Request, res: Response, next: NextFunction) {
 		isMultiSelect: String(isMultiSelect) === 'true',
 	});
 
+	if (export_csv === 'true') {
+		return RespondCSV({
+			res,
+			filename: 'Poll Reports',
+			data: CSVParser.exportPollReport(polls),
+		});
+	}
 	return Respond({
 		res,
 		status: 200,

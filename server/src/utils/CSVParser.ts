@@ -337,6 +337,59 @@ export default class CSVParser {
 		});
 	}
 
+	static exportPollReport(
+		records: {
+			title: string;
+			options: string[];
+			isMultiSelect: boolean;
+			voter_number: string;
+			voter_name: string;
+			group_name: string;
+			selected_option: string[];
+			voted_at: string;
+		}[]
+	): string {
+		const keys = [
+			{
+				field: 'title',
+				title: 'Title',
+			},
+			{
+				field: 'options',
+				title: 'Options',
+			},
+			{
+				field: 'isMultiSelect',
+				title: 'Multiple Select',
+			},
+			{
+				field: 'voter_number',
+				title: 'Voter Number',
+			},
+			{
+				field: 'voter_name',
+				title: 'Voter Name',
+			},
+			{
+				field: 'group_name',
+				title: 'Group name',
+			},
+			{
+				field: 'selected_option',
+				title: 'Selected Options',
+			},
+			{
+				field: 'voted_at',
+				title: 'Voted At',
+			},
+		];
+
+		return json2csv(records, {
+			keys: keys,
+			emptyFieldValue: '',
+		});
+	}
+
 	static async exportPayments(
 		records: {
 			date: string;

@@ -274,7 +274,9 @@ export default class MessageSchedulerService {
 	}
 
 	async deleteCampaign(campaign_id: string) {
-		await ScheduledMessageDB.deleteMany({ sender: this.user, campaign_id });
+		try {
+			await ScheduledMessageDB.deleteMany({ sender: this.user, campaign_id });
+		} catch (err) {}
 	}
 
 	async pauseCampaign(campaign_id: string) {
