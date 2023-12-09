@@ -274,6 +274,13 @@ const ChatBot = () => {
 			}));
 			return;
 		}
+		if(allBots.map((bot) => bot.trigger).includes(details.trigger)){
+			setError((prevState) => ({
+				...prevState,
+				message: 'Trigger already exists',
+			}));
+			return;
+		}
 		const trigger_gap_seconds =
 			trigger_details.trigger_gap_type === 'HOUR'
 				? trigger_details.trigger_gap_time * 3600
