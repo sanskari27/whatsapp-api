@@ -10,6 +10,7 @@ export default interface IBot extends Document {
 
 	trigger: string;
 	trigger_gap_seconds: number;
+	response_delay_seconds: number;
 
 	options: BOT_TRIGGER_OPTIONS;
 

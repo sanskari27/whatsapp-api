@@ -13,6 +13,7 @@ import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 import IUpload from '../../../types/uploads';
 import { IUser } from '../../../types/user';
 import DateUtils from '../../../utils/DateUtils';
+import { Delay } from '../../../utils/ExpressUtils';
 import { BotResponseDB } from '../../repository/bot';
 import BotDB from '../../repository/bot/Bot';
 import UserService from '../user';
@@ -31,7 +32,7 @@ export default class BotService {
 		this.whatsapp = whatsapp_provider;
 	}
 
-	public async allBots(active?: boolean) {
+	public async allBots(active: boolean = false) {
 		const bots = await BotDB.find({
 			user: this.user,
 			...(active !== undefined ? { active: true } : {}),
@@ -41,6 +42,7 @@ export default class BotService {
 			respond_to: bot.respond_to,
 			trigger: bot.trigger,
 			trigger_gap_seconds: bot.trigger_gap_seconds,
+			response_delay_seconds: bot.response_delay_seconds,
 			options: bot.options,
 			message: bot.message,
 			attachments: bot.attachments.map((attachment) => ({
@@ -58,6 +60,38 @@ export default class BotService {
 			isActive: bot.active,
 		}));
 	}
+
+	public async boyByID(id: Types.ObjectId) {
+		const bot = await BotDB.findById(id).populate('attachments');
+
+		if (!bot) {
+			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
+		}
+
+		return {
+			bot_id: bot._id as Types.ObjectId,
+			respond_to: bot.respond_to,
+			trigger: bot.trigger,
+			trigger_gap_seconds: bot.trigger_gap_seconds,
+			response_delay_seconds: bot.response_delay_seconds,
+			options: bot.options,
+			message: bot.message,
+			attachments: bot.attachments.map((attachment) => ({
+				id: attachment._id,
+				name: attachment.name,
+				filename: attachment.filename,
+				caption: attachment.caption,
+			})),
+			polls: bot.polls.map((poll) => ({
+				title: poll.title,
+				options: poll.options,
+				isMultiSelect: poll.isMultiSelect,
+			})),
+			shared_contact_cards: bot.shared_contact_cards,
+			isActive: bot.active,
+		};
+	}
+
 	private async activeBots() {
 		return await this.allBots(true);
 	}
@@ -165,7 +199,9 @@ export default class BotService {
 		const botsEngaged = await this.botsEngaged({ message_body, message_from, contact });
 
 		const whatsapp = this.whatsapp;
+
 		botsEngaged.forEach(async (bot) => {
+			await Delay(bot.response_delay_seconds);
 			this.responseSent(bot.bot_id, message_from);
 
 			if (bot.message.length > 0) {
@@ -256,6 +292,7 @@ export default class BotService {
 	public createBot(data: {
 		respond_to: BOT_TRIGGER_TO;
 		trigger_gap_seconds: number;
+		response_delay_seconds: number;
 		options: BOT_TRIGGER_OPTIONS;
 		trigger: string;
 		message: string;
@@ -278,6 +315,7 @@ export default class BotService {
 			respond_to: bot.respond_to,
 			trigger: bot.trigger,
 			trigger_gap_seconds: bot.trigger_gap_seconds,
+			response_delay_seconds: bot.response_delay_seconds,
 			options: bot.options,
 			message: bot.message,
 			attachments: data.attachments.map((attachment) => ({
@@ -286,6 +324,80 @@ export default class BotService {
 				caption: attachment.caption,
 			})),
 			shared_contact_cards: bot.shared_contact_cards,
+			polls: bot.polls,
+			isActive: bot.active,
+		};
+	}
+
+	public async modifyBot(
+		id: Types.ObjectId,
+		data: {
+			respond_to?: BOT_TRIGGER_TO;
+			trigger_gap_seconds?: number;
+			response_delay_seconds?: number;
+			options?: BOT_TRIGGER_OPTIONS;
+			trigger?: string;
+			message?: string;
+			shared_contact_cards?: string[];
+			attachments?: IUpload[];
+			polls?: {
+				title: string;
+				options: string[];
+				isMultiSelect: boolean;
+			}[];
+		}
+	) {
+		const bot = await BotDB.findById(id).populate('attachments');
+		if (!bot) {
+			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
+		}
+		if (data.respond_to) {
+			bot.respond_to = data.respond_to;
+		}
+		if (data.trigger) {
+			bot.trigger = data.trigger;
+		}
+		if (data.respond_to) {
+			bot.respond_to = data.respond_to;
+		}
+		if (data.trigger_gap_seconds) {
+			bot.trigger_gap_seconds = data.trigger_gap_seconds;
+		}
+		if (data.response_delay_seconds) {
+			bot.response_delay_seconds = data.response_delay_seconds;
+		}
+		if (data.options) {
+			bot.options = data.options;
+		}
+		if (data.message) {
+			bot.message = data.message;
+		}
+		if (data.attachments) {
+			bot.attachments = data.attachments;
+		}
+		if (data.shared_contact_cards) {
+			bot.shared_contact_cards = data.shared_contact_cards;
+		}
+		if (data.polls) {
+			bot.polls = data.polls;
+		}
+		await bot.save();
+
+		return {
+			bot_id: bot._id as Types.ObjectId,
+			respond_to: bot.respond_to,
+			trigger: bot.trigger,
+			trigger_gap_seconds: bot.trigger_gap_seconds,
+			response_delay_seconds: bot.response_delay_seconds,
+			options: bot.options,
+			message: bot.message,
+			attachments: bot.attachments.map((attachment) => ({
+				id: attachment._id,
+				filename: attachment.filename,
+				caption: attachment.caption,
+			})),
+			shared_contact_cards: bot.shared_contact_cards,
+			polls: bot.polls,
 			isActive: bot.active,
 		};
 	}
@@ -302,6 +414,7 @@ export default class BotService {
 			respond_to: bot.respond_to,
 			trigger: bot.trigger,
 			trigger_gap_seconds: bot.trigger_gap_seconds,
+			response_delay_seconds: bot.response_delay_seconds,
 			options: bot.options,
 			message: bot.message,
 			attachments: bot.attachments.map((attachment) => ({

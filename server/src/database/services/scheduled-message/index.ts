@@ -3,12 +3,14 @@ import { Types } from 'mongoose';
 import Logger from 'n23-logger';
 import { MessageMedia, Poll } from 'whatsapp-web.js';
 import { ATTACHMENTS_PATH, PROMOTIONAL_MESSAGE } from '../../../config/const';
+import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 import IScheduledMessage from '../../../types/scheduled-message';
 import { IUser } from '../../../types/user';
 import DateUtils from '../../../utils/DateUtils';
 import { generateBatchID, getRandomNumber } from '../../../utils/ExpressUtils';
 import ScheduledMessageDB from '../../repository/scheduled-message';
+import UploadDB from '../../repository/uploads';
 import UserService from '../user';
 
 export type Message = {
@@ -312,5 +314,26 @@ export default class MessageSchedulerService {
 			campaign_name: campaign.campaign_name,
 			status: campaign.isSent ? 'Sent' : campaign.isPaused ? 'Paused' : 'Pending',
 		}));
+	}
+
+	async isAttachmentInUse(id: Types.ObjectId) {
+		const attachment = await UploadDB.findById(id);
+		if (!attachment) {
+			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
+		}
+		const campaigns: IScheduledMessage[] = await ScheduledMessageDB.aggregate([
+			{
+				$match: {
+					attachments: {
+						$elemMatch: {
+							filename: attachment.filename,
+						},
+					},
+					isSent: false,
+					isFailed: false,
+				},
+			},
+		]);
+		return campaigns.length > 0;
 	}
 }

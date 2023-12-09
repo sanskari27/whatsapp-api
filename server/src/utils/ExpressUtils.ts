@@ -26,6 +26,14 @@ export const RespondCSV = ({ res, filename, data }: CSVResponseData) => {
 	res.status(200).send(data);
 };
 
+export const Delay = async (seconds: number) => {
+	return new Promise((resolve, reject) => {
+		setTimeout(() => {
+			resolve(null);
+		}, seconds * 1000);
+	});
+};
+
 export const parseAmount = (amount: number) => {
 	return Number(amount.toFixed(2));
 };

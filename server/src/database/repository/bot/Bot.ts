@@ -18,6 +18,9 @@ const botSchema = new mongoose.Schema<IBot>({
 	trigger_gap_seconds: {
 		type: Number,
 	},
+	response_delay_seconds: {
+		type: Number,
+	},
 	options: {
 		type: String,
 		enum: Object.values(BOT_TRIGGER_OPTIONS),
