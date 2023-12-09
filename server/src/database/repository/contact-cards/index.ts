@@ -39,6 +39,7 @@ const contactCardSchema = new mongoose.Schema<IContactCard>({
 
 contactCardSchema.pre('save', function (next) {
 	this.vcard = new VCardBuilder(this).build();
+	next();
 });
 
 const ContactCardDB = mongoose.model<IContactCard>('ContactCard', contactCardSchema);

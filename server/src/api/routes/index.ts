@@ -1,6 +1,7 @@
 import express from 'express';
 import { VerifyClientID } from '../../middleware';
 import AuthRoute from './auth';
+import ContactCardRoute from './contact-card';
 import PaymentRoute from './payment';
 import ReportsRoute from './report';
 import TemplateRoute from './template';
@@ -29,5 +30,6 @@ router.use('/whatsapp', WhatsappRoute);
 router.use('/template', TemplateRoute);
 router.use('/uploads', UploadsRoute);
 router.use('/reports', ReportsRoute);
+router.use('/contact-card', ContactCardRoute);
 
 export default router;

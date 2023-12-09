@@ -4,11 +4,11 @@ import { ContactCardController } from '../controller';
 const router = express.Router();
 
 router
-	.route('/contact-card/:id')
+	.route('/:id')
 	.put(ContactCardController.updateContactCard)
 	.delete(ContactCardController.deleteContactCard);
 router
-	.route('/contact-card')
+	.route('/')
 	.get(ContactCardController.listContactCards)
 	.post(ContactCardController.createContactCard);
 

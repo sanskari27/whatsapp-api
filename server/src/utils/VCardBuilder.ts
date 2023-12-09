@@ -98,10 +98,6 @@ export default class VCardBuilder {
 		vCardString += `FN:${full_name.trim()}\n`;
 		vCardString += `N:${this.last_name};${this.first_name};${this.middle_name};;\n`;
 
-		//Add Title and organization to vcard
-		if (this.organization) vCardString += `ORG:${this.organization}\n`;
-		if (this.title) vCardString += `TITLE:${this.title}\n`;
-
 		// Add Contact details
 		if (this.contact_details_phone) {
 			const { whatsapp_id: waid, contact_number: c_no } = this.contact_details_phone;
@@ -153,6 +149,9 @@ export default class VCardBuilder {
 			vCardString += `\n`;
 		}
 
+		//Add Title and organization to vcard
+		if (this.title) vCardString += `TITLE:${this.title}\n`;
+		if (this.organization) vCardString += `ORG:${this.organization}\n`;
 		return vCardString + END;
 	}
 
