@@ -294,6 +294,49 @@ export default class CSVParser {
 		return csv;
 	}
 
+	static exportCampaignReport(
+		records: {
+			campaign_name: string;
+			receiver: string;
+			message: string;
+			attachments: number;
+			contacts: number;
+			status: string;
+		}[]
+	) {
+		const keys = [
+			{
+				field: 'campaign_name',
+				title: 'Campaign Name',
+			},
+			{
+				field: 'receiver',
+				title: 'Recipient',
+			},
+			{
+				field: 'message',
+				title: 'Message',
+			},
+			{
+				field: 'attachments',
+				title: 'Attachments',
+			},
+			{
+				field: 'contacts',
+				title: 'Contacts',
+			},
+			{
+				field: 'status',
+				title: 'Status',
+			},
+		];
+
+		return json2csv(records, {
+			keys: keys,
+			emptyFieldValue: '',
+		});
+	}
+
 	static async exportPayments(
 		records: {
 			date: string;

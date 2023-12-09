@@ -184,7 +184,7 @@ export default class BotService {
 		});
 	}
 
-	public async handleMessage(message: WAWebJS.Message, contact: WAWebJS.Contact) {
+	public async handleMessage(from: string, body: string, contact: WAWebJS.Contact) {
 		if (!this.whatsapp) {
 			throw new Error('Whatsapp Provider not attached.');
 		}
@@ -193,10 +193,9 @@ export default class BotService {
 		if (!isSubscribed && !isNew) {
 			return;
 		}
-		const message_from = message.from.split('@')[0];
-		const message_body = message.body;
+		const message_from = from.split('@')[0];
 
-		const botsEngaged = await this.botsEngaged({ message_body, message_from, contact });
+		const botsEngaged = await this.botsEngaged({ message_body: body, message_from, contact });
 
 		const whatsapp = this.whatsapp;
 
@@ -207,7 +206,7 @@ export default class BotService {
 			if (bot.message.length > 0) {
 				whatsapp
 					.getClient()
-					.sendMessage(message.from, bot.message)
+					.sendMessage(from, bot.message)
 					.catch((err) => {
 						Logger.error('Error sending message:', err);
 					});
@@ -224,7 +223,7 @@ export default class BotService {
 				}
 				whatsapp
 					.getClient()
-					.sendMessage(message.from, media, {
+					.sendMessage(from, media, {
 						caption: mediaObject.caption,
 					})
 					.catch((err) => {
@@ -235,7 +234,7 @@ export default class BotService {
 			(bot.shared_contact_cards ?? []).forEach(async (card) => {
 				whatsapp
 					.getClient()
-					.sendMessage(message.from, card)
+					.sendMessage(from, card)
 					.catch((err) => {
 						Logger.error('Error sending message:', err);
 					});
@@ -246,7 +245,7 @@ export default class BotService {
 				whatsapp
 					.getClient()
 					.sendMessage(
-						message.from,
+						from,
 						new Poll(title, options, {
 							allowMultipleAnswers: isMultiSelect,
 						})
@@ -259,7 +258,7 @@ export default class BotService {
 			if (!isSubscribed && isNew) {
 				whatsapp
 					.getClient()
-					.sendMessage(message.from, PROMOTIONAL_MESSAGE)
+					.sendMessage(from, PROMOTIONAL_MESSAGE)
 					.catch((err) => {
 						Logger.error('Error sending message:', err);
 					});
