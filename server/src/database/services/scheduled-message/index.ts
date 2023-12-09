@@ -1,12 +1,12 @@
 import fs from 'fs';
 import { Types } from 'mongoose';
-import { MessageMedia } from 'whatsapp-web.js';
+import Logger from 'n23-logger';
+import { MessageMedia, Poll } from 'whatsapp-web.js';
 import { ATTACHMENTS_PATH, PROMOTIONAL_MESSAGE } from '../../../config/const';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 import IScheduledMessage from '../../../types/scheduled-message';
 import { IUser } from '../../../types/user';
 import DateUtils from '../../../utils/DateUtils';
-import ErrorReporter from '../../../utils/ErrorReporter';
 import { generateBatchID, getRandomNumber } from '../../../utils/ExpressUtils';
 import ScheduledMessageDB from '../../repository/scheduled-message';
 import UserService from '../user';
@@ -18,6 +18,11 @@ export type Message = {
 		name: string;
 		filename: string;
 		caption: string | undefined;
+	}[];
+	polls: {
+		title: string;
+		options: string[];
+		isMultiSelect: boolean;
 	}[];
 	shared_contact_cards: ContactCardMessage;
 };
@@ -49,7 +54,7 @@ export default class MessageSchedulerService {
 		return exists !== null;
 	}
 
-	async scheduleBatch(messages: Message[], opts: Batch) {
+	async scheduleCampaign(messages: Message[], opts: Batch) {
 		const docPromise: Promise<
 			IScheduledMessage & {
 				_id: Types.ObjectId;
@@ -100,6 +105,7 @@ export default class MessageSchedulerService {
 					message: message.message ?? '',
 					attachments: message.attachments ?? [],
 					shared_contact_cards: message.shared_contact_cards ?? [],
+					polls: message.polls ?? [],
 					sendAt: scheduledTime.toDate(),
 					batch_id: batch_id,
 					campaign_name: opts.campaign_name,
@@ -142,7 +148,7 @@ export default class MessageSchedulerService {
 					.getClient()
 					.sendMessage(scheduledMessage.receiver, scheduledMessage.message)
 					.catch((err) => {
-						ErrorReporter.report(err);
+						Logger.error('Error sending message:', err);
 					});
 			}
 
@@ -151,7 +157,7 @@ export default class MessageSchedulerService {
 					.getClient()
 					.sendMessage(scheduledMessage.receiver, card)
 					.catch((err) => {
-						ErrorReporter.report(err);
+						Logger.error('Error sending message:', err);
 					});
 			});
 
@@ -172,7 +178,22 @@ export default class MessageSchedulerService {
 						caption,
 					})
 					.catch((err) => {
-						ErrorReporter.report(err);
+						Logger.error('Error sending message:', err);
+					});
+			});
+
+			scheduledMessage.polls.forEach(async (poll) => {
+				const { title, options, isMultiSelect } = poll;
+				whatsapp
+					.getClient()
+					.sendMessage(
+						scheduledMessage.receiver,
+						new Poll(title, options, {
+							allowMultipleAnswers: isMultiSelect,
+						})
+					)
+					.catch((err) => {
+						Logger.error('Error sending message:', err);
 					});
 			});
 
@@ -181,7 +202,7 @@ export default class MessageSchedulerService {
 					.getClient()
 					.sendMessage(scheduledMessage.receiver, PROMOTIONAL_MESSAGE)
 					.catch((err) => {
-						ErrorReporter.report(err);
+						Logger.error('Error sending message:', err);
 					});
 			}
 

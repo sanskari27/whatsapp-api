@@ -1,6 +1,7 @@
 import fs from 'fs';
 import { Types } from 'mongoose';
-import WAWebJS, { MessageMedia } from 'whatsapp-web.js';
+import Logger from 'n23-logger';
+import WAWebJS, { MessageMedia, Poll } from 'whatsapp-web.js';
 import {
 	ATTACHMENTS_PATH,
 	BOT_TRIGGER_OPTIONS,
@@ -12,7 +13,6 @@ import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 import IUpload from '../../../types/uploads';
 import { IUser } from '../../../types/user';
 import DateUtils from '../../../utils/DateUtils';
-import ErrorReporter from '../../../utils/ErrorReporter';
 import { BotResponseDB } from '../../repository/bot';
 import BotDB from '../../repository/bot/Bot';
 import UserService from '../user';
@@ -48,6 +48,11 @@ export default class BotService {
 				name: attachment.name,
 				filename: attachment.filename,
 				caption: attachment.caption,
+			})),
+			polls: bot.polls.map((poll) => ({
+				title: poll.title,
+				options: poll.options,
+				isMultiSelect: poll.isMultiSelect,
 			})),
 			shared_contact_cards: bot.shared_contact_cards,
 			isActive: bot.active,
@@ -168,7 +173,7 @@ export default class BotService {
 					.getClient()
 					.sendMessage(message.from, bot.message)
 					.catch((err) => {
-						ErrorReporter.report(err);
+						Logger.error('Error sending message:', err);
 					});
 			}
 
@@ -187,7 +192,7 @@ export default class BotService {
 						caption: mediaObject.caption,
 					})
 					.catch((err) => {
-						ErrorReporter.report(err);
+						Logger.error('Error sending message:', err);
 					});
 			}
 
@@ -196,7 +201,22 @@ export default class BotService {
 					.getClient()
 					.sendMessage(message.from, card)
 					.catch((err) => {
-						ErrorReporter.report(err);
+						Logger.error('Error sending message:', err);
+					});
+			});
+
+			(bot.polls ?? []).forEach(async (poll) => {
+				const { title, options, isMultiSelect } = poll;
+				whatsapp
+					.getClient()
+					.sendMessage(
+						message.from,
+						new Poll(title, options, {
+							allowMultipleAnswers: isMultiSelect,
+						})
+					)
+					.catch((err) => {
+						Logger.error('Error sending message:', err);
 					});
 			});
 
@@ -205,7 +225,7 @@ export default class BotService {
 					.getClient()
 					.sendMessage(message.from, PROMOTIONAL_MESSAGE)
 					.catch((err) => {
-						ErrorReporter.report(err);
+						Logger.error('Error sending message:', err);
 					});
 			}
 		});
@@ -239,6 +259,11 @@ export default class BotService {
 		message: string;
 		shared_contact_cards: string[];
 		attachments: IUpload[];
+		polls: {
+			title: string;
+			options: string[];
+			isMultiSelect: boolean;
+		}[];
 	}) {
 		const bot = new BotDB({
 			...data,

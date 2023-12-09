@@ -17,6 +17,12 @@ export default interface IScheduledMessage extends Document {
 
 	shared_contact_cards: string[];
 
+	polls: {
+		title: string;
+		options: string[];
+		isMultiSelect: boolean;
+	}[];
+
 	sendAt: Date;
 	isSent: boolean;
 	isFailed: boolean;

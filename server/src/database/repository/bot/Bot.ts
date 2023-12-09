@@ -30,6 +30,13 @@ const botSchema = new mongoose.Schema<IBot>({
 		},
 	],
 	shared_contact_cards: [String],
+	polls: [
+		{
+			title: String,
+			options: [String],
+			isMultiSelect: Boolean,
+		},
+	],
 
 	active: {
 		type: Boolean,
