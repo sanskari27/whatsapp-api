@@ -137,10 +137,34 @@ export class WhatsappProvider {
 			this.bot_service = new BotService(this.user_service.getUser());
 			this.bot_service.attachWhatsappProvider(this);
 
-			const contactId = await this.client.getNumberId('919931224934');
-			if (!contactId) return;
-		});
+			// const message = await this.client.getMessageById(
+			// 	'true_918797721460@c.us_3EB0043C8758BB059411E4'
+			// );
+			// console.log('message: ', message);
 
+			// const contactId = await this.client.getNumberId('918797721460');
+			// console.log('contactId', contactId);
+
+			// if (!contactId) return;
+
+			// const message = await this.client.sendMessage(
+			// 	contactId._serialized,
+			// 	new Poll('Winter or Summer?', ['Winter', 'Summer'])
+			// );
+			// console.log('message', message);
+
+			// const contact = await this.client.getContactById(contactId._serialized);
+			// if (contact.isBusiness) {
+			// 	console.log((contact as BusinessContact).businessProfile);
+			// }else{
+			// 	console.log("Not business contact")
+			// }
+		});
+		this.client.on('vote_update', (vote) => {
+			/** The vote that was affected: */
+			console.log('vote_update', vote
+			);
+		});
 		this.client.on('disconnected', () => {
 			this.status = STATUS.DISCONNECTED;
 

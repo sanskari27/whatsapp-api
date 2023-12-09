@@ -8,12 +8,22 @@ type ResponseData = {
 	status: 200 | 201 | 400 | 401 | 403 | 404 | 500;
 	data?: object;
 };
+type CSVResponseData = Omit<ResponseData, 'status' | 'data'> & {
+	filename: string;
+	data: string;
+};
 
 export const Respond = ({ res, status, data = {} }: ResponseData) => {
 	if (status === 200 || status === 201) {
 		return res.status(status).json({ ...data, success: true });
 	}
 	return res.status(status).json({ ...data, success: false });
+};
+
+export const RespondCSV = ({ res, filename, data }: CSVResponseData) => {
+	res.setHeader('Content-Disposition', `attachment; filename="${filename}.csv"`);
+	res.set('Content-Type', 'text/csv');
+	res.status(200).send(data);
 };
 
 export const parseAmount = (amount: number) => {

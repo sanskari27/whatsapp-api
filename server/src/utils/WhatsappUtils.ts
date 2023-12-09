@@ -1,16 +1,27 @@
 import fs from 'fs';
 import Logger from 'n23-logger';
-import WAWebJS, { GroupChat } from 'whatsapp-web.js';
+import WAWebJS, { BusinessContact, GroupChat } from 'whatsapp-web.js';
 import { COUNTRIES, IS_PRODUCTION, SESSION_STARTUP_WAIT_TIME } from '../config/const';
 import { UserService } from '../database/services';
 import APIError, { API_ERRORS } from '../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../errors/internal-errors';
 import { WhatsappProvider } from '../provider/whatsapp_provider';
-import { IContact } from '../types/whatsapp';
+import {
+	TBusinessContact,
+	TContact,
+	TGroupBusinessContact,
+	TGroupContact,
+	TLabelBusinessContact,
+	TLabelContact,
+} from '../types/whatsapp/contact';
 
-export type MappedContacts = {
-	[contact_number: string]: IContact;
-};
+type MappedContact_ReturnType<T extends boolean> = T extends true
+	? {
+			[contact_number: string]: TBusinessContact;
+	  }
+	: {
+			[contact_number: string]: TContact;
+	  };
 
 export default class WhatsappUtils {
 	private whatsapp: WhatsappProvider;
@@ -71,10 +82,14 @@ export default class WhatsappUtils {
 		}[];
 	}
 
-	async getChat(group_id: string) {
-		const chat = await this.whatsapp.getClient().getChatById(group_id);
-		if (!chat) return null;
-		return chat;
+	async getChat(id: string) {
+		try {
+			const chat = await this.whatsapp.getClient().getChatById(id);
+			if (!chat) return null;
+			return chat;
+		} catch (err) {
+			return null;
+		}
 	}
 
 	async getChatIdsByGroup(group_id: string) {
@@ -120,109 +135,227 @@ export default class WhatsappUtils {
 		return non_saved_contacts.filter((contact) => contact !== null) as WAWebJS.Contact[];
 	}
 
-	async contactsWithCountry(contacts: WAWebJS.Contact[]) {
-		const contacts_with_country_code = contacts.map(async (contact) => {
-			const country_code = await contact.getCountryCode();
-			const country = COUNTRIES[country_code as string];
-			return {
-				name: contact.name,
-				number: contact.number,
-				isBusiness: contact.isBusiness ? 'Business' : 'Personal',
-				country,
-				public_name: contact.pushname ?? '',
-			};
-		});
+	static async getContactDetails(contact: WAWebJS.Contact) {
+		const country_code = await contact.getCountryCode();
+		const country = COUNTRIES[country_code as string];
+		return {
+			name: contact.name,
+			number: contact.number,
+			isBusiness: contact.isBusiness ? 'Business' : 'Personal',
+			country,
+			public_name: contact.pushname ?? '',
+		};
+	}
+	static getBusinessDetails(contact: BusinessContact) {
+		const business_contact = contact as BusinessContact;
+		const business_details = business_contact.businessProfile as {
+			description: string;
+			email: string;
+			website: string[];
+			latitude: number;
+			longitude: number;
+			address: string;
+		};
 
-		return await Promise.all(contacts_with_country_code);
+		return {
+			description: business_details.description,
+			email: business_details.email,
+			websites: business_details.website,
+			latitude: business_details.latitude,
+			longitude: business_details.longitude,
+			address: business_details.address,
+		};
 	}
 
-	async getMappedContacts() {
-		const contacts = (await this.whatsapp.getClient().getContacts())
+	async contactsWithCountry<T extends boolean>(
+		contacts: WAWebJS.Contact[],
+		options: {
+			business_details: T;
+		} = {
+			business_details: false as T,
+		}
+	): Promise<T extends true ? TBusinessContact[] : TContact[]> {
+		const detailed_contacts = await Promise.all(
+			contacts.map(async (contact) => {
+				const contact_details = (await WhatsappUtils.getContactDetails(contact)) as TContact;
+				if (!options.business_details) {
+					return contact_details;
+				}
+				if (!contact.isBusiness) {
+					return null;
+				}
+				const business_details = WhatsappUtils.getBusinessDetails(contact as BusinessContact);
+
+				return {
+					...contact_details,
+					...business_details,
+				} as TBusinessContact;
+			})
+		);
+
+		const valid_contacts = detailed_contacts.filter((contact) => contact !== null);
+
+		return valid_contacts as T extends true ? TBusinessContact[] : TContact[];
+	}
+
+	async getMappedContacts<T extends boolean>(
+		business_contacts_only: T = false as T
+	): Promise<MappedContact_ReturnType<T>> {
+		const filtered_contacts = (await this.whatsapp.getClient().getContacts())
 			.filter((contact) => contact.isMyContact && contact.name && contact.number)
-			.reduce(async (accPromise, contact) => {
-				const acc = await accPromise;
-				const country_code = await contact.getCountryCode();
-				acc[contact.number] = {
-					name: contact.name ?? 'Unknown',
-					isBusiness: contact.isBusiness,
-					country: COUNTRIES[country_code as string],
-					number: contact.number,
-					public_name: contact.pushname ?? '',
-				};
+			.filter((contact) => {
+				if (!business_contacts_only) {
+					return true;
+				}
+				return contact.isBusiness;
+			});
+		const contacts = await Promise.all(
+			filtered_contacts.map(async (contact) => {
+				const contact_details = await WhatsappUtils.getContactDetails(contact);
+				if (!business_contacts_only) {
+					return contact_details as TContact;
+				} else {
+					const business_details = WhatsappUtils.getBusinessDetails(contact as BusinessContact);
+					return {
+						...(contact_details as Partial<TContact>),
+						...(business_details as Partial<TBusinessContact>),
+					} as TBusinessContact;
+				}
+			})
+		);
+		const mapped_contacts = contacts.reduce(
+			(acc, contact) => {
+				acc[contact.number] = contact;
 				return acc;
-			}, Promise.resolve({} as MappedContacts));
+			},
+			{} as T extends true
+				? {
+						[contact_number: string]: TBusinessContact;
+				  }
+				: {
+						[contact_number: string]: TContact;
+				  }
+		);
 
-		return contacts;
+		return mapped_contacts;
 	}
 
-	async getGroupContacts(groupChat: GroupChat, contacts: MappedContacts) {
-		const group_participants = groupChat.participants.map(async (participant) => {
-			const contact = contacts[participant.id.user];
-			let name = contact ? contact.name : undefined;
-			let country = contact ? contact.country : undefined;
-			let isBusiness = contact ? contact.isBusiness : false;
-			let public_name = contact ? contact.public_name : undefined;
-			if (!contact) {
-				const fetchedContact = await this.whatsapp
-					.getClient()
-					.getContactById(participant.id._serialized);
-				name = fetchedContact.name ?? '';
-				const country_code = await fetchedContact.getCountryCode();
-				country = COUNTRIES[country_code as string];
-				isBusiness = fetchedContact.isBusiness;
-				public_name = fetchedContact.pushname;
-			}
+	async getGroupContacts<T extends boolean>(
+		groupChat: GroupChat,
+		options: {
+			business_details: T;
+			mapped_contacts: MappedContact_ReturnType<T> | null;
+		} = {
+			business_details: false as T,
+			mapped_contacts: null,
+		}
+	): Promise<T extends true ? TGroupBusinessContact[] : TGroupContact[]> {
+		const contacts =
+			options.mapped_contacts ?? (await this.getMappedContacts(options.business_details));
 
-			return {
-				name: name,
-				number: participant.id.user,
-				country: country,
-				isBusiness: isBusiness ? 'Business' : 'Personal',
-				user_type: participant.isSuperAdmin ? 'CREATOR' : participant.isAdmin ? 'ADMIN' : 'USER',
-				group_name: groupChat.name,
-				public_name: public_name,
-			};
-		});
-		return await Promise.all(group_participants);
+		const group_participants = await Promise.all(
+			groupChat.participants.map(async (participant) => {
+				const contact = contacts[participant.id.user];
+
+				const contact_details: TGroupContact = {
+					name: contact ? contact.name : '',
+					number: participant.id.user,
+					country: contact ? contact.country : '',
+					isBusiness: contact ? contact.isBusiness : 'Personal',
+					public_name: contact ? contact.public_name : '',
+					group_name: groupChat.name,
+					user_type: participant.isSuperAdmin ? 'CREATOR' : participant.isAdmin ? 'ADMIN' : 'USER',
+				};
+				let fetchedContact: WAWebJS.Contact | null = null;
+
+				if (!contact) {
+					fetchedContact = await this.whatsapp
+						.getClient()
+						.getContactById(participant.id._serialized);
+					contact_details.name = fetchedContact.name ?? '';
+					const country_code = await fetchedContact.getCountryCode();
+					contact_details.country = COUNTRIES[country_code as string];
+					contact_details.isBusiness = fetchedContact.isBusiness ? 'Business' : 'Personal';
+					contact_details.public_name = fetchedContact.pushname;
+				}
+
+				if (!options.business_details) {
+					return contact_details;
+				}
+
+				if (!contact.isBusiness) {
+					return null;
+				}
+
+				if (!fetchedContact) {
+					fetchedContact = await this.whatsapp
+						.getClient()
+						.getContactById(participant.id._serialized);
+				}
+
+				const business_details = WhatsappUtils.getBusinessDetails(
+					fetchedContact as BusinessContact
+				);
+				return {
+					...(contact_details as Partial<TGroupContact>),
+					...(business_details as Partial<TGroupBusinessContact>),
+				} as TGroupBusinessContact;
+			})
+		);
+
+		return group_participants.filter((participant) => participant !== null) as T extends true
+			? TGroupBusinessContact[]
+			: TGroupContact[];
 	}
 
-	async getContactsByLabel(label_id: string) {
+	async getContactsByLabel<T extends boolean>(
+		label_id: string,
+		options: {
+			business_details: boolean;
+			mapped_contacts: MappedContact_ReturnType<T> | null;
+		} = {
+			business_details: false,
+			mapped_contacts: null,
+		}
+	) {
 		const chats = await this.whatsapp.getClient().getChatsByLabelId(label_id);
 		const label = await this.whatsapp.getClient().getLabelById(label_id);
 		const contactsPromises = chats
 			.map(async (chat) => {
 				if (chat.isGroup) {
-					const participants = (chat as GroupChat).participants.map(async (participant) => {
-						const contact = await this.whatsapp
-							.getClient()
-							.getContactById(participant.id._serialized);
-						const country_code = await contact.getCountryCode();
-						const country = COUNTRIES[country_code as string];
-						return {
-							name: contact.name ?? '',
-							number: contact.number,
-							country: country ?? '',
-							isBusiness: contact.isBusiness ? 'Business' : 'Personal',
-							public_name: contact.pushname ?? '',
-							group_name: chat.name,
-							label: label.name,
-						};
+					const participants = await this.getGroupContacts(chat as GroupChat, {
+						business_details: options.business_details,
+						mapped_contacts: options.mapped_contacts,
 					});
-					return await Promise.all(participants);
+
+					return participants.map((participant) => ({
+						...participant,
+						group_name: chat.name,
+						label: label.name,
+					})) as (TLabelContact | TLabelBusinessContact)[];
 				} else {
 					const contact = await this.whatsapp.getClient().getContactById(chat.id._serialized);
-					const country_code = await contact.getCountryCode();
-					const country = COUNTRIES[country_code as string];
+					const contacts_details = await WhatsappUtils.getContactDetails(contact);
+					if (!options.business_details) {
+						return [
+							{
+								...contacts_details,
+								group_name: chat.name,
+								label: label.name,
+							} as TLabelContact,
+						];
+					}
+					if (!contact.isBusiness) {
+						return [];
+					}
+					const business_details = WhatsappUtils.getBusinessDetails(contact as BusinessContact);
 					return [
 						{
-							name: contact.name ?? '',
-							number: contact.number,
-							country: country ?? '',
-							isBusiness: contact.isBusiness ? 'Business' : 'Personal',
-							public_name: contact.pushname ?? '',
+							...contacts_details,
+							...business_details,
 							group_name: chat.name,
 							label: label.name,
-						},
+						} as TLabelBusinessContact,
 					];
 				}
 			})
@@ -231,6 +364,12 @@ export default class WhatsappUtils {
 		const arraysOfContacts = await Promise.all(contactsPromises);
 		const flatContactsArray = arraysOfContacts.flat();
 		return flatContactsArray;
+	}
+
+	async createGroup(title: string, participants: string[]) {
+		await this.whatsapp.getClient().createGroup(title, participants, {
+			autoSendInviteV4: true,
+		});
 	}
 
 	static async removeUnwantedSessions() {
