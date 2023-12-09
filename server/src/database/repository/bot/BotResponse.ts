@@ -21,6 +21,7 @@ const botResponseSchema = new mongoose.Schema<IBotResponse>({
 		default: Date.now,
 		required: true,
 	},
+	triggered_at: [Date],
 });
 
 const BotResponseDB = mongoose.model<IBotResponse>('BotResponse', botResponseSchema);

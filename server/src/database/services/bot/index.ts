@@ -240,6 +240,7 @@ export default class BotService {
 
 		if (bot_response) {
 			bot_response.last_message = DateUtils.getMomentNow().toDate();
+			bot_response.triggered_at.push(bot_response.last_message);
 			await bot_response.save();
 		} else {
 			await BotResponseDB.create({
@@ -247,6 +248,7 @@ export default class BotService {
 				recipient: message_from,
 				bot: bot_id,
 				last_message: DateUtils.getMomentNow().toDate(),
+				triggered_at: [DateUtils.getMomentNow().toDate()],
 			});
 		}
 	}
