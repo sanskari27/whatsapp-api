@@ -235,8 +235,9 @@ export class WhatsappProvider {
 		}
 		let count = 0;
 		const id = setInterval(() => {
-			if (count >= 10) {
+			if (count >= 10 || this.status === STATUS.DESTROYED) {
 				clearInterval(id);
+				return;
 			}
 			this.client
 				.destroy()
