@@ -25,6 +25,11 @@ export const RespondCSV = ({ res, filename, data }: CSVResponseData) => {
 	res.set('Content-Type', 'text/csv');
 	res.status(200).send(data);
 };
+export const RespondVCF = ({ res, filename, data }: CSVResponseData) => {
+	res.setHeader('Content-Disposition', `attachment; filename="${filename}.vcf"`);
+	res.set('Content-Type', 'text/vcf');
+	res.status(200).send(data);
+};
 
 export const Delay = async (seconds: number) => {
 	return new Promise((resolve, reject) => {
