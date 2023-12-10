@@ -8,6 +8,18 @@ export default class GroupMergeService {
 	public constructor(user: IUser) {
 		this.user = user;
 	}
+
+	async listGroups() {
+		const merged_groups = await MergedGroupDB.find({
+			user: this.user,
+		});
+
+		return merged_groups.map((group) => ({
+			id: group._id as string,
+			name: group.name as string,
+		}));
+	}
+
 	async mergeGroup(name: string, group_ids: string[]) {
 		await MergedGroupDB.create({
 			user: this.user,
@@ -23,5 +35,15 @@ export default class GroupMergeService {
 		if (!mergedGroup) return;
 		mergedGroup.groups = mergedGroup.groups.filter((id) => !group_ids.includes(id));
 		await mergedGroup.save();
+	}
+
+	async extractWhatsappGroupIds(ids: string | string[]) {
+		const searchable_ids = typeof ids === 'string' ? [ids] : ids;
+		const merged_groups = await MergedGroupDB.find({
+			user: this.user,
+			_id: { $in: searchable_ids },
+		});
+
+		return merged_groups.map((group) => group.groups).flat();
 	}
 }

@@ -5,7 +5,8 @@ import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 import { TBusinessContact, TContact } from '../../../types/whatsapp/contact';
 import CSVParser from '../../../utils/CSVParser';
-import { Respond, RespondCSV } from '../../../utils/ExpressUtils';
+import { Respond, RespondCSV, RespondVCF } from '../../../utils/ExpressUtils';
+import VCFParser from '../../../utils/VCFParser';
 import WhatsappUtils from '../../../utils/WhatsappUtils';
 
 async function contacts(req: Request, res: Response, next: NextFunction) {
@@ -21,6 +22,7 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 		saved_contacts: true,
 		non_saved_contacts: true,
 		business_contacts_only: false,
+		vcf: false,
 	};
 	if (req.query.saved_contacts && req.query.saved_contacts === 'true') {
 		options.saved_contacts = true;
@@ -31,6 +33,9 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 	}
 	if (req.query.business_contacts_only && req.query.business_contacts_only === 'true') {
 		options.business_contacts_only = true;
+	}
+	if (req.query.vcf && req.query.vcf === 'true') {
+		options.vcf = true;
 	}
 	try {
 		const contacts = [] as {
@@ -81,14 +86,23 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 		if (options.non_saved_contacts) {
 			contacts.push(...non_saved);
 		}
-
-		return RespondCSV({
-			res,
-			filename: 'Exported Contacts',
-			data: options.business_contacts_only
-				? CSVParser.exportBusinessContacts(contacts as TBusinessContact[])
-				: CSVParser.exportContacts(contacts as TContact[]),
-		});
+		if (options.vcf) {
+			return RespondVCF({
+				res,
+				filename: 'Exported Contacts',
+				data: options.business_contacts_only
+					? VCFParser.exportBusinessContacts(contacts as TBusinessContact[])
+					: VCFParser.exportContacts(contacts as TContact[]),
+			});
+		} else {
+			return RespondCSV({
+				res,
+				filename: 'Exported Contacts',
+				data: options.business_contacts_only
+					? CSVParser.exportBusinessContacts(contacts as TBusinessContact[])
+					: CSVParser.exportContacts(contacts as TContact[]),
+			});
+		}
 	} catch (err) {
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
