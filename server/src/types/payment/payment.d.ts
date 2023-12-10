@@ -10,4 +10,6 @@ export default interface IPayment extends Document {
 	transaction_date: Date;
 
 	invoice_id: string;
+	invoice_order_id: string;
+	invoice_payment_id: string;
 }

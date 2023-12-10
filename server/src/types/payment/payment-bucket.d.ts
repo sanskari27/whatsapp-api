@@ -1,6 +1,6 @@
 import { Document } from 'mongoose';
-import IPlan from './plan';
 import { TRANSACTION_STATUS } from '../../config/const';
+import IPlan from './plan';
 
 export default interface IPaymentBucket extends Document {
 	phone_number: string;
@@ -9,6 +9,7 @@ export default interface IPaymentBucket extends Document {
 	admin_number: string;
 	whatsapp_numbers: string[];
 	plan: IPlan;
+
 	billing_address: {
 		street: string;
 		city: string;
@@ -16,6 +17,7 @@ export default interface IPaymentBucket extends Document {
 		state: string;
 		country: string;
 		pincode: string;
+		gstin: string;
 	};
 
 	transaction_status: TRANSACTION_STATUS;
