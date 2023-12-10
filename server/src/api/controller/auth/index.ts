@@ -60,7 +60,7 @@ async function logout(req: Request, res: Response, next: NextFunction) {
 	const whatsapp = WhatsappProvider.getInstance(client_id);
 
 	// await whatsapp.logoutClient();
-	whatsapp.destroyClient();
+	whatsapp.logoutClient();
 
 	return Respond({
 		res,

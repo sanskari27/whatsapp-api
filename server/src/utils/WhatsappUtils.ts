@@ -236,7 +236,7 @@ export default class WhatsappUtils {
 	static async removeUnwantedSessions() {
 		const sessions = await UserService.getRevokedSessions();
 		for (const session of sessions) {
-			await WhatsappProvider.getInstance(session.client_id).logoutClient();
+			WhatsappProvider.getInstance(session.client_id).logoutClient();
 			WhatsappUtils.deleteSession(session.client_id);
 			session.remove();
 		}
