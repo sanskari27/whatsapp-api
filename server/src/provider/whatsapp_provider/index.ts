@@ -265,25 +265,22 @@ export class WhatsappProvider {
 		return this.getContact().isBusiness;
 	}
 
-	async logoutClient() {
-		return new Promise((resolve, reject) => {
-			this.callbackHandlers.onDestroy(this.client_id);
-			if (this.status === STATUS.LOGGED_OUT || this.status === STATUS.DESTROYED) {
-				return resolve(true);
-			}
-			const id = setInterval(() => {
-				this.client
-					.logout()
-					.then(() => {
-						this.status = STATUS.LOGGED_OUT;
-						this.destroyClient();
-						clearInterval(id);
-						resolve(true);
-					})
-					.catch(() => {});
-			}, 1000);
-			WhatsappProvider.clientsMap.delete(this.client_id);
-		});
+	logoutClient() {
+		this.callbackHandlers.onDestroy(this.client_id);
+		if (this.status === STATUS.LOGGED_OUT || this.status === STATUS.DESTROYED) {
+			return;
+		}
+		const id = setInterval(() => {
+			this.client
+				.logout()
+				.then(() => {
+					this.status = STATUS.LOGGED_OUT;
+					this.destroyClient();
+					clearInterval(id);
+				})
+				.catch(() => {});
+		}, 1000);
+		WhatsappProvider.clientsMap.delete(this.client_id);
 	}
 
 	destroyClient() {
@@ -293,8 +290,9 @@ export class WhatsappProvider {
 		}
 		let count = 0;
 		const id = setInterval(() => {
-			if (count >= 10) {
+			if (count >= 10 || this.status === STATUS.DESTROYED) {
 				clearInterval(id);
+				return;
 			}
 			this.client
 				.destroy()
