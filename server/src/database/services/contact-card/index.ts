@@ -38,8 +38,6 @@ export default class ContactCardService {
 	}
 
 	async createContactCard(details: ContactCardType) {
-		console.log(details);
-
 		const contact_card = await ContactCardDB.create({
 			user: this.user.id,
 			...details,

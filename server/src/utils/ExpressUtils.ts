@@ -49,6 +49,21 @@ export function generateBatchID() {
 	return crypto.randomBytes(6).toString('hex');
 }
 
+export function generateInvoiceID() {
+	const randomAlphaNumeric = () => Math.random().toString(36).substr(2, 1).toUpperCase();
+	const randomNumeric = () => Math.floor(Math.random() * 10);
+
+	let randomString = '';
+	for (let i = 0; i < 5; i++) {
+		randomString += randomAlphaNumeric();
+	}
+	randomString += '-';
+	for (let i = 0; i < 4; i++) {
+		randomString += randomNumeric();
+	}
+	return randomString;
+}
+
 type IDValidatorResult = [true, Types.ObjectId] | [false, undefined];
 export function idValidator(id: string): IDValidatorResult {
 	const validator = z

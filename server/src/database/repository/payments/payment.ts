@@ -1,5 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 import IPayment from '../../../types/payment/payment';
+import { generateInvoiceID } from '../../../utils/ExpressUtils';
 
 const paymentSchema = new mongoose.Schema<IPayment>({
 	bucket: {
@@ -20,6 +21,16 @@ const paymentSchema = new mongoose.Schema<IPayment>({
 		type: Date,
 		default: Date.now,
 	},
+	invoice_id: {
+		type: String,
+	},
+});
+
+paymentSchema.pre('save', function (next) {
+	if (!this.invoice_id) {
+		this.invoice_id = generateInvoiceID();
+	}
+	next();
 });
 
 const PaymentDB = mongoose.model<IPayment>('Payment', paymentSchema);
