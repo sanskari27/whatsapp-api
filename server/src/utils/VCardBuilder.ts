@@ -150,8 +150,8 @@ export default class VCardBuilder {
 		}
 
 		//Add Title and organization to vcard
-		if (this.title) vCardString += `TITLE:${this.title}\n`;
 		if (this.organization) vCardString += `ORG:${this.organization};\n`;
+		if (this.title) vCardString += `TITLE:${this.title}\n`;
 		return vCardString + END;
 	}
 
