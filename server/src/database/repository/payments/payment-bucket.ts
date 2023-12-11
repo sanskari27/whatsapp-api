@@ -22,6 +22,7 @@ const paymentBucketSchema = new mongoose.Schema<IPaymentBucket>({
 		state: String,
 		country: String,
 		pincode: String,
+		gstin: String,
 	},
 
 	type: {

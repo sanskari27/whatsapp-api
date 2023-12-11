@@ -8,12 +8,27 @@ type ResponseData = {
 	status: 200 | 201 | 400 | 401 | 403 | 404 | 500;
 	data?: object;
 };
+type CSVResponseData = Omit<ResponseData, 'status' | 'data'> & {
+	filename: string;
+	data: string;
+};
 
 export const Respond = ({ res, status, data = {} }: ResponseData) => {
 	if (status === 200 || status === 201) {
 		return res.status(status).json({ ...data, success: true });
 	}
 	return res.status(status).json({ ...data, success: false });
+};
+
+export const RespondCSV = ({ res, filename, data }: CSVResponseData) => {
+	res.setHeader('Content-Disposition', `attachment; filename="${filename}.csv"`);
+	res.set('Content-Type', 'text/csv');
+	res.status(200).send(data);
+};
+export const RespondVCF = ({ res, filename, data }: CSVResponseData) => {
+	res.setHeader('Content-Disposition', `attachment; filename="${filename}.vcf"`);
+	res.set('Content-Type', 'text/vcf');
+	res.status(200).send(data);
 };
 
 export const Delay = async (seconds: number) => {
@@ -37,6 +52,21 @@ export function generateClientID() {
 }
 export function generateBatchID() {
 	return crypto.randomBytes(6).toString('hex');
+}
+
+export function generateInvoiceID() {
+	const randomAlphaNumeric = () => Math.random().toString(36).substr(2, 1).toUpperCase();
+	const randomNumeric = () => Math.floor(Math.random() * 10);
+
+	let randomString = '';
+	for (let i = 0; i < 5; i++) {
+		randomString += randomAlphaNumeric();
+	}
+	randomString += '-';
+	for (let i = 0; i < 4; i++) {
+		randomString += randomNumeric();
+	}
+	return randomString;
 }
 
 type IDValidatorResult = [true, Types.ObjectId] | [false, undefined];

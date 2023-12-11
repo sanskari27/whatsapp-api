@@ -18,6 +18,9 @@ const botSchema = new mongoose.Schema<IBot>({
 	trigger_gap_seconds: {
 		type: Number,
 	},
+	response_delay_seconds: {
+		type: Number,
+	},
 	options: {
 		type: String,
 		enum: Object.values(BOT_TRIGGER_OPTIONS),
@@ -34,6 +37,13 @@ const botSchema = new mongoose.Schema<IBot>({
 		type: Boolean,
 		default: false,
 	},
+	polls: [
+		{
+			title: String,
+			options: [String],
+			isMultiSelect: Boolean,
+		},
+	],
 	active: {
 		type: Boolean,
 		default: true,

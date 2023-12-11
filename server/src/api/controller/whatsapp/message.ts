@@ -43,12 +43,21 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 				})
 				.array()
 				.default([]),
+
 			attachments: z
 				.string()
 				.array()
 				.default([])
 				.refine((attachments) => !attachments.some((value) => !Types.ObjectId.isValid(value)))
 				.transform((attachments) => attachments.map((value) => new Types.ObjectId(value))),
+			polls: z
+				.object({
+					title: z.string(),
+					options: z.string().array().min(1),
+					isMultiSelect: z.boolean().default(false),
+				})
+				.array()
+				.default([]),
 			campaign_name: z.string().default(''),
 			min_delay: z.number().positive(),
 			max_delay: z.number().positive(),
@@ -72,7 +81,8 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 			if (
 				obj.message.length === 0 &&
 				obj.attachments.length === 0 &&
-				obj.shared_contact_cards.length === 0
+				obj.shared_contact_cards.length === 0 &&
+				obj.polls.length === 0
 			) {
 				return false;
 			}
@@ -93,6 +103,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 		message,
 		attachments,
 		shared_contact_cards,
+		polls,
 		min_delay,
 		max_delay,
 		startTime,
@@ -294,6 +305,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 			message: _message,
 			attachments: attachments,
 			shared_contact_cards: contact_cards ?? [],
+			polls: polls,
 		};
 	});
 
@@ -304,7 +316,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.ALREADY_EXISTS);
 		}
 		const campaign_id = generateBatchID();
-		messageSchedulerService.scheduleBatch(await Promise.all(sendMessageList), {
+		messageSchedulerService.scheduleCampaign(await Promise.all(sendMessageList), {
 			campaign_id,
 			campaign_name,
 			min_delay,

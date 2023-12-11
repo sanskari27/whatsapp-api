@@ -4,8 +4,11 @@ import WAWebJS, { Client, LocalAuth } from 'whatsapp-web.js';
 import { CHROMIUM_PATH, SOCKET_RESPONSES } from '../../config/const';
 import { UserService } from '../../database/services';
 import BotService from '../../database/services/bot';
+import VoteResponseService from '../../database/services/vote-response';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import { Delay } from '../../utils/ExpressUtils';
+import DateUtils from '../../utils/DateUtils';
+
 
 type ClientID = string;
 
@@ -43,6 +46,7 @@ export class WhatsappProvider {
 	private user_service: UserService | undefined;
 	private socket: Socket | undefined;
 	private bot_service: BotService | undefined;
+	private vote_response_service: VoteResponseService | undefined;
 
 	private status: STATUS;
 
@@ -137,9 +141,64 @@ export class WhatsappProvider {
 
 			this.bot_service = new BotService(this.user_service.getUser());
 			this.bot_service.attachWhatsappProvider(this);
+			this.vote_response_service = new VoteResponseService(this.user_service.getUser());
 
-			const contactId = await this.client.getNumberId('919931224934');
-			if (!contactId) return;
+			// const message = await this.client.getMessageById(
+			// 	'true_918797721460@c.us_3EB0043C8758BB059411E4'
+			// );
+			// console.log('message: ', message);
+
+			// const contactId = await this.client.getNumberId('918797721460');
+			// console.log('contactId', contactId);
+
+			// if (!contactId) return;
+
+			// const message = await this.client.sendMessage(
+			// 	contactId._serialized,
+			// 	new Poll('Winter or Summer?', ['Winter', 'Summer'])
+			// );
+			// console.log('message', message);
+
+			// const contact = await this.client.getContactById(contactId._serialized);
+			// if (contact.isBusiness) {
+			// 	console.log((contact as BusinessContact).businessProfile);
+			// }else{
+			// 	console.log("Not business contact")
+			// }
+		});
+
+		this.client.on('vote_update', async (vote) => {
+			/** The vote that was affected: */
+			if (!this.vote_response_service) return;
+			if (!vote.parentMessage.id.fromMe) return;
+			const pollDetails = this.vote_response_service.getPollDetails(vote.parentMessage);
+			const contact = await this.client.getContactById(vote.voter);
+			if (!this.contact || contact.id._serialized === this.contact.id._serialized) {
+				return;
+			}
+			const details = {
+				...pollDetails,
+				voter_number: '',
+				voter_name: '',
+				group_name: '',
+				selected_options: vote.selectedOptions.map((opt) => opt.name),
+				voted_at: DateUtils.getMoment(vote.interractedAtTs).toDate(),
+			};
+
+			const chat = await this.client.getChatById(pollDetails.chat_id);
+			if (chat.isGroup) {
+				details.group_name = chat.name;
+			}
+
+			details.voter_number = contact.number;
+			details.voter_name = (contact.name || contact.pushname) ?? '';
+
+			await this.vote_response_service.saveVote(details);
+
+			details.selected_options.map((opt) => {
+				if (!this.bot_service) return;
+				this.bot_service.handleMessage(chat.id._serialized, opt, contact);
+			});
 		});
 
 		this.client.on('disconnected', () => {
@@ -156,7 +215,8 @@ export class WhatsappProvider {
 		this.client.on('message', async (message) => {
 			if (!this.bot_service) return;
 			const isGroup = (await message.getChat()).isGroup;
-			this.bot_service.handleMessage(message, await message.getContact(), { isGroup });
+			this.bot_service.handleMessage(message.from, message.body, await message.getContact(), { isGroup });
+
 		});
 	}
 

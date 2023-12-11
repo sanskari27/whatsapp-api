@@ -10,12 +10,18 @@ export default interface IBot extends Document {
 
 	trigger: string;
 	trigger_gap_seconds: number;
+	response_delay_seconds: number;
 
 	options: BOT_TRIGGER_OPTIONS;
 
 	message: string;
 	attachments: IUpload[];
 	shared_contact_cards: string[];
+	polls: {
+		title: string;
+		options: string[];
+		isMultiSelect: boolean;
+	}[];
 
 	group_respond: boolean;
 	active: boolean;
