@@ -50,6 +50,7 @@ export default class BotService {
 				caption: attachment.caption,
 			})),
 			shared_contact_cards: bot.shared_contact_cards,
+			group_respond: bot.group_respond,
 			isActive: bot.active,
 		}));
 	}
@@ -145,7 +146,15 @@ export default class BotService {
 		});
 	}
 
-	public async handleMessage(message: WAWebJS.Message, contact: WAWebJS.Contact) {
+	public async handleMessage(
+		message: WAWebJS.Message,
+		contact: WAWebJS.Contact,
+		{
+			isGroup = false,
+		}: {
+			isGroup: boolean;
+		}
+	) {
 		if (!this.whatsapp) {
 			throw new Error('Whatsapp Provider not attached.');
 		}
@@ -161,6 +170,9 @@ export default class BotService {
 
 		const whatsapp = this.whatsapp;
 		botsEngaged.forEach(async (bot) => {
+			if (!bot.group_respond && isGroup) {
+				return;
+			}
 			this.responseSent(bot.bot_id, message_from);
 
 			if (bot.message.length > 0) {

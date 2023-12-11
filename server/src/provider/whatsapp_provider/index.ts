@@ -155,7 +155,8 @@ export class WhatsappProvider {
 
 		this.client.on('message', async (message) => {
 			if (!this.bot_service) return;
-			this.bot_service.handleMessage(message, await message.getContact());
+			const isGroup = (await message.getChat()).isGroup;
+			this.bot_service.handleMessage(message, await message.getContact(), { isGroup });
 		});
 	}
 
