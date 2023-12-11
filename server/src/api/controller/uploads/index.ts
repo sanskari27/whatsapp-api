@@ -172,7 +172,7 @@ export async function updateAttachment(req: Request, res: Response, next: NextFu
 		const caption = req.body.caption as string;
 		const custom_caption = req.body.custom_caption as boolean;
 
-		const attachment = new UploadService(req.locals.user).updateAttachment(id, {
+		const attachment = await new UploadService(req.locals.user).updateAttachment(id, {
 			name,
 			caption,
 			custom_caption,

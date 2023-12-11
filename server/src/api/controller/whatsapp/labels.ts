@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { getOrCache } from '../../../config/cache';
 import { CACHE_TOKEN_GENERATOR } from '../../../config/const';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
+import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 import {
 	TBusinessContact,
@@ -169,16 +170,25 @@ async function addLabel(req: Request, res: Response, next: NextFunction) {
 		);
 	}
 
-	const assigned_chats = await whatsappUtils.getChatIdsByLabel(label_id);
-	const chats_to_assign = chat_ids.filter((id) => !assigned_chats.includes(id));
-	await whatsapp.getClient().addOrRemoveLabels([label_id], chats_to_assign);
-	return Respond({
-		res,
-		status: 200,
-		data: {
-			message: 'Label assigned successfully',
-		},
-	});
+	try {
+		const assigned_chats = await whatsappUtils.getChatIdsByLabel(label_id);
+		const chats_to_assign = chat_ids.filter((id) => !assigned_chats.includes(id));
+		await whatsapp.getClient().addOrRemoveLabels([label_id], chats_to_assign);
+		return Respond({
+			res,
+			status: 200,
+			data: {
+				message: 'Label assigned successfully',
+			},
+		});
+	} catch (err) {
+		if (err instanceof InternalError) {
+			if (err.isSameInstanceof(INTERNAL_ERRORS.WHATSAPP_ERROR.BUSINESS_ACCOUNT_REQUIRED)) {
+				return next(new APIError(API_ERRORS.WHATSAPP_ERROR.BUSINESS_ACCOUNT_REQUIRED));
+			}
+		}
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
+	}
 }
 
 async function removeLabel(req: Request, res: Response, next: NextFunction) {

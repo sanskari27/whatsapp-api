@@ -3,7 +3,6 @@ import Logger from 'n23-logger';
 import WAWebJS, { BusinessContact, GroupChat } from 'whatsapp-web.js';
 import { COUNTRIES, IS_PRODUCTION, SESSION_STARTUP_WAIT_TIME } from '../config/const';
 import { UserService } from '../database/services';
-import APIError, { API_ERRORS } from '../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../errors/internal-errors';
 import { WhatsappProvider } from '../provider/whatsapp_provider';
 import {
@@ -103,7 +102,7 @@ export default class WhatsappUtils {
 
 	async getChatIdsByLabel(label_id: string) {
 		if (!this.whatsapp.isBusiness()) {
-			throw new APIError(API_ERRORS.WHATSAPP_ERROR.BUSINESS_ACCOUNT_REQUIRED);
+			throw new InternalError(INTERNAL_ERRORS.WHATSAPP_ERROR.BUSINESS_ACCOUNT_REQUIRED);
 		}
 		const chats = await this.whatsapp.getClient().getChatsByLabelId(label_id);
 
@@ -318,52 +317,56 @@ export default class WhatsappUtils {
 			mapped_contacts: null,
 		}
 	) {
-		const chats = await this.whatsapp.getClient().getChatsByLabelId(label_id);
-		const label = await this.whatsapp.getClient().getLabelById(label_id);
-		const contactsPromises = chats
-			.map(async (chat) => {
-				if (chat.isGroup) {
-					const participants = await this.getGroupContacts(chat as GroupChat, {
-						business_details: options.business_details,
-						mapped_contacts: options.mapped_contacts,
-					});
+		try {
+			const chats = await this.whatsapp.getClient().getChatsByLabelId(label_id);
+			const label = await this.whatsapp.getClient().getLabelById(label_id);
+			const contactsPromises = chats
+				.map(async (chat) => {
+					if (chat.isGroup) {
+						const participants = await this.getGroupContacts(chat as GroupChat, {
+							business_details: options.business_details,
+							mapped_contacts: options.mapped_contacts,
+						});
 
-					return participants.map((participant) => ({
-						...participant,
-						group_name: chat.name,
-						label: label.name,
-					})) as (TLabelContact | TLabelBusinessContact)[];
-				} else {
-					const contact = await this.whatsapp.getClient().getContactById(chat.id._serialized);
-					const contacts_details = await WhatsappUtils.getContactDetails(contact);
-					if (!options.business_details) {
+						return participants.map((participant) => ({
+							...participant,
+							group_name: chat.name,
+							label: label.name,
+						})) as (TLabelContact | TLabelBusinessContact)[];
+					} else {
+						const contact = await this.whatsapp.getClient().getContactById(chat.id._serialized);
+						const contacts_details = await WhatsappUtils.getContactDetails(contact);
+						if (!options.business_details) {
+							return [
+								{
+									...contacts_details,
+									group_name: chat.name,
+									label: label.name,
+								} as TLabelContact,
+							];
+						}
+						if (!contact.isBusiness) {
+							return [];
+						}
+						const business_details = WhatsappUtils.getBusinessDetails(contact as BusinessContact);
 						return [
 							{
 								...contacts_details,
+								...business_details,
 								group_name: chat.name,
 								label: label.name,
-							} as TLabelContact,
+							} as TLabelBusinessContact,
 						];
 					}
-					if (!contact.isBusiness) {
-						return [];
-					}
-					const business_details = WhatsappUtils.getBusinessDetails(contact as BusinessContact);
-					return [
-						{
-							...contacts_details,
-							...business_details,
-							group_name: chat.name,
-							label: label.name,
-						} as TLabelBusinessContact,
-					];
-				}
-			})
-			.flat();
+				})
+				.flat();
 
-		const arraysOfContacts = await Promise.all(contactsPromises);
-		const flatContactsArray = arraysOfContacts.flat();
-		return flatContactsArray;
+			const arraysOfContacts = await Promise.all(contactsPromises);
+			const flatContactsArray = arraysOfContacts.flat();
+			return flatContactsArray;
+		} catch (error) {
+			return [];
+		}
 	}
 
 	async createGroup(title: string, participants: string[]) {

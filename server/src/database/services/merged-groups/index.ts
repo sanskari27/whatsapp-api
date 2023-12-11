@@ -28,7 +28,7 @@ export default class GroupMergeService {
 		});
 	}
 	async deleteGroup(group_id: Types.ObjectId) {
-		await MergedGroupDB.remove(group_id);
+		await MergedGroupDB.deleteOne({ _id: group_id });
 	}
 	async removeFromGroup(id: Types.ObjectId, group_ids: string[]) {
 		const mergedGroup = await MergedGroupDB.findById(id);

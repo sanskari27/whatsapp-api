@@ -11,6 +11,11 @@ const WHATSAPP_ERRORS = {
 		TITLE: 'WHATSAPP_NOT_READY',
 		MESSAGE: 'Whatsapp still not ready',
 	},
+	BUSINESS_ACCOUNT_REQUIRED: {
+		STATUS: 400,
+		TITLE: 'BUSINESS_ACCOUNT_REQUIRED',
+		MESSAGE: 'The user must have a business account to perform this action.',
+	},
 } satisfies {
 	[error: string]: ServerError;
 };

@@ -200,7 +200,7 @@ async function createGroup(req: Request, res: Response, next: NextFunction) {
 				}
 				const group_name = row.group;
 
-				if (groups_map[group_name]) {
+				if (!groups_map[group_name]) {
 					groups_map[group_name] = [];
 				}
 				groups_map[group_name].push(numberWithId.numberId);
@@ -219,6 +219,8 @@ async function createGroup(req: Request, res: Response, next: NextFunction) {
 			},
 		});
 	} catch (err) {
+		console.log(err);
+
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
 }

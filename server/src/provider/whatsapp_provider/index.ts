@@ -6,9 +6,8 @@ import { UserService } from '../../database/services';
 import BotService from '../../database/services/bot';
 import VoteResponseService from '../../database/services/vote-response';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
-import { Delay } from '../../utils/ExpressUtils';
 import DateUtils from '../../utils/DateUtils';
-
+import { Delay } from '../../utils/ExpressUtils';
 
 type ClientID = string;
 
@@ -215,8 +214,9 @@ export class WhatsappProvider {
 		this.client.on('message', async (message) => {
 			if (!this.bot_service) return;
 			const isGroup = (await message.getChat()).isGroup;
-			this.bot_service.handleMessage(message.from, message.body, await message.getContact(), { isGroup });
-
+			this.bot_service.handleMessage(message.from, message.body, await message.getContact(), {
+				isGroup,
+			});
 		});
 	}
 

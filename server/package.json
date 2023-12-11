@@ -23,6 +23,7 @@
 		"dotenv": "^11.0.0",
 		"express": "^4.17.2",
 		"form-data": "^4.0.0",
+		"jimp": "^0.22.10",
 		"json-2-csv": "^5.0.1",
 		"jsonwebtoken": "^9.0.0",
 		"moment": "^2.29.1",

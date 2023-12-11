@@ -185,12 +185,16 @@ export default class BotService {
 		});
 	}
 
-	public async handleMessage(from: string, body: string, contact: WAWebJS.Contact,
-		{
-			isGroup = false,
-		}: {
+	public async handleMessage(
+		from: string,
+		body: string,
+		contact: WAWebJS.Contact,
+		opts: {
 			isGroup: boolean;
-		}) {
+		} = {
+			isGroup: false,
+		}
+	) {
 		if (!this.whatsapp) {
 			throw new Error('Whatsapp Provider not attached.');
 		}
@@ -206,7 +210,7 @@ export default class BotService {
 		const whatsapp = this.whatsapp;
 
 		botsEngaged.forEach(async (bot) => {
-			if (!bot.group_respond && isGroup) {
+			if (!bot.group_respond && opts.isGroup) {
 				return;
 			}
 			await Delay(bot.response_delay_seconds);
