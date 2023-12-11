@@ -6,7 +6,9 @@ import { UserService } from '../../database/services';
 import BotService from '../../database/services/bot';
 import VoteResponseService from '../../database/services/vote-response';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
+import { Delay } from '../../utils/ExpressUtils';
 import DateUtils from '../../utils/DateUtils';
+
 
 type ClientID = string;
 
@@ -212,7 +214,9 @@ export class WhatsappProvider {
 
 		this.client.on('message', async (message) => {
 			if (!this.bot_service) return;
-			this.bot_service.handleMessage(message.from, message.body, await message.getContact());
+			const isGroup = (await message.getChat()).isGroup;
+			this.bot_service.handleMessage(message.from, message.body, await message.getContact(), { isGroup });
+
 		});
 	}
 
@@ -265,7 +269,8 @@ export class WhatsappProvider {
 		return this.getContact().isBusiness;
 	}
 
-	logoutClient() {
+	async logoutClient() {
+		await Delay(10);
 		this.callbackHandlers.onDestroy(this.client_id);
 		if (this.status === STATUS.LOGGED_OUT || this.status === STATUS.DESTROYED) {
 			return;
@@ -283,7 +288,8 @@ export class WhatsappProvider {
 		WhatsappProvider.clientsMap.delete(this.client_id);
 	}
 
-	destroyClient() {
+	async destroyClient() {
+		await Delay(10);
 		this.callbackHandlers.onDestroy(this.client_id);
 		if (this.status === STATUS.DESTROYED) {
 			return;

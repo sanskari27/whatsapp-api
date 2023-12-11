@@ -23,5 +23,6 @@ export default interface IBot extends Document {
 		isMultiSelect: boolean;
 	}[];
 
+	group_respond: boolean;
 	active: boolean;
 }
