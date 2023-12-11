@@ -30,7 +30,10 @@ const botSchema = new mongoose.Schema<IBot>({
 		},
 	],
 	shared_contact_cards: [String],
-
+	group_respond: {
+		type: Boolean,
+		default: false,
+	},
 	active: {
 		type: Boolean,
 		default: true,

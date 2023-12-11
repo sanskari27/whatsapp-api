@@ -72,6 +72,7 @@ async function createBot(req: Request, res: Response, next: NextFunction) {
 			.default([])
 			.refine((attachments) => !attachments.some((value) => !Types.ObjectId.isValid(value)))
 			.transform((attachments) => attachments.map((value) => new Types.ObjectId(value))),
+		group_respond: z.boolean().default(false),
 	});
 
 	const reqValidatorResult = reqValidator.safeParse(req.body);

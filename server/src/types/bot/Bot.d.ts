@@ -17,5 +17,6 @@ export default interface IBot extends Document {
 	attachments: IUpload[];
 	shared_contact_cards: string[];
 
+	group_respond: boolean;
 	active: boolean;
 }

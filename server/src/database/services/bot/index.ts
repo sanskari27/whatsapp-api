@@ -239,6 +239,7 @@ export default class BotService {
 		message: string;
 		shared_contact_cards: string[];
 		attachments: IUpload[];
+		group_respond: boolean;
 	}) {
 		const bot = new BotDB({
 			...data,
@@ -260,6 +261,7 @@ export default class BotService {
 			})),
 			shared_contact_cards: bot.shared_contact_cards,
 			isActive: bot.active,
+			group_respond: bot.group_respond,
 		};
 	}
 
