@@ -5,6 +5,7 @@ import { CHROMIUM_PATH, SOCKET_RESPONSES } from '../../config/const';
 import { UserService } from '../../database/services';
 import BotService from '../../database/services/bot';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
+import { Delay } from '../../utils/ExpressUtils';
 
 type ClientID = string;
 
@@ -207,7 +208,8 @@ export class WhatsappProvider {
 		return this.getContact().isBusiness;
 	}
 
-	logoutClient() {
+	async logoutClient() {
+		await Delay(10);
 		this.callbackHandlers.onDestroy(this.client_id);
 		if (this.status === STATUS.LOGGED_OUT || this.status === STATUS.DESTROYED) {
 			return;
@@ -225,7 +227,8 @@ export class WhatsappProvider {
 		WhatsappProvider.clientsMap.delete(this.client_id);
 	}
 
-	destroyClient() {
+	async destroyClient() {
+		await Delay(10);
 		this.callbackHandlers.onDestroy(this.client_id);
 		if (this.status === STATUS.DESTROYED) {
 			return;

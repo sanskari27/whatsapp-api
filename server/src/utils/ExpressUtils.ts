@@ -16,6 +16,14 @@ export const Respond = ({ res, status, data = {} }: ResponseData) => {
 	return res.status(status).json({ ...data, success: false });
 };
 
+export const Delay = async (seconds: number) => {
+	return new Promise((resolve, reject) => {
+		setTimeout(() => {
+			resolve(null);
+		}, seconds * 1000);
+	});
+};
+
 export const parseAmount = (amount: number) => {
 	return Number(amount.toFixed(2));
 };
