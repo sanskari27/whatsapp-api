@@ -16,11 +16,6 @@ const USER_ERRORS = {
 		TITLE: 'SESSION_INVALIDATED',
 		MESSAGE: 'The session was invalidated. Please login again.',
 	},
-	ATTACHMENT_IN_USE: {
-		STATUS: 400,
-		TITLE: 'ATTACHMENT_IN_USE',
-		MESSAGE: 'The requested attachment could not be deleted.',
-	},
 } satisfies {
 	[error: string]: APIError;
 };

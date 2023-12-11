@@ -9,6 +9,4 @@ router.route('/campaign/:campaign_id/delete').delete(ReportsController.deleteCam
 router.route('/campaign/:campaign_id').get(ReportsController.generateReport);
 router.route('/campaign').get(ReportsController.listCampaigns);
 
-router.route('/polls').get(ReportsController.listPolls);
-
 export default router;

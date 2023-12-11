@@ -42,7 +42,7 @@ export default class UploadService {
 		};
 	}
 
-	async delete(id: Types.ObjectId) {
+	async deleteCSV(id: Types.ObjectId) {
 		const doc = await UploadDB.findById(id);
 		if (!doc) {
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
@@ -68,21 +68,6 @@ export default class UploadService {
 			attachments,
 		] as [{ id: string; caption: string; filename: string; name: string }[], IUpload[]];
 	}
-
-	async getAttachment(id: Types.ObjectId) {
-		const attachment = await UploadDB.findById(id);
-		if (!attachment) {
-			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
-		}
-		return {
-			id: attachment._id as string,
-			name: attachment.name,
-			filename: attachment.filename,
-			caption: attachment.caption,
-			custom_caption: attachment.custom_caption ?? false,
-		};
-	}
-
 	addAttachment(name: string, caption: string, filename: string, custom_caption: boolean = false) {
 		const attachment = new UploadDB({
 			user: this.user,
@@ -98,46 +83,6 @@ export default class UploadService {
 			name: attachment.name,
 			filename: attachment.filename,
 			caption: attachment.caption,
-			custom_caption: attachment.custom_caption ?? false,
-		};
-	}
-
-	async updateAttachmentFile(id: Types.ObjectId, filename: string) {
-		const attachment = await UploadDB.findById(id);
-		if (!attachment) {
-			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
-		}
-		const prev_name = attachment.filename;
-		attachment.filename = filename;
-		await attachment.save();
-		return { previous: prev_name, current: filename };
-	}
-
-	async updateAttachment(
-		id: Types.ObjectId,
-		data: { name?: string; caption?: string; custom_caption?: boolean }
-	) {
-		const attachment = await UploadDB.findById(id);
-		if (!attachment) {
-			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
-		}
-		if (data.name) {
-			attachment.name = data.name;
-		}
-		if (data.caption) {
-			attachment.caption = data.caption;
-		}
-		if (data.custom_caption) {
-			attachment.custom_caption = data.custom_caption;
-		}
-
-		await attachment.save();
-		return {
-			id: attachment._id as string,
-			name: attachment.name,
-			filename: attachment.filename,
-			caption: attachment.caption,
-			custom_caption: attachment.custom_caption ?? false,
 		};
 	}
 }

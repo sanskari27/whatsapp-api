@@ -102,22 +102,13 @@ export const SESSION_STARTUP_WAIT_TIME = 5 * 60 * 1000; //milis
 export const CACHE_TIMEOUT = 10 * 60; //seconds
 
 export const CACHE_TOKEN_GENERATOR = {
-	SAVED_CONTACTS: (client_id: string, business_only: boolean = false) =>
-		`SAVED_CONTACTS?client_id=${client_id}&business_only=${business_only}`,
-
-	NON_SAVED_CONTACTS: (client_id: string, business_only: boolean = false) =>
-		`NON_SAVED_CONTACTS?client_id=${client_id}&business_only=${business_only}`,
-
+	SAVED_CONTACTS: (client_id: string) => `SAVED_CONTACTS?client_id=${client_id}`,
+	NON_SAVED_CONTACTS: (client_id: string) => `NON_SAVED_CONTACTS?client_id=${client_id}`,
 	GROUPS: (client_id: string) => `GROUPS?client_id=${client_id}`,
-
 	LABELS: (client_id: string) => `LABELS?client_id=${client_id}`,
-
-	MAPPED_CONTACTS: (client_id: string, business_only: boolean = false) =>
-		`MAPPED_CONTACTS?client_id=${client_id}&business_only=${business_only}`,
-
-	GROUPS_EXPORT: (client_id: string, group_id: string, business_only: boolean = false) =>
-		`GROUPS_EXPORT?client_id=${client_id}&group_id=${group_id}&business_only=${business_only}`,
-
-	LABELS_EXPORT: (client_id: string, label_id: string, business_only: boolean = false) =>
-		`LABELS_EXPORT?client_id=${client_id}&label_id=${label_id}&business_only=${business_only}`,
+	MAPPED_CONTACTS: (client_id: string) => `MAPPED_CONTACTS?client_id=${client_id}`,
+	GROUPS_EXPORT: (client_id: string, group_id: string) =>
+		`GROUPS_EXPORT?client_id=${client_id}&group_id=${group_id}`,
+	LABELS_EXPORT: (client_id: string, label_id: string) =>
+		`LABELS_EXPORT?client_id=${client_id}&label_id=${label_id}`,
 };

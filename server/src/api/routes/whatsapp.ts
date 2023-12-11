@@ -18,31 +18,19 @@ router
 	.route('/groups/export')
 	.all(PaymentValidator.isSubscribed)
 	.get(GroupsController.exportGroups);
-
-router
-	.route('/groups/merge/:group_id')
-	.patch(GroupsController.removeGroupFromMerge)
-	.delete(GroupsController.deleteMergedGroup);
-router.route('/groups/merge').post(GroupsController.mergeGroup);
-
-router.route('/groups').get(GroupsController.groups).post(GroupsController.createGroup);
+router.route('/groups').get(GroupsController.groups);
 
 router
 	.route('/labels/export')
 	.all(PaymentValidator.isSubscribed)
 	.get(LabelsController.exportLabels);
-router.route('/labels/assign').post(LabelsController.addLabel);
-router.route('/labels/remove').post(LabelsController.removeLabel);
 router.route('/labels').get(LabelsController.labels);
 
 router
 	.route('/bot/:id')
 	.all(PaymentValidator.isPseudoSubscribed)
-	.get(BotController.botById)
-	.patch(BotController.updateBot)
 	.put(BotController.toggleActive)
 	.delete(BotController.deleteBot);
-
 router
 	.route('/bot')
 	.all(PaymentValidator.isPseudoSubscribed)

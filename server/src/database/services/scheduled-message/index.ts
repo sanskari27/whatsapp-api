@@ -1,16 +1,14 @@
 import fs from 'fs';
 import { Types } from 'mongoose';
-import Logger from 'n23-logger';
-import { MessageMedia, Poll } from 'whatsapp-web.js';
+import { MessageMedia } from 'whatsapp-web.js';
 import { ATTACHMENTS_PATH, PROMOTIONAL_MESSAGE } from '../../../config/const';
-import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 import IScheduledMessage from '../../../types/scheduled-message';
 import { IUser } from '../../../types/user';
 import DateUtils from '../../../utils/DateUtils';
+import ErrorReporter from '../../../utils/ErrorReporter';
 import { generateBatchID, getRandomNumber } from '../../../utils/ExpressUtils';
 import ScheduledMessageDB from '../../repository/scheduled-message';
-import UploadDB from '../../repository/uploads';
 import UserService from '../user';
 
 export type Message = {
@@ -20,11 +18,6 @@ export type Message = {
 		name: string;
 		filename: string;
 		caption: string | undefined;
-	}[];
-	polls: {
-		title: string;
-		options: string[];
-		isMultiSelect: boolean;
 	}[];
 	shared_contact_cards: ContactCardMessage;
 };
@@ -56,7 +49,7 @@ export default class MessageSchedulerService {
 		return exists !== null;
 	}
 
-	async scheduleCampaign(messages: Message[], opts: Batch) {
+	async scheduleBatch(messages: Message[], opts: Batch) {
 		const docPromise: Promise<
 			IScheduledMessage & {
 				_id: Types.ObjectId;
@@ -107,7 +100,6 @@ export default class MessageSchedulerService {
 					message: message.message ?? '',
 					attachments: message.attachments ?? [],
 					shared_contact_cards: message.shared_contact_cards ?? [],
-					polls: message.polls ?? [],
 					sendAt: scheduledTime.toDate(),
 					batch_id: batch_id,
 					campaign_name: opts.campaign_name,
@@ -150,7 +142,7 @@ export default class MessageSchedulerService {
 					.getClient()
 					.sendMessage(scheduledMessage.receiver, scheduledMessage.message)
 					.catch((err) => {
-						Logger.error('Error sending message:', err);
+						ErrorReporter.report(err);
 					});
 			}
 
@@ -159,7 +151,7 @@ export default class MessageSchedulerService {
 					.getClient()
 					.sendMessage(scheduledMessage.receiver, card)
 					.catch((err) => {
-						Logger.error('Error sending message:', err);
+						ErrorReporter.report(err);
 					});
 			});
 
@@ -180,22 +172,7 @@ export default class MessageSchedulerService {
 						caption,
 					})
 					.catch((err) => {
-						Logger.error('Error sending message:', err);
-					});
-			});
-
-			scheduledMessage.polls.forEach(async (poll) => {
-				const { title, options, isMultiSelect } = poll;
-				whatsapp
-					.getClient()
-					.sendMessage(
-						scheduledMessage.receiver,
-						new Poll(title, options, {
-							allowMultipleAnswers: isMultiSelect,
-						})
-					)
-					.catch((err) => {
-						Logger.error('Error sending message:', err);
+						ErrorReporter.report(err);
 					});
 			});
 
@@ -204,7 +181,7 @@ export default class MessageSchedulerService {
 					.getClient()
 					.sendMessage(scheduledMessage.receiver, PROMOTIONAL_MESSAGE)
 					.catch((err) => {
-						Logger.error('Error sending message:', err);
+						ErrorReporter.report(err);
 					});
 			}
 
@@ -274,9 +251,7 @@ export default class MessageSchedulerService {
 	}
 
 	async deleteCampaign(campaign_id: string) {
-		try {
-			await ScheduledMessageDB.deleteMany({ sender: this.user, campaign_id });
-		} catch (err) {}
+		await ScheduledMessageDB.deleteMany({ sender: this.user, campaign_id });
 	}
 
 	async pauseCampaign(campaign_id: string) {
@@ -316,26 +291,5 @@ export default class MessageSchedulerService {
 			campaign_name: campaign.campaign_name,
 			status: campaign.isSent ? 'Sent' : campaign.isPaused ? 'Paused' : 'Pending',
 		}));
-	}
-
-	async isAttachmentInUse(id: Types.ObjectId) {
-		const attachment = await UploadDB.findById(id);
-		if (!attachment) {
-			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
-		}
-		const campaigns: IScheduledMessage[] = await ScheduledMessageDB.aggregate([
-			{
-				$match: {
-					attachments: {
-						$elemMatch: {
-							filename: attachment.filename,
-						},
-					},
-					isSent: false,
-					isFailed: false,
-				},
-			},
-		]);
-		return campaigns.length > 0;
 	}
 }

@@ -31,13 +31,6 @@ const scheduledMessageSchema = new mongoose.Schema<IScheduledMessage>({
 		},
 	],
 	shared_contact_cards: [String],
-	polls: [
-		{
-			title: String,
-			options: [String],
-			isMultiSelect: Boolean,
-		},
-	],
 	sendAt: Date,
 	batch_id: String,
 	campaign_id: String,
