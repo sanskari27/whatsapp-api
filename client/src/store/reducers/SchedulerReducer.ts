@@ -38,6 +38,12 @@ const SchedulerSlice = createSlice({
             state.isBusinessAccount = initialState.isBusinessAccount;
             state.recipients = initialState.recipients;
         },
+        setAllCampaigns: (
+            state,
+            action: PayloadAction<typeof initialState.all_campaigns>
+        ) => {
+            state.all_campaigns = action.payload;
+        },
         setCampaignName: (
             state,
             action: PayloadAction<typeof initialState.details.campaign_name>
@@ -153,6 +159,7 @@ const SchedulerSlice = createSlice({
 
 export const {
     reset,
+    setAllCampaigns,
     setCampaignName,
     setRecipientsFrom,
     setRecipientsLoading,
