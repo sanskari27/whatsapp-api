@@ -38,8 +38,11 @@ router.route('/labels').get(LabelsController.labels);
 router
 	.route('/bot/:id')
 	.all(PaymentValidator.isPseudoSubscribed)
+	.get(BotController.botById)
+	.patch(BotController.updateBot)
 	.put(BotController.toggleActive)
 	.delete(BotController.deleteBot);
+
 router
 	.route('/bot')
 	.all(PaymentValidator.isPseudoSubscribed)

@@ -4,10 +4,17 @@ import { z } from 'zod';
 import { getOrCache } from '../../../config/cache';
 import { CACHE_TOKEN_GENERATOR } from '../../../config/const';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
+import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
-import { TLabelBusinessContact, TLabelContact } from '../../../types/whatsapp/contact';
+import {
+	TBusinessContact,
+	TContact,
+	TLabelBusinessContact,
+	TLabelContact,
+} from '../../../types/whatsapp/contact';
 import CSVParser from '../../../utils/CSVParser';
-import { Respond, RespondCSV } from '../../../utils/ExpressUtils';
+import { Respond, RespondCSV, RespondVCF } from '../../../utils/ExpressUtils';
+import VCFParser from '../../../utils/VCFParser';
 import WhatsappUtils from '../../../utils/WhatsappUtils';
 import { FileUtils } from '../../../utils/files';
 
@@ -54,9 +61,13 @@ async function exportLabels(req: Request, res: Response, next: NextFunction) {
 	}
 	const options = {
 		business_contacts_only: false,
+		vcf: false,
 	};
 	if (req.query.business_contacts_only && req.query.business_contacts_only === 'true') {
 		options.business_contacts_only = true;
+	}
+	if (req.query.vcf && req.query.vcf === 'true') {
+		options.vcf = true;
 	}
 
 	try {
@@ -80,13 +91,23 @@ async function exportLabels(req: Request, res: Response, next: NextFunction) {
 
 		const participants = (await Promise.all(participants_promise)).flat();
 
-		return RespondCSV({
-			res,
-			filename: 'Exported Label Contacts',
-			data: options.business_contacts_only
-				? CSVParser.exportLabelBusinessContacts(participants as TLabelBusinessContact[])
-				: CSVParser.exportLabelContacts(participants as TLabelContact[]),
-		});
+		if (options.vcf) {
+			return RespondVCF({
+				res,
+				filename: 'Exported Label Contacts',
+				data: options.business_contacts_only
+					? VCFParser.exportBusinessContacts(participants as TBusinessContact[])
+					: VCFParser.exportContacts(participants as TContact[]),
+			});
+		} else {
+			return RespondCSV({
+				res,
+				filename: 'Exported Label Contacts',
+				data: options.business_contacts_only
+					? CSVParser.exportLabelBusinessContacts(participants as TLabelBusinessContact[])
+					: CSVParser.exportLabelContacts(participants as TLabelContact[]),
+			});
+		}
 	} catch (err) {
 		return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
 	}
@@ -149,16 +170,25 @@ async function addLabel(req: Request, res: Response, next: NextFunction) {
 		);
 	}
 
-	const assigned_chats = await whatsappUtils.getChatIdsByLabel(label_id);
-	const chats_to_assign = chat_ids.filter((id) => !assigned_chats.includes(id));
-	await whatsapp.getClient().addOrRemoveLabels([label_id], chats_to_assign);
-	return Respond({
-		res,
-		status: 200,
-		data: {
-			message: 'Label assigned successfully',
-		},
-	});
+	try {
+		const assigned_chats = await whatsappUtils.getChatIdsByLabel(label_id);
+		const chats_to_assign = chat_ids.filter((id) => !assigned_chats.includes(id));
+		await whatsapp.getClient().addOrRemoveLabels([label_id], chats_to_assign);
+		return Respond({
+			res,
+			status: 200,
+			data: {
+				message: 'Label assigned successfully',
+			},
+		});
+	} catch (err) {
+		if (err instanceof InternalError) {
+			if (err.isSameInstanceof(INTERNAL_ERRORS.WHATSAPP_ERROR.BUSINESS_ACCOUNT_REQUIRED)) {
+				return next(new APIError(API_ERRORS.WHATSAPP_ERROR.BUSINESS_ACCOUNT_REQUIRED));
+			}
+		}
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
+	}
 }
 
 async function removeLabel(req: Request, res: Response, next: NextFunction) {

@@ -294,46 +294,13 @@ export default class CSVParser {
 		return csv;
 	}
 
-	static async exportPayments(
+	static exportCampaignReport(
 		records: {
-			date: string;
-			amount: number;
-		}[]
-	) {
-		const keys = [
-			{
-				field: 'date',
-				title: 'Date',
-			},
-			{
-				field: 'amount',
-				title: 'Amount',
-			},
-		];
-
-		const csv = await json2csv(records, {
-			keys: keys,
-			emptyFieldValue: '',
-		});
-
-		const blob = new Blob([csv], { type: 'text/csv' });
-		const url = window.URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.setAttribute('hidden', '');
-		a.setAttribute('href', url);
-		a.setAttribute('download', 'payments.csv');
-		document.body.appendChild(a);
-		a.click();
-		document.body.removeChild(a);
-	}
-
-	static async exportReport(
-		reports: {
-			message: string;
+			campaign_name: string;
 			receiver: string;
+			message: string;
 			attachments: number;
 			contacts: number;
-			campaign_name: string;
 			status: string;
 		}[]
 	) {
@@ -350,7 +317,6 @@ export default class CSVParser {
 				field: 'message',
 				title: 'Message',
 			},
-
 			{
 				field: 'attachments',
 				title: 'Attachments',
@@ -365,50 +331,62 @@ export default class CSVParser {
 			},
 		];
 
-		const csv = await json2csv(reports, {
+		return json2csv(records, {
 			keys: keys,
 			emptyFieldValue: '',
 		});
-
-		const blob = new Blob([csv], { type: 'text/csv' });
-		const url = window.URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.setAttribute('hidden', '');
-		a.setAttribute('href', url);
-		a.setAttribute('download', 'campaign-report.csv');
-		document.body.appendChild(a);
-		a.click();
-		document.body.removeChild(a);
 	}
 
-	static async downloadTemplate() {
+	static exportPollReport(
+		records: {
+			title: string;
+			options: string[];
+			isMultiSelect: boolean;
+			voter_number: string;
+			voter_name: string;
+			group_name: string;
+			selected_option: string[];
+			voted_at: string;
+		}[]
+	): string {
 		const keys = [
 			{
-				field: 'number',
-				title: 'number',
+				field: 'title',
+				title: 'Title',
 			},
 			{
-				field: 'extra_variable',
-				title: 'extra_variable',
+				field: 'options',
+				title: 'Options',
+			},
+			{
+				field: 'isMultiSelect',
+				title: 'Multiple Select',
+			},
+			{
+				field: 'voter_number',
+				title: 'Voter Number',
+			},
+			{
+				field: 'voter_name',
+				title: 'Voter Name',
+			},
+			{
+				field: 'group_name',
+				title: 'Group name',
+			},
+			{
+				field: 'selected_option',
+				title: 'Selected Options',
+			},
+			{
+				field: 'voted_at',
+				title: 'Voted At',
 			},
 		];
 
-		const csv = await json2csv(
-			[{ number: '91790XXXX890', extra_variable: 'This can be used for message Customization' }],
-			{
-				keys: keys,
-				emptyFieldValue: '',
-			}
-		);
-
-		const blob = new Blob([csv], { type: 'text/csv' });
-		const url = window.URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.setAttribute('hidden', '');
-		a.setAttribute('href', url);
-		a.setAttribute('download', 'template.csv');
-		document.body.appendChild(a);
-		a.click();
-		document.body.removeChild(a);
+		return json2csv(records, {
+			keys: keys,
+			emptyFieldValue: '',
+		});
 	}
 }

@@ -50,6 +50,7 @@ export default class PaymentBucketService {
 			state: string;
 			country: string;
 			pincode: string;
+			gstin: string;
 		};
 	}) {
 		const plan = await PlanDB.findOne({ code: data.plan_name });

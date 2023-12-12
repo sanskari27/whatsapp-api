@@ -1,6 +1,7 @@
 import csv from 'csvtojson/v2';
 import { NextFunction, Request, Response } from 'express';
 import { ATTACHMENTS_PATH, CSV_PATH } from '../../../config/const';
+import { MessageSchedulerService } from '../../../database/services';
 import UploadService from '../../../database/services/uploads';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
@@ -73,7 +74,7 @@ export async function deleteCSV(req: Request, res: Response, next: NextFunction)
 		return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
 	}
 	try {
-		const filename = await new UploadService(req.locals.user).deleteCSV(id);
+		const filename = await new UploadService(req.locals.user).delete(id);
 		const path = __basedir + CSV_PATH + filename;
 		FileUtils.deleteFile(path);
 
@@ -126,6 +127,110 @@ export async function addAttachment(req: Request, res: Response, next: NextFunct
 	}
 }
 
+export async function updateAttachmentFile(req: Request, res: Response, next: NextFunction) {
+	const [isIDValid, id] = idValidator(req.params.id);
+
+	if (!isIDValid) {
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
+	}
+	const fileUploadOptions: SingleFileUploadOptions = {
+		field_name: 'file',
+		options: {},
+	};
+
+	try {
+		const uploadedFile = await FileUpload.SingleFileUpload(req, res, fileUploadOptions);
+		const destination = __basedir + ATTACHMENTS_PATH + uploadedFile.filename;
+		FileUtils.moveFile(uploadedFile.path, destination);
+
+		const { previous } = await new UploadService(req.locals.user).updateAttachmentFile(
+			id,
+			uploadedFile.filename
+		);
+		const path = __basedir + ATTACHMENTS_PATH + previous;
+		FileUtils.deleteFile(path);
+
+		return Respond({
+			res,
+			status: 200,
+			data: {},
+		});
+	} catch (err: unknown) {
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.FILE_UPLOAD_ERROR));
+	}
+}
+
+export async function updateAttachment(req: Request, res: Response, next: NextFunction) {
+	const [isIDValid, id] = idValidator(req.params.id);
+
+	if (!isIDValid) {
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
+	}
+
+	try {
+		const name = req.body.name as string;
+		const caption = req.body.caption as string;
+		const custom_caption = req.body.custom_caption as boolean;
+
+		const attachment = await new UploadService(req.locals.user).updateAttachment(id, {
+			name,
+			caption,
+			custom_caption,
+		});
+
+		return Respond({
+			res,
+			status: 200,
+			data: {
+				attachment,
+			},
+		});
+	} catch (err: unknown) {
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.FILE_UPLOAD_ERROR));
+	}
+}
+
+export async function deleteAttachment(req: Request, res: Response, next: NextFunction) {
+	const [isIDValid, id] = idValidator(req.params.id);
+
+	if (!isIDValid) {
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
+	}
+	try {
+		const scheduler = new MessageSchedulerService(req.locals.user);
+		const inUse = await scheduler.isAttachmentInUse(id);
+		if (inUse) {
+			return next(new APIError(API_ERRORS.USER_ERRORS.ATTACHMENT_IN_USE));
+		}
+		const attachment = await new UploadService(req.locals.user).delete(id);
+		const path = __basedir + ATTACHMENTS_PATH + attachment;
+		FileUtils.deleteFile(path);
+		return Respond({
+			res,
+			status: 200,
+			data: {},
+		});
+	} catch (err: unknown) {
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.FILE_UPLOAD_ERROR));
+	}
+}
+
+export async function attachmentById(req: Request, res: Response, next: NextFunction) {
+	const [isIDValid, id] = idValidator(req.params.id);
+
+	if (!isIDValid) {
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
+	}
+	const attachment = await new UploadService(req.locals.user).getAttachment(id);
+	return Respond({
+		res,
+		status: 200,
+		data: {
+			attachment,
+		},
+	});
+}
+
 export async function listAttachments(req: Request, res: Response, next: NextFunction) {
 	const [attachments] = await new UploadService(req.locals.user).listAttachments();
 	return Respond({
@@ -143,6 +248,10 @@ const UploadsController = {
 	deleteCSV,
 	addAttachment,
 	listAttachments,
+	attachmentById,
+	deleteAttachment,
+	updateAttachment,
+	updateAttachmentFile,
 };
 
 export default UploadsController;

@@ -95,6 +95,7 @@ export const TAX = 0.18;
 export const UPLOADS_PATH = '/static/uploads/';
 export const CSV_PATH = '/static/csv/';
 export const ATTACHMENTS_PATH = '/static/attachments/';
+export const LOGO_PATH = '/static/assets/logo.png';
 
 export const PROMOTIONAL_MESSAGE = '*Created on wa.savemyvcard.com*';
 

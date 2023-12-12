@@ -6,9 +6,15 @@ import { CACHE_TOKEN_GENERATOR } from '../../../config/const';
 import GroupMergeService from '../../../database/services/merged-groups';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
-import { TGroupBusinessContact, TGroupContact } from '../../../types/whatsapp/contact';
+import {
+	TBusinessContact,
+	TContact,
+	TGroupBusinessContact,
+	TGroupContact,
+} from '../../../types/whatsapp/contact';
 import CSVParser from '../../../utils/CSVParser';
-import { Respond, RespondCSV, idValidator } from '../../../utils/ExpressUtils';
+import { Respond, RespondCSV, RespondVCF, idValidator } from '../../../utils/ExpressUtils';
+import VCFParser from '../../../utils/VCFParser';
 import WhatsappUtils from '../../../utils/WhatsappUtils';
 import { FileUtils } from '../../../utils/files';
 
@@ -42,12 +48,13 @@ async function groups(req: Request, res: Response, next: NextFunction) {
 				return groups;
 			}
 		);
+		const merged_groups = await new GroupMergeService(req.locals.user).listGroups();
 
 		return Respond({
 			res,
 			status: 200,
 			data: {
-				groups,
+				groups: [...groups, ...merged_groups],
 			},
 		});
 	} catch (err) {
@@ -69,9 +76,13 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 
 	const options = {
 		business_contacts_only: false,
+		vcf: false,
 	};
 	if (req.query.business_contacts_only && req.query.business_contacts_only === 'true') {
 		options.business_contacts_only = true;
+	}
+	if (req.query.vcf && req.query.vcf === 'true') {
+		options.vcf = true;
 	}
 
 	try {
@@ -79,11 +90,23 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 			CACHE_TOKEN_GENERATOR.MAPPED_CONTACTS(client_id, options.business_contacts_only),
 			async () => await whatsappUtils.getMappedContacts(options.business_contacts_only)
 		);
-
+		const groupMergeService = new GroupMergeService(req.locals.user);
 		const group_ids_array = (group_ids as string).split(',');
+		const merged_group_ids = group_ids_array.filter((id) => idValidator(id)[0]);
+		const merged_group_whatsapp_ids = await groupMergeService.extractWhatsappGroupIds(
+			merged_group_ids
+		);
+
+		const ids_to_export = [...group_ids_array, ...merged_group_whatsapp_ids].filter(
+			(id) => !idValidator(id)[0] // check if all ids is valid whatsapp group ids
+		);
 
 		const groups = await Promise.all(
-			group_ids_array.map(async (group_id) => {
+			ids_to_export.map(async (group_id) => {
+				if (idValidator(group_id)[0]) {
+					// Check if group_id is a merged group_id
+					return null;
+				}
 				const chat = await whatsapp.getClient().getChatById(group_id);
 
 				if (!chat || !chat.isGroup) {
@@ -116,13 +139,23 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 			)
 		).flat();
 
-		return RespondCSV({
-			res,
-			filename: 'Exported Group Contacts',
-			data: options.business_contacts_only
-				? CSVParser.exportGroupBusinessContacts(participants as TGroupBusinessContact[])
-				: CSVParser.exportGroupContacts(participants as TGroupContact[]),
-		});
+		if (options.vcf) {
+			return RespondVCF({
+				res,
+				filename: 'Exported Group Contacts',
+				data: options.business_contacts_only
+					? VCFParser.exportBusinessContacts(participants as TBusinessContact[])
+					: VCFParser.exportContacts(participants as TContact[]),
+			});
+		} else {
+			return RespondCSV({
+				res,
+				filename: 'Exported Group Contacts',
+				data: options.business_contacts_only
+					? CSVParser.exportGroupBusinessContacts(participants as TGroupBusinessContact[])
+					: CSVParser.exportGroupContacts(participants as TGroupContact[]),
+			});
+		}
 	} catch (err) {
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
@@ -167,7 +200,7 @@ async function createGroup(req: Request, res: Response, next: NextFunction) {
 				}
 				const group_name = row.group;
 
-				if (groups_map[group_name]) {
+				if (!groups_map[group_name]) {
 					groups_map[group_name] = [];
 				}
 				groups_map[group_name].push(numberWithId.numberId);
@@ -186,6 +219,8 @@ async function createGroup(req: Request, res: Response, next: NextFunction) {
 			},
 		});
 	} catch (err) {
+		console.log(err);
+
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
 }
