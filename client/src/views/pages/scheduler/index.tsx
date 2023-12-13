@@ -768,7 +768,7 @@ export default function Scheduler() {
                                                 width: '100%',
                                             },
                                         }}
-                                        className="  bg-[#ECECEC] dark:bg-[#535353] rounded-md border-none w-full "
+                                        className="  bg-[#ECECEC] dark:bg-[#535353] rounded-md border-none "
                                     />
                                 )}
                                 {error.recipients && (
@@ -942,7 +942,7 @@ export default function Scheduler() {
                             </>
                         ) : null}
                     </Flex>
-                    <HStack gap={8}>
+                    <HStack gap={8} alignItems={'start'}>
                         <Flex
                             direction={'column'}
                             gap={2}
@@ -951,11 +951,11 @@ export default function Scheduler() {
                             <Box justifyContent={'space-between'}>
                                 <Text
                                     className="text-gray-700 dark:text-white"
-                                    pt={4}
+                                    py={4}
                                 >
-                                    Select Template
+                                    Message Section
                                 </Text>
-                                <Flex gap={3} alignItems={'center'} pt={2}>
+                                <Flex gap={3} alignItems={'center'}>
                                     <Select
                                         className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
                                         border={'none'}
@@ -1064,7 +1064,10 @@ export default function Scheduler() {
                             </FormControl>
 
                             <Box hidden={details.type !== 'CSV'}>
-                                <Text className="text-gray-700 dark:text-white">
+                                <Text
+                                    className="text-gray-700 dark:text-white"
+                                    hidden={details.variables.length === 0}
+                                >
                                     Variables
                                 </Text>
                                 <Box>
