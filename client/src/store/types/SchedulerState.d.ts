@@ -1,3 +1,5 @@
+import { ContactCard } from './ContactCardState';
+
 export type SchedulerState = {
     details: SchedulerDetails;
     all_campaigns: ScheduledCampaign[];
@@ -29,23 +31,7 @@ export type SchedulerDetails = {
     label_ids: string[];
     message: string;
     variables: string[];
-    shared_contact_cards: {
-        first_name?: string;
-        middle_name?: string;
-        last_name?: string;
-        organization?: string;
-        email_personal?: string;
-        email_work?: string;
-        contact_number_phone?: string;
-        contact_number_work?: string;
-        contact_number_other?: string[];
-        links?: string[];
-        street?: string;
-        city?: string;
-        state?: string;
-        country?: string;
-        pincode?: string;
-    }[];
+    shared_contact_cards: ContactCard[];
     attachments: string[];
     campaign_name: string;
     min_delay: number;
