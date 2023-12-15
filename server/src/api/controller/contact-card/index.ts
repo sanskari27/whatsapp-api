@@ -213,9 +213,7 @@ async function createContactCardQR(req: Request, res: Response, next: NextFuncti
 		});
 	}
 
-	const qrCodeBuffer = await QRUtils.generateContactQR(
-		new VCardBuilder({ ...data, ...details }).build()
-	);
+	const qrCodeBuffer = await QRUtils.generateQR(new VCardBuilder({ ...data, ...details }).build());
 	if (!qrCodeBuffer) {
 		return Respond({
 			res,

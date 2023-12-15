@@ -3,7 +3,7 @@ import Logger from 'n23-logger';
 import qr from 'qrcode';
 import { LOGO_PATH } from '../config/const';
 
-const generateContactQR = async (text: string) => {
+const generateQR = async (text: string) => {
 	try {
 		// Generate QR code
 		const qrImage = await qr.toDataURL(text);
@@ -30,7 +30,7 @@ const generateContactQR = async (text: string) => {
 };
 
 const QRUtils = {
-	generateContactQR,
+	generateQR,
 };
 
 export default QRUtils;
