@@ -159,26 +159,30 @@ export default class BotService {
 			}
 
 			if (bot.options === BOT_TRIGGER_OPTIONS.INCLUDES_IGNORE_CASE) {
-				const wordsToCheck = bot.trigger.toLowerCase().split(' ');
-				const words = message_body.toLowerCase().split(' ');
+				const lowerCaseSentence = bot.trigger.toLowerCase();
+				const lowerCaseParagraph = message_body.toLowerCase();
 
-				for (let i = 0; i <= words.length - wordsToCheck.length; i++) {
-					const subarray = words.slice(i, i + wordsToCheck.length);
-					if (subarray.every((word, index) => word === wordsToCheck[index])) {
-						return true;
-					}
-				}
+				// Split the paragraph into words
+				const words_paragraph = lowerCaseParagraph.split(/\s+/);
+				const sentence_paragraph = lowerCaseSentence.split(/\s+/);
+
+				return words_paragraph.some(
+					(_, index, arr) =>
+						arr.slice(index, index + sentence_paragraph.length).join() === sentence_paragraph.join()
+				);
 			}
 			if (bot.options === BOT_TRIGGER_OPTIONS.INCLUDES_MATCH_CASE) {
-				const wordsToCheck = bot.trigger.split(' ');
-				const words = message_body.split(' ');
+				const lowerCaseSentence = bot.trigger;
+				const lowerCaseParagraph = message_body;
 
-				for (let i = 0; i <= words.length - wordsToCheck.length; i++) {
-					const subarray = words.slice(i, i + wordsToCheck.length);
-					if (subarray.every((word, index) => word === wordsToCheck[index])) {
-						return true;
-					}
-				}
+				// Split the paragraph into words
+				const words_paragraph = lowerCaseParagraph.split(/\s+/);
+				const sentence_paragraph = lowerCaseSentence.split(/\s+/);
+
+				return words_paragraph.some(
+					(_, index, arr) =>
+						arr.slice(index, index + sentence_paragraph.length).join() === sentence_paragraph.join()
+				);
 			}
 
 			return false;
@@ -216,10 +220,16 @@ export default class BotService {
 			await Delay(bot.response_delay_seconds);
 			this.responseSent(bot.bot_id, message_from);
 
+			let msg = bot.message;
+
+			if (!isSubscribed && isNew) {
+				msg += '\n' + PROMOTIONAL_MESSAGE;
+			}
+
 			if (bot.message.length > 0) {
 				whatsapp
 					.getClient()
-					.sendMessage(from, bot.message)
+					.sendMessage(from, msg)
 					.catch((err) => {
 						Logger.error('Error sending message:', err);
 					});
@@ -267,15 +277,6 @@ export default class BotService {
 						Logger.error('Error sending message:', err);
 					});
 			});
-
-			if (!isSubscribed && isNew) {
-				whatsapp
-					.getClient()
-					.sendMessage(from, PROMOTIONAL_MESSAGE)
-					.catch((err) => {
-						Logger.error('Error sending message:', err);
-					});
-			}
 		});
 	}
 
