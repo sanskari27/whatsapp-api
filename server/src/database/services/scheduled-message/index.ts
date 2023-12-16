@@ -145,12 +145,14 @@ export default class MessageSchedulerService {
 
 			let msg = scheduledMessage.message;
 
-			whatsapp
-				.getClient()
-				.sendMessage(scheduledMessage.receiver, msg)
-				.catch((err) => {
-					Logger.error('Error sending message:', err);
-				});
+			if (msg) {
+				whatsapp
+					.getClient()
+					.sendMessage(scheduledMessage.receiver, msg)
+					.catch((err) => {
+						Logger.error('Error sending message:', err);
+					});
+			}
 
 			scheduledMessage.shared_contact_cards.forEach(async (card) => {
 				whatsapp

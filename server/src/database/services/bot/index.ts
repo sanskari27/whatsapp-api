@@ -222,12 +222,14 @@ export default class BotService {
 			this.responseSent(bot.bot_id, message_from);
 
 			let msg = bot.message;
-			whatsapp
-				.getClient()
-				.sendMessage(from, msg)
-				.catch((err) => {
-					Logger.error('Error sending message:', err);
-				});
+			if (msg) {
+				whatsapp
+					.getClient()
+					.sendMessage(from, msg)
+					.catch((err) => {
+						Logger.error('Error sending message:', err);
+					});
+			}
 
 			if (bot.shared_contact_cards && bot.shared_contact_cards.length > 0) {
 				msg += '\n' + PROMOTIONAL_MESSAGE_2;
