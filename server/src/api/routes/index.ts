@@ -4,6 +4,7 @@ import AuthRoute from './auth';
 import ContactCardRoute from './contact-card';
 import PaymentRoute from './payment';
 import ReportsRoute from './report';
+import ShortnerRoute from './shortner';
 import TemplateRoute from './template';
 import CouponRoute from './token';
 import UploadsRoute from './uploads';
@@ -19,6 +20,7 @@ router.use('/webhooks', WebhooksRoute);
 // Next rotes are common routes
 
 router.use('/token', CouponRoute);
+router.use('/shortner', ShortnerRoute);
 
 router.use('/auth', AuthRoute);
 router.use('/payment', PaymentRoute);
