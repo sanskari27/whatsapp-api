@@ -12,7 +12,7 @@ import {
 	TGroupContact,
 	TLabelBusinessContact,
 	TLabelContact,
-} from '../types/whatsapp/contact';
+} from '../types/whatsapp';
 
 type MappedContact_ReturnType<T extends boolean> = T extends true
 	? {

@@ -3,7 +3,7 @@ import { getOrCache } from '../../../config/cache';
 import { CACHE_TOKEN_GENERATOR } from '../../../config/const';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
-import { TBusinessContact, TContact } from '../../../types/whatsapp/contact';
+import { TBusinessContact, TContact } from '../../../types/whatsapp';
 import CSVParser from '../../../utils/CSVParser';
 import { Respond, RespondCSV, RespondVCF } from '../../../utils/ExpressUtils';
 import VCFParser from '../../../utils/VCFParser';

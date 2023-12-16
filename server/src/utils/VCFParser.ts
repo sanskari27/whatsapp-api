@@ -1,4 +1,4 @@
-import { TBusinessContact, TContact } from '../types/whatsapp/contact';
+import { TBusinessContact, TContact } from '../types/whatsapp';
 import VCardBuilder from './VCardBuilder';
 
 export default class VCFParser {

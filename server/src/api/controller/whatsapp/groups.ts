@@ -11,7 +11,7 @@ import {
 	TContact,
 	TGroupBusinessContact,
 	TGroupContact,
-} from '../../../types/whatsapp/contact';
+} from '../../../types/whatsapp';
 import CSVParser from '../../../utils/CSVParser';
 import { Respond, RespondCSV, RespondVCF, idValidator } from '../../../utils/ExpressUtils';
 import VCFParser from '../../../utils/VCFParser';

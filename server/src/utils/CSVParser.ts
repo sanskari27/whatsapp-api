@@ -6,7 +6,7 @@ import {
 	TGroupContact,
 	TLabelBusinessContact,
 	TLabelContact,
-} from '../types/whatsapp/contact';
+} from '../types/whatsapp';
 
 export default class CSVParser {
 	static exportContacts(contacts: TContact[]) {
