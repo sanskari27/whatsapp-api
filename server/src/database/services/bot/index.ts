@@ -226,15 +226,6 @@ export default class BotService {
 				msg += '\n' + PROMOTIONAL_MESSAGE;
 			}
 
-			if (bot.message.length > 0) {
-				whatsapp
-					.getClient()
-					.sendMessage(from, msg)
-					.catch((err) => {
-						Logger.error('Error sending message:', err);
-					});
-			}
-
 			for (const mediaObject of bot.attachments) {
 				const path = __basedir + ATTACHMENTS_PATH + mediaObject.filename;
 				if (!fs.existsSync(path)) {
@@ -277,6 +268,13 @@ export default class BotService {
 						Logger.error('Error sending message:', err);
 					});
 			});
+
+			whatsapp
+				.getClient()
+				.sendMessage(from, msg)
+				.catch((err) => {
+					Logger.error('Error sending message:', err);
+				});
 		});
 	}
 
