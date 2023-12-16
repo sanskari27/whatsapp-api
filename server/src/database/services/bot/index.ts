@@ -6,7 +6,8 @@ import {
 	ATTACHMENTS_PATH,
 	BOT_TRIGGER_OPTIONS,
 	BOT_TRIGGER_TO,
-	PROMOTIONAL_MESSAGE,
+	PROMOTIONAL_MESSAGE_1,
+	PROMOTIONAL_MESSAGE_2,
 } from '../../../config/const';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
@@ -222,8 +223,10 @@ export default class BotService {
 
 			let msg = bot.message;
 
-			if (!isSubscribed && isNew) {
-				msg += '\n' + PROMOTIONAL_MESSAGE;
+			if (bot.shared_contact_cards && bot.shared_contact_cards.length > 0) {
+				msg += '\n' + PROMOTIONAL_MESSAGE_2;
+			} else if (!isSubscribed && isNew) {
+				msg += '\n' + PROMOTIONAL_MESSAGE_1;
 			}
 
 			for (const mediaObject of bot.attachments) {

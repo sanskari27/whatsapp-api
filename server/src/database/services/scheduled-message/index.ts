@@ -2,7 +2,11 @@ import fs from 'fs';
 import { Types } from 'mongoose';
 import Logger from 'n23-logger';
 import { MessageMedia, Poll } from 'whatsapp-web.js';
-import { ATTACHMENTS_PATH, PROMOTIONAL_MESSAGE } from '../../../config/const';
+import {
+	ATTACHMENTS_PATH,
+	PROMOTIONAL_MESSAGE_1,
+	PROMOTIONAL_MESSAGE_2,
+} from '../../../config/const';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
 import IScheduledMessage from '../../../types/scheduled-message';
@@ -139,19 +143,15 @@ export default class MessageSchedulerService {
 
 			const { isSubscribed, isNew } = userService.isSubscribed();
 
-			if (!isSubscribed && !isNew) {
-				scheduledMessage.isFailed = true;
-				scheduledMessage.save();
-				return;
-			}
+			let msg = scheduledMessage.message;
 
-			if (scheduledMessage.message) {
-				whatsapp
-					.getClient()
-					.sendMessage(scheduledMessage.receiver, scheduledMessage.message)
-					.catch((err) => {
-						Logger.error('Error sending message:', err);
-					});
+			if (
+				scheduledMessage.shared_contact_cards &&
+				scheduledMessage.shared_contact_cards.length > 0
+			) {
+				msg += '\n' + PROMOTIONAL_MESSAGE_2;
+			} else if (!isSubscribed && isNew) {
+				msg += '\n' + PROMOTIONAL_MESSAGE_1;
 			}
 
 			scheduledMessage.shared_contact_cards.forEach(async (card) => {
@@ -199,14 +199,12 @@ export default class MessageSchedulerService {
 					});
 			});
 
-			if (isNew && !isSubscribed) {
-				whatsapp
-					.getClient()
-					.sendMessage(scheduledMessage.receiver, PROMOTIONAL_MESSAGE)
-					.catch((err) => {
-						Logger.error('Error sending message:', err);
-					});
-			}
+			whatsapp
+				.getClient()
+				.sendMessage(scheduledMessage.receiver, msg)
+				.catch((err) => {
+					Logger.error('Error sending message:', err);
+				});
 
 			scheduledMessage.isSent = true;
 			scheduledMessage.save();
