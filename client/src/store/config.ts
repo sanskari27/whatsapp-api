@@ -1,3 +1,4 @@
 export enum StoreNames {
-	SCHEDULER = 'scheduler',
+    SCHEDULER = 'scheduler',
+    CHATBOT = 'chatbot',
 }
