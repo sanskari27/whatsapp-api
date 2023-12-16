@@ -169,7 +169,7 @@ export class WhatsappProvider {
 		this.client.on('vote_update', async (vote) => {
 			/** The vote that was affected: */
 			if (!this.vote_response_service) return;
-			if (!vote.parentMessage.id.fromMe) return;
+			if (!vote.parentMessage.id?.fromMe) return;
 			const pollDetails = this.vote_response_service.getPollDetails(vote.parentMessage);
 			const contact = await this.client.getContactById(vote.voter);
 			if (!this.contact || contact.id._serialized === this.contact.id._serialized) {
