@@ -13,7 +13,8 @@ const generateQR = async (text: string) => {
 
 		// Load the image to be placed in the center
 		let image = await Jimp.read(__basedir + LOGO_PATH);
-		image = image.resize(150, 30);
+
+		image = image.resize(qrJimp.bitmap.width / 2, qrJimp.bitmap.width / 10);
 
 		// Calculate the position to center the image on the QR code
 		const x = (qrJimp.bitmap.width - image.bitmap.width) / 2;
