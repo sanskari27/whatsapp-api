@@ -145,14 +145,12 @@ export default class MessageSchedulerService {
 
 			let msg = scheduledMessage.message;
 
-			if (
-				scheduledMessage.shared_contact_cards &&
-				scheduledMessage.shared_contact_cards.length > 0
-			) {
-				msg += '\n' + PROMOTIONAL_MESSAGE_2;
-			} else if (!isSubscribed && isNew) {
-				msg += '\n' + PROMOTIONAL_MESSAGE_1;
-			}
+			whatsapp
+				.getClient()
+				.sendMessage(scheduledMessage.receiver, msg)
+				.catch((err) => {
+					Logger.error('Error sending message:', err);
+				});
 
 			scheduledMessage.shared_contact_cards.forEach(async (card) => {
 				whatsapp
@@ -199,12 +197,24 @@ export default class MessageSchedulerService {
 					});
 			});
 
-			whatsapp
-				.getClient()
-				.sendMessage(scheduledMessage.receiver, msg)
-				.catch((err) => {
-					Logger.error('Error sending message:', err);
-				});
+			if (
+				scheduledMessage.shared_contact_cards &&
+				scheduledMessage.shared_contact_cards.length > 0
+			) {
+				whatsapp
+					.getClient()
+					.sendMessage(scheduledMessage.receiver, PROMOTIONAL_MESSAGE_2)
+					.catch((err) => {
+						Logger.error('Error sending message:', err);
+					});
+			} else if (!isSubscribed && isNew) {
+				whatsapp
+					.getClient()
+					.sendMessage(scheduledMessage.receiver, PROMOTIONAL_MESSAGE_1)
+					.catch((err) => {
+						Logger.error('Error sending message:', err);
+					});
+			}
 
 			scheduledMessage.isSent = true;
 			scheduledMessage.save();

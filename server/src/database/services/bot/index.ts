@@ -222,6 +222,12 @@ export default class BotService {
 			this.responseSent(bot.bot_id, message_from);
 
 			let msg = bot.message;
+			whatsapp
+				.getClient()
+				.sendMessage(from, msg)
+				.catch((err) => {
+					Logger.error('Error sending message:', err);
+				});
 
 			if (bot.shared_contact_cards && bot.shared_contact_cards.length > 0) {
 				msg += '\n' + PROMOTIONAL_MESSAGE_2;
@@ -272,12 +278,21 @@ export default class BotService {
 					});
 			});
 
-			whatsapp
-				.getClient()
-				.sendMessage(from, msg)
-				.catch((err) => {
-					Logger.error('Error sending message:', err);
-				});
+			if (bot.shared_contact_cards && bot.shared_contact_cards.length > 0) {
+				whatsapp
+					.getClient()
+					.sendMessage(from, PROMOTIONAL_MESSAGE_2)
+					.catch((err) => {
+						Logger.error('Error sending message:', err);
+					});
+			} else if (!isSubscribed && isNew) {
+				whatsapp
+					.getClient()
+					.sendMessage(from, PROMOTIONAL_MESSAGE_1)
+					.catch((err) => {
+						Logger.error('Error sending message:', err);
+					});
+			}
 		});
 	}
 
