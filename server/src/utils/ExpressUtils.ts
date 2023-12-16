@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { Types } from 'mongoose';
 import { z } from 'zod';
 import { SUBSCRIPTION_STATUS } from '../config/const';
+import DateUtils from './DateUtils';
 type ResponseData = {
 	res: Response;
 	status: 200 | 201 | 400 | 401 | 403 | 404 | 500;
@@ -54,19 +55,17 @@ export function generateBatchID() {
 	return crypto.randomBytes(6).toString('hex');
 }
 
-export function generateInvoiceID() {
-	const randomAlphaNumeric = () => Math.random().toString(36).substr(2, 1).toUpperCase();
-	const randomNumeric = () => Math.floor(Math.random() * 10);
+export function generateInvoiceID(id: string) {
+	// 23-24/Saas/000001
+	const moment_now = DateUtils.getMomentNow();
 
-	let randomString = '';
-	for (let i = 0; i < 5; i++) {
-		randomString += randomAlphaNumeric();
-	}
-	randomString += '-';
-	for (let i = 0; i < 4; i++) {
-		randomString += randomNumeric();
-	}
-	return randomString;
+	const startYear = moment_now.month() >= 3 ? moment_now.year() : moment_now.year() - 1;
+	const year = startYear.toString().slice(2) + '-' + (startYear + 1).toString().slice(2);
+
+	let invoice_id = year;
+	invoice_id += '/Saas/';
+	invoice_id += id.toString().padStart(6, '0');
+	return invoice_id;
 }
 
 type IDValidatorResult = [true, Types.ObjectId] | [false, undefined];

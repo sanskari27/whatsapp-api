@@ -22,19 +22,12 @@ const paymentSchema = new mongoose.Schema<IPayment>({
 		default: Date.now,
 	},
 	invoice_id: String,
-	invoice_order_id: String,
-	invoice_payment_id: String,
 });
 
-paymentSchema.pre('save', function (next) {
+paymentSchema.pre('save', async function (next) {
 	if (!this.invoice_id) {
-		this.invoice_id = generateInvoiceID();
-	}
-	if (this.isModified('order_id') && this.order_id) {
-		this.invoice_order_id = generateInvoiceID();
-	}
-	if (this.isModified('payment_id') && this.payment_id) {
-		this.invoice_payment_id = generateInvoiceID();
+		const count = (await PaymentDB.countDocuments()) + 1;
+		this.invoice_id = generateInvoiceID(count.toString());
 	}
 	next();
 });
