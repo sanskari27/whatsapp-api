@@ -125,8 +125,6 @@ export class WhatsappProvider {
 		});
 
 		this.client.on('ready', async () => {
-			this.status = STATUS.READY;
-
 			this.number = this.client.info.wid.user;
 			this.contact = await this.client.getContactById(this.client.info.wid._serialized);
 
@@ -135,6 +133,7 @@ export class WhatsappProvider {
 			this.sendToClient({
 				event: SOCKET_RESPONSES.WHATSAPP_READY,
 			});
+			this.status = STATUS.READY;
 
 			await this.user_service.login(this.client_id);
 
