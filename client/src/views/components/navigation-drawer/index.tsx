@@ -1,13 +1,24 @@
-import { Box, Center, Flex, Icon, IconButton, Image } from '@chakra-ui/react';
+import { SettingsIcon } from '@chakra-ui/icons';
+import {
+    Box,
+    Center,
+    Flex,
+    Icon,
+    IconButton,
+    Image,
+    VStack,
+} from '@chakra-ui/react';
 import { IconType } from 'react-icons';
 import { FiBarChart2 } from 'react-icons/fi';
 import { PiExportBold } from 'react-icons/pi';
 import { SiProbot } from 'react-icons/si';
-import { TbMessage2Minus } from 'react-icons/tb';
+import { TbLogout2, TbMessage2Minus } from 'react-icons/tb';
+
 import { useNavigate } from 'react-router-dom';
 import { LOGO } from '../../../assets/Images';
 import { NAVIGATION } from '../../../config/const';
 import { toggleTheme, useTheme } from '../../../hooks/useTheme';
+import AuthService from '../../../services/auth.service';
 
 function isActiveTab(tab: string, path: string): boolean {
     if (path.includes(tab)) return true;
@@ -16,6 +27,7 @@ function isActiveTab(tab: string, path: string): boolean {
 
 export default function NavigationDrawer() {
     const theme = useTheme();
+    const navigate = useNavigate();
 
     return (
         <Box>
@@ -67,7 +79,25 @@ export default function NavigationDrawer() {
                         />
                     </Flex>
                 </Box>
-                <Box>
+                <VStack>
+                    <IconButton
+                        aria-label="Settings"
+                        icon={
+                            <SettingsIcon
+                                color={theme === 'light' ? 'black' : 'white'}
+                            />
+                        }
+                        onClick={() => {
+                            navigate(NAVIGATION.SETTINGS);
+                        }}
+                        className="focus:outline-none focus:border-none"
+                        backgroundColor={'transparent'}
+                        _hover={{
+                            backgroundColor: 'transparent',
+                            border: 'none',
+                            outline: 'none',
+                        }}
+                    />
                     <IconButton
                         aria-label="Change Theme"
                         icon={theme === 'light' ? <DarkIcon /> : <LightIcon />}
@@ -76,9 +106,28 @@ export default function NavigationDrawer() {
                         backgroundColor={'transparent'}
                         _hover={{
                             backgroundColor: 'transparent',
+                            border: 'none',
+                            outline: 'none',
                         }}
                     />
-                </Box>
+                    <IconButton
+                        aria-label="Logout"
+                        color={theme === 'light' ? 'black' : 'white'}
+                        icon={<TbLogout2 />}
+                        onClick={() => {
+                            AuthService.logout().then(() => {
+                                navigate(NAVIGATION.WELCOME);
+                            });
+                        }}
+                        className="focus:outline-none focus:border-none"
+                        backgroundColor={'transparent'}
+                        _hover={{
+                            backgroundColor: 'transparent',
+                            border: 'none',
+                            outline: 'none',
+                        }}
+                    />
+                </VStack>
             </Flex>
         </Box>
     );

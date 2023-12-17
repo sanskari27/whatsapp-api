@@ -499,210 +499,225 @@ export default function Bot() {
                             </FormErrorMessage>
                         )}
                     </FormControl>
-                    <FormControl isInvalid={!!uiDetails.attachmentError}>
+                    <FormControl
+                        isInvalid={!!uiDetails.triggerGapError}
+                        width={'max-content'}
+                    >
                         <Text
                             fontSize="xs"
                             className="text-gray-700 dark:text-gray-400"
                         >
-                            Attachments
+                            Message Delay
                         </Text>
-                        <Flex gap={2} alignItems={'center'}>
-                            <Multiselect
-                                // disable={!isAuthenticated}
-                                displayValue="displayValue"
-                                placeholder={'Select Attachments'}
-                                onRemove={(
-                                    selectedList: typeof allAttachments
-                                ) =>
-                                    // handleChange({
-                                    // 	name: 'attachments',
-                                    // 	value: selectedList.map((attachment) => attachment.id),
-                                    // })
-                                    {
-                                        setUiDetails((prevState) => {
-                                            return {
-                                                ...prevState,
-                                                messageError: '',
-                                            };
-                                        });
-                                        dispatch(
-                                            setAttachments(
-                                                selectedList.map(
-                                                    (attachment) =>
-                                                        attachment.id
-                                                )
-                                            )
-                                        );
-                                    }
-                                }
-                                onSelect={(
-                                    selectedList: typeof allAttachments
-                                ) =>
-                                    // handleChange({
-                                    // 	name: 'attachments',
-                                    // 	value: selectedList.map((attachment) => attachment.id),
-                                    // })
-                                    {
-                                        setUiDetails((prevState) => {
-                                            return {
-                                                ...prevState,
-                                                messageError: '',
-                                            };
-                                        });
-                                        dispatch(
-                                            setAttachments(
-                                                selectedList.map(
-                                                    (attachment) =>
-                                                        attachment.id
-                                                )
-                                            )
-                                        );
-                                    }
-                                }
-                                options={allAttachments.map((item, index) => ({
-                                    ...item,
-                                    displayValue: `${index + 1}. ${item.name}`,
-                                }))}
-                                ref={
-                                    multiselectRef
-                                        ? (ref) =>
-                                              (multiselectRef.current = ref)
-                                        : null
-                                }
-                                className="!w-[375px] bg-[#ECECEC] dark:bg-[#535353] rounded-md border-none "
-                            />
-                            <IconButton
-                                // isDisabled={!isAuthenticated}
+                        <HStack>
+                            <Input
+                                width={'full'}
+                                type="number"
+                                placeholder="10"
                                 size={'sm'}
-                                colorScheme="green"
-                                backgroundColor={'transparent'}
-                                rounded={'full'}
-                                borderWidth={'1px'}
-                                borderColor={'green.400'}
-                                icon={<AttachmentIcon color={'green.400'} />}
-                                _hover={{
-                                    opacity: 1,
-                                    borderColor: 'green.500',
+                                rounded={'md'}
+                                border={'none'}
+                                className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]"
+                                _focus={{
+                                    border: 'none',
+                                    outline: 'none',
                                 }}
-                                aria-label="Add Attachment"
-                                isLoading={addingAttachment}
-                                onClick={() => {
-                                    document
-                                        .getElementById('attachment-file-input')
-                                        ?.click();
+                                value={trigger_details.trigger_gap_time}
+                                onChange={(e) => {
+                                    setUiDetails((prevState) => {
+                                        return {
+                                            ...prevState,
+                                            triggerGapError: '',
+                                        };
+                                    });
+                                    handleTriggerTimeUpdate({
+                                        name: 'trigger_gap_time',
+                                        value: e.target.value,
+                                    });
                                 }}
+                                // isDisabled={!isAuthenticated}
                             />
-                        </Flex>
-                        <AttachmentDetailsInputDialog
-                            isOpen={isAttachmentDetailsOpen}
-                            onClose={() => {
-                                closeAttachmentDetailsInput();
-                                setAttachmentFile(null);
-                            }}
-                            onConfirm={(name: string, caption: string) => {
-                                if (!attachmentFile || !name) return;
-                                addAttachment(name, caption, attachmentFile);
-                                closeAttachmentDetailsInput();
-                            }}
-                        />
-                        <input
-                            type="file"
-                            name="attachment-file-input"
-                            id="attachment-file-input"
-                            className="invisible h-[1px] w-[1px] absolute"
-                            multiple={false}
-                            ref={(ref) => (fileInputRef.current = ref)}
-                            onInput={handleAttachmentInput}
-                        />
-                        {uiDetails.attachmentError && (
+                            <Select
+                                className={`!bg-[#ECECEC] dark:!bg-[#535353]  text-black dark:text-white  w-full `}
+                                rounded={'md'}
+                                border={'none'}
+                                size={'sm'}
+                                value={trigger_details.trigger_gap_type}
+                                onChange={(e) => {
+                                    setUiDetails((prevState) => {
+                                        return {
+                                            ...prevState,
+                                            triggerGapError: '',
+                                        };
+                                    });
+                                    handleTriggerTimeUpdate({
+                                        name: 'trigger_gap_type',
+                                        value: e.target.value,
+                                    });
+                                }}
+                                // isDisabled={!isAuthenticated}
+                            >
+                                <option
+                                    className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
+                                    value="SECOND"
+                                >
+                                    Sec
+                                </option>
+                                <option
+                                    className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
+                                    value="MINUTE"
+                                >
+                                    Min
+                                </option>
+                                <option
+                                    className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
+                                    value="HOUR"
+                                >
+                                    Hour
+                                </option>
+                            </Select>
+                        </HStack>
+                        {uiDetails.triggerGapError && (
                             <FormErrorMessage>
-                                {uiDetails.attachmentError}
+                                {uiDetails.triggerGapError}
                             </FormErrorMessage>
                         )}
                     </FormControl>
-                    <Flex gap={4}>
-                        <FormControl
-                            isInvalid={!!uiDetails.triggerGapError}
-                            flexGrow={1}
-                        >
+                    <HStack>
+                        <FormControl isInvalid={!!uiDetails.attachmentError}>
                             <Text
                                 fontSize="xs"
                                 className="text-gray-700 dark:text-gray-400"
                             >
-                                Message Delay
+                                Attachments
                             </Text>
-                            <HStack>
-                                <Input
-                                    width={'full'}
-                                    type="number"
-                                    placeholder="10"
-                                    size={'sm'}
-                                    rounded={'md'}
-                                    border={'none'}
-                                    className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]"
-                                    _focus={{ border: 'none', outline: 'none' }}
-                                    value={trigger_details.trigger_gap_time}
-                                    onChange={(e) => {
-                                        setUiDetails((prevState) => {
-                                            return {
-                                                ...prevState,
-                                                triggerGapError: '',
-                                            };
-                                        });
-                                        handleTriggerTimeUpdate({
-                                            name: 'trigger_gap_time',
-                                            value: e.target.value,
-                                        });
-                                    }}
-                                    // isDisabled={!isAuthenticated}
+                            <Flex gap={2} alignItems={'center'}>
+                                <Multiselect
+                                    // disable={!isAuthenticated}
+                                    displayValue="displayValue"
+                                    placeholder={'Select Attachments'}
+                                    onRemove={(
+                                        selectedList: typeof allAttachments
+                                    ) =>
+                                        // handleChange({
+                                        // 	name: 'attachments',
+                                        // 	value: selectedList.map((attachment) => attachment.id),
+                                        // })
+                                        {
+                                            setUiDetails((prevState) => {
+                                                return {
+                                                    ...prevState,
+                                                    messageError: '',
+                                                };
+                                            });
+                                            dispatch(
+                                                setAttachments(
+                                                    selectedList.map(
+                                                        (attachment) =>
+                                                            attachment.id
+                                                    )
+                                                )
+                                            );
+                                        }
+                                    }
+                                    onSelect={(
+                                        selectedList: typeof allAttachments
+                                    ) =>
+                                        // handleChange({
+                                        // 	name: 'attachments',
+                                        // 	value: selectedList.map((attachment) => attachment.id),
+                                        // })
+                                        {
+                                            setUiDetails((prevState) => {
+                                                return {
+                                                    ...prevState,
+                                                    messageError: '',
+                                                };
+                                            });
+                                            dispatch(
+                                                setAttachments(
+                                                    selectedList.map(
+                                                        (attachment) =>
+                                                            attachment.id
+                                                    )
+                                                )
+                                            );
+                                        }
+                                    }
+                                    options={allAttachments.map(
+                                        (item, index) => ({
+                                            ...item,
+                                            displayValue: `${index + 1}. ${
+                                                item.name
+                                            }`,
+                                        })
+                                    )}
+                                    ref={
+                                        multiselectRef
+                                            ? (ref) =>
+                                                  (multiselectRef.current = ref)
+                                            : null
+                                    }
+                                    className="!w-[375px] bg-[#ECECEC] dark:bg-[#535353] rounded-md border-none "
                                 />
-                                <Select
-                                    className={`!bg-[#ECECEC] dark:!bg-[#535353]  text-black dark:text-white  w-full `}
-                                    rounded={'md'}
-                                    border={'none'}
-                                    size={'sm'}
-                                    value={trigger_details.trigger_gap_type}
-                                    onChange={(e) => {
-                                        setUiDetails((prevState) => {
-                                            return {
-                                                ...prevState,
-                                                triggerGapError: '',
-                                            };
-                                        });
-                                        handleTriggerTimeUpdate({
-                                            name: 'trigger_gap_type',
-                                            value: e.target.value,
-                                        });
-                                    }}
+                                <IconButton
                                     // isDisabled={!isAuthenticated}
-                                >
-                                    <option
-                                        className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
-                                        value="SECOND"
-                                    >
-                                        Sec
-                                    </option>
-                                    <option
-                                        className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
-                                        value="MINUTE"
-                                    >
-                                        Min
-                                    </option>
-                                    <option
-                                        className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
-                                        value="HOUR"
-                                    >
-                                        Hour
-                                    </option>
-                                </Select>
-                            </HStack>
-                            {uiDetails.triggerGapError && (
+                                    size={'sm'}
+                                    colorScheme="green"
+                                    backgroundColor={'transparent'}
+                                    rounded={'full'}
+                                    borderWidth={'1px'}
+                                    borderColor={'green.400'}
+                                    icon={
+                                        <AttachmentIcon color={'green.400'} />
+                                    }
+                                    _hover={{
+                                        opacity: 1,
+                                        borderColor: 'green.500',
+                                    }}
+                                    aria-label="Add Attachment"
+                                    isLoading={addingAttachment}
+                                    onClick={() => {
+                                        document
+                                            .getElementById(
+                                                'attachment-file-input'
+                                            )
+                                            ?.click();
+                                    }}
+                                />
+                            </Flex>
+                            <AttachmentDetailsInputDialog
+                                isOpen={isAttachmentDetailsOpen}
+                                onClose={() => {
+                                    closeAttachmentDetailsInput();
+                                    setAttachmentFile(null);
+                                }}
+                                onConfirm={(name: string, caption: string) => {
+                                    if (!attachmentFile || !name) return;
+                                    addAttachment(
+                                        name,
+                                        caption,
+                                        attachmentFile
+                                    );
+                                    closeAttachmentDetailsInput();
+                                }}
+                            />
+                            <input
+                                type="file"
+                                name="attachment-file-input"
+                                id="attachment-file-input"
+                                className="invisible h-[1px] w-[1px] absolute"
+                                multiple={false}
+                                ref={(ref) => (fileInputRef.current = ref)}
+                                onInput={handleAttachmentInput}
+                            />
+                            {uiDetails.attachmentError && (
                                 <FormErrorMessage>
-                                    {uiDetails.triggerGapError}
+                                    {uiDetails.attachmentError}
                                 </FormErrorMessage>
                             )}
                         </FormControl>
-                        <Box flexGrow={1}>
+                        <Box width={'full'}>
                             <Text
                                 fontSize="xs"
                                 className="text-gray-700 dark:text-gray-400"
@@ -751,8 +766,7 @@ export default function Bot() {
                                 ))}
                             </Box>
                         </Box>
-                    </Flex>
-
+                    </HStack>
                     <Divider />
 
                     <Box hidden={all.length === 0}>

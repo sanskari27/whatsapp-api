@@ -12,6 +12,7 @@ const Scheduler = lazy(() => import('./views/pages/scheduler'));
 const Bot = lazy(() => import('./views/pages/bot'));
 const Home = lazy(() => import('./views/pages/home'));
 const Report = lazy(() => import('./views/pages/report'));
+const Settings = lazy(() => import('./views/pages/settings'));
 
 function App() {
     useTheme();
@@ -38,6 +39,10 @@ function App() {
                             <Route
                                 path={NAVIGATION.REPORTS}
                                 element={<Report />}
+                            />
+                            <Route
+                                path={NAVIGATION.SETTINGS}
+                                element={<Settings />}
                             />
                         </Route>
                         {/* <Route path={NAVIGATION.SETTINGS} element={<Settings />} />
