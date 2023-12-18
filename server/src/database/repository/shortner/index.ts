@@ -25,7 +25,11 @@ ShortnerSchema.statics.getLink = async function (key: string): Promise<string> {
 };
 
 ShortnerSchema.statics.saveLink = async function (link: string): Promise<string> {
-	const doc = await this.create({ link });
+	let doc = await this.findOne({ link });
+	if (doc) {
+		return doc.key;
+	}
+	doc = await this.create({ link });
 	return doc.key;
 };
 

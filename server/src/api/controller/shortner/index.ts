@@ -17,11 +17,11 @@ async function createWhatsappLink(req: Request, res: Response, next: NextFunctio
 	}
 
 	const { number, message } = reqValidatorResult.data;
-	const link = `https://api.whatsapp.com/send/?phone=${number}&text=${encodeURIComponent(message)}`;
+	const link = `wa.me/${number}?text=${encodeURIComponent(message)}`;
 	const key = await ShortnerDB.saveLink(link);
 
 	const qrCodeBuffer = await QRUtils.generateQR(link);
-	
+
 	if (!qrCodeBuffer) {
 		return Respond({
 			res,
@@ -38,6 +38,39 @@ async function createWhatsappLink(req: Request, res: Response, next: NextFunctio
 		},
 	});
 }
+
+async function   createLink(req: Request, res: Response, next: NextFunction) {
+	const reqValidator = z.object({
+		link: z.string(),
+	});
+	const reqValidatorResult = reqValidator.safeParse(req.body);
+
+	if (!reqValidatorResult.success) {
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
+	}
+
+	const { link } = reqValidatorResult.data;
+	const key = await ShortnerDB.saveLink(link);
+
+	const qrCodeBuffer = await QRUtils.generateQR(link);
+
+	if (!qrCodeBuffer) {
+		return Respond({
+			res,
+			status: 500,
+		});
+	}
+
+	return Respond({
+		res,
+		status: 200,
+		data: {
+			link: `https://open.whatsleads.in/${key}`,
+			base64: `data:image/png;base64,${qrCodeBuffer.toString('base64')}`,
+		},
+	});
+}
+
 async function open(req: Request, res: Response, next: NextFunction) {
 	const id = req.params.id;
 	const link = await ShortnerDB.getLink(id);
@@ -50,6 +83,7 @@ async function open(req: Request, res: Response, next: NextFunction) {
 
 const WhatsappShortner = {
 	createWhatsappLink,
+	createLink,
 	open,
 };
 
