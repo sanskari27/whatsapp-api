@@ -39,7 +39,7 @@ async function createWhatsappLink(req: Request, res: Response, next: NextFunctio
 	});
 }
 
-async function createLink(req: Request, res: Response, next: NextFunction) {
+async function   createLink(req: Request, res: Response, next: NextFunction) {
 	const reqValidator = z.object({
 		link: z.string(),
 	});
