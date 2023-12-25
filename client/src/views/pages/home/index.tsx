@@ -1,38 +1,51 @@
 import { Box } from '@chakra-ui/react';
 import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import { useNavigate, useOutlet } from 'react-router-dom';
 import { NAVIGATION } from '../../../config/const';
 import { useAuth } from '../../../hooks/useAuth';
 import { useNetwork } from '../../../hooks/useNetwork';
 import '../../../index.css';
+import AuthService from '../../../services/auth.service';
+import { setUserDetails } from '../../../store/reducers/UserDetailsReducres';
 import Navbar from '../../components/navbar';
 import NavigationDrawer from '../../components/navigation-drawer';
 
 export default function Home() {
-	const navigate = useNavigate();
-	const status = useNetwork();
-	const outlet = useOutlet();
-	const { isAuthenticated } = useAuth();
+    const navigate = useNavigate();
+    const status = useNetwork();
+    const outlet = useOutlet();
+    const dispatch = useDispatch();
+    const { isAuthenticated } = useAuth();
 
-	useEffect(() => {
-		if (status === 'NO-NETWORK') {
-			navigate(NAVIGATION.NETWORK_ERROR);
-		}
-	}, [status, navigate]);
-	useEffect(() => {
-		if (!isAuthenticated) {
-			navigate(NAVIGATION.WELCOME);
-		}
-	});
+    useEffect(() => {
+        if (status === 'NO-NETWORK') {
+            navigate(NAVIGATION.NETWORK_ERROR);
+        }
+    }, [status, navigate]);
+    useEffect(() => {
+        if (!isAuthenticated) {
+            navigate(NAVIGATION.WELCOME);
+            return;
+        }
 
-	return (
-		<Box width='full' className='custom-scrollbar'>
-			<NavigationDrawer />
-			<Navbar />
-			<Box paddingLeft={'70px'} paddingTop={'70px'}>
-				{outlet}
-			</Box>
-			{/* <Header />
+        AuthService.getUserDetails().then((res) => {
+            if (res.name === '') {
+                navigate(NAVIGATION.SETTINGS);
+                return;
+            }
+            dispatch(setUserDetails(res));
+        });
+    });
+
+    return (
+        <Box width="full" className="custom-scrollbar">
+            <NavigationDrawer />
+            <Navbar />
+            <Box paddingLeft={'70px'} paddingTop={'70px'} overflowX={'hidden'}>
+                {outlet}
+            </Box>
+            {/* <Header />
 
             <Tabs index={tabIndex} onChange={setTabIndex} pt={'1rem'} isLazy>
                 <TabList
@@ -91,6 +104,6 @@ export default function Home() {
                     ))}
                 </TabPanels>
             </Tabs> */}
-		</Box>
-	);
+        </Box>
+    );
 }

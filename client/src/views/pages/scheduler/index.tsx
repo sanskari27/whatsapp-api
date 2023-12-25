@@ -1262,10 +1262,7 @@ export default function Scheduler() {
                                 />
                             </Box>
                             <Box flexGrow={1}>
-                                <Text
-                                    fontSize="xs"
-                                    className="text-gray-700 dark:text-gray-400"
-                                >
+                                <Text className="text-gray-700 dark:text-gray-400">
                                     Share Contact
                                 </Text>
                                 <Button

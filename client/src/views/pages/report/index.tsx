@@ -91,7 +91,12 @@ const Reports = () => {
 
     return (
         <VStack padding={'1rem'} justifyContent={'start'}>
-            <Heading textAlign={'left'}>Reports</Heading>
+            <Heading
+                textAlign={'left'}
+                color={theme === 'dark' ? 'white' : 'black'}
+            >
+                Reports
+            </Heading>
             {uiDetails.campaignLoading ? (
                 <Heading textAlign={'left'}>Loading...</Heading>
             ) : (
@@ -99,7 +104,9 @@ const Reports = () => {
                     <TableContainer>
                         <Table variant={'unstyled'}>
                             <Thead>
-                                <Tr>
+                                <Tr
+                                    color={theme === 'dark' ? 'white' : 'black'}
+                                >
                                     <Th>Select</Th>
                                     <Th>Campaign Name</Th>
                                     <Th>Messages Sent</Th>
@@ -116,6 +123,9 @@ const Reports = () => {
                                             theme === 'light'
                                                 ? 'gray.50'
                                                 : 'gray.700'
+                                        }
+                                        color={
+                                            theme === 'dark' ? 'white' : 'black'
                                         }
                                     >
                                         <Td>
@@ -177,7 +187,7 @@ const Reports = () => {
                                 ))}
                             </Tbody>
                         </Table>
-                        <HStack justifyContent={'flex-end'}>
+                        <HStack justifyContent={'flex-end'} pt={4}>
                             <Button
                                 size={'sm'}
                                 colorScheme={'green'}

@@ -15,6 +15,7 @@ export const NAVIGATION = {
     SETTINGS: '/settings',
     NETWORK_ERROR: '/network-error',
     REPORTS: '/reports',
+    SHORT: '/short',
 };
 
 export enum CHROME_ACTION {

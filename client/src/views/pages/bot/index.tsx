@@ -11,11 +11,18 @@ import {
     IconButton,
     Input,
     Select,
+    Table,
+    TableContainer,
     Tag,
     TagCloseButton,
     TagLabel,
+    Tbody,
+    Td,
     Text,
     Textarea,
+    Th,
+    Thead,
+    Tr,
     useDisclosure,
 } from '@chakra-ui/react';
 import { all } from 'axios';
@@ -26,6 +33,7 @@ import { RiRobot2Line } from 'react-icons/ri';
 import { useDispatch, useSelector } from 'react-redux';
 import useAttachment from '../../../hooks/useAttachment';
 import useBot from '../../../hooks/useBot';
+import { BotDetails } from '../../../services/bot.service';
 import { StoreNames, StoreState } from '../../../store';
 import {
     reset,
@@ -36,6 +44,7 @@ import {
     setRespondTo,
     setTrigger,
 } from '../../../store/reducers/ChatBoReducers';
+import { ContactCard } from '../../../store/types/ContactCardState';
 import AttachmentDetailsInputDialog from '../../components/attachment-details-input-dialog';
 import CheckButton from '../../components/check-button';
 import ContactDetailInputDialog from '../../components/contact-detail-input-dialog';
@@ -91,6 +100,7 @@ export default function Bot() {
         contactCardsError: string;
         attachmentError: string;
         triggerGapError: string;
+        isEditing: boolean;
     }>({
         isAddingBot: false,
         triggerError: '',
@@ -100,6 +110,7 @@ export default function Bot() {
         contactCardsError: '',
         attachmentError: '',
         triggerGapError: '',
+        isEditing: false,
     });
 
     const handleContactInput = (data: {
@@ -176,6 +187,13 @@ export default function Bot() {
     };
 
     function handleSave() {
+        if (allBots.map((bot) => bot.trigger).includes(trigger)) {
+            setUiDetails((prevState) => ({
+                ...prevState,
+                triggerError: 'Trigger already exists',
+            }));
+            return;
+        }
         if (
             !message &&
             attachments.length === 0 &&
@@ -239,6 +257,67 @@ export default function Bot() {
         });
     }
 
+    function editResponder(bot: BotDetails) {
+        // if (!isAuthenticated) return;
+        // if (isEditing) return;
+        // if (isAdding) return;
+        // setIsEditing(true);
+        // setIsAdding(false);
+        // setUiDetails((prevState) => ({
+        // 	...prevState,
+        // 	isEditing: true,
+        // 	isAdding: false,
+        // }));
+        setUiDetails((prevState) => ({
+            ...prevState,
+            isEditing: true,
+            triggerError: '',
+        }));
+        dispatch(setTrigger(bot.trigger));
+        dispatch(setMessage(bot.message));
+        dispatch(
+            setRespondTo(
+                bot.respond_to as
+                    | ''
+                    | 'ALL'
+                    | 'SAVED_CONTACTS'
+                    | 'NON_SAVED_CONTACTS'
+            )
+        );
+        dispatch(
+            setOptions(
+                bot.options as
+                    | ''
+                    | 'INCLUDES_IGNORE_CASE'
+                    | 'INCLUDES_MATCH_CASE'
+                    | 'EXACT_IGNORE_CASE'
+                    | 'EXACT_MATCH_CASE'
+            )
+        );
+        const attachmentFilenames = bot.attachments.map(
+            (attachment) => attachment.filename
+        );
+        dispatch(setAttachments(attachmentFilenames));
+        dispatch(setContactCards(bot.shared_contact_cards as ContactCard[]));
+        setTriggerDetails((prevState) => ({
+            ...prevState,
+            trigger_gap_time:
+                bot.trigger_gap_seconds < 60
+                    ? bot.trigger_gap_seconds
+                    : bot.trigger_gap_seconds < 3600
+                    ? Math.floor(bot.trigger_gap_seconds / 60)
+                    : bot.trigger_gap_seconds < 86400
+                    ? Math.floor(bot.trigger_gap_seconds / 3600)
+                    : Math.floor(bot.trigger_gap_seconds / 86400),
+            trigger_gap_type:
+                Math.floor(bot.trigger_gap_seconds / 60) >= 60
+                    ? 'HOUR'
+                    : Math.floor(bot.trigger_gap_seconds / 60) >= 1
+                    ? 'MINUTE'
+                    : 'SECOND',
+        }));
+    }
+
     return (
         <Flex
             direction={'column'}
@@ -256,7 +335,7 @@ export default function Bot() {
                         width={5}
                         color={'green.400'}
                     />
-                    <Text className="text-black dark:text-white" fontSize="md">
+                    <Text className="text-black dark:text-white">
                         Auto Responder
                     </Text>
                 </Flex>
@@ -279,10 +358,7 @@ export default function Bot() {
                             justifyContent={'space-between'}
                             alignItems={'center'}
                         >
-                            <Text
-                                fontSize="xs"
-                                className="text-gray-700 dark:text-gray-400"
-                            >
+                            <Text className="text-gray-700 dark:text-gray-400">
                                 Trigger
                             </Text>
                             <CheckButton
@@ -302,11 +378,9 @@ export default function Bot() {
                                 backgroundClassName="!bg-[#A6A6A6]"
                             />
                         </Flex>
-                        <Input
+                        <Textarea
                             width={'full'}
-                            isInvalid={allBots
-                                .map((bot) => bot.trigger)
-                                .includes(trigger)}
+                            isInvalid={!!uiDetails.triggerError}
                             placeholder={'ex. hello'}
                             border={'none'}
                             className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]"
@@ -336,10 +410,7 @@ export default function Bot() {
                             isInvalid={!!uiDetails.respondToError}
                             flexGrow={1}
                         >
-                            <Text
-                                fontSize="xs"
-                                className="text-gray-700 dark:text-gray-400"
-                            >
+                            <Text className="text-gray-700 dark:text-gray-400">
                                 Recipients
                             </Text>
                             <Select
@@ -400,10 +471,7 @@ export default function Bot() {
                             isInvalid={!!uiDetails.optionsError}
                             flexGrow={1}
                         >
-                            <Text
-                                fontSize="xs"
-                                className="text-gray-700 dark:text-gray-400"
-                            >
+                            <Text className="text-gray-700 dark:text-gray-400">
                                 Conditions
                             </Text>
                             <Select
@@ -503,10 +571,7 @@ export default function Bot() {
                         isInvalid={!!uiDetails.triggerGapError}
                         width={'max-content'}
                     >
-                        <Text
-                            fontSize="xs"
-                            className="text-gray-700 dark:text-gray-400"
-                        >
+                        <Text className="text-gray-700 dark:text-gray-400">
                             Message Delay
                         </Text>
                         <HStack>
@@ -585,10 +650,7 @@ export default function Bot() {
                     </FormControl>
                     <HStack>
                         <FormControl isInvalid={!!uiDetails.attachmentError}>
-                            <Text
-                                fontSize="xs"
-                                className="text-gray-700 dark:text-gray-400"
-                            >
+                            <Text className="text-gray-700 dark:text-gray-400">
                                 Attachments
                             </Text>
                             <Flex gap={2} alignItems={'center'}>
@@ -718,10 +780,7 @@ export default function Bot() {
                             )}
                         </FormControl>
                         <Box width={'full'}>
-                            <Text
-                                fontSize="xs"
-                                className="text-gray-700 dark:text-gray-400"
-                            >
+                            <Text className="text-gray-700 dark:text-gray-400">
                                 Contact Cards
                             </Text>
                             <Flex gap={3} alignItems={'center'}>
@@ -767,16 +826,185 @@ export default function Bot() {
                             </Box>
                         </Box>
                     </HStack>
+
+                    <HStack
+                        justifyContent={'space-between'}
+                        alignItems={'center'}
+                    >
+                        {uiDetails.isEditing && (
+                            <Button
+                                bgColor={'red.300'}
+                                _hover={{
+                                    bgColor: 'red.400',
+                                }}
+                                width={'100%'}
+                                onClick={() => {
+                                    setUiDetails((prevState) => ({
+                                        ...prevState,
+                                        isEditing: false,
+                                    }));
+                                }}
+                                // isDisabled={!isAuthenticated}
+                            >
+                                <Text color={'white'}>Edit</Text>
+                            </Button>
+                        )}
+                        <Button
+                            bgColor={'green.300'}
+                            _hover={{
+                                bgColor: 'green.400',
+                            }}
+                            width={'100%'}
+                            onClick={handleSave}
+                            isLoading={addingBot}
+                            // isDisabled={!isAuthenticated}
+                        >
+                            <Text color={'white'}>Save</Text>
+                        </Button>
+                    </HStack>
                     <Divider />
 
                     <Box hidden={all.length === 0}>
                         <Text
-                            fontSize="xs"
+                            fontSize={'xl'}
                             className="text-gray-700 dark:text-gray-400"
+                            textAlign={'center'}
+                            pt={'2rem'}
+                            pb={'1rem'}
                         >
-                            History
+                            All Responders
                         </Text>
-                        <Flex
+                        <TableContainer>
+                            <Table>
+                                <Thead>
+                                    <Tr>
+                                        <Th>Trigger</Th>
+                                        <Th>Message</Th>
+                                        <Th>Recipients</Th>
+                                        <Th>Conditions</Th>
+                                        <Th>Attachments</Th>
+                                        <Th>Delay</Th>
+                                        <Th>Action</Th>
+                                    </Tr>
+                                </Thead>
+                                <Tbody>
+                                    {allBots.map((bot, index) => (
+                                        <Tr
+                                            key={index}
+                                            _hover={{
+                                                backgroundColor: 'gray.100',
+                                                cursor: 'pointer',
+                                            }}
+                                            onClick={() => editResponder(bot)}
+                                        >
+                                            <Td>
+                                                {bot.trigger
+                                                    .split('\n')
+                                                    .map((trigger) => (
+                                                        <Box>
+                                                            {trigger.length > 20
+                                                                ? trigger.substring(
+                                                                      0,
+                                                                      18
+                                                                  ) + '...'
+                                                                : trigger}
+                                                        </Box>
+                                                    ))}
+                                            </Td>
+                                            <Td>
+                                                <Box>
+                                                    {bot.message
+                                                        .split('\n')
+                                                        .map((message) => (
+                                                            <Box>
+                                                                {message.length >
+                                                                25
+                                                                    ? message.substring(
+                                                                          0,
+                                                                          22
+                                                                      ) + '...'
+                                                                    : message}
+                                                            </Box>
+                                                        ))}
+                                                </Box>
+                                            </Td>
+                                            <Td>
+                                                {bot.respond_to
+                                                    .split('_')
+                                                    .join(' ')}
+                                            </Td>
+                                            <Td>
+                                                {bot.options
+                                                    .split('_')
+                                                    .join(' ')}
+                                            </Td>
+                                            <Td>{bot.attachments.length}</Td>
+                                            <Td>
+                                                {bot.trigger_gap_seconds < 60
+                                                    ? `${
+                                                          bot.trigger_gap_seconds
+                                                      } sec${
+                                                          bot.trigger_gap_seconds !==
+                                                          1
+                                                              ? 's'
+                                                              : ''
+                                                      }`
+                                                    : bot.trigger_gap_seconds <
+                                                      3600
+                                                    ? `${Math.floor(
+                                                          bot.trigger_gap_seconds /
+                                                              60
+                                                      )} min${
+                                                          Math.floor(
+                                                              bot.trigger_gap_seconds /
+                                                                  60
+                                                          ) !== 1
+                                                              ? 's'
+                                                              : ''
+                                                      }`
+                                                    : bot.trigger_gap_seconds <
+                                                      86400
+                                                    ? `${Math.floor(
+                                                          bot.trigger_gap_seconds /
+                                                              3600
+                                                      )} hr${
+                                                          Math.floor(
+                                                              bot.trigger_gap_seconds /
+                                                                  3600
+                                                          ) !== 1
+                                                              ? 's'
+                                                              : ''
+                                                      }`
+                                                    : `${Math.floor(
+                                                          bot.trigger_gap_seconds /
+                                                              86400
+                                                      )} day${
+                                                          Math.floor(
+                                                              bot.trigger_gap_seconds /
+                                                                  86400
+                                                          ) !== 1
+                                                              ? 's'
+                                                              : ''
+                                                      }`}
+                                            </Td>
+                                            <Td>
+                                                <Icon
+                                                    as={MdDelete}
+                                                    width={5}
+                                                    height={5}
+                                                    color={'red.400'}
+                                                    cursor={'pointer'}
+                                                    onClick={() =>
+                                                        deleteBot(bot.bot_id)
+                                                    }
+                                                />
+                                            </Td>
+                                        </Tr>
+                                    ))}
+                                </Tbody>
+                            </Table>
+                        </TableContainer>
+                        {/* <Flex
                             gap={2}
                             direction={'column'}
                             className="border border-gray-700 dark:border-gray-300"
@@ -895,26 +1123,11 @@ export default function Bot() {
                                     <Divider />
                                 </Box>
                             ))}
-                        </Flex>
+                        </Flex> */}
                     </Box>
                 </Flex>
             </Flex>
             {/* <Text color={'tomato'}>{error.message}</Text> */}
-
-            <Flex justifyContent={'space-between'} alignItems={'center'}>
-                <Button
-                    bgColor={'green.300'}
-                    _hover={{
-                        bgColor: 'green.400',
-                    }}
-                    width={'100%'}
-                    onClick={handleSave}
-                    isLoading={addingBot}
-                    // isDisabled={!isAuthenticated}
-                >
-                    <Text color={'white'}>Save</Text>
-                </Button>
-            </Flex>
         </Flex>
     );
 }

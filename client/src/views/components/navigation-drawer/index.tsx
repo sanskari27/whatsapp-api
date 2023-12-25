@@ -9,7 +9,7 @@ import {
     VStack,
 } from '@chakra-ui/react';
 import { IconType } from 'react-icons';
-import { FiBarChart2 } from 'react-icons/fi';
+import { FiBarChart2, FiLink2 } from 'react-icons/fi';
 import { PiExportBold } from 'react-icons/pi';
 import { SiProbot } from 'react-icons/si';
 import { TbLogout2, TbMessage2Minus } from 'react-icons/tb';
@@ -77,6 +77,7 @@ export default function NavigationDrawer() {
                             icon={FiBarChart2}
                             route={NAVIGATION.REPORTS}
                         />
+                        <MenuButton icon={FiLink2} route={NAVIGATION.SHORT} />
                     </Flex>
                 </Box>
                 <VStack>
@@ -115,11 +116,9 @@ export default function NavigationDrawer() {
                         color={theme === 'light' ? 'black' : 'white'}
                         icon={<TbLogout2 />}
                         onClick={() => {
-                            AuthService.logout().then(() => {
-                                navigate(NAVIGATION.WELCOME);
-                            });
+                            AuthService.logout();
                         }}
-                        className="focus:outline-none focus:border-none"
+                        className="focus:outline-none focus:border-none rotate-180"
                         backgroundColor={'transparent'}
                         _hover={{
                             backgroundColor: 'transparent',
