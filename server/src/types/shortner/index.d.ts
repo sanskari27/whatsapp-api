@@ -1,12 +1,8 @@
-import { Document, Types } from 'mongoose';
-
-export interface IShortnerModel extends IShortner, Document {
-	updateLink(id: Types.ObjectId, link: string): Promise<void>;
-	saveLink(link: string): Promise<string>;
-	getLink(key: string): Promise<string>;
-}
+import { Document } from 'mongoose';
+import { IUser } from '../user';
 
 export default interface IShortner extends Document {
+	user: IUser;
 	key: string;
 	link: string;
 }

@@ -33,10 +33,9 @@ export default class BotService {
 		this.whatsapp = whatsapp_provider;
 	}
 
-	public async allBots(active: boolean = false) {
+	public async allBots() {
 		const bots = await BotDB.find({
 			user: this.user,
-			...(active !== undefined ? { active: true } : {}),
 		}).populate('attachments');
 		return bots.map((bot) => ({
 			bot_id: bot._id as Types.ObjectId,
@@ -95,7 +94,8 @@ export default class BotService {
 	}
 
 	private async activeBots() {
-		return await this.allBots(true);
+		const bots = await this.allBots();
+		return bots.filter((bot) => bot.isActive);
 	}
 
 	private async lastMessages(ids: Types.ObjectId[], recipient: string) {

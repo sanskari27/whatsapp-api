@@ -20,7 +20,6 @@ router.use('/webhooks', WebhooksRoute);
 // Next rotes are common routes
 
 router.use('/token', CouponRoute);
-router.use('/shortner', ShortnerRoute);
 
 router.use('/auth', AuthRoute);
 router.use('/payment', PaymentRoute);
@@ -33,5 +32,6 @@ router.use('/template', TemplateRoute);
 router.use('/uploads', UploadsRoute);
 router.use('/reports', ReportsRoute);
 router.use('/contact-card', ContactCardRoute);
+router.use('/shortner', ShortnerRoute);
 
 export default router;

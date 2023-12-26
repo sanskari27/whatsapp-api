@@ -18,7 +18,10 @@ async function createWhatsappLink(req: Request, res: Response, next: NextFunctio
 
 	const { number, message } = reqValidatorResult.data;
 	const link = `wa.me/${number}?text=${encodeURIComponent(message)}`;
-	const key = await ShortnerDB.saveLink(link);
+	const doc = await ShortnerDB.create({
+		link,
+		user: req.locals.user,
+	});
 
 	const qrCodeBuffer = await QRUtils.generateQR(link);
 
@@ -33,7 +36,7 @@ async function createWhatsappLink(req: Request, res: Response, next: NextFunctio
 		res,
 		status: 200,
 		data: {
-			link: `https://open.whatsleads.in/${key}`,
+			link: `https://open.whatsleads.in/${doc.key}`,
 			base64: `data:image/png;base64,${qrCodeBuffer.toString('base64')}`,
 		},
 	});
@@ -50,8 +53,10 @@ async function createLink(req: Request, res: Response, next: NextFunction) {
 	}
 
 	const { link } = reqValidatorResult.data;
-	const key = await ShortnerDB.saveLink(link);
-
+	const doc = await ShortnerDB.create({
+		link,
+		user: req.locals.user,
+	});
 	const qrCodeBuffer = await QRUtils.generateQR(link);
 
 	if (!qrCodeBuffer) {
@@ -65,7 +70,7 @@ async function createLink(req: Request, res: Response, next: NextFunction) {
 		res,
 		status: 200,
 		data: {
-			link: `https://open.whatsleads.in/${key}`,
+			link: `https://open.whatsleads.in/${doc.key}`,
 			base64: `data:image/png;base64,${qrCodeBuffer.toString('base64')}`,
 		},
 	});
@@ -84,7 +89,16 @@ async function updateLink(req: Request, res: Response, next: NextFunction) {
 	}
 
 	const { link } = reqValidatorResult.data;
-	const key = await ShortnerDB.updateLink(id, link);
+	const doc = await ShortnerDB.findOne({
+		_id: id,
+		user: req.locals.user,
+	});
+
+	if (!doc) {
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
+	}
+	doc.link = link;
+	await doc.save();
 
 	const qrCodeBuffer = await QRUtils.generateQR(link);
 
@@ -99,7 +113,7 @@ async function updateLink(req: Request, res: Response, next: NextFunction) {
 		res,
 		status: 200,
 		data: {
-			link: `https://open.whatsleads.in/${key}`,
+			link: `https://open.whatsleads.in/${doc.key}`,
 			base64: `data:image/png;base64,${qrCodeBuffer.toString('base64')}`,
 		},
 	});
@@ -107,12 +121,39 @@ async function updateLink(req: Request, res: Response, next: NextFunction) {
 
 async function open(req: Request, res: Response, next: NextFunction) {
 	const id = req.params.id;
-	const link = await ShortnerDB.getLink(id);
-	if (!link) {
+	const doc = await ShortnerDB.findById(id);
+	if (!doc) {
 		return res.send();
 	}
 
-	return res.redirect(link);
+	return res.redirect(doc.link);
+}
+
+async function listAll(req: Request, res: Response, next: NextFunction) {
+	const docs = await ShortnerDB.find({ user: req.locals.user });
+
+	const promises = docs.map(async (doc) => {
+		const qrCodeBuffer = await QRUtils.generateQR(doc.link);
+		if (!qrCodeBuffer) {
+			return {
+				id: doc._id,
+				link: `https://open.whatsleads.in/${doc.key}`,
+			};
+		}
+		return {
+			id: doc._id,
+			link: `https://open.whatsleads.in/${doc.key}`,
+			base64: `data:image/png;base64,${qrCodeBuffer.toString('base64')}`,
+		};
+	});
+
+	return Respond({
+		res,
+		status: 200,
+		data: {
+			links: await Promise.all(promises),
+		},
+	});
 }
 
 const WhatsappShortner = {
@@ -120,6 +161,7 @@ const WhatsappShortner = {
 	createLink,
 	open,
 	updateLink,
+	listAll,
 };
 
 export default WhatsappShortner;
