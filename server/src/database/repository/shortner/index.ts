@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { nanoid } from 'nanoid';
 import IShortner, { IShortnerModel } from '../../../types/shortner';
 
@@ -30,6 +30,19 @@ ShortnerSchema.statics.saveLink = async function (link: string): Promise<string>
 		return doc.key;
 	}
 	doc = await this.create({ link });
+	return doc.key;
+};
+
+ShortnerSchema.statics.updateLink = async function (
+	id: Types.ObjectId,
+	link: string
+): Promise<void> {
+	let doc = await this.findById(id);
+	if (!doc) {
+		return;
+	}
+	doc.link = link;
+	await doc.save();
 	return doc.key;
 };
 
