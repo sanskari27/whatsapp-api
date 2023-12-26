@@ -29,4 +29,13 @@ export default class ShortenerService {
             return null;
         }
     }
+
+    static async listAll() {
+        try {
+            const { data } = await APIInstance.get(`/shortner`);
+            return data;
+        } catch (err) {
+            return null;
+        }
+    }
 }

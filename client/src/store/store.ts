@@ -2,6 +2,7 @@ import { configureStore } from '@reduxjs/toolkit';
 
 import { StoreNames } from './config';
 import { default as ChatBoReducers } from './reducers/ChatBoReducers';
+import { default as LinkShortenerReducer } from './reducers/LinkShortnenrReducers';
 import { default as SchedulerReducer } from './reducers/SchedulerReducer';
 import { default as UserDetailsReducres } from './reducers/UserDetailsReducres';
 
@@ -10,6 +11,7 @@ const store = configureStore({
         [StoreNames.SCHEDULER]: SchedulerReducer,
         [StoreNames.CHATBOT]: ChatBoReducers,
         [StoreNames.USER]: UserDetailsReducres,
+        [StoreNames.LINK]: LinkShortenerReducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
