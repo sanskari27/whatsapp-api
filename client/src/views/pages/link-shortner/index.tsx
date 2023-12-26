@@ -8,6 +8,7 @@ import {
     FormHelperText,
     FormLabel,
     HStack,
+    Icon,
     Input,
     Table,
     TableContainer,
@@ -137,14 +138,19 @@ const LinkShortner = () => {
     }, [uiDetails.linkCopied]);
 
     return (
-        <HStack py={4}>
+        <HStack py={4} width={'full'} alignItems={'flex-start'}>
             <Flex
-                mt={'2rem'}
                 direction={'column'}
                 alignSelf={'center'}
                 gap={4}
                 p={4}
+                width={'full'}
+                flex={1}
             >
+                <Text fontSize={'2xl'}>
+                    <Icon color={'green'} as={LinkIcon} mr={2} />
+                    Link Shortener
+                </Text>
                 <FormControl isInvalid={!!error.number}>
                     <FormLabel>What's your number?</FormLabel>
                     <Input
@@ -214,7 +220,10 @@ const LinkShortner = () => {
                     Shorten Link
                 </Button>
             </Flex>
-            <TableContainer>
+            <TableContainer flex={2}>
+                <Text fontSize={'2xl'} alignSelf={'start'} py={4}>
+                    Your Shortened Links
+                </Text>
                 <Table>
                     <Thead>
                         <Tr>
@@ -225,135 +234,33 @@ const LinkShortner = () => {
                     </Thead>
                     <Tbody>
                         <Tr>
-                            <Td>dsfuhklsdahfas</Td>
-                            <Td>sdfasdfasf</Td>
                             <Td>
-                                <Button
+                                <Input
+                                    value={'sdafdsfsafsdfasdfsdfdsafsafsafasd'}
+                                    isReadOnly
                                     size={'sm'}
-                                    colorScheme="green"
-                                    onClick={() => {
-                                        // ReportsService.resumeCampaign(
-                                        //     campaign.campaign_id
-                                        // ).then(() => {
-                                        //     fetchCampaigns();
-                                        // });
-                                    }}
-                                >
-                                    Resume
-                                </Button>
+                                />
                             </Td>
-                        </Tr>
-                        <Tr>
-                            <Td>dsfuhklsdahfas</Td>
-                            <Td>sdfasdfasf</Td>
                             <Td>
-                                <Button
+                                <Input
+                                    value={
+                                        'sadfsdfsdfsdafsadfsadfsdfsdfsadfsad'
+                                    }
+                                    isReadOnly
                                     size={'sm'}
-                                    colorScheme="green"
-                                    onClick={() => {
-                                        // ReportsService.resumeCampaign(
-                                        //     campaign.campaign_id
-                                        // ).then(() => {
-                                        //     fetchCampaigns();
-                                        // });
-                                    }}
-                                >
-                                    Resume
-                                </Button>
+                                />
                             </Td>
-                        </Tr>
-                        <Tr>
-                            <Td>dsfuhklsdahfas</Td>
-                            <Td>sdfasdfasf</Td>
                             <Td>
                                 <Button
                                     size={'sm'}
                                     colorScheme="green"
                                     onClick={() => {
-                                        // ReportsService.resumeCampaign(
-                                        //     campaign.campaign_id
-                                        // ).then(() => {
-                                        //     fetchCampaigns();
-                                        // });
+                                        window.navigator.clipboard.writeText(
+                                            'sadfsdfsdfsdafsadfsadfsdfsdfsadfsad'
+                                        );
                                     }}
                                 >
-                                    Resume
-                                </Button>
-                            </Td>
-                        </Tr>
-                        <Tr>
-                            <Td>dsfuhklsdahfas</Td>
-                            <Td>sdfasdfasf</Td>
-                            <Td>
-                                <Button
-                                    size={'sm'}
-                                    colorScheme="green"
-                                    onClick={() => {
-                                        // ReportsService.resumeCampaign(
-                                        //     campaign.campaign_id
-                                        // ).then(() => {
-                                        //     fetchCampaigns();
-                                        // });
-                                    }}
-                                >
-                                    Resume
-                                </Button>
-                            </Td>
-                        </Tr>
-                        <Tr>
-                            <Td>dsfuhklsdahfas</Td>
-                            <Td>sdfasdfasf</Td>
-                            <Td>
-                                <Button
-                                    size={'sm'}
-                                    colorScheme="green"
-                                    onClick={() => {
-                                        // ReportsService.resumeCampaign(
-                                        //     campaign.campaign_id
-                                        // ).then(() => {
-                                        //     fetchCampaigns();
-                                        // });
-                                    }}
-                                >
-                                    Resume
-                                </Button>
-                            </Td>
-                        </Tr>
-                        <Tr>
-                            <Td>dsfuhklsdahfas</Td>
-                            <Td>sdfasdfasf</Td>
-                            <Td>
-                                <Button
-                                    size={'sm'}
-                                    colorScheme="green"
-                                    onClick={() => {
-                                        // ReportsService.resumeCampaign(
-                                        //     campaign.campaign_id
-                                        // ).then(() => {
-                                        //     fetchCampaigns();
-                                        // });
-                                    }}
-                                >
-                                    Resume
-                                </Button>
-                            </Td>
-                        </Tr>
-                        <Tr>
-                            <Td>dsfuhklsdahfas</Td>
-                            <Td>sdfasdfasf</Td>
-                            <Td>
-                                <Button
-                                    size={'sm'}
-                                    colorScheme="green"
-                                    onClick={() => {
-                                        // ReportsService.resumeCampaign(
-                                        //     campaign.campaign_id
-                                        // ).then(() => {
-                                        //     fetchCampaigns();
-                                        // });
-                                    }}
-                                >
-                                    Resume
+                                    Copy
                                 </Button>
                             </Td>
                         </Tr>

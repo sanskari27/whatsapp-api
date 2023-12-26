@@ -2,7 +2,6 @@ import { AttachmentIcon } from '@chakra-ui/icons';
 import {
     Box,
     Button,
-    Divider,
     Flex,
     FormControl,
     FormErrorMessage,
@@ -25,7 +24,6 @@ import {
     Tr,
     useDisclosure,
 } from '@chakra-ui/react';
-import { all } from 'axios';
 import Multiselect from 'multiselect-react-dropdown';
 import { ChangeEvent, useRef, useState } from 'react';
 import { MdDelete } from 'react-icons/md';
@@ -322,28 +320,29 @@ export default function Bot() {
         <Flex
             direction={'column'}
             gap={'0.5rem'}
-            justifyContent={'space-between'}
             className="custom-scrollbar"
-            maxWidth={'90%'}
-            paddingLeft={'70px'}
+            justifyContent={'center'}
+            width={'90%'}
+            pl={'70px'}
         >
             <Flex direction={'column'} gap={'0.5rem'}>
                 <Flex alignItems="center" gap={'0.5rem'} mt={'1.5rem'}>
                     <Icon
+                        height={6}
+                        width={6}
                         as={RiRobot2Line}
-                        height={5}
-                        width={5}
                         color={'green.400'}
                     />
-                    <Text className="text-black dark:text-white">
+                    <Text
+                        fontSize={'xl'}
+                        className="text-black dark:text-white"
+                    >
                         Auto Responder
                     </Text>
                 </Flex>
 
                 <Flex
                     direction={'column'}
-                    // className='bg-[#ECECEC] dark:bg-[#535353]'
-                    // px={'0.5rem'}
                     borderRadius={'20px'}
                     mb={'1rem'}
                     gap={2}
@@ -567,89 +566,93 @@ export default function Bot() {
                             </FormErrorMessage>
                         )}
                     </FormControl>
-                    <FormControl
-                        isInvalid={!!uiDetails.triggerGapError}
-                        width={'max-content'}
-                    >
-                        <Text className="text-gray-700 dark:text-gray-400">
-                            Message Delay
-                        </Text>
-                        <HStack>
-                            <Input
-                                width={'full'}
-                                type="number"
-                                placeholder="10"
-                                size={'sm'}
-                                rounded={'md'}
-                                border={'none'}
-                                className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]"
-                                _focus={{
-                                    border: 'none',
-                                    outline: 'none',
-                                }}
-                                value={trigger_details.trigger_gap_time}
-                                onChange={(e) => {
-                                    setUiDetails((prevState) => {
-                                        return {
-                                            ...prevState,
-                                            triggerGapError: '',
-                                        };
-                                    });
-                                    handleTriggerTimeUpdate({
-                                        name: 'trigger_gap_time',
-                                        value: e.target.value,
-                                    });
-                                }}
-                                // isDisabled={!isAuthenticated}
-                            />
-                            <Select
-                                className={`!bg-[#ECECEC] dark:!bg-[#535353]  text-black dark:text-white  w-full `}
-                                rounded={'md'}
-                                border={'none'}
-                                size={'sm'}
-                                value={trigger_details.trigger_gap_type}
-                                onChange={(e) => {
-                                    setUiDetails((prevState) => {
-                                        return {
-                                            ...prevState,
-                                            triggerGapError: '',
-                                        };
-                                    });
-                                    handleTriggerTimeUpdate({
-                                        name: 'trigger_gap_type',
-                                        value: e.target.value,
-                                    });
-                                }}
-                                // isDisabled={!isAuthenticated}
-                            >
-                                <option
-                                    className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
-                                    value="SECOND"
-                                >
-                                    Sec
-                                </option>
-                                <option
-                                    className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
-                                    value="MINUTE"
-                                >
-                                    Min
-                                </option>
-                                <option
-                                    className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
-                                    value="HOUR"
-                                >
-                                    Hour
-                                </option>
-                            </Select>
-                        </HStack>
-                        {uiDetails.triggerGapError && (
-                            <FormErrorMessage>
-                                {uiDetails.triggerGapError}
-                            </FormErrorMessage>
-                        )}
-                    </FormControl>
+
                     <HStack>
-                        <FormControl isInvalid={!!uiDetails.attachmentError}>
+                        <FormControl
+                            isInvalid={!!uiDetails.triggerGapError}
+                            flex={1}
+                        >
+                            <Text className="text-gray-700 dark:text-gray-400">
+                                Message Delay
+                            </Text>
+                            <HStack>
+                                <Input
+                                    type="number"
+                                    placeholder="10"
+                                    size={'sm'}
+                                    rounded={'md'}
+                                    border={'none'}
+                                    className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]"
+                                    _focus={{
+                                        border: 'none',
+                                        outline: 'none',
+                                    }}
+                                    value={trigger_details.trigger_gap_time}
+                                    onChange={(e) => {
+                                        setUiDetails((prevState) => {
+                                            return {
+                                                ...prevState,
+                                                triggerGapError: '',
+                                            };
+                                        });
+                                        handleTriggerTimeUpdate({
+                                            name: 'trigger_gap_time',
+                                            value: e.target.value,
+                                        });
+                                    }}
+                                    // isDisabled={!isAuthenticated}
+                                />
+                                <Select
+                                    className={`!bg-[#ECECEC] dark:!bg-[#535353]  text-black dark:text-white  w-full `}
+                                    rounded={'md'}
+                                    border={'none'}
+                                    size={'sm'}
+                                    value={trigger_details.trigger_gap_type}
+                                    onChange={(e) => {
+                                        setUiDetails((prevState) => {
+                                            return {
+                                                ...prevState,
+                                                triggerGapError: '',
+                                            };
+                                        });
+                                        handleTriggerTimeUpdate({
+                                            name: 'trigger_gap_type',
+                                            value: e.target.value,
+                                        });
+                                    }}
+                                    // isDisabled={!isAuthenticated}
+                                >
+                                    <option
+                                        className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
+                                        value="SECOND"
+                                    >
+                                        Sec
+                                    </option>
+                                    <option
+                                        className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
+                                        value="MINUTE"
+                                    >
+                                        Min
+                                    </option>
+                                    <option
+                                        className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
+                                        value="HOUR"
+                                    >
+                                        Hour
+                                    </option>
+                                </Select>
+                            </HStack>
+                            {uiDetails.triggerGapError && (
+                                <FormErrorMessage>
+                                    {uiDetails.triggerGapError}
+                                </FormErrorMessage>
+                            )}
+                        </FormControl>
+
+                        <FormControl
+                            isInvalid={!!uiDetails.attachmentError}
+                            flex={2}
+                        >
                             <Text className="text-gray-700 dark:text-gray-400">
                                 Attachments
                             </Text>
@@ -720,7 +723,7 @@ export default function Bot() {
                                                   (multiselectRef.current = ref)
                                             : null
                                     }
-                                    className="!w-[375px] bg-[#ECECEC] dark:bg-[#535353] rounded-md border-none "
+                                    className="!w-[400px] bg-[#ECECEC] dark:bg-[#535353] rounded-md border-none "
                                 />
                                 <IconButton
                                     // isDisabled={!isAuthenticated}
@@ -779,27 +782,25 @@ export default function Bot() {
                                 </FormErrorMessage>
                             )}
                         </FormControl>
-                        <Box width={'full'}>
+                        <Box flex={2} width={'full'}>
                             <Text className="text-gray-700 dark:text-gray-400">
                                 Contact Cards
                             </Text>
-                            <Flex gap={3} alignItems={'center'}>
-                                <Button
-                                    size={'sm'}
-                                    width={'full'}
-                                    variant={'outline'}
-                                    colorScheme="green"
-                                    onClick={openContactInput}
-                                    // isDisabled={!isAuthenticated}
-                                >
-                                    Create Contact
-                                </Button>
-                                <ContactDetailInputDialog
-                                    isOpen={isContactDetailsOpen}
-                                    onClose={closeContactInput}
-                                    onConfirm={handleContactInput}
-                                />
-                            </Flex>
+                            <Button
+                                width={'full'}
+                                size={'sm'}
+                                variant={'outline'}
+                                colorScheme="green"
+                                onClick={openContactInput}
+                                // isDisabled={!isAuthenticated}
+                            >
+                                Create Contact
+                            </Button>
+                            <ContactDetailInputDialog
+                                isOpen={isContactDetailsOpen}
+                                onClose={closeContactInput}
+                                onConfirm={handleContactInput}
+                            />
                             <Box>
                                 {shared_contact_cards.map((contact, index) => (
                                     <Tag
@@ -862,252 +863,128 @@ export default function Bot() {
                             <Text color={'white'}>Save</Text>
                         </Button>
                     </HStack>
-                    <Divider />
+                    {/* <Divider /> */}
 
-                    <Box hidden={all.length === 0}>
-                        <Text
-                            fontSize={'xl'}
-                            className="text-gray-700 dark:text-gray-400"
-                            textAlign={'center'}
-                            pt={'2rem'}
-                            pb={'1rem'}
-                        >
-                            All Responders
-                        </Text>
-                        <TableContainer>
-                            <Table>
-                                <Thead>
-                                    <Tr>
-                                        <Th>Trigger</Th>
-                                        <Th>Message</Th>
-                                        <Th>Recipients</Th>
-                                        <Th>Conditions</Th>
-                                        <Th>Attachments</Th>
-                                        <Th>Delay</Th>
-                                        <Th>Action</Th>
-                                    </Tr>
-                                </Thead>
-                                <Tbody>
-                                    {allBots.map((bot, index) => (
-                                        <Tr
-                                            key={index}
-                                            _hover={{
-                                                backgroundColor: 'gray.100',
-                                                cursor: 'pointer',
-                                            }}
-                                            onClick={() => editResponder(bot)}
-                                        >
-                                            <Td>
-                                                {bot.trigger
+                    {/* <Flex direction={'column'} hidden={all.length === 0}> */}
+                    <Text
+                        fontSize={'2xl'}
+                        className="text-gray-700 dark:text-gray-400"
+                        textAlign={'center'}
+                        pt={'2rem'}
+                        pb={'1rem'}
+                    >
+                        All Responders
+                    </Text>
+                    <TableContainer>
+                        <Table>
+                            <Thead>
+                                <Tr>
+                                    <Th>Trigger</Th>
+                                    <Th>Message</Th>
+                                    <Th>Recipients</Th>
+                                    <Th>Conditions</Th>
+                                    <Th>Attachments</Th>
+                                    <Th>Delay</Th>
+                                    <Th>Action</Th>
+                                </Tr>
+                            </Thead>
+                            <Tbody>
+                                {allBots.map((bot, index) => (
+                                    <Tr
+                                        key={index}
+                                        _hover={{
+                                            backgroundColor: 'gray.100',
+                                            cursor: 'pointer',
+                                        }}
+                                        onClick={() => editResponder(bot)}
+                                    >
+                                        <Td>
+                                            {bot.trigger
+                                                .split('\n')
+                                                .map((trigger) => (
+                                                    <Box>
+                                                        {trigger.length > 20
+                                                            ? trigger.substring(
+                                                                  0,
+                                                                  18
+                                                              ) + '...'
+                                                            : trigger}
+                                                    </Box>
+                                                ))}
+                                        </Td>
+                                        <Td>
+                                            <Box>
+                                                {bot.message
                                                     .split('\n')
-                                                    .map((trigger) => (
+                                                    .map((message) => (
                                                         <Box>
-                                                            {trigger.length > 20
-                                                                ? trigger.substring(
+                                                            {message.length > 25
+                                                                ? message.substring(
                                                                       0,
-                                                                      18
+                                                                      22
                                                                   ) + '...'
-                                                                : trigger}
+                                                                : message}
                                                         </Box>
                                                     ))}
-                                            </Td>
-                                            <Td>
-                                                <Box>
-                                                    {bot.message
-                                                        .split('\n')
-                                                        .map((message) => (
-                                                            <Box>
-                                                                {message.length >
-                                                                25
-                                                                    ? message.substring(
-                                                                          0,
-                                                                          22
-                                                                      ) + '...'
-                                                                    : message}
-                                                            </Box>
-                                                        ))}
-                                                </Box>
-                                            </Td>
-                                            <Td>
-                                                {bot.respond_to
-                                                    .split('_')
-                                                    .join(' ')}
-                                            </Td>
-                                            <Td>
-                                                {bot.options
-                                                    .split('_')
-                                                    .join(' ')}
-                                            </Td>
-                                            <Td>{bot.attachments.length}</Td>
-                                            <Td>
-                                                {bot.trigger_gap_seconds < 60
-                                                    ? `${
-                                                          bot.trigger_gap_seconds
-                                                      } sec${
-                                                          bot.trigger_gap_seconds !==
-                                                          1
-                                                              ? 's'
-                                                              : ''
-                                                      }`
-                                                    : bot.trigger_gap_seconds <
-                                                      3600
-                                                    ? `${Math.floor(
+                                            </Box>
+                                        </Td>
+                                        <Td>
+                                            {bot.respond_to
+                                                .split('_')
+                                                .join(' ')}
+                                        </Td>
+                                        <Td>
+                                            {bot.options.split('_').join(' ')}
+                                        </Td>
+                                        <Td>{bot.attachments.length}</Td>
+                                        <Td>
+                                            {bot.trigger_gap_seconds < 60
+                                                ? `${
+                                                      bot.trigger_gap_seconds
+                                                  } sec${
+                                                      bot.trigger_gap_seconds !==
+                                                      1
+                                                          ? 's'
+                                                          : ''
+                                                  }`
+                                                : bot.trigger_gap_seconds < 3600
+                                                ? `${Math.floor(
+                                                      bot.trigger_gap_seconds /
+                                                          60
+                                                  )} min${
+                                                      Math.floor(
                                                           bot.trigger_gap_seconds /
                                                               60
-                                                      )} min${
-                                                          Math.floor(
-                                                              bot.trigger_gap_seconds /
-                                                                  60
-                                                          ) !== 1
-                                                              ? 's'
-                                                              : ''
-                                                      }`
-                                                    : bot.trigger_gap_seconds <
-                                                      86400
-                                                    ? `${Math.floor(
+                                                      ) !== 1
+                                                          ? 's'
+                                                          : ''
+                                                  }`
+                                                : bot.trigger_gap_seconds <
+                                                  86400
+                                                ? `${Math.floor(
+                                                      bot.trigger_gap_seconds /
+                                                          3600
+                                                  )} hr${
+                                                      Math.floor(
                                                           bot.trigger_gap_seconds /
                                                               3600
-                                                      )} hr${
-                                                          Math.floor(
-                                                              bot.trigger_gap_seconds /
-                                                                  3600
-                                                          ) !== 1
-                                                              ? 's'
-                                                              : ''
-                                                      }`
-                                                    : `${Math.floor(
+                                                      ) !== 1
+                                                          ? 's'
+                                                          : ''
+                                                  }`
+                                                : `${Math.floor(
+                                                      bot.trigger_gap_seconds /
+                                                          86400
+                                                  )} day${
+                                                      Math.floor(
                                                           bot.trigger_gap_seconds /
                                                               86400
-                                                      )} day${
-                                                          Math.floor(
-                                                              bot.trigger_gap_seconds /
-                                                                  86400
-                                                          ) !== 1
-                                                              ? 's'
-                                                              : ''
-                                                      }`}
-                                            </Td>
-                                            <Td>
-                                                <Icon
-                                                    as={MdDelete}
-                                                    width={5}
-                                                    height={5}
-                                                    color={'red.400'}
-                                                    cursor={'pointer'}
-                                                    onClick={() =>
-                                                        deleteBot(bot.bot_id)
-                                                    }
-                                                />
-                                            </Td>
-                                        </Tr>
-                                    ))}
-                                </Tbody>
-                            </Table>
-                        </TableContainer>
-                        {/* <Flex
-                            gap={2}
-                            direction={'column'}
-                            className="border border-gray-700 dark:border-gray-300"
-                            py={1}
-                            px={3}
-                            rounded={'md'}
-                        >
-                            {allBots.map((bot, index) => (
-                                <Box>
-                                    <Flex
-                                        key={index}
-                                        justifyContent={'space-between'}
-                                    >
-                                        <Box className="text-background-dark dark:text-background">
-                                            <Box className="flex flex-row">
-                                                <Box>
-                                                    {bot.trigger.length > 15 ? (
-                                                        <Box as="span">{`${bot.trigger.substring(
-                                                            0,
-                                                            15
-                                                        )}...`}</Box>
-                                                    ) : (
-                                                        <Box as="span">
-                                                            {bot.trigger}
-                                                        </Box>
-                                                    )}
-                                                    {' : '}
-                                                </Box>
-                                                <Box>
-                                                    <Box ml={'0.25rem'}>
-                                                        {' '}
-                                                        {bot.message.length >
-                                                        15 ? (
-                                                            <Box as="span">{`${bot.message.substring(
-                                                                0,
-                                                                15
-                                                            )}...`}</Box>
-                                                        ) : (
-                                                            <Box as="span">
-                                                                {bot.message}
-                                                            </Box>
-                                                        )}
-                                                        {bot.attachments
-                                                            .length > 0
-                                                            ? `- ${bot.attachments.length} Attachments`
-                                                            : ''}
-                                                    </Box>
-                                                </Box>
-                                            </Box>
-                                            <Box>
-                                                {`${bot.respond_to}, ${
-                                                    bot.options
-                                                }, ${
-                                                    bot.trigger_gap_seconds < 60
-                                                        ? `${
-                                                              bot.trigger_gap_seconds
-                                                          } second${
-                                                              bot.trigger_gap_seconds !==
-                                                              1
-                                                                  ? 's'
-                                                                  : ''
-                                                          }`
-                                                        : bot.trigger_gap_seconds <
-                                                          3600
-                                                        ? `${Math.floor(
-                                                              bot.trigger_gap_seconds /
-                                                                  60
-                                                          )} minute${
-                                                              Math.floor(
-                                                                  bot.trigger_gap_seconds /
-                                                                      60
-                                                              ) !== 1
-                                                                  ? 's'
-                                                                  : ''
-                                                          }`
-                                                        : bot.trigger_gap_seconds <
-                                                          86400
-                                                        ? `${Math.floor(
-                                                              bot.trigger_gap_seconds /
-                                                                  3600
-                                                          )} hour${
-                                                              Math.floor(
-                                                                  bot.trigger_gap_seconds /
-                                                                      3600
-                                                              ) !== 1
-                                                                  ? 's'
-                                                                  : ''
-                                                          }`
-                                                        : `${Math.floor(
-                                                              bot.trigger_gap_seconds /
-                                                                  86400
-                                                          )} day${
-                                                              Math.floor(
-                                                                  bot.trigger_gap_seconds /
-                                                                      86400
-                                                              ) !== 1
-                                                                  ? 's'
-                                                                  : ''
-                                                          }`
-                                                }`}
-                                            </Box>
-                                        </Box>
-                                        <Box>
+                                                      ) !== 1
+                                                          ? 's'
+                                                          : ''
+                                                  }`}
+                                        </Td>
+                                        <Td>
                                             <Icon
                                                 as={MdDelete}
                                                 width={5}
@@ -1118,13 +995,13 @@ export default function Bot() {
                                                     deleteBot(bot.bot_id)
                                                 }
                                             />
-                                        </Box>
-                                    </Flex>
-                                    <Divider />
-                                </Box>
-                            ))}
-                        </Flex> */}
-                    </Box>
+                                        </Td>
+                                    </Tr>
+                                ))}
+                            </Tbody>
+                        </Table>
+                    </TableContainer>
+                    {/* </Flex> */}
                 </Flex>
             </Flex>
             {/* <Text color={'tomato'}>{error.message}</Text> */}
