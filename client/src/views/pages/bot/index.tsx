@@ -1,4 +1,4 @@
-import { AttachmentIcon } from '@chakra-ui/icons';
+import { AttachmentIcon, EditIcon } from '@chakra-ui/icons';
 import {
     Box,
     Button,
@@ -27,10 +27,12 @@ import {
 import Multiselect from 'multiselect-react-dropdown';
 import { ChangeEvent, useRef, useState } from 'react';
 import { MdDelete } from 'react-icons/md';
+import { PiPause, PiPlay } from 'react-icons/pi';
 import { RiRobot2Line } from 'react-icons/ri';
 import { useDispatch, useSelector } from 'react-redux';
 import useAttachment from '../../../hooks/useAttachment';
 import useBot from '../../../hooks/useBot';
+import { useTheme } from '../../../hooks/useTheme';
 import { BotDetails } from '../../../services/bot.service';
 import { StoreNames, StoreState } from '../../../store';
 import {
@@ -51,6 +53,7 @@ export default function Bot() {
     const multiselectRef = useRef<Multiselect | null>();
     const fileInputRef = useRef<HTMLInputElement | null>();
     const dispatch = useDispatch();
+    const theme = useTheme();
 
     const {
         trigger,
@@ -66,7 +69,14 @@ export default function Bot() {
         add: addAttachment,
         addingAttachment,
     } = useAttachment();
-    const { add: addBot, addingBot, bots: allBots, deleteBot } = useBot();
+    const {
+        add: addBot,
+        addingBot,
+        bots: allBots,
+        deleteBot,
+        editBot,
+        toggleBot,
+    } = useBot();
 
     const {
         isOpen: isAttachmentDetailsOpen,
@@ -98,7 +108,10 @@ export default function Bot() {
         contactCardsError: string;
         attachmentError: string;
         triggerGapError: string;
-        isEditing: boolean;
+        editBot: {
+            isEditing: boolean;
+            botId: string;
+        };
     }>({
         isAddingBot: false,
         triggerError: '',
@@ -108,7 +121,10 @@ export default function Bot() {
         contactCardsError: '',
         attachmentError: '',
         triggerGapError: '',
-        isEditing: false,
+        editBot: {
+            isEditing: false,
+            botId: '',
+        },
     });
 
     const handleContactInput = (data: {
@@ -255,6 +271,57 @@ export default function Bot() {
         });
     }
 
+    function handleEditResponder() {
+        if (!uiDetails.editBot.botId) return;
+        if (
+            !trigger_details.trigger_gap_time ||
+            trigger_details.trigger_gap_time <= 0
+        ) {
+            setUiDetails((prevState) => ({
+                ...prevState,
+                triggerGapError: 'Invalid Message Delay',
+            }));
+            return;
+        }
+        const trigger_gap_seconds =
+            trigger_details.trigger_gap_type === 'HOUR'
+                ? trigger_details.trigger_gap_time * 3600
+                : trigger_details.trigger_gap_type === 'MINUTE'
+                ? trigger_details.trigger_gap_time * 60
+                : trigger_details.trigger_gap_time;
+        editBot(uiDetails.editBot.botId, {
+            message,
+            trigger,
+            respond_to,
+            options,
+            attachments,
+            shared_contact_cards,
+            trigger_gap_seconds: Number(trigger_gap_seconds),
+        }).then(() => {
+            multiselectRef.current?.resetSelectedValues();
+            setUiDetails((prevState) => ({
+                ...prevState,
+                editBot: {
+                    botId: '',
+                    isEditing: false,
+                },
+                triggerError: '',
+            }));
+            dispatch(reset());
+        });
+    }
+
+    function handleCancel() {
+        setUiDetails((prevState) => ({
+            ...prevState,
+            editBot: {
+                botId: '',
+                isEditing: false,
+            },
+            triggerError: '',
+        }));
+    }
+
     function editResponder(bot: BotDetails) {
         // if (!isAuthenticated) return;
         // if (isEditing) return;
@@ -266,9 +333,13 @@ export default function Bot() {
         // 	isEditing: true,
         // 	isAdding: false,
         // }));
+        window.scrollTo(0, 0);
         setUiDetails((prevState) => ({
             ...prevState,
-            isEditing: true,
+            editBot: {
+                botId: bot.bot_id,
+                isEditing: true,
+            },
             triggerError: '',
         }));
         dispatch(setTrigger(bot.trigger));
@@ -831,37 +902,43 @@ export default function Bot() {
                     <HStack
                         justifyContent={'space-between'}
                         alignItems={'center'}
+                        py={8}
                     >
-                        {uiDetails.isEditing && (
+                        <Button
+                            bgColor={
+                                uiDetails.editBot.isEditing
+                                    ? 'red.300'
+                                    : 'green.300'
+                            }
+                            width={'100%'}
+                            onClick={
+                                uiDetails.editBot.isEditing
+                                    ? handleCancel
+                                    : handleSave
+                            }
+                            isLoading={addingBot}
+                            // isDisabled={!isAuthenticated}
+                        >
+                            <Text color={'white'}>
+                                {uiDetails.editBot.isEditing
+                                    ? 'Cancel'
+                                    : 'Save'}
+                            </Text>
+                        </Button>
+                        {uiDetails.editBot.isEditing && (
                             <Button
-                                bgColor={'red.300'}
+                                isLoading={addingBot}
+                                bgColor={'green.300'}
                                 _hover={{
-                                    bgColor: 'red.400',
+                                    bgColor: 'green.400',
                                 }}
                                 width={'100%'}
-                                onClick={() => {
-                                    setUiDetails((prevState) => ({
-                                        ...prevState,
-                                        isEditing: false,
-                                    }));
-                                }}
+                                onClick={handleEditResponder}
                                 // isDisabled={!isAuthenticated}
                             >
                                 <Text color={'white'}>Edit</Text>
                             </Button>
                         )}
-                        <Button
-                            bgColor={'green.300'}
-                            _hover={{
-                                bgColor: 'green.400',
-                            }}
-                            width={'100%'}
-                            onClick={handleSave}
-                            isLoading={addingBot}
-                            // isDisabled={!isAuthenticated}
-                        >
-                            <Text color={'white'}>Save</Text>
-                        </Button>
                     </HStack>
                     {/* <Divider /> */}
 
@@ -883,21 +960,16 @@ export default function Bot() {
                                     <Th>Message</Th>
                                     <Th>Recipients</Th>
                                     <Th>Conditions</Th>
-                                    <Th>Attachments</Th>
+                                    <Th p={0}>Attachments</Th>
                                     <Th>Delay</Th>
-                                    <Th>Action</Th>
+                                    <Th>Actions</Th>
                                 </Tr>
                             </Thead>
-                            <Tbody>
+                            <Tbody
+                                textColor={theme === 'dark' ? 'white' : 'black'}
+                            >
                                 {allBots.map((bot, index) => (
-                                    <Tr
-                                        key={index}
-                                        _hover={{
-                                            backgroundColor: 'gray.100',
-                                            cursor: 'pointer',
-                                        }}
-                                        onClick={() => editResponder(bot)}
-                                    >
+                                    <Tr key={index}>
                                         <Td>
                                             {bot.trigger
                                                 .split('\n')
@@ -918,10 +990,10 @@ export default function Bot() {
                                                     .split('\n')
                                                     .map((message) => (
                                                         <Box>
-                                                            {message.length > 25
+                                                            {message.length > 20
                                                                 ? message.substring(
                                                                       0,
-                                                                      22
+                                                                      18
                                                                   ) + '...'
                                                                 : message}
                                                         </Box>
@@ -939,61 +1011,75 @@ export default function Bot() {
                                         <Td>{bot.attachments.length}</Td>
                                         <Td>
                                             {bot.trigger_gap_seconds < 60
-                                                ? `${
-                                                      bot.trigger_gap_seconds
-                                                  } sec${
-                                                      bot.trigger_gap_seconds !==
-                                                      1
-                                                          ? 's'
-                                                          : ''
-                                                  }`
+                                                ? `${bot.trigger_gap_seconds} s`
                                                 : bot.trigger_gap_seconds < 3600
                                                 ? `${Math.floor(
                                                       bot.trigger_gap_seconds /
                                                           60
-                                                  )} min${
-                                                      Math.floor(
-                                                          bot.trigger_gap_seconds /
-                                                              60
-                                                      ) !== 1
-                                                          ? 's'
-                                                          : ''
-                                                  }`
+                                                  )} m`
                                                 : bot.trigger_gap_seconds <
                                                   86400
                                                 ? `${Math.floor(
                                                       bot.trigger_gap_seconds /
                                                           3600
-                                                  )} hr${
-                                                      Math.floor(
-                                                          bot.trigger_gap_seconds /
-                                                              3600
-                                                      ) !== 1
-                                                          ? 's'
-                                                          : ''
-                                                  }`
+                                                  )} h`
                                                 : `${Math.floor(
                                                       bot.trigger_gap_seconds /
                                                           86400
-                                                  )} day${
-                                                      Math.floor(
-                                                          bot.trigger_gap_seconds /
-                                                              86400
-                                                      ) !== 1
-                                                          ? 's'
-                                                          : ''
-                                                  }`}
+                                                  )} day`}
                                         </Td>
                                         <Td>
-                                            <Icon
-                                                as={MdDelete}
-                                                width={5}
-                                                height={5}
+                                            <IconButton
+                                                aria-label="Delete"
+                                                icon={<MdDelete />}
                                                 color={'red.400'}
-                                                cursor={'pointer'}
                                                 onClick={() =>
                                                     deleteBot(bot.bot_id)
                                                 }
+                                                bgColor={'transparent'}
+                                                _hover={{
+                                                    bgColor: 'transparent',
+                                                }}
+                                                outline="none"
+                                                border="none"
+                                            />
+                                            <IconButton
+                                                aria-label="Delete"
+                                                icon={<EditIcon />}
+                                                color={'yellow.400'}
+                                                onClick={() =>
+                                                    editResponder(bot)
+                                                }
+                                                bgColor={'transparent'}
+                                                _hover={{
+                                                    bgColor: 'transparent',
+                                                }}
+                                                outline="none"
+                                                border="none"
+                                            />
+                                            <IconButton
+                                                aria-label="toggle"
+                                                icon={
+                                                    bot.isActive ? (
+                                                        <PiPause />
+                                                    ) : (
+                                                        <PiPlay />
+                                                    )
+                                                }
+                                                color={
+                                                    bot.isActive
+                                                        ? 'blue.400'
+                                                        : 'green.400'
+                                                }
+                                                onClick={() => {
+                                                    toggleBot(bot.bot_id);
+                                                }}
+                                                bgColor={'transparent'}
+                                                _hover={{
+                                                    bgColor: 'transparent',
+                                                }}
+                                                outline="none"
+                                                border="none"
                                             />
                                         </Td>
                                     </Tr>

@@ -1,4 +1,4 @@
-import APIInstance from "../config/APIInstance";
+import APIInstance from '../config/APIInstance';
 
 export type BotDetails = {
     bot_id: string;
@@ -79,6 +79,45 @@ export default class BotService {
             return true;
         } catch (err) {
             return false;
+        }
+    }
+
+    static async updateBot(
+        id: string,
+        data: {
+            trigger: string;
+            message: string;
+            respond_to: string;
+            trigger_gap_seconds: number;
+            options: string;
+            shared_contact_cards?: {
+                first_name?: string;
+                last_name?: string;
+                title?: string;
+                organization?: string;
+                email_personal?: string;
+                email_work?: string;
+                contact_number_phone?: string;
+                contact_number_work?: string;
+                contact_number_other?: string[];
+                link?: string[];
+                street?: string;
+                city?: string;
+                state?: string;
+                country?: string;
+                pincode?: string;
+            }[];
+            attachments: string[];
+        }
+    ) {
+        try {
+            const { data: response } = await APIInstance.patch(
+                `/whatsapp/bot/${id}`,
+                data
+            );
+            return response.bot as BotDetails;
+        } catch (err) {
+            return null;
         }
     }
 }

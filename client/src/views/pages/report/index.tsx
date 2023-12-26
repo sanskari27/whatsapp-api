@@ -141,12 +141,15 @@ const Reports = () => {
                                 <Tr
                                     color={theme === 'dark' ? 'white' : 'black'}
                                 >
-                                    <Th>Sl No.</Th>
                                     <Th>Select</Th>
                                     <Th>Campaign Name</Th>
-                                    <Th>Messages Sent</Th>
-                                    <Th>Messages Pending</Th>
-                                    <Th>Messages Failed</Th>
+                                    <Th textColor={'green'}>Messages Sent</Th>
+                                    <Th textColor={'yellow.500'}>
+                                        Messages Pending
+                                    </Th>
+                                    <Th textColor={'red.400'}>
+                                        Messages Failed
+                                    </Th>
                                     <Th>Status</Th>
                                 </Tr>
                             </Thead>
@@ -163,9 +166,10 @@ const Reports = () => {
                                             theme === 'dark' ? 'white' : 'black'
                                         }
                                     >
-                                        <Td>{index + 1}</Td>
                                         <Td>
                                             <Checkbox
+                                                colorScheme="green"
+                                                mr={4}
                                                 isChecked={selectedCampaign.includes(
                                                     campaign.campaign_id
                                                 )}
@@ -181,6 +185,7 @@ const Reports = () => {
                                                     }
                                                 }}
                                             />
+                                            {index + 1}
                                         </Td>
                                         <Td>
                                             {campaign.campaignName.length > 28
@@ -191,9 +196,15 @@ const Reports = () => {
                                                 : campaign.campaignName}
                                         </Td>
 
-                                        <Td>{campaign.sent}</Td>
-                                        <Td>{campaign.pending}</Td>
-                                        <Td>{campaign.failed}</Td>
+                                        <Td textColor={'green'}>
+                                            {campaign.sent}
+                                        </Td>
+                                        <Td textColor={'yellow.500'}>
+                                            {campaign.pending}
+                                        </Td>
+                                        <Td textColor={'red.400'}>
+                                            {campaign.failed}
+                                        </Td>
                                         <Td>
                                             {campaign.isPaused ? (
                                                 <Button

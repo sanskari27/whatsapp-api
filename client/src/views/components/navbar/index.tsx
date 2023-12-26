@@ -29,6 +29,8 @@ export default function Navbar() {
             borderBottomColor={theme === 'light' ? 'gray.300' : 'gray.500'}
             paddingY={'0.75rem'}
             paddingX={'0.75rem'}
+            zIndex={99}
+            background={theme === 'light' ? 'white' : '#252525'}
         >
             <Flex alignItems={'center'}>
                 <Box>
