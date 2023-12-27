@@ -36,7 +36,8 @@ async function createWhatsappLink(req: Request, res: Response, next: NextFunctio
 		res,
 		status: 200,
 		data: {
-			link: `https://open.whatsleads.in/${doc.key}`,
+			shorten_link: `https://open.savemyvcard.com/${doc.key}`,
+			link: doc.link,
 			base64: `data:image/png;base64,${qrCodeBuffer.toString('base64')}`,
 		},
 	});
@@ -70,7 +71,8 @@ async function createLink(req: Request, res: Response, next: NextFunction) {
 		res,
 		status: 200,
 		data: {
-			link: `https://open.whatsleads.in/${doc.key}`,
+			shorten_link: `https://open.savemyvcard.com/${doc.key}`,
+			link: doc.link,
 			base64: `data:image/png;base64,${qrCodeBuffer.toString('base64')}`,
 		},
 	});
@@ -113,7 +115,8 @@ async function updateLink(req: Request, res: Response, next: NextFunction) {
 		res,
 		status: 200,
 		data: {
-			link: `https://open.whatsleads.in/${doc.key}`,
+			shorten_link: `https://open.savemyvcard.com/${doc.key}`,
+			link: doc.link,
 			base64: `data:image/png;base64,${qrCodeBuffer.toString('base64')}`,
 		},
 	});
@@ -137,12 +140,14 @@ async function listAll(req: Request, res: Response, next: NextFunction) {
 		if (!qrCodeBuffer) {
 			return {
 				id: doc._id,
-				link: `https://open.whatsleads.in/${doc.key}`,
+				shorten_link: `https://open.savemyvcard.com/${doc.key}`,
+				link: doc.link,
 			};
 		}
 		return {
 			id: doc._id,
-			link: `https://open.whatsleads.in/${doc.key}`,
+			shorten_link: `https://open.savemyvcard.com/${doc.key}`,
+			link: doc.link,
 			base64: `data:image/png;base64,${qrCodeBuffer.toString('base64')}`,
 		};
 	});

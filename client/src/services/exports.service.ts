@@ -45,7 +45,9 @@ export default class ExportsService {
 				const label_contacts = await LabelService.fetchLabel(options.labelIDs);
 				ExcelUtils.exportLabel(label_contacts);
 			}
-		} catch (err) {}
+		} catch (err) {
+			//ignore
+		}
 	}
 	static async exportContactsVCF(options: ExportContactParams) {
 		try {
@@ -77,7 +79,9 @@ export default class ExportsService {
 				const label_contacts = await LabelService.fetchLabel(options.labelIDs);
 				VCardUtils.exportLabel(label_contacts);
 			}
-		} catch (err) {}
+		} catch (err) {
+			//ignore
+		}
 	}
 
 	static async exportValidNumbersExcel(data: {
@@ -88,7 +92,9 @@ export default class ExportsService {
 		try {
 			const validContacts = await NumbersValidatorService.validateNumbers(data);
 			ExcelUtils.exportContacts(validContacts, 'Valid Contacts');
-		} catch (err) {}
+		} catch (err) {
+			//ignore
+		}
 	}
 
 	static async exportPaymentsExcel(
@@ -99,7 +105,9 @@ export default class ExportsService {
 	) {
 		try {
 			ExcelUtils.exportPayments(records);
-		} catch (err) {}
+		} catch (err) {
+			//ignore
+		}
 	}
 
 	static async exportCampaignReport(campaign_id: string) {
