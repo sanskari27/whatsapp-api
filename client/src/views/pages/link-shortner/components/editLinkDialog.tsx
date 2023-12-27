@@ -62,6 +62,7 @@ const EditLinkDialog = forwardRef<EditLinkDialogHandle, Props>(
         }));
 
         const handleEdit = () => {
+            if (newLink === '') return;
             onConfirm(link.id, newLink);
             setOpen(false);
         };
@@ -82,11 +83,11 @@ const EditLinkDialog = forwardRef<EditLinkDialogHandle, Props>(
                         </AlertDialogHeader>
 
                         <AlertDialogBody>
-                            <Box>
+                            <Box pb={4}>
                                 <Text>Current Link</Text>
                                 <Input value={link.link} isReadOnly mt={2} />
                             </Box>
-                            <Box>
+                            <Box pb={4}>
                                 <Text>Shorten Link</Text>
                                 <Input
                                     value={link.shorten_link}
