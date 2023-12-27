@@ -122,6 +122,30 @@ async function updateLink(req: Request, res: Response, next: NextFunction) {
 	});
 }
 
+async function deleteLink(req: Request, res: Response, next: NextFunction) {
+	const [idValid, id] = idValidator(req.params.id);
+
+	if (!idValid) {
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
+	}
+
+	const doc = await ShortnerDB.findOne({
+		_id: id,
+		user: req.locals.user,
+	});
+
+	if (!doc) {
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
+	}
+	await doc.remove();
+
+	return Respond({
+		res,
+		status: 200,
+		data: {},
+	});
+}
+
 async function open(req: Request, res: Response, next: NextFunction) {
 	const id = req.params.id;
 	const doc = await ShortnerDB.findById(id);
@@ -165,6 +189,7 @@ const WhatsappShortner = {
 	createWhatsappLink,
 	createLink,
 	open,
+	deleteLink,
 	updateLink,
 	listAll,
 };
