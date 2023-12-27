@@ -47,6 +47,9 @@ import {
 import { ContactCard } from '../../../store/types/ContactCardState';
 import AttachmentDetailsInputDialog from '../../components/attachment-details-input-dialog';
 import CheckButton from '../../components/check-button';
+import ConfirmationDialog, {
+    ConfirmationDialogHandle,
+} from '../../components/confirmation-alert';
 import ContactDetailInputDialog from '../../components/contact-detail-input-dialog';
 
 export default function Bot() {
@@ -54,6 +57,7 @@ export default function Bot() {
     const fileInputRef = useRef<HTMLInputElement | null>();
     const dispatch = useDispatch();
     const theme = useTheme();
+    const confirmationDialogRef = useRef<ConfirmationDialogHandle>(null);
 
     const {
         trigger,
@@ -1033,9 +1037,12 @@ export default function Bot() {
                                                 aria-label="Delete"
                                                 icon={<MdDelete />}
                                                 color={'red.400'}
-                                                onClick={() =>
-                                                    deleteBot(bot.bot_id)
-                                                }
+                                                onClick={() => {
+                                                    confirmationDialogRef.current?.open();
+                                                    confirmationDialogRef.current?.setId(
+                                                        bot.bot_id
+                                                    );
+                                                }}
                                                 bgColor={'transparent'}
                                                 _hover={{
                                                     bgColor: 'transparent',
@@ -1044,7 +1051,7 @@ export default function Bot() {
                                                 border="none"
                                             />
                                             <IconButton
-                                                aria-label="Delete"
+                                                aria-label="Edit"
                                                 icon={<EditIcon />}
                                                 color={'yellow.400'}
                                                 onClick={() =>
@@ -1087,10 +1094,13 @@ export default function Bot() {
                             </Tbody>
                         </Table>
                     </TableContainer>
-                    {/* </Flex> */}
                 </Flex>
             </Flex>
-            {/* <Text color={'tomato'}>{error.message}</Text> */}
+            <ConfirmationDialog
+                type={'Responder'}
+                ref={confirmationDialogRef}
+                onConfirm={deleteBot}
+            />
         </Flex>
     );
 }

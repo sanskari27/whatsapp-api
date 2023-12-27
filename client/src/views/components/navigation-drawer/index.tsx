@@ -7,6 +7,7 @@ import {
     IconButton,
     Image,
     VStack,
+    useDisclosure,
 } from '@chakra-ui/react';
 import { IconType } from 'react-icons';
 import { FiBarChart2, FiLink2 } from 'react-icons/fi';
@@ -19,6 +20,7 @@ import { LOGO } from '../../../assets/Images';
 import { NAVIGATION } from '../../../config/const';
 import { toggleTheme, useTheme } from '../../../hooks/useTheme';
 import AuthService from '../../../services/auth.service';
+import Settings from '../../pages/settings';
 
 function isActiveTab(tab: string, path: string): boolean {
     if (path.includes(tab)) return true;
@@ -27,7 +29,8 @@ function isActiveTab(tab: string, path: string): boolean {
 
 export default function NavigationDrawer() {
     const theme = useTheme();
-    const navigate = useNavigate();
+
+    const { onOpen, onClose, isOpen } = useDisclosure();
 
     return (
         <Box>
@@ -90,9 +93,7 @@ export default function NavigationDrawer() {
                                 color={theme === 'light' ? 'black' : 'white'}
                             />
                         }
-                        onClick={() => {
-                            navigate(NAVIGATION.SETTINGS);
-                        }}
+                        onClick={onOpen}
                         className="focus:outline-none focus:border-none"
                         backgroundColor={'transparent'}
                         _hover={{
@@ -130,6 +131,7 @@ export default function NavigationDrawer() {
                     />
                 </VStack>
             </Flex>
+            <Settings isOpen={isOpen} onClose={onClose} />
         </Box>
     );
 }
