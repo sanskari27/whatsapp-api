@@ -29,6 +29,8 @@ export default function Navbar() {
             borderBottomColor={theme === 'light' ? 'gray.300' : 'gray.500'}
             paddingY={'0.75rem'}
             paddingX={'0.75rem'}
+            zIndex={99}
+            background={theme === 'light' ? 'white' : '#252525'}
         >
             <Flex alignItems={'center'}>
                 <Box>
@@ -140,6 +142,48 @@ export default function Navbar() {
                                             }
                                         >
                                             Reports
+                                        </BreadcrumbLink>
+                                    </BreadcrumbItem>
+                                );
+                            } else if (
+                                loc.includes(NAVIGATION.SETTINGS.substring(1))
+                            ) {
+                                return (
+                                    <BreadcrumbItem key={index}>
+                                        <BreadcrumbLink
+                                            as={Box}
+                                            textDecoration={'none'}
+                                            isCurrentPage={
+                                                index === locations.length - 1
+                                            }
+                                            onClick={() =>
+                                                index !==
+                                                    locations.length - 1 &&
+                                                navigate(NAVIGATION.SETTINGS)
+                                            }
+                                        >
+                                            Settings
+                                        </BreadcrumbLink>
+                                    </BreadcrumbItem>
+                                );
+                            } else if (
+                                loc.includes(NAVIGATION.SHORT.substring(1))
+                            ) {
+                                return (
+                                    <BreadcrumbItem key={index}>
+                                        <BreadcrumbLink
+                                            as={Box}
+                                            textDecoration={'none'}
+                                            isCurrentPage={
+                                                index === locations.length - 1
+                                            }
+                                            onClick={() =>
+                                                index !==
+                                                    locations.length - 1 &&
+                                                navigate(NAVIGATION.SHORT)
+                                            }
+                                        >
+                                            Shortner
                                         </BreadcrumbLink>
                                     </BreadcrumbItem>
                                 );

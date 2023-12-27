@@ -1,18 +1,21 @@
 import {
     Button,
     Checkbox,
+    Flex,
     HStack,
     Heading,
+    Icon,
     Table,
     TableContainer,
     Tbody,
     Td,
+    Text,
     Th,
     Thead,
     Tr,
-    VStack,
 } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
+import { FiBarChart2 } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTheme } from '../../../hooks/useTheme';
 import ExportsService from '../../../services/exports.service';
@@ -90,22 +93,64 @@ const Reports = () => {
     };
 
     return (
-        <VStack padding={'1rem'} justifyContent={'start'}>
-            <Heading textAlign={'left'}>Reports</Heading>
+        <Flex direction={'column'} padding={'1rem'} justifyContent={'start'}>
+            <HStack justifyContent={'space-between'} width={'full'} pb={'2rem'}>
+                <Text
+                    textColor={theme === 'dark' ? 'white' : 'black'}
+                    fontSize={'xl'}
+                >
+                    <Icon
+                        as={FiBarChart2}
+                        className="mr-2"
+                        size={'1.5rem'}
+                        color={'green'}
+                    />
+                    Campaign Reports
+                </Text>
+                <HStack justifyContent={'flex-end'} pt={4}>
+                    <Button
+                        colorScheme={'green'}
+                        onClick={exportCampaign}
+                        isDisabled={selectedCampaign.length === 0}
+                        isLoading={uiDetails.exportingContact}
+                    >
+                        Export
+                    </Button>
+                    <Button
+                        colorScheme={'red'}
+                        onClick={deleteCampaign}
+                        isDisabled={selectedCampaign.length === 0}
+                        isLoading={uiDetails.deletingContact}
+                    >
+                        Delete
+                    </Button>
+                </HStack>
+            </HStack>
             {uiDetails.campaignLoading ? (
-                <Heading textAlign={'left'}>Loading...</Heading>
+                <Heading
+                    textAlign={'center'}
+                    textColor={theme === 'dark' ? 'whitesmoke' : 'black'}
+                >
+                    Loading...
+                </Heading>
             ) : (
                 <>
                     <TableContainer>
                         <Table variant={'unstyled'}>
                             <Thead>
-                                <Tr>
+                                <Tr
+                                    color={theme === 'dark' ? 'white' : 'black'}
+                                >
                                     <Th>Select</Th>
                                     <Th>Campaign Name</Th>
-                                    <Th>Messages Sent</Th>
-                                    <Th>Messages Pending</Th>
-                                    <Th>Messages Failed</Th>
-                                    <Th>Pause/Resume</Th>
+                                    <Th textColor={'green'}>Messages Sent</Th>
+                                    <Th textColor={'yellow.500'}>
+                                        Messages Pending
+                                    </Th>
+                                    <Th textColor={'red.400'}>
+                                        Messages Failed
+                                    </Th>
+                                    <Th>Status</Th>
                                 </Tr>
                             </Thead>
                             <Tbody>
@@ -117,9 +162,14 @@ const Reports = () => {
                                                 ? 'gray.50'
                                                 : 'gray.700'
                                         }
+                                        color={
+                                            theme === 'dark' ? 'white' : 'black'
+                                        }
                                     >
                                         <Td>
                                             <Checkbox
+                                                colorScheme="green"
+                                                mr={4}
                                                 isChecked={selectedCampaign.includes(
                                                     campaign.campaign_id
                                                 )}
@@ -135,11 +185,26 @@ const Reports = () => {
                                                     }
                                                 }}
                                             />
+                                            {index + 1}
                                         </Td>
-                                        <Td>{campaign.campaignName}</Td>
-                                        <Td>{campaign.sent}</Td>
-                                        <Td>{campaign.pending}</Td>
-                                        <Td>{campaign.failed}</Td>
+                                        <Td>
+                                            {campaign.campaignName.length > 28
+                                                ? campaign.campaignName.substring(
+                                                      0,
+                                                      27
+                                                  ) + '...'
+                                                : campaign.campaignName}
+                                        </Td>
+
+                                        <Td textColor={'green'}>
+                                            {campaign.sent}
+                                        </Td>
+                                        <Td textColor={'yellow.500'}>
+                                            {campaign.pending}
+                                        </Td>
+                                        <Td textColor={'red.400'}>
+                                            {campaign.failed}
+                                        </Td>
                                         <Td>
                                             {campaign.isPaused ? (
                                                 <Button
@@ -177,30 +242,10 @@ const Reports = () => {
                                 ))}
                             </Tbody>
                         </Table>
-                        <HStack justifyContent={'flex-end'}>
-                            <Button
-                                size={'sm'}
-                                colorScheme={'green'}
-                                onClick={exportCampaign}
-                                isDisabled={selectedCampaign.length === 0}
-                                isLoading={uiDetails.exportingContact}
-                            >
-                                Export
-                            </Button>
-                            <Button
-                                size={'sm'}
-                                colorScheme={'red'}
-                                onClick={deleteCampaign}
-                                isDisabled={selectedCampaign.length === 0}
-                                isLoading={uiDetails.deletingContact}
-                            >
-                                Delete
-                            </Button>
-                        </HStack>
                     </TableContainer>
                 </>
             )}
-        </VStack>
+        </Flex>
     );
 };
 

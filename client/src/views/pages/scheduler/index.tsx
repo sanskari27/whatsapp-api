@@ -20,8 +20,6 @@ import {
     FormLabel,
     HStack,
     Heading,
-    Icon,
-    IconButton,
     Input,
     Select,
     Tag,
@@ -792,7 +790,7 @@ export default function Scheduler() {
                                 </Flex>
                                 <Flex justifyContent={'space-between'} gap={2}>
                                     <Button
-                                        flexGrow={1}
+                                        flexGrow={4}
                                         variant={'outline'}
                                         colorScheme="blue"
                                         // isDisabled={isDisabled}
@@ -807,7 +805,7 @@ export default function Scheduler() {
                                     >
                                         <Text>Upload</Text>
                                     </Button>
-                                    <IconButton
+                                    {/* <IconButton
                                         variant="outline"
                                         colorScheme="blue"
                                         aria-label="Download"
@@ -826,7 +824,21 @@ export default function Scheduler() {
                                                 '_blank'
                                             );
                                         }}
-                                    />
+                                    /> */}
+                                    <Button
+                                        flexGrow={1}
+                                        variant={'outline'}
+                                        colorScheme="green"
+                                        // isDisabled={isDisabled}
+                                        onClick={() => {
+                                            window.open(
+                                                'https://docs.google.com/spreadsheets/d/1qj7u0e8OhrFHYj6bHlPAnORC5uRpKI3xoxW7PRAjxWM/edit#gid=0',
+                                                '_blank'
+                                            );
+                                        }}
+                                    >
+                                        CSV Example
+                                    </Button>
                                 </Flex>
                                 <Box py={'0.5rem'} textAlign={'center'}>
                                     <Text size={'sm'} color={'yellow.300'}>
@@ -1169,7 +1181,7 @@ export default function Scheduler() {
                                                           ref)
                                                 : null
                                         }
-                                        className="!w-[550px] bg-[#ECECEC] dark:bg-[#535353] rounded-md border-none "
+                                        className="!w-[350px] bg-[#ECECEC] dark:bg-[#535353] rounded-md border-none "
                                     />
                                     {/* {allAttachments.map((attachment, index) => {
                                         return (
@@ -1204,7 +1216,7 @@ export default function Scheduler() {
                                             </Tag>
                                         );
                                     })} */}
-                                    <IconButton
+                                    {/* <IconButton
                                         size={'sm'}
                                         colorScheme="green"
                                         backgroundColor={'transparent'}
@@ -1229,7 +1241,28 @@ export default function Scheduler() {
                                                 )
                                                 ?.click();
                                         }}
-                                    />
+                                    /> */}
+                                    <Button
+                                        colorScheme="green"
+                                        backgroundColor={'transparent'}
+                                        variant={'outline'}
+                                        leftIcon={
+                                            <AttachmentIcon
+                                                color={'green.400'}
+                                            />
+                                        }
+                                        aria-label="Add Attachment"
+                                        isLoading={addingAttachment}
+                                        onClick={() => {
+                                            document
+                                                .getElementById(
+                                                    'attachment-file-input'
+                                                )
+                                                ?.click();
+                                        }}
+                                    >
+                                        Add Attachments
+                                    </Button>
                                 </Flex>
                                 <AttachmentDetailsInputDialog
                                     isOpen={isAttachmentDetailsOpen}
@@ -1255,17 +1288,14 @@ export default function Scheduler() {
                                     type="file"
                                     name="attachment-file-input"
                                     id="attachment-file-input"
-                                    className="invisible h-[1px] w-[1px] absolute"
+                                    className="invisible h-[1px] absolute"
                                     multiple={false}
                                     ref={(ref) => (fileInputRef.current = ref)}
                                     onInput={handleAttachmentInput}
                                 />
                             </Box>
                             <Box flexGrow={1}>
-                                <Text
-                                    fontSize="xs"
-                                    className="text-gray-700 dark:text-gray-400"
-                                >
+                                <Text className="text-gray-700 dark:text-gray-400">
                                     Share Contact
                                 </Text>
                                 <Button
