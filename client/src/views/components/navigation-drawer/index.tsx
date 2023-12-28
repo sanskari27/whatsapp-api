@@ -36,8 +36,6 @@ export default function NavigationDrawer() {
         logout();
     };
 
-    console.count('called');
-
     return (
         <Box>
             <Flex
