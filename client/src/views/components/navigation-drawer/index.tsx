@@ -20,6 +20,7 @@ import { LOGO } from '../../../assets/Images';
 import { NAVIGATION } from '../../../config/const';
 import { toggleTheme, useTheme } from '../../../hooks/useTheme';
 import AuthService from '../../../services/auth.service';
+import { saveClientID } from '../../../utils/ChromeUtils';
 import Settings from '../../pages/settings';
 
 function isActiveTab(tab: string, path: string): boolean {
@@ -29,8 +30,15 @@ function isActiveTab(tab: string, path: string): boolean {
 
 export default function NavigationDrawer() {
     const theme = useTheme();
+    const navigate = useNavigate();
 
     const { onOpen, onClose, isOpen } = useDisclosure();
+
+    const handleLogout = () => {
+        navigate(NAVIGATION.WELCOME);
+        AuthService.logout();
+        saveClientID('');
+    };
 
     return (
         <Box>
@@ -118,9 +126,7 @@ export default function NavigationDrawer() {
                         aria-label="Logout"
                         color={theme === 'light' ? 'black' : 'white'}
                         icon={<TbLogout2 />}
-                        onClick={() => {
-                            AuthService.logout();
-                        }}
+                        onClick={handleLogout}
                         className="focus:outline-none focus:border-none rotate-180"
                         backgroundColor={'transparent'}
                         _hover={{
