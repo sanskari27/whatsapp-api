@@ -1,7 +1,8 @@
-import { Box } from '@chakra-ui/react';
+import { Box, Flex, Image, Progress, Text } from '@chakra-ui/react';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { Navigate, useNavigate, useOutlet } from 'react-router-dom';
+import { LOGO } from '../../../assets/Images';
 import { NAVIGATION } from '../../../config/const';
 import { useAuth } from '../../../hooks/useAuth';
 import { useNetwork } from '../../../hooks/useNetwork';
@@ -34,7 +35,41 @@ export default function Home() {
     }, []);
 
     if (isAuthenticating) {
-        return <Box>Loading</Box>;
+        return (
+            <Flex
+                justifyContent={'center'}
+                alignItems={'center'}
+                direction={'column'}
+                gap={'3rem'}
+                width={'full'}
+            >
+                <Flex
+                    justifyContent={'center'}
+                    alignItems={'center'}
+                    width={'full'}
+                    gap={'1rem'}
+                >
+                    <Image
+                        src={LOGO}
+                        width={'48px'}
+                        className="shadow-lg rounded-full"
+                    />
+                    <Text
+                        className="text-black dark:text-white"
+                        fontSize={'lg'}
+                        fontWeight="bold"
+                    >
+                        WhatsLeads
+                    </Text>
+                </Flex>
+                <Progress
+                    size="xs"
+                    isIndeterminate
+                    width={'30%'}
+                    rounded={'lg'}
+                />
+            </Flex>
+        );
     }
 
     if (!isAuthenticated) {
