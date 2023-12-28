@@ -1,5 +1,10 @@
 import { Suspense, lazy } from 'react';
-import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import {
+    Navigate,
+    Route,
+    BrowserRouter as Router,
+    Routes,
+} from 'react-router-dom';
 import './App.css';
 import { NAVIGATION } from './config/const';
 
@@ -46,8 +51,11 @@ function App() {
                             />
                         </Route>
                         {/* <Route path={NAVIGATION.SETTINGS} element={<Settings />} />
-					<Route path={NAVIGATION.NETWORK_ERROR} element={<NetworkError />} />
-				<Route path='*' element={<Navigate to={NAVIGATION.WELCOME} />} /> */}
+					<Route path={NAVIGATION.NETWORK_ERROR} element={<NetworkError />} /> */}
+                        <Route
+                            path="*"
+                            element={<Navigate to={NAVIGATION.WELCOME} />}
+                        />
                     </Routes>
                 </Suspense>
             </Router>
