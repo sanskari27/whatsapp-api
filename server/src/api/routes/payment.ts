@@ -21,6 +21,6 @@ router
 	.all(VerifyClientID)
 	.post(PaymentController.resumeSubscription);
 
-router.route('/').get(PaymentController.fetchTransactions);
+router.route('/').all(VerifyClientID).get(PaymentController.fetchTransactions);
 
 export default router;

@@ -169,12 +169,12 @@ export default class PaymentBucketService {
 
 	static async getPaymentRecords(user: IUser) {
 		const paymentRecords = await PaymentDB.find({
-			'bucket.user': user._id,
+			'bucket.user': user,
 			payment_id: { $ne: null },
 		});
 
 		const subscriptionRecords = await SubscriptionDB.find({
-			'bucket.user': user._id,
+			'bucket.user': user,
 		}).populate('plan');
 
 		const records: (PaymentRecord | SubscriptionRecord)[] = [];
