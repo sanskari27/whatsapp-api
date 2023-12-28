@@ -18,6 +18,8 @@ export default function Welcome() {
         isSocketInitialized,
     } = useAuth();
 
+    console.log('isSocketInitialized', isSocketInitialized);
+
     if (isSocketInitialized) {
         return <Navigate to={NAVIGATION.HOME} />;
     }
@@ -98,14 +100,6 @@ export default function Welcome() {
                                 width={'60%'}
                             />
                         </Box>
-
-                        <Text
-                            className="text-black dark:text-white"
-                            textTransform={'uppercase'}
-                            fontWeight="bold"
-                        >
-                            Click get started to get the coupon code
-                        </Text>
                         <Button
                             bgColor={'green.300'}
                             width={'max-content'}

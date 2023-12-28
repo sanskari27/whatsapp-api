@@ -18,7 +18,6 @@ export default function Home() {
     const outlet = useOutlet();
     const dispatch = useDispatch();
     const { isAuthenticated, isAuthenticating } = useAuth();
-
     useEffect(() => {
         if (status === 'NO-NETWORK') {
             navigate(NAVIGATION.NETWORK_ERROR);
@@ -32,8 +31,7 @@ export default function Home() {
             }
             dispatch(setUserDetails(res));
         });
-    }, []);
-
+    }, [dispatch, navigate]);
     if (isAuthenticating) {
         return (
             <Flex

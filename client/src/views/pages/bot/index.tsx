@@ -977,8 +977,8 @@ export default function Bot() {
                                         <Td>
                                             {bot.trigger
                                                 .split('\n')
-                                                .map((trigger) => (
-                                                    <Box>
+                                                .map((trigger, index) => (
+                                                    <Box key={index}>
                                                         {trigger.length > 20
                                                             ? trigger.substring(
                                                                   0,
@@ -992,8 +992,8 @@ export default function Bot() {
                                             <Box>
                                                 {bot.message
                                                     .split('\n')
-                                                    .map((message) => (
-                                                        <Box>
+                                                    .map((message, index) => (
+                                                        <Box key={index}>
                                                             {message.length > 20
                                                                 ? message.substring(
                                                                       0,

@@ -8,7 +8,8 @@ import {
 import './App.css';
 import { NAVIGATION } from './config/const';
 
-import { Text } from '@chakra-ui/react';
+import { Flex, Image, Progress, Text } from '@chakra-ui/react';
+import { LOGO } from './assets/Images';
 import { useTheme } from './hooks/useTheme';
 import PageWrapper from './views/components/page-wrapper';
 const Welcome = lazy(() => import('./views/pages/welcome'));
@@ -65,15 +66,34 @@ function App() {
 
 const Loading = () => {
     return (
-        <Text
-            className="text-black dark:text-white animate-pulse"
-            fontSize={'md'}
-            fontWeight={'medium'}
-            marginTop={'130px'}
-            textAlign={'center'}
+        <Flex
+            justifyContent={'center'}
+            alignItems={'center'}
+            direction={'column'}
+            gap={'3rem'}
+            width={'full'}
         >
-            Loading...
-        </Text>
+            <Flex
+                justifyContent={'center'}
+                alignItems={'center'}
+                width={'full'}
+                gap={'1rem'}
+            >
+                <Image
+                    src={LOGO}
+                    width={'48px'}
+                    className="shadow-lg rounded-full"
+                />
+                <Text
+                    className="text-black dark:text-white"
+                    fontSize={'lg'}
+                    fontWeight="bold"
+                >
+                    WhatsLeads
+                </Text>
+            </Flex>
+            <Progress size="xs" isIndeterminate width={'30%'} rounded={'lg'} />
+        </Flex>
     );
 };
 
