@@ -18,9 +18,8 @@ import { TbLogout2, TbMessage2Minus } from 'react-icons/tb';
 import { useNavigate } from 'react-router-dom';
 import { LOGO } from '../../../assets/Images';
 import { NAVIGATION } from '../../../config/const';
+import { logout } from '../../../hooks/useAuth';
 import { toggleTheme, useTheme } from '../../../hooks/useTheme';
-import AuthService from '../../../services/auth.service';
-import { saveClientID } from '../../../utils/ChromeUtils';
 import Settings from '../../pages/settings';
 
 function isActiveTab(tab: string, path: string): boolean {
@@ -30,15 +29,14 @@ function isActiveTab(tab: string, path: string): boolean {
 
 export default function NavigationDrawer() {
     const theme = useTheme();
-    const navigate = useNavigate();
 
     const { onOpen, onClose, isOpen } = useDisclosure();
 
-    const handleLogout = () => {
-        navigate(NAVIGATION.WELCOME);
-        AuthService.logout();
-        saveClientID('');
+    const handleLogout = async () => {
+        logout();
     };
+
+    console.count('called');
 
     return (
         <Box>

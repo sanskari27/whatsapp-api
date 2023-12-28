@@ -74,7 +74,9 @@ export default function Settings({ isOpen, onClose }: SettingsProps) {
             <DrawerContent
                 backgroundColor={theme === 'dark' ? '#252525' : 'white'}
             >
-                <DrawerCloseButton />
+                <DrawerCloseButton
+                    color={theme === 'dark' ? 'white' : 'black'}
+                />
                 <DrawerHeader
                     borderBottomWidth="1px"
                     textColor={theme === 'dark' ? 'white' : 'black'}
