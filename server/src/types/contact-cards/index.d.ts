@@ -27,5 +27,6 @@ export default interface IContactCard extends Document {
 		contact_number: string;
 	}[];
 
-	vcard: string;
+	vCardString: string;
+	qrString: string;
 }

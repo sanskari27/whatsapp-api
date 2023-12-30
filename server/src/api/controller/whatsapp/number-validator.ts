@@ -6,7 +6,9 @@ import { COUNTRIES, CSV_PATH } from '../../../config/const';
 import { UserService } from '../../../database/services';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
-import { Respond } from '../../../utils/ExpressUtils';
+import { TContact } from '../../../types/whatsapp';
+import CSVParser from '../../../utils/CSVParser';
+import { RespondCSV } from '../../../utils/ExpressUtils';
 import WhatsappUtils from '../../../utils/WhatsappUtils';
 
 export async function validate(req: Request, res: Response, next: NextFunction) {
@@ -66,7 +68,7 @@ export async function validate(req: Request, res: Response, next: NextFunction) 
 
 	const chat_ids = await whatsappUtils.getNumberIds(numbers_to_be_checked);
 
-	const valid_contacts = chat_ids.map(async (chat_id) => {
+	const valid_contacts_promises = chat_ids.map(async (chat_id) => {
 		const contact = await whatsapp.getClient().getContactById(chat_id);
 		const country_code = await contact.getCountryCode();
 		const country = COUNTRIES[country_code as string];
@@ -80,12 +82,11 @@ export async function validate(req: Request, res: Response, next: NextFunction) 
 	});
 
 	try {
-		return Respond({
+		const valid_contacts = await Promise.all(valid_contacts_promises);
+		return RespondCSV({
 			res,
-			status: 200,
-			data: {
-				contacts: await Promise.all(valid_contacts),
-			},
+			filename: 'Validated Contacts',
+			data: CSVParser.exportContacts(valid_contacts as TContact[]),
 		});
 	} catch (e) {
 		next(new APIError(API_ERRORS.WHATSAPP_ERROR.MESSAGE_SENDING_FAILED, e));
