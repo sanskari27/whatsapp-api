@@ -478,7 +478,6 @@ const LinkShortner = () => {
                                         aria-label="delete"
                                         icon={<Icon as={DeleteIcon} />}
                                         onClick={() => {
-                                            console.log('called');
                                             confirmationDialogRef.current?.open();
                                             confirmationDialogRef.current?.setId(
                                                 item.id

@@ -18,8 +18,6 @@ export default function Welcome() {
         isSocketInitialized,
     } = useAuth();
 
-    console.log('isSocketInitialized', isSocketInitialized);
-
     if (isSocketInitialized) {
         return <Navigate to={NAVIGATION.HOME} />;
     }
