@@ -1,5 +1,6 @@
 import mongoose, { Schema } from 'mongoose';
 import IContactCard from '../../../types/contact-cards';
+import QRUtils from '../../../utils/QRUtils';
 import VCardBuilder from '../../../utils/VCardBuilder';
 
 const contactCardSchema = new mongoose.Schema<IContactCard>({
@@ -34,11 +35,19 @@ const contactCardSchema = new mongoose.Schema<IContactCard>({
 		},
 	],
 
-	vcard: String,
+	vCardString: String,
+	qrString: String,
 });
 
-contactCardSchema.pre('save', function (next) {
-	this.vcard = new VCardBuilder(this).build();
+contactCardSchema.pre('save', async function (next) {
+	if (!this.isModified) {
+		next();
+	}
+	this.vCardString = new VCardBuilder(this).build();
+	const qrCodeBuffer = await QRUtils.generateQR(this.vCardString);
+	if (qrCodeBuffer) {
+		this.qrString = qrCodeBuffer.toString();
+	}
 	next();
 });
 

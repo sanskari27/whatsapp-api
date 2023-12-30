@@ -1,4 +1,5 @@
 import { json2csv } from 'json-2-csv';
+import { PaymentRecord, SubscriptionRecord } from '../types/payment/payment-bucket';
 import {
 	TBusinessContact,
 	TContact,
@@ -381,6 +382,40 @@ export default class CSVParser {
 			{
 				field: 'voted_at',
 				title: 'Voted At',
+			},
+		];
+
+		return json2csv(records, {
+			keys: keys,
+			emptyFieldValue: '',
+		});
+	}
+
+	static exportPayments(records: (PaymentRecord | SubscriptionRecord)[]) {
+		const keys = [
+			{
+				field: 'type',
+				title: 'Type',
+			},
+			{
+				field: 'date',
+				title: 'Date',
+			},
+			{
+				field: 'amount',
+				title: 'Amount',
+			},
+			{
+				field: 'plan',
+				title: 'Plan',
+			},
+			{
+				field: 'isActive',
+				title: 'Is Active',
+			},
+			{
+				field: 'isPaused',
+				title: 'Is Paused',
 			},
 		];
 

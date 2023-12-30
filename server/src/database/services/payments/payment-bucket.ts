@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 import { SUBSCRIPTION_STATUS, TRANSACTION_STATUS } from '../../../config/const';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
-import IPaymentBucket from '../../../types/payment/payment-bucket';
+import IPaymentBucket, { PaymentRecord, SubscriptionRecord } from '../../../types/payment/payment-bucket';
 import { IUser } from '../../../types/user';
 import DateUtils from '../../../utils/DateUtils';
 import CouponDB from '../../repository/payments/coupon';
@@ -10,21 +10,6 @@ import PaymentBucketDB from '../../repository/payments/payment-bucket';
 import PlanDB from '../../repository/payments/plan';
 import SubscriptionDB from '../../repository/payments/subscription';
 import PaymentService from './payment';
-
-type PaymentRecord = {
-	type: 'payment';
-	id: string;
-	date: string;
-	amount: number;
-};
-
-type SubscriptionRecord = {
-	type: 'subscription';
-	id: string;
-	plan: string;
-	isActive: boolean;
-	isPaused: boolean;
-};
 
 export default class PaymentBucketService {
 	private bucket: IPaymentBucket;
@@ -168,6 +153,7 @@ export default class PaymentBucketService {
 	}
 
 	static async getPaymentRecords(user: IUser) {
+		//TODO
 		const paymentRecords = await PaymentDB.find({
 			'bucket.user': user,
 			payment_id: { $ne: null },
