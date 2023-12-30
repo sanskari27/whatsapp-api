@@ -78,7 +78,12 @@ export default function Home() {
         <Box width="full" className="custom-scrollbar">
             <NavigationDrawer />
             <Navbar />
-            <Box paddingLeft={'70px'} paddingTop={'70px'} overflowX={'hidden'}>
+            <Box
+                paddingLeft={'70px'}
+                paddingTop={'70px'}
+                overflowX={'hidden'}
+                className="min-h-screen"
+            >
                 {outlet}
             </Box>
         </Box>
