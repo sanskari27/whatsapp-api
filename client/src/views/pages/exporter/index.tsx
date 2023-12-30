@@ -80,10 +80,17 @@ export default function Exporter() {
     ]);
 
     const exportContacts = (vcf_only = false) => {
-        setExporting((prevState) => ({
-            ...prevState,
-            CSV: true,
-        }));
+        if (vcf_only) {
+            setExporting((prevState) => ({
+                ...prevState,
+                VCF: true,
+            }));
+        } else {
+            setExporting((prevState) => ({
+                ...prevState,
+                CSV: true,
+            }));
+        }
 
         const selectedGroups = export_criteria[EXPORTS_TYPE.GROUP]
             ? export_criteria[EXPORTS_TYPE.GROUP_ALL]
@@ -116,6 +123,17 @@ export default function Exporter() {
         if (LABEL && selectedLabels && selectedLabels.length > 0) {
             LabelService.fetchLabel(selectedLabels, vcf_only);
         }
+
+        setUIDetails((prevState) => ({
+            ...prevState,
+            exportClicked: false,
+        }));
+
+        setExporting((prevState) => ({
+            ...prevState,
+            CSV: false,
+            VCF: false,
+        }));
     };
 
     const handleSubscription = async () => {
