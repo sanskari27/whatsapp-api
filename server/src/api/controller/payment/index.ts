@@ -5,7 +5,8 @@ import { UserService } from '../../../database/services';
 import PaymentBucketService from '../../../database/services/payments/payment-bucket';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
-import { Respond, idValidator } from '../../../utils/ExpressUtils';
+import { Respond, RespondCSV, idValidator } from '../../../utils/ExpressUtils';
+import CSVParser from '../../../utils/CSVParser';
 
 async function fetchTransactionDetail(req: Request, res: Response, next: NextFunction) {
 	const [isBucketValid, bucket_id] = idValidator(req.params.bucket_id);
@@ -41,16 +42,30 @@ async function fetchTransactionDetail(req: Request, res: Response, next: NextFun
 }
 
 async function fetchTransactions(req: Request, res: Response, next: NextFunction) {
+	const options = {
+		csv: false,
+	};
+	if (req.query.csv && req.query.csv === 'true') {
+		options.csv = true;
+	}
 	try {
 		const payments = await PaymentBucketService.getPaymentRecords(req.locals.user);
 
-		return Respond({
-			res,
-			status: 200,
-			data: {
-				payments,
-			},
-		});
+		if (options.csv) {
+			return RespondCSV({
+				res,
+				filename: 'Exported Contacts',
+				data: CSVParser.exportPayments(payments),
+			});
+		} else {
+			return Respond({
+				res,
+				status: 200,
+				data: {
+					payments,
+				},
+			});
+		}
 	} catch (err) {
 		if (err instanceof InternalError) {
 			if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND)) {

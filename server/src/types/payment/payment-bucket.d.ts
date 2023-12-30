@@ -30,3 +30,18 @@ export default interface IPaymentBucket extends Document {
 	total_amount: number;
 	tax: number;
 }
+
+export type PaymentRecord = {
+	type: 'payment';
+	id: string;
+	date: string;
+	amount: number;
+};
+
+export type SubscriptionRecord = {
+	type: 'subscription';
+	id: string;
+	plan: string;
+	isActive: boolean;
+	isPaused: boolean;
+};
