@@ -299,7 +299,6 @@ export default function Bot() {
             respond_to,
             options,
             attachments,
-            shared_contact_cards,
             trigger_gap_seconds: Number(trigger_gap_seconds),
         }).then(() => {
             multiselectRef.current?.resetSelectedValues();
@@ -327,16 +326,6 @@ export default function Bot() {
     }
 
     function editResponder(bot: BotDetails) {
-        // if (!isAuthenticated) return;
-        // if (isEditing) return;
-        // if (isAdding) return;
-        // setIsEditing(true);
-        // setIsAdding(false);
-        // setUiDetails((prevState) => ({
-        // 	...prevState,
-        // 	isEditing: true,
-        // 	isAdding: false,
-        // }));
         window.scrollTo(0, 0);
         setUiDetails((prevState) => ({
             ...prevState,
@@ -411,6 +400,13 @@ export default function Bot() {
                     <Text
                         fontSize={'xl'}
                         className="text-black dark:text-white"
+                        // onClick={() => {
+                        //     contact.map((contact) => {
+                        //         contact.split('\n').map((line: string) => {
+                        //             console.log(line);
+                        //         });
+                        //     });
+                        // }}
                     >
                         Auto Responder
                     </Text>
@@ -642,7 +638,7 @@ export default function Bot() {
                         )}
                     </FormControl>
 
-                    <HStack>
+                    <HStack alignItems={'start'}>
                         <FormControl
                             isInvalid={!!uiDetails.triggerGapError}
                             flex={1}
@@ -877,28 +873,32 @@ export default function Bot() {
                                 onConfirm={handleContactInput}
                             />
                             <Box>
-                                {shared_contact_cards.map((contact, index) => (
-                                    <Tag
-                                        size={'sm'}
-                                        m={'0.25rem'}
-                                        p={'0.5rem'}
-                                        key={index}
-                                        borderRadius="md"
-                                        variant="solid"
-                                        colorScheme="gray"
-                                    >
-                                        <TagLabel>
-                                            {contact.first_name}
-                                        </TagLabel>
-                                        <TagCloseButton
-                                            onClick={() =>
-                                                removeContact(
-                                                    contact.first_name ?? ''
-                                                )
-                                            }
-                                        />
-                                    </Tag>
-                                ))}
+                                {!uiDetails.editBot.isEditing &&
+                                    shared_contact_cards.map(
+                                        (contact, index) => (
+                                            <Tag
+                                                size={'sm'}
+                                                m={'0.25rem'}
+                                                p={'0.5rem'}
+                                                key={index}
+                                                borderRadius="md"
+                                                variant="solid"
+                                                colorScheme="gray"
+                                            >
+                                                <TagLabel>
+                                                    {contact.first_name}
+                                                </TagLabel>
+                                                <TagCloseButton
+                                                    onClick={() =>
+                                                        removeContact(
+                                                            contact.first_name ??
+                                                                ''
+                                                        )
+                                                    }
+                                                />
+                                            </Tag>
+                                        )
+                                    )}
                             </Box>
                         </Box>
                     </HStack>

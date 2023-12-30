@@ -32,7 +32,7 @@ import React, {
 import { FiFilter } from 'react-icons/fi';
 import { GrDocumentCsv } from 'react-icons/gr';
 import { SchedulerDetails } from '..';
-import ExportsService from '../../../../services/exports.service';
+import NumbersValidatorService from '../../../../../../client/src/services/numbers.service';
 import GroupService from '../../../../services/group.service';
 import LabelService from '../../../../services/label.service';
 import UploadsService from '../../../../services/uploads.service';
@@ -206,7 +206,7 @@ const NameSection = ({
             ...prevState,
             loadingVerifiedContacts: true,
         }));
-        ExportsService.exportValidNumbersExcel({
+        NumbersValidatorService.validateNumbers({
             type: 'CSV',
             csv_file: details.csv_file,
         }).finally(() => {

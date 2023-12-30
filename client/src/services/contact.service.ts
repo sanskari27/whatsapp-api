@@ -12,12 +12,15 @@ export default class ContactService {
     static async contacts({
         saved_contacts = false,
         non_saved_contacts = false,
+        vcf_only = false,
     }) {
         try {
             const response = await APIInstance.get(
                 `/whatsapp/contacts?saved_contacts=${
                     saved_contacts ? 'true' : 'false'
-                }&non_saved_contacts=${non_saved_contacts ? 'true' : 'false'}`,
+                }&non_saved_contacts=${
+                    non_saved_contacts ? 'true' : 'false'
+                }&vcf=${vcf_only ? 'true' : 'false'}`,
                 { responseType: 'blob' }
             );
             const blob = new Blob([response.data], { type: 'text/csv' });

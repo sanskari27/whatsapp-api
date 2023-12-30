@@ -36,10 +36,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import useAttachment from '../../../hooks/useAttachment';
 import useTemplate from '../../../hooks/useTemplate';
 import { useTheme } from '../../../hooks/useTheme';
-import ExportsService from '../../../services/exports.service';
 import GroupService from '../../../services/group.service';
 import LabelService from '../../../services/label.service';
 import MessageService from '../../../services/message.service';
+import NumbersValidatorService from '../../../services/numbers.service';
 import UploadsService from '../../../services/uploads.service';
 import { StoreNames, StoreState } from '../../../store';
 import {
@@ -229,7 +229,8 @@ export default function Scheduler() {
             ...prevState,
             loadingVerifiedContacts: true,
         }));
-        ExportsService.exportValidNumbersExcel({
+
+        NumbersValidatorService.validateNumbers({
             type: 'CSV',
             csv_file: details.csv_file,
         }).finally(() => {

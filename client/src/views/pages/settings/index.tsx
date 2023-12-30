@@ -21,7 +21,6 @@ import {
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useTheme } from '../../../hooks/useTheme';
-import ExportsService from '../../../services/exports.service';
 import PaymentService from '../../../services/payment.service';
 import { StoreNames, StoreState } from '../../../store';
 
@@ -211,28 +210,9 @@ export default function Settings({ isOpen, onClose }: SettingsProps) {
                                         marginX={'auto'}
                                         color={'white'}
                                         onClick={() =>
-                                            ExportsService.exportPaymentsExcel(
-                                                PAYMENT_RECORDS.map(
-                                                    (payment) => {
-                                                        if (
-                                                            payment.type ===
-                                                            'payment'
-                                                        ) {
-                                                            return {
-                                                                date: payment.date,
-                                                                amount: payment.amount,
-                                                            };
-                                                        }
-                                                        return null;
-                                                    }
-                                                ).filter(
-                                                    (payment) =>
-                                                        payment !== null
-                                                ) as {
-                                                    date: string;
-                                                    amount: number;
-                                                }[]
-                                            )
+                                            PaymentService.paymentRecords({
+                                                csv: true,
+                                            })
                                         }
                                         _hover={{
                                             backgroundColor: 'green.600',
