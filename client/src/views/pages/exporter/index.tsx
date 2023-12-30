@@ -6,7 +6,6 @@ import { EXPORTS_TYPE } from '../../../config/const';
 import { logout, useAuth } from '../../../hooks/useAuth';
 import AuthService from '../../../services/auth.service';
 import ContactService from '../../../services/contact.service';
-import ExportsService from '../../../services/exports.service';
 import GroupService from '../../../services/group.service';
 import LabelService from '../../../services/label.service';
 import CheckButton from '../../components/check-button';
@@ -80,7 +79,7 @@ export default function Exporter() {
         },
     ]);
 
-    const exportExcel = () => {
+    const exportContacts = (vcf_only = false) => {
         setExporting((prevState) => ({
             ...prevState,
             CSV: true,
@@ -98,57 +97,25 @@ export default function Exporter() {
                 : selectedLabel
             : undefined;
 
-        ExportsService.exportContactsExcel({
-            allContacts: ALL,
-            savedContacts: SAVED,
-            unsavedContacts: UNSAVED,
-            groupIDs: selectedGroups,
-            labelIDs: selectedLabels,
-        }).finally(() => {
-            setExporting((prevState) => ({
-                ...prevState,
-                CSV: false,
-            }));
-            setUIDetails((prevState) => ({
-                ...prevState,
-                exportClicked: false,
-            }));
-        });
-    };
+        if (ALL) {
+            ContactService.contacts({ vcf_only });
+        }
 
-    const exportVCF = () => {
-        setExporting((prevState) => ({
-            ...prevState,
-            VCF: true,
-        }));
-        const selectedGroups = export_criteria[EXPORTS_TYPE.GROUP]
-            ? export_criteria[EXPORTS_TYPE.GROUP_ALL]
-                ? groups.map((item) => item.id)
-                : selectedGroup
-            : undefined;
+        if (SAVED) {
+            ContactService.contacts({ saved_contacts: true, vcf_only });
+        }
 
-        const selectedLabels = export_criteria[EXPORTS_TYPE.LABEL]
-            ? export_criteria[EXPORTS_TYPE.LABEL_ALL]
-                ? labels.map((item) => item.id)
-                : selectedLabel
-            : undefined;
+        if (UNSAVED) {
+            ContactService.contacts({ non_saved_contacts: false, vcf_only });
+        }
 
-        ExportsService.exportContactsVCF({
-            allContacts: ALL,
-            savedContacts: SAVED,
-            unsavedContacts: UNSAVED,
-            groupIDs: selectedGroups,
-            labelIDs: selectedLabels,
-        }).finally(() => {
-            setExporting((prevState) => ({
-                ...prevState,
-                VCF: false,
-            }));
-            setUIDetails((prevState) => ({
-                ...prevState,
-                exportClicked: false,
-            }));
-        });
+        if (GROUP && selectedGroups && selectedGroups.length > 0) {
+            GroupService.fetchGroup(selectedGroups, vcf_only);
+        }
+
+        if (LABEL && selectedLabels && selectedLabels.length > 0) {
+            LabelService.fetchLabel(selectedLabels, vcf_only);
+        }
     };
 
     const handleSubscription = async () => {
@@ -542,7 +509,7 @@ export default function Exporter() {
                                 bgColor: 'green.400',
                             }}
                             width={'48%'}
-                            onClick={exportExcel}
+                            onClick={() => exportContacts(false)}
                             isLoading={exporting.CSV}
                         >
                             <Text color={'white'}>CSV</Text>
@@ -554,7 +521,7 @@ export default function Exporter() {
                             }}
                             width={'48%'}
                             isLoading={exporting.VCF}
-                            onClick={exportVCF}
+                            onClick={() => exportContacts(true)}
                         >
                             <Text color={'white'}>VCF</Text>
                         </Button>

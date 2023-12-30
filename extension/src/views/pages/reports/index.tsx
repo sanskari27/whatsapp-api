@@ -14,7 +14,6 @@ import {
 } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { TbReportAnalytics } from 'react-icons/tb';
-import ExportsService from '../../../services/exports.service';
 import ReportsService from '../../../services/reports.service';
 
 const Reports = () => {
@@ -34,7 +33,7 @@ const Reports = () => {
     }, []);
 
     const exportCampaign = (campaign_id: string) => {
-        ExportsService.exportCampaignReport(campaign_id);
+        ReportsService.generateReport(campaign_id);
     };
 
     return (

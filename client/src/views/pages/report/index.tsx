@@ -18,7 +18,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { FiBarChart2 } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTheme } from '../../../hooks/useTheme';
-import ExportsService from '../../../services/exports.service';
 import ReportsService from '../../../services/reports.service';
 import { StoreNames, StoreState } from '../../../store';
 import { setAllCampaigns } from '../../../store/reducers/SchedulerReducer';
@@ -66,7 +65,7 @@ const Reports = () => {
     const exportCampaign = async () => {
         setUiDetails((prev) => ({ ...prev, exportingContact: true }));
         const promises = selectedCampaign.map(async (campaign) => {
-            await ExportsService.exportCampaignReport(campaign);
+            await ReportsService.generateReport(campaign);
         });
         await Promise.all(promises).then(() => {
             setUiDetails((prev) => ({ ...prev, exportingContact: false }));
