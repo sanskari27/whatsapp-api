@@ -27,12 +27,16 @@ export default class LabelService {
                 }`,
                 { responseType: 'blob' }
             );
-            const blob = new Blob([data], { type: 'text/csv' });
+            const blob = new Blob([data], {
+                type: vcf_only ? 'text/vcf' : 'text/csv',
+            });
 
             // Create a temporary link element
             const downloadLink = document.createElement('a');
             downloadLink.href = window.URL.createObjectURL(blob);
-            downloadLink.download = 'Label Contacts.csv'; // Specify the filename
+            downloadLink.download = `Label Contacts.${
+                vcf_only ? 'vcf' : 'csv'
+            }`; // Specify the filename
 
             // Append the link to the body and trigger the download
             document.body.appendChild(downloadLink);

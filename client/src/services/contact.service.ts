@@ -26,6 +26,7 @@ export default class ContactService {
 			downloadLink.href = window.URL.createObjectURL(blob);
 			downloadLink.download = `Contacts.${vcf_only ? 'vcf' : 'csv'}`; // Specify the filename
 
+
 			// Append the link to the body and trigger the download
 			document.body.appendChild(downloadLink);
 			downloadLink.click();
