@@ -61,6 +61,16 @@ const ContactCardReducers = createSlice({
             state.selectedCard = initialState.selectedCard;
             state.uiDetails = initialState.uiDetails;
         },
+        updateContactCard: (
+            state,
+            action: PayloadAction<typeof initialState.selectedCard>
+        ) => {
+            state.list = state.list.map((card) =>
+                card.id === action.payload.id ? action.payload : card
+            );
+            state.selectedCard = initialState.selectedCard;
+            state.uiDetails = initialState.uiDetails;
+        },
         clearContactCard: (state) => {
             state.selectedCard = initialState.selectedCard;
             state.uiDetails = initialState.uiDetails;
@@ -237,6 +247,7 @@ export const {
     reset,
     setContactList,
     addContactCard,
+    updateContactCard,
     clearContactCard,
     findContactById,
     setFirstName,

@@ -46,7 +46,7 @@ import {
     setState,
     setStreet,
     setTitle,
-    stopSavingContactCard,
+    updateContactCard,
 } from '../../../../store/reducers/ContactCardReducers';
 import CountryCodeInput from '../../../components/country-code-input';
 
@@ -125,35 +125,26 @@ const ContactInputDialog = ({
             ContactCardService.UpdateContactCard({
                 ...selectedCard,
                 ...details,
-            })
-                .then((res) => {
-                    if (!res) {
-                        dispatch(setError('Something went wrong'));
-                        return;
-                    }
-                    dispatch(clearContactCard());
-                    handleClose();
-                })
-                .finally(() => {
-                    dispatch(stopSavingContactCard());
-                });
+            }).then((res) => {
+                if (!res) {
+                    dispatch(setError('Something went wrong'));
+                    return;
+                }
+                dispatch(updateContactCard(res));
+                handleClose();
+            });
         } else {
             ContactCardService.CreateContactCard({
                 ...selectedCard,
                 ...details,
-            })
-                .then((res) => {
-                    console.log(res);
-                    if (!res) {
-                        dispatch(setError('Something went wrong'));
-                        return;
-                    }
-                    dispatch(addContactCard(res));
-                    handleClose();
-                })
-                .finally(() => {
-                    dispatch(stopSavingContactCard());
-                });
+            }).then((res) => {
+                if (!res) {
+                    dispatch(setError('Something went wrong'));
+                    return;
+                }
+                dispatch(addContactCard(res));
+                handleClose();
+            });
         }
     };
 
@@ -220,7 +211,7 @@ const ContactInputDialog = ({
                                 onChange={(e) =>
                                     dispatch(setFirstName(e.target.value))
                                 }
-                                value={first_name}
+                                value={first_name ?? ''}
                             />
                         </Box>
                         <HStack>
@@ -229,7 +220,7 @@ const ContactInputDialog = ({
                                 <Input
                                     placeholder="Middle name"
                                     type="text"
-                                    value={middle_name}
+                                    value={middle_name ?? ''}
                                     onChange={(e) =>
                                         dispatch(setMiddleName(e.target.value))
                                     }
@@ -240,7 +231,7 @@ const ContactInputDialog = ({
                                 <Input
                                     placeholder="Last name"
                                     type="text"
-                                    value={last_name}
+                                    value={last_name ?? ''}
                                     onChange={(e) =>
                                         dispatch(setLastName(e.target.value))
                                     }
@@ -254,7 +245,7 @@ const ContactInputDialog = ({
                                 <Input
                                     placeholder="Title"
                                     type="text"
-                                    value={title}
+                                    value={title ?? ''}
                                     onChange={(e) =>
                                         dispatch(setTitle(e.target.value))
                                     }
@@ -265,7 +256,7 @@ const ContactInputDialog = ({
                                 <Input
                                     placeholder="Organization"
                                     type="text"
-                                    value={organization}
+                                    value={organization ?? ''}
                                     onChange={(e) =>
                                         dispatch(
                                             setOrganization(e.target.value)
@@ -279,7 +270,7 @@ const ContactInputDialog = ({
                             <Input
                                 placeholder="Personal Email"
                                 type="email"
-                                value={email_personal}
+                                value={email_personal ?? ''}
                                 onChange={(e) =>
                                     dispatch(setEmailPersonal(e.target.value))
                                 }
@@ -290,7 +281,7 @@ const ContactInputDialog = ({
                             <Input
                                 placeholder="Work Email"
                                 type="email"
-                                value={email_work}
+                                value={email_work ?? ''}
                                 onChange={(e) =>
                                     dispatch(setEmailWork(e.target.value))
                                 }
@@ -452,7 +443,7 @@ const ContactInputDialog = ({
                                                     border: 'none',
                                                     outline: 'none',
                                                 }}
-                                                value={number.number}
+                                                value={number.number ?? ''}
                                                 name="number"
                                                 onChange={(e) => {
                                                     updateContactNumber(
@@ -514,7 +505,7 @@ const ContactInputDialog = ({
                                         <Input
                                             placeholder="eg. google.com"
                                             type="url"
-                                            value={link}
+                                            value={link ?? ''}
                                             onChange={(e) => {
                                                 dispatch(
                                                     setLinks({
@@ -552,7 +543,7 @@ const ContactInputDialog = ({
                             <Input
                                 placeholder="street"
                                 type="text"
-                                value={street}
+                                value={street ?? ''}
                                 onChange={(e) =>
                                     dispatch(setStreet(e.target.value))
                                 }
@@ -564,7 +555,7 @@ const ContactInputDialog = ({
                                 <Input
                                     placeholder="city"
                                     type="text"
-                                    value={city}
+                                    value={city ?? ''}
                                     onChange={(e) =>
                                         dispatch(setCity(e.target.value))
                                     }
@@ -575,7 +566,7 @@ const ContactInputDialog = ({
                                 <Input
                                     placeholder="state"
                                     type="text"
-                                    value={state}
+                                    value={state ?? ''}
                                     onChange={(e) =>
                                         dispatch(setState(e.target.value))
                                     }
@@ -588,7 +579,7 @@ const ContactInputDialog = ({
                                 <Input
                                     placeholder="country"
                                     type="text"
-                                    value={country}
+                                    value={country ?? ''}
                                     onChange={(e) =>
                                         dispatch(setCountry(e.target.value))
                                     }
@@ -599,7 +590,7 @@ const ContactInputDialog = ({
                                 <Input
                                     placeholder="pincode"
                                     type="text"
-                                    value={pincode}
+                                    value={pincode ?? ''}
                                     onChange={(e) =>
                                         dispatch(setPincode(e.target.value))
                                     }

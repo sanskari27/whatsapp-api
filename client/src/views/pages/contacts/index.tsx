@@ -6,6 +6,7 @@ import {
     HStack,
     Icon,
     IconButton,
+    Image,
     Table,
     TableContainer,
     Tbody,
@@ -123,10 +124,11 @@ const ContactsPage = () => {
                     <Thead>
                         <Tr>
                             <Th width={'5%'}>Sl no</Th>
+                            <Th width={'15%'}>QR</Th>
                             <Th width={'30%'}>Name</Th>
-                            <Th width={'20%'}>Personal Number</Th>
-                            <Th width={'20%'}>Work Number</Th>
-                            <Th width={'20%'}>Email</Th>
+                            <Th width={'15%'}>Personal Number</Th>
+                            <Th width={'15%'}>Work Number</Th>
+                            <Th width={'15%'}>Email</Th>
                             <Th width={'5%'}>Edit</Th>
                         </Tr>
                     </Thead>
@@ -153,6 +155,12 @@ const ContactsPage = () => {
                                         }}
                                     />
                                     {index + 1}
+                                </Td>
+                                <Td>
+                                    <Image
+                                        src={`data:image/png;base64,${contact.base64}`}
+                                        width={'150px'}
+                                    />
                                 </Td>
                                 <Td>
                                     <Box>

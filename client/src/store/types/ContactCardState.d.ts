@@ -1,5 +1,6 @@
 export type ContactCardState = {
     list: {
+        base64?: string;
         id: string;
         first_name: string;
         middle_name?: string;
