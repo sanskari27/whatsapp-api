@@ -9,6 +9,7 @@ type ContactCardType = {
 	last_name?: string;
 	title?: string;
 	organization?: string;
+	email_personal?: string;
 	email_work?: string;
 	links?: string[];
 	street?: string;
@@ -68,6 +69,7 @@ export default class ContactCardService {
 			last_name: updatedContactCard.last_name,
 			title: updatedContactCard.title,
 			organization: updatedContactCard.organization,
+			email_personal: updatedContactCard.email_personal,
 			email_work: updatedContactCard.email_work,
 			links: updatedContactCard.links,
 			street: updatedContactCard.street,
@@ -78,6 +80,7 @@ export default class ContactCardService {
 			contact_details_phone: updatedContactCard.contact_details_phone,
 			contact_details_work: updatedContactCard.contact_details_work,
 			contact_details_other: updatedContactCard.contact_details_other,
+			base64: updatedContactCard.qrString,
 		};
 	}
 
@@ -97,6 +100,7 @@ export default class ContactCardService {
 			last_name: contact_card.last_name,
 			title: contact_card.title,
 			organization: contact_card.organization,
+			email_personal: contact_card.email_personal,
 			email_work: contact_card.email_work,
 			links: contact_card.links,
 			street: contact_card.street,
@@ -107,6 +111,7 @@ export default class ContactCardService {
 			contact_details_phone: contact_card.contact_details_phone,
 			contact_details_work: contact_card.contact_details_work,
 			contact_details_other: contact_card.contact_details_other,
+			base64: contact_card.qrString,
 		}));
 	}
 }

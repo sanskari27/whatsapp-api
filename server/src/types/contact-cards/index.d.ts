@@ -7,6 +7,7 @@ export default interface IContactCard extends Document {
 	last_name: string;
 	title: string;
 	organization: string;
+	email_personal: string;
 	email_work: string;
 	links: string[];
 	street: string;
