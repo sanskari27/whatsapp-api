@@ -6,7 +6,6 @@ import {
     HStack,
     Icon,
     IconButton,
-    Image,
     Table,
     TableContainer,
     Tbody,
@@ -33,6 +32,7 @@ import {
 import ConfirmationDialog, {
     ConfirmationDialogHandle,
 } from '../../components/confirmation-alert';
+import QrImage from '../../components/qr-image';
 import ContactInputDialog from './components/contact-input-dialog';
 
 const ContactsPage = () => {
@@ -154,13 +154,10 @@ const ContactsPage = () => {
                                             }
                                         }}
                                     />
-                                    {index + 1}
+                                    {index + 1}.
                                 </Td>
                                 <Td>
-                                    <Image
-                                        src={`data:image/png;base64,${contact.base64}`}
-                                        width={'150px'}
-                                    />
+                                    <QrImage base64={contact.base64} />
                                 </Td>
                                 <Td>
                                     <Box>
