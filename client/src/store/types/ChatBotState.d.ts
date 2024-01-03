@@ -1,5 +1,3 @@
-import { ContactCard } from './ContactCardState';
-
 export type ChatBotState = {
     all_chatbos: ChatBot[];
     trigger: string;
@@ -11,6 +9,6 @@ export type ChatBotState = {
         | 'INCLUDES_MATCH_CASE'
         | 'EXACT_IGNORE_CASE'
         | 'EXACT_MATCH_CASE';
-    shared_contact_cards: ContactCard[];
+    shared_contact_cards: string[];
     attachments: string[];
 };

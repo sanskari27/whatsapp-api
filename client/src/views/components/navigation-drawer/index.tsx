@@ -15,6 +15,7 @@ import { PiExportBold } from 'react-icons/pi';
 import { SiProbot } from 'react-icons/si';
 import { TbLogout2, TbMessage2Minus } from 'react-icons/tb';
 
+import { MdOutlineContactPhone } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
 import { LOGO } from '../../../assets/Images';
 import { NAVIGATION } from '../../../config/const';
@@ -87,6 +88,10 @@ export default function NavigationDrawer() {
                             route={NAVIGATION.REPORTS}
                         />
                         <MenuButton icon={FiLink2} route={NAVIGATION.SHORT} />
+                        <MenuButton
+                            icon={MdOutlineContactPhone}
+                            route={NAVIGATION.CONTACT}
+                        />
                     </Flex>
                 </Box>
                 <VStack>

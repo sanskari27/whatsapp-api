@@ -9,23 +9,7 @@ export default class MessageService {
         label_ids?: string[];
         message?: string;
         variables?: string[];
-        shared_contact_cards?: {
-            first_name?: string;
-            last_name?: string;
-            title?: string;
-            organization?: string;
-            email_personal?: string;
-            email_work?: string;
-            contact_number_phone?: string;
-            contact_number_work?: string;
-            contact_number_other?: string[];
-            link?: string[];
-            street?: string;
-            city?: string;
-            state?: string;
-            country?: string;
-            pincode?: string;
-        }[];
+        shared_contact_cards?: string[];
         attachments?: string[];
         campaign_name: string;
         min_delay: number;

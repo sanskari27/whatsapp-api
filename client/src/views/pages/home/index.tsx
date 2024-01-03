@@ -8,6 +8,8 @@ import { useAuth } from '../../../hooks/useAuth';
 import { useNetwork } from '../../../hooks/useNetwork';
 import '../../../index.css';
 import AuthService from '../../../services/auth.service';
+import ContactCardService from '../../../services/contant-card.service';
+import { setContactList } from '../../../store/reducers/ContactCardReducers';
 import { setUserDetails } from '../../../store/reducers/UserDetailsReducres';
 import Navbar from '../../components/navbar';
 import NavigationDrawer from '../../components/navigation-drawer';
@@ -30,6 +32,9 @@ export default function Home() {
                 return;
             }
             dispatch(setUserDetails(res));
+        });
+        ContactCardService.ListContactCards().then((res) => {
+            dispatch(setContactList(res));
         });
     }, [dispatch, navigate]);
     if (isAuthenticating) {

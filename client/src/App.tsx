@@ -19,6 +19,7 @@ const Bot = lazy(() => import('./views/pages/bot'));
 const Home = lazy(() => import('./views/pages/home'));
 const Report = lazy(() => import('./views/pages/report'));
 const LinkShortner = lazy(() => import('./views/pages/link-shortner'));
+const Contact = lazy(() => import('./views/pages/contacts'));
 
 function App() {
     useTheme();
@@ -50,9 +51,11 @@ function App() {
                                 path={NAVIGATION.SHORT}
                                 element={<LinkShortner />}
                             />
+                            <Route
+                                path={NAVIGATION.CONTACT}
+                                element={<Contact />}
+                            />
                         </Route>
-                        {/* <Route path={NAVIGATION.SETTINGS} element={<Settings />} />
-					<Route path={NAVIGATION.NETWORK_ERROR} element={<NetworkError />} /> */}
                         <Route
                             path="*"
                             element={<Navigate to={NAVIGATION.WELCOME} />}

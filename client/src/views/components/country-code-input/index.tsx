@@ -15,15 +15,13 @@ export default function CountryCodeInput({ value, onChange }: Props) {
             borderLeftRadius={'lg'}
             borderTopLeftRadius={'lg'}
             borderBottomLeftRadius={'lg'}
-            width={'70px'}
+            width={'100px'}
             icon={<MdArrowDropDown />}
-            size={'sm'}
             placeholder="Country Code"
             value={value}
             border={'none'}
             textAlign={'left'}
             focusBorderColor="transparent"
-            className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]"
             // onFocus={(e) => {
             //     const options = e.target.options;
             //     for (const option of options) {

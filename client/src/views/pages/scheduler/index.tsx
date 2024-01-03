@@ -23,7 +23,6 @@ import {
     Input,
     Select,
     Tag,
-    TagCloseButton,
     TagLabel,
     Text,
     Textarea,
@@ -64,7 +63,9 @@ import {
     setVariables,
 } from '../../../store/reducers/SchedulerReducer';
 import AttachmentDetailsInputDialog from '../../components/attachment-details-input-dialog';
-import ContactDetailInputDialog from '../../components/contact-detail-input-dialog';
+import SelectContactsList, {
+    SelectContactListHandle,
+} from '../../components/contact-detail-input-dialog';
 import { CSVNameInputDialoag, TemplateNameInputDialog } from './components';
 
 export type SchedulerDetails = {
@@ -75,23 +76,7 @@ export type SchedulerDetails = {
     label_ids: string[];
     message: string;
     variables: string[];
-    shared_contact_cards: {
-        first_name?: string;
-        middle_name?: string;
-        last_name?: string;
-        organization?: string;
-        email_personal?: string;
-        email_work?: string;
-        contact_number_phone?: string;
-        contact_number_work?: string;
-        contact_number_other?: string[];
-        links?: string[];
-        street?: string;
-        city?: string;
-        state?: string;
-        country?: string;
-        pincode?: string;
-    }[];
+    shared_contact_cards: string[];
     attachments: string[];
     campaign_name: string;
     min_delay: number;
@@ -105,6 +90,7 @@ export type SchedulerDetails = {
 export default function Scheduler() {
     const fileInputRef = useRef<HTMLInputElement | null>();
     const multiselectRef = useRef<Multiselect | null>();
+    const selectContactListRef = useRef<SelectContactListHandle>(null);
     const dispatch = useDispatch();
     const theme = useTheme();
     const {
@@ -136,12 +122,6 @@ export default function Scheduler() {
         isOpen: isAttachmentDetailsOpen,
         onOpen: openAttachmentDetailsInput,
         onClose: closeAttachmentDetailsInput,
-    } = useDisclosure();
-
-    const {
-        isOpen: isContactInputOpen,
-        onOpen: openContactInput,
-        onClose: closeContactInput,
     } = useDisclosure();
 
     const {
@@ -307,59 +287,8 @@ export default function Scheduler() {
         openAttachmentDetailsInput();
     };
 
-    const handleContactInput = (contactDetails: {
-        first_name?: string;
-        last_name?: string;
-        title?: string;
-        organization?: string;
-        email_personal?: string;
-        email_work?: string;
-        contact_number_phone?: string;
-        contact_number_work?: string;
-        contact_number_other?: string[];
-        links?: string[];
-        street?: string;
-        city?: string;
-        state?: string;
-        country?: string;
-        pincode?: string;
-    }) => {
-        if (!contactDetails.first_name) return;
-        // addContact(contactDetails);
-        dispatch(
-            setContactCards([...details.shared_contact_cards, contactDetails])
-        );
-        closeContactInput();
-    };
-
-    const removeContact = (contact: {
-        first_name?: string;
-        last_name?: string;
-        middle_name?: string;
-        organization?: string;
-        email_personal?: string;
-        email_work?: string;
-        contact_number_phone?: string;
-        contact_number_work?: string;
-        contact_number_other?: string[];
-        links?: string[];
-        street?: string;
-        city?: string;
-        state?: string;
-        country?: string;
-        pincode?: string;
-    }) => {
-        // setDetails((prevState) => ({
-        //     ...prevState,
-        //     shared_contact_cards: prevState.shared_contact_cards.filter(
-        //         (data) => data !== contact
-        //     ),
-        // }));
-        dispatch(
-            setContactCards(
-                details.shared_contact_cards.filter((data) => data !== contact)
-            )
-        );
+    const handleContactInput = () => {
+        dispatch(setContactCards(selectContactListRef.current?.ids ?? []));
     };
 
     const setSelectedRecipients = (ids: string[]) => {
@@ -454,25 +383,6 @@ export default function Scheduler() {
             console.log(error);
             return;
         }
-
-        // if (
-        //     details.max_delay === 0 ||
-        //     details.min_delay === 0 ||
-        //     details.batch_delay === 0
-        // ) {
-        //     setUIDetails((prev) => ({
-        //         ...prev,
-        //         delayError: 'Delay required.',
-        //     }));
-        //     return;
-        // }
-        // if (details.batch_size === 0) {
-        //     setUIDetails((prev) => ({
-        //         ...prev,
-        //         delayError: 'Batch size required.',
-        //     }));
-        //     return;
-        // }
         setUIDetails((prev) => ({
             ...prev,
             schedulingMessages: true,
@@ -497,35 +407,7 @@ export default function Scheduler() {
             }
             multiselectRef.current?.resetSelectedValues();
             openCampaignCreation();
-            // setDetails({
-            //     type: 'CSV',
-            //     numbers: [],
-            //     csv_file: '',
-            //     group_ids: [],
-            //     label_ids: [],
-            //     message: '',
-            //     variables: [],
-            //     shared_contact_cards: [],
-            //     attachments: [],
-            //     campaign_name: '',
-            //     min_delay: 1,
-            //     max_delay: 60,
-            //     startTime: '00:00',
-            //     endTime: '23:59',
-            //     batch_delay: 120,
-            //     batch_size: 1,
-            // });
             dispatch(reset());
-            // setUIDetails((prev) => ({
-            //     recipientsLoading: false,
-            //     paymentVerified: prev.paymentVerified,
-            //     schedulingMessages: false,
-            //     isBusiness: prev.isBusiness,
-            //     nameError: '',
-            //     messageError: '',
-            //     delayError: '',
-            //     apiError: '',
-            // }));
             setUIDetails((prev) => ({
                 ...prev,
                 schedulingMessages: false,
@@ -1304,46 +1186,22 @@ export default function Scheduler() {
                                     width={'full'}
                                     variant={'outline'}
                                     colorScheme="green"
-                                    onClick={openContactInput}
+                                    onClick={() => {
+                                        selectContactListRef.current?.open();
+                                        selectContactListRef.current?.setIds(
+                                            details.shared_contact_cards
+                                        );
+                                    }}
                                 >
-                                    Create Contact
+                                    Select Contact (
+                                    {details.shared_contact_cards.length})
                                 </Button>
-                                <ContactDetailInputDialog
-                                    isOpen={isContactInputOpen}
-                                    onClose={closeContactInput}
+                                <SelectContactsList
+                                    ref={selectContactListRef}
+                                    type="Contacts"
                                     onConfirm={handleContactInput}
                                 />
-                                <Box>
-                                    {details.shared_contact_cards.map(
-                                        (contact, index) => (
-                                            <Tag
-                                                size={'sm'}
-                                                m={'0.25rem'}
-                                                p={'0.5rem'}
-                                                key={index}
-                                                borderRadius="md"
-                                                variant="solid"
-                                                colorScheme="gray"
-                                            >
-                                                <TagLabel>
-                                                    {contact.first_name}
-                                                </TagLabel>
-                                                <TagCloseButton
-                                                    onClick={() => {
-                                                        removeContact(contact);
-                                                    }}
-                                                />
-                                            </Tag>
-                                        )
-                                    )}
-                                </Box>
                             </Box>
-
-                            {/* {error && (
-                <FormErrorMessage mt={-2} textAlign={'center'}>
-                    {error}
-                </FormErrorMessage>
-            )} */}
                             {fileError && (
                                 <Text color={'tomato'}>{fileError}</Text>
                             )}

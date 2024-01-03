@@ -12,9 +12,6 @@ import {
     Select,
     Table,
     TableContainer,
-    Tag,
-    TagCloseButton,
-    TagLabel,
     Tbody,
     Td,
     Text,
@@ -44,13 +41,14 @@ import {
     setRespondTo,
     setTrigger,
 } from '../../../store/reducers/ChatBoReducers';
-import { ContactCard } from '../../../store/types/ContactCardState';
 import AttachmentDetailsInputDialog from '../../components/attachment-details-input-dialog';
 import CheckButton from '../../components/check-button';
 import ConfirmationDialog, {
     ConfirmationDialogHandle,
 } from '../../components/confirmation-alert';
-import ContactDetailInputDialog from '../../components/contact-detail-input-dialog';
+import SelectContactsList, {
+    SelectContactListHandle,
+} from '../../components/contact-detail-input-dialog';
 
 export default function Bot() {
     const multiselectRef = useRef<Multiselect | null>();
@@ -58,6 +56,7 @@ export default function Bot() {
     const dispatch = useDispatch();
     const theme = useTheme();
     const confirmationDialogRef = useRef<ConfirmationDialogHandle>(null);
+    const SelectContactsListRef = useRef<SelectContactListHandle>(null);
 
     const {
         trigger,
@@ -86,12 +85,6 @@ export default function Bot() {
         isOpen: isAttachmentDetailsOpen,
         onOpen: openAttachmentDetailsInput,
         onClose: closeAttachmentDetailsInput,
-    } = useDisclosure();
-
-    const {
-        isOpen: isContactDetailsOpen,
-        onOpen: openContactInput,
-        onClose: closeContactInput,
     } = useDisclosure();
 
     const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
@@ -131,39 +124,8 @@ export default function Bot() {
         },
     });
 
-    const handleContactInput = (data: {
-        first_name?: string;
-        last_name?: string;
-        title?: string;
-        organization?: string;
-        email_personal?: string;
-        email_work?: string;
-        contact_number_phone?: string;
-        contact_number_work?: string;
-        contact_number_other?: string[];
-        links?: string[];
-        street?: string;
-        city?: string;
-        state?: string;
-        country?: string;
-        pincode?: string;
-    }) => {
-        setUiDetails((prevState) => ({
-            ...prevState,
-            contactCardsError: '',
-        }));
-        dispatch(setContactCards([...shared_contact_cards, data]));
-        closeContactInput();
-    };
-
-    const removeContact = (text: string) => {
-        dispatch(
-            setContactCards(
-                shared_contact_cards.filter(
-                    (number) => number.first_name !== text
-                )
-            )
-        );
+    const handleAddContact = () => {
+        dispatch(setContactCards(SelectContactsListRef.current?.ids ?? []));
     };
 
     const handleTriggerTimeUpdate = ({
@@ -177,10 +139,6 @@ export default function Bot() {
     };
 
     const handleAttachmentInput = (e: ChangeEvent<HTMLInputElement>) => {
-        // setError((prevState) => ({
-        // 	...prevState,
-        // 	message: '',
-        // }));
         setUiDetails((prevState) => ({
             ...prevState,
             attachmentError: '',
@@ -360,7 +318,7 @@ export default function Bot() {
             (attachment) => attachment.filename
         );
         dispatch(setAttachments(attachmentFilenames));
-        dispatch(setContactCards(bot.shared_contact_cards as ContactCard[]));
+        dispatch(setContactCards(bot.shared_contact_cards));
         setTriggerDetails((prevState) => ({
             ...prevState,
             trigger_gap_time:
@@ -862,44 +820,17 @@ export default function Bot() {
                                 size={'sm'}
                                 variant={'outline'}
                                 colorScheme="green"
-                                onClick={openContactInput}
+                                onClick={() => {
+                                    SelectContactsListRef.current?.open();
+                                    SelectContactsListRef.current?.setIds(
+                                        shared_contact_cards
+                                    );
+                                }}
                                 // isDisabled={!isAuthenticated}
                             >
-                                Create Contact
+                                Select Contact ({shared_contact_cards.length})
+                                Selected
                             </Button>
-                            <ContactDetailInputDialog
-                                isOpen={isContactDetailsOpen}
-                                onClose={closeContactInput}
-                                onConfirm={handleContactInput}
-                            />
-                            <Box>
-                                {!uiDetails.editBot.isEditing &&
-                                    shared_contact_cards.map(
-                                        (contact, index) => (
-                                            <Tag
-                                                size={'sm'}
-                                                m={'0.25rem'}
-                                                p={'0.5rem'}
-                                                key={index}
-                                                borderRadius="md"
-                                                variant="solid"
-                                                colorScheme="gray"
-                                            >
-                                                <TagLabel>
-                                                    {contact.first_name}
-                                                </TagLabel>
-                                                <TagCloseButton
-                                                    onClick={() =>
-                                                        removeContact(
-                                                            contact.first_name ??
-                                                                ''
-                                                        )
-                                                    }
-                                                />
-                                            </Tag>
-                                        )
-                                    )}
-                            </Box>
                         </Box>
                     </HStack>
 
@@ -1100,6 +1031,11 @@ export default function Bot() {
                 type={'Responder'}
                 ref={confirmationDialogRef}
                 onConfirm={deleteBot}
+            />
+            <SelectContactsList
+                ref={SelectContactsListRef}
+                type={'Contacts'}
+                onConfirm={handleAddContact}
             />
         </Flex>
     );
