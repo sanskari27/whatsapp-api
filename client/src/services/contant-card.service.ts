@@ -98,27 +98,31 @@ export default class ContactCardService {
                 pincode: response.contact_card.pincode as string,
                 base64: response.contact_card.base64 as string,
                 contact_details_phone: response.contact_card
-                    .contact_details_phone && {
-                    country_code:
-                        response.contact_card.contact_details_phone.contact_number.slice(
-                            1,
+                    .contact_details_phone &&
+                    response.contact_card.contact_details_phone
+                        .contact_number && {
+                        country_code:
+                            response.contact_card.contact_details_phone.contact_number.slice(
+                                1,
+                                -10
+                            ) as string,
+                        number: response.contact_card.contact_details_phone.contact_number.slice(
                             -10
                         ) as string,
-                    number: response.contact_card.contact_details_phone.contact_number.slice(
-                        -10
-                    ) as string,
-                },
+                    },
                 contact_details_work: response.contact_card
-                    .contact_details_work && {
-                    country_code:
-                        response.contact_card.contact_details_work.contact_number.slice(
-                            1,
+                    .contact_details_work &&
+                    response.contact_card.contact_details_work
+                        .contact_number && {
+                        country_code:
+                            response.contact_card.contact_details_work.contact_number.slice(
+                                1,
+                                -10
+                            ) as string,
+                        number: response.contact_card.contact_details_work.contact_number.slice(
                             -10
                         ) as string,
-                    number: response.contact_card.contact_details_work.contact_number.slice(
-                        -10
-                    ) as string,
-                },
+                    },
                 contact_details_other:
                     response.contact_card.contact_details_other.map(
                         (contact: { contact_number: string }) => ({
@@ -131,6 +135,7 @@ export default class ContactCardService {
                     ),
             };
         } catch (err) {
+            console.log(err);
             return null;
         }
     }

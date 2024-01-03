@@ -138,6 +138,7 @@ const ContactInputDialog = ({
                 ...selectedCard,
                 ...details,
             }).then((res) => {
+                console.log(res);
                 if (!res) {
                     dispatch(setError('Something went wrong'));
                     return;

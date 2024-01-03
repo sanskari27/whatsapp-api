@@ -16,7 +16,6 @@ import {
     HStack,
     Icon,
     IconButton,
-    Image,
     Input,
     Table,
     TableContainer,
@@ -50,6 +49,7 @@ import {
 import ConfirmationDialog, {
     ConfirmationDialogHandle,
 } from '../../components/confirmation-alert';
+import QrImage from '../../components/qr-image';
 import EditLinkDialog, {
     EditLinkDialogHandle,
 } from './components/editLinkDialog';
@@ -387,9 +387,9 @@ const LinkShortner = () => {
                                 key={index}
                                 textColor={theme === 'dark' ? 'white' : 'black'}
                             >
-                                <Td>{index + 1}</Td>
+                                <Td>{index + 1}.</Td>
                                 <Td>
-                                    <Image src={item.base64} width={'150px'} />
+                                    <QrImage base64={item.base64} />
                                 </Td>
                                 <Td>
                                     <Input
