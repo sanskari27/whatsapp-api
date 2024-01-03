@@ -47,7 +47,7 @@ contactCardSchema.pre('save', async function (next) {
 	this.vCardString = new VCardBuilder(this).build();
 	const qrCodeBuffer = await QRUtils.generateQR(this.vCardString);
 	if (qrCodeBuffer) {
-		this.qrString =`data:image/png;base64,${qrCodeBuffer.toString('base64')}`,
+		this.qrString = `data:image/png;base64,${qrCodeBuffer.toString('base64')}`;
 	}
 	next();
 });
