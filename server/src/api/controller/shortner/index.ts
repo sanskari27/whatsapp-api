@@ -18,11 +18,6 @@ async function createWhatsappLink(req: Request, res: Response, next: NextFunctio
 
 	const { number, message } = reqValidatorResult.data;
 	const link = `wa.me/${number}?text=${encodeURIComponent(message)}`;
-	const doc = await ShortnerDB.create({
-		link,
-		user: req.locals.user,
-	});
-
 	const qrCodeBuffer = await QRUtils.generateQR(link);
 
 	if (!qrCodeBuffer) {
@@ -32,13 +27,19 @@ async function createWhatsappLink(req: Request, res: Response, next: NextFunctio
 		});
 	}
 
+	const doc = await ShortnerDB.create({
+		link,
+		user: req.locals.user,
+		qrString: qrCodeBuffer.toString('base64'),
+	});
+
 	return Respond({
 		res,
 		status: 200,
 		data: {
-			shorten_link: `https://open.savemyvcard.com/${doc.key}`,
+			shorten_link: `https://open.whatsleads.in/${doc.key}`,
 			link: doc.link,
-			base64: `data:image/png;base64,${qrCodeBuffer.toString('base64')}`,
+			base64: doc.qrString,
 		},
 	});
 }
@@ -54,10 +55,7 @@ async function createLink(req: Request, res: Response, next: NextFunction) {
 	}
 
 	const { link } = reqValidatorResult.data;
-	const doc = await ShortnerDB.create({
-		link,
-		user: req.locals.user,
-	});
+
 	const qrCodeBuffer = await QRUtils.generateQR(link);
 
 	if (!qrCodeBuffer) {
@@ -67,13 +65,19 @@ async function createLink(req: Request, res: Response, next: NextFunction) {
 		});
 	}
 
+	const doc = await ShortnerDB.create({
+		link,
+		user: req.locals.user,
+		qrString: qrCodeBuffer.toString('base64'),
+	});
+
 	return Respond({
 		res,
 		status: 200,
 		data: {
-			shorten_link: `https://open.savemyvcard.com/${doc.key}`,
+			shorten_link: `https://open.whatsleads.in/${doc.key}`,
 			link: doc.link,
-			base64: `data:image/png;base64,${qrCodeBuffer.toString('base64')}`,
+			base64: doc.qrString,
 		},
 	});
 }
@@ -100,8 +104,6 @@ async function updateLink(req: Request, res: Response, next: NextFunction) {
 		return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
 	}
 	doc.link = link;
-	await doc.save();
-
 	const qrCodeBuffer = await QRUtils.generateQR(link);
 
 	if (!qrCodeBuffer) {
@@ -110,14 +112,16 @@ async function updateLink(req: Request, res: Response, next: NextFunction) {
 			status: 500,
 		});
 	}
+	doc.qrString = qrCodeBuffer.toString('base64');
+	await doc.save();
 
 	return Respond({
 		res,
 		status: 200,
 		data: {
-			shorten_link: `https://open.savemyvcard.com/${doc.key}`,
+			shorten_link: `https://open.whatsleads.in/${doc.key}`,
 			link: doc.link,
-			base64: `data:image/png;base64,${qrCodeBuffer.toString('base64')}`,
+			base64: doc.qrString,
 		},
 	});
 }
@@ -159,22 +163,12 @@ async function open(req: Request, res: Response, next: NextFunction) {
 async function listAll(req: Request, res: Response, next: NextFunction) {
 	const docs = await ShortnerDB.find({ user: req.locals.user });
 
-	const promises = docs.map(async (doc) => {
-		const qrCodeBuffer = await QRUtils.generateQR(doc.link);
-		if (!qrCodeBuffer) {
-			return {
-				id: doc._id,
-				shorten_link: `https://open.savemyvcard.com/${doc.key}`,
-				link: doc.link,
-			};
-		}
-		return {
-			id: doc._id,
-			shorten_link: `https://open.savemyvcard.com/${doc.key}`,
-			link: doc.link,
-			base64: `data:image/png;base64,${qrCodeBuffer.toString('base64')}`,
-		};
-	});
+	const promises = docs.map((doc) => ({
+		id: doc._id,
+		shorten_link: `https://open.whatsleads.in/${doc.key}`,
+		link: doc.link,
+		base64: doc.qrString,
+	}));
 
 	return Respond({
 		res,

@@ -1,6 +1,7 @@
 import mongoose, { Types } from 'mongoose';
 import { nanoid } from 'nanoid';
 import IShortner from '../../../types/shortner';
+import QRUtils from '../../../utils/QRUtils';
 
 const ShortnerSchema = new mongoose.Schema<IShortner>({
 	user: {
@@ -14,11 +15,18 @@ const ShortnerSchema = new mongoose.Schema<IShortner>({
 	link: {
 		type: String,
 	},
+	qrString: String,
 });
 
-ShortnerSchema.pre('save', function (next) {
+ShortnerSchema.pre('save', async function (next) {
 	if (!this.key) {
 		this.key = nanoid();
+	}
+	if (!this.qrString) {
+		const qrCodeBuffer = await QRUtils.generateQR(this.link);
+		if (qrCodeBuffer) {
+			this.qrString = qrCodeBuffer.toString('base64');
+		}
 	}
 	next();
 });
