@@ -39,13 +39,29 @@ export default class ContactCardService {
 	}
 
 	async createContactCard(details: ContactCardType) {
-		const contact_card = await ContactCardDB.create({
+		const contactCard = await ContactCardDB.create({
 			user: this.user.id,
 			...details,
 		});
 		return {
-			id: contact_card._id as string,
-			...details,
+			id: contactCard._id as string,
+			first_name: contactCard.first_name,
+			middle_name: contactCard.middle_name,
+			last_name: contactCard.last_name,
+			title: contactCard.title,
+			organization: contactCard.organization,
+			email_personal: contactCard.email_personal,
+			email_work: contactCard.email_work,
+			links: contactCard.links,
+			street: contactCard.street,
+			city: contactCard.city,
+			state: contactCard.state,
+			country: contactCard.country,
+			pincode: contactCard.pincode,
+			contact_details_phone: contactCard.contact_details_phone,
+			contact_details_work: contactCard.contact_details_work,
+			contact_details_other: contactCard.contact_details_other,
+			base64: contactCard.qrString,
 		};
 	}
 
