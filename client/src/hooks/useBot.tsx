@@ -19,23 +19,7 @@ export default function useBot() {
         respond_to: string;
         trigger_gap_seconds: number;
         options: string;
-        shared_contact_cards: {
-            first_name?: string;
-            last_name?: string;
-            title?: string;
-            organization?: string;
-            email_personal?: string;
-            email_work?: string;
-            contact_number_phone?: string;
-            contact_number_work?: string;
-            contact_number_others?: string[];
-            link?: string[];
-            street?: string;
-            city?: string;
-            state?: string;
-            country?: string;
-            pincode?: string;
-        }[];
+        shared_contact_cards: string[];
         attachments: string[];
     }) => {
         return new Promise<void>((resolve) => {

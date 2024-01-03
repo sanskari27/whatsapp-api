@@ -3,4 +3,5 @@ export enum StoreNames {
     CHATBOT = 'chatbot',
     USER = 'user',
     LINK = 'link',
+    CONTACT_CARD = 'contact_card',
 }

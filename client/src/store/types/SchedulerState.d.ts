@@ -1,5 +1,3 @@
-import { ContactCard } from './ContactCardState';
-
 export type SchedulerState = {
     details: SchedulerDetails;
     all_campaigns: ScheduledCampaign[];
@@ -31,7 +29,7 @@ export type SchedulerDetails = {
     label_ids: string[];
     message: string;
     variables: string[];
-    shared_contact_cards: ContactCard[];
+    shared_contact_cards: string[];
     attachments: string[];
     campaign_name: string;
     min_delay: number;
