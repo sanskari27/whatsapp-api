@@ -22,6 +22,7 @@ async function createContactCard(req: Request, res: Response, next: NextFunction
 
 	const reqValidator = z.object({
 		first_name: z.string().default(''),
+		middle_name: z.string().default(''),
 		last_name: z.string().default(''),
 		title: z.string().default(''),
 		organization: z.string().default(''),
@@ -156,6 +157,7 @@ async function updateContactCard(req: Request, res: Response, next: NextFunction
 
 	const reqValidator = z.object({
 		first_name: z.string().default(''),
+		middle_name: z.string().default(''),
 		last_name: z.string().default(''),
 		title: z.string().default(''),
 		organization: z.string().default(''),
