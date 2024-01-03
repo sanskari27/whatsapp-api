@@ -13,6 +13,7 @@ const contactCardSchema = new mongoose.Schema<IContactCard>({
 	last_name: String,
 	title: String,
 	organization: String,
+	email_personal: String,
 	email_work: String,
 	links: [String],
 	street: String,
