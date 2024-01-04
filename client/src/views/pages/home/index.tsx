@@ -15,82 +15,59 @@ import Navbar from '../../components/navbar';
 import NavigationDrawer from '../../components/navigation-drawer';
 
 export default function Home() {
-    const navigate = useNavigate();
-    const status = useNetwork();
-    const outlet = useOutlet();
-    const dispatch = useDispatch();
-    const { isAuthenticated, isAuthenticating } = useAuth();
-    useEffect(() => {
-        if (status === 'NO-NETWORK') {
-            navigate(NAVIGATION.NETWORK_ERROR);
-        }
-    }, [status, navigate]);
-    useEffect(() => {
-        AuthService.getUserDetails().then((res) => {
-            if (res.name === '') {
-                navigate(NAVIGATION.WELCOME);
-                return;
-            }
-            dispatch(setUserDetails(res));
-        });
-        ContactCardService.ListContactCards().then((res) => {
-            dispatch(setContactList(res));
-        });
-    }, [dispatch, navigate]);
-    if (isAuthenticating) {
-        return (
-            <Flex
-                justifyContent={'center'}
-                alignItems={'center'}
-                direction={'column'}
-                gap={'3rem'}
-                width={'full'}
-            >
-                <Flex
-                    justifyContent={'center'}
-                    alignItems={'center'}
-                    width={'full'}
-                    gap={'1rem'}
-                >
-                    <Image
-                        src={LOGO}
-                        width={'48px'}
-                        className="shadow-lg rounded-full"
-                    />
-                    <Text
-                        className="text-black dark:text-white"
-                        fontSize={'lg'}
-                        fontWeight="bold"
-                    >
-                        WhatsLeads
-                    </Text>
-                </Flex>
-                <Progress
-                    size="xs"
-                    isIndeterminate
-                    width={'30%'}
-                    rounded={'lg'}
-                />
-            </Flex>
-        );
-    }
+	const navigate = useNavigate();
+	const status = useNetwork();
+	const outlet = useOutlet();
+	const dispatch = useDispatch();
+	const { isAuthenticated, isAuthenticating } = useAuth();
+	useEffect(() => {
+		if (status === 'NO-NETWORK') {
+			navigate(NAVIGATION.NETWORK_ERROR);
+		}
+	}, [status, navigate]);
+	useEffect(() => {
+		AuthService.getUserDetails().then((res) => {
+			if (res.name === '') {
+				navigate(NAVIGATION.WELCOME);
+				return;
+			}
+			dispatch(setUserDetails(res));
+		});
+		ContactCardService.ListContactCards().then((res) => {
+			dispatch(setContactList(res));
+		});
+	}, [dispatch, navigate]);
+	if (isAuthenticating) {
+		return (
+			<Flex
+				justifyContent={'center'}
+				alignItems={'center'}
+				direction={'column'}
+				gap={'3rem'}
+				width={'full'}
+			>
+				<Flex justifyContent={'center'} alignItems={'center'} width={'full'} gap={'1rem'}>
+					<Image src={LOGO} width={'48px'} className='shadow-lg rounded-full' />
+					<Text className='text-black dark:text-white' fontSize={'lg'} fontWeight='bold'>
+						WhatsLeads
+					</Text>
+				</Flex>
+				<Progress size='xs' isIndeterminate width={'30%'} rounded={'lg'} />
+			</Flex>
+		);
+	}
 
-    if (!isAuthenticated) {
-        return <Navigate to={NAVIGATION.WELCOME} />;
-    }
+	if (!isAuthenticated) {
+		return <Navigate to={NAVIGATION.WELCOME} />;
+	}
 
-    return (
-        <Box width="full" className="custom-scrollbar">
-            <NavigationDrawer />
-            <Navbar />
-            <Box
-                paddingLeft={'70px'}
-                paddingTop={'70px'}
-                overflowX={'hidden'}
-                className="min-h-screen"
-            >
-                {outlet}
-            </Box>
-        </Box>
-    );
+	return (
+		<Box width='full' className='custom-scrollbar'>
+			<NavigationDrawer />
+			<Navbar />
+			<Box paddingLeft={'70px'} paddingTop={'70px'} overflowX={'hidden'} className='min-h-screen'>
+				{outlet}
+			</Box>
+		</Box>
+	);
 }

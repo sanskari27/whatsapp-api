@@ -30,7 +30,7 @@ async function createWhatsappLink(req: Request, res: Response, next: NextFunctio
 	const doc = await ShortnerDB.create({
 		link,
 		user: req.locals.user,
-		qrString: qrCodeBuffer.toString('base64'),
+		qrString: `data:image/png;base64,${qrCodeBuffer.toString('base64')}`,
 	});
 
 	return Respond({
@@ -68,7 +68,6 @@ async function createLink(req: Request, res: Response, next: NextFunction) {
 	const doc = await ShortnerDB.create({
 		link,
 		user: req.locals.user,
-		qrString: qrCodeBuffer.toString('base64'),
 	});
 
 	return Respond({
@@ -104,15 +103,6 @@ async function updateLink(req: Request, res: Response, next: NextFunction) {
 		return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
 	}
 	doc.link = link;
-	const qrCodeBuffer = await QRUtils.generateQR(link);
-
-	if (!qrCodeBuffer) {
-		return Respond({
-			res,
-			status: 500,
-		});
-	}
-	doc.qrString = qrCodeBuffer.toString('base64');
 	await doc.save();
 
 	return Respond({

@@ -23,9 +23,9 @@ ShortnerSchema.pre('save', async function (next) {
 		this.key = nanoid();
 	}
 	if (!this.qrString) {
-		const qrCodeBuffer = await QRUtils.generateQR(this.link);
+		const qrCodeBuffer = await QRUtils.generateQR(`https://open.whatsleads.in/${this.key}`);
 		if (qrCodeBuffer) {
-			this.qrString = qrCodeBuffer.toString('base64');
+			this.qrString = `data:image/png;base64,${qrCodeBuffer.toString('base64')}`;
 		}
 	}
 	next();
