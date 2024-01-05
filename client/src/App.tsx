@@ -20,6 +20,7 @@ const Home = lazy(() => import('./views/pages/home'));
 const Report = lazy(() => import('./views/pages/report'));
 const LinkShortner = lazy(() => import('./views/pages/link-shortner'));
 const Contact = lazy(() => import('./views/pages/contacts'));
+const Attachments = lazy(() => import('./views/pages/attachments'));
 
 function App() {
     useTheme();
@@ -54,6 +55,10 @@ function App() {
                             <Route
                                 path={NAVIGATION.CONTACT}
                                 element={<Contact />}
+                            />
+                            <Route
+                                path={NAVIGATION.ATTACHMENTS}
+                                element={<Attachments />}
                             />
                         </Route>
                         <Route

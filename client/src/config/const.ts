@@ -17,6 +17,7 @@ export const NAVIGATION = {
     REPORTS: '/reports',
     SHORT: '/short',
     CONTACT: '/contact',
+    ATTACHMENTS: '/attachments',
 };
 
 export enum CHROME_ACTION {
