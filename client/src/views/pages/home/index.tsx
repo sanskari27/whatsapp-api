@@ -94,7 +94,7 @@ export default function Home() {
                 overflowX={'hidden'}
                 className="min-h-screen"
             >
-                {outlet}
+                {outlet ? outlet : <Navigate to={NAVIGATION.CONTACT} />}
             </Box>
         </Box>
     );

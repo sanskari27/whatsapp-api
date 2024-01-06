@@ -36,6 +36,10 @@ function App() {
                         />
                         <Route path={NAVIGATION.HOME} element={<Home />}>
                             <Route
+                                path={NAVIGATION.CONTACT}
+                                element={<Contact />}
+                            />
+                            <Route
                                 path={NAVIGATION.EXPORTS}
                                 element={<Exports />}
                             />
@@ -51,10 +55,6 @@ function App() {
                             <Route
                                 path={NAVIGATION.SHORT}
                                 element={<LinkShortner />}
-                            />
-                            <Route
-                                path={NAVIGATION.CONTACT}
-                                element={<Contact />}
                             />
                             <Route
                                 path={NAVIGATION.ATTACHMENTS}
