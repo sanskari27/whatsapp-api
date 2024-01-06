@@ -100,6 +100,8 @@ export const LOGO_PATH = '/static/assets/logo.png';
 export const PROMOTIONAL_MESSAGE_1 = '*Powered by: www.whatsleads.in*';
 export const PROMOTIONAL_MESSAGE_2 = '*Powered by: wa.savemyvcard.com*';
 
+export const SHORTNER_REDIRECT = 'https://open.whatsleads.in/';
+
 export const SESSION_STARTUP_WAIT_TIME = 5 * 60 * 1000; //milis
 export const CACHE_TIMEOUT = 10 * 60; //seconds
 
