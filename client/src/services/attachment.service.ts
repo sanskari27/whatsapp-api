@@ -70,7 +70,7 @@ export default class AttachmentService {
     static updateAtachmentFile(id: string, file: File) {
         const formData = new FormData();
         formData.append('file', file);
-        return APIInstance.post(`/uploads/attachment/${id}/file`, formData, {
+        return APIInstance.put(`/uploads/attachment/${id}`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },

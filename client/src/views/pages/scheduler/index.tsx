@@ -1,10 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-    AddIcon,
-    AttachmentIcon,
-    DeleteIcon,
-    InfoOutlineIcon,
-} from '@chakra-ui/icons';
+import { AddIcon, DeleteIcon, InfoOutlineIcon } from '@chakra-ui/icons';
 import {
     AlertDialog,
     AlertDialogContent,
@@ -32,7 +27,6 @@ import Multiselect from 'multiselect-react-dropdown';
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { FiFilter } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
-import useAttachment from '../../../hooks/useAttachment';
 import useTemplate from '../../../hooks/useTemplate';
 import { useTheme } from '../../../hooks/useTheme';
 import GroupService from '../../../services/group.service';
@@ -62,9 +56,8 @@ import {
     setStartTime,
     setVariables,
 } from '../../../store/reducers/SchedulerReducer';
-import AttachmentDetailsInputDialog from '../../components/attachment-details-input-dialog';
-import SelectContactsList, {
-    SelectContactListHandle,
+import SelectContactsOrAttachmentsList, {
+    SelectContactOrAttachmentListHandle,
 } from '../../components/contact-detail-input-dialog';
 import { CSVNameInputDialoag, TemplateNameInputDialog } from './components';
 
@@ -90,7 +83,8 @@ export type SchedulerDetails = {
 export default function Scheduler() {
     const fileInputRef = useRef<HTMLInputElement | null>();
     const multiselectRef = useRef<Multiselect | null>();
-    const selectContactListRef = useRef<SelectContactListHandle>(null);
+    const selectContactListRef =
+        useRef<SelectContactOrAttachmentListHandle>(null);
     const dispatch = useDispatch();
     const theme = useTheme();
     const {
@@ -110,18 +104,6 @@ export default function Scheduler() {
         isOpen: isNameInputOpen,
         onOpen: openNameInput,
         onClose: closeNameInput,
-    } = useDisclosure();
-
-    const {
-        attachments: allAttachments,
-        add: addAttachment,
-        addingAttachment,
-    } = useAttachment();
-
-    const {
-        isOpen: isAttachmentDetailsOpen,
-        onOpen: openAttachmentDetailsInput,
-        onClose: closeAttachmentDetailsInput,
     } = useDisclosure();
 
     const {
@@ -145,9 +127,6 @@ export default function Scheduler() {
         loadingVerifiedContacts: false,
         schedulingMessages: false,
     });
-
-    const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
-    const [fileError, setFileError] = useState<string | null>(null);
 
     const { details, isBusinessAccount, recipients } = useSelector(
         (state: StoreState) => state[StoreNames.SCHEDULER]
@@ -241,7 +220,6 @@ export default function Scheduler() {
                     }, 5000);
                     return;
                 }
-                // setRecipientsOptions((prev) => [res, ...prev]);
                 dispatch(setRecipients([res, ...recipients]));
             })
             .finally(() => {
@@ -273,30 +251,19 @@ export default function Scheduler() {
         openCSVNameInput();
     };
 
-    const handleAttachmentInput = (e: ChangeEvent<HTMLInputElement>) => {
-        setFileError(null);
-        const files = e.target.files;
-        if (files === null) return;
-        if (files.length === 0) return;
-        if (files[0] === null) return;
-        if (files[0].size > 62914560)
-            return setFileError('File size should be less than 60MB');
-        const file = files[0];
-        if (fileInputRef.current) fileInputRef.current.value = '';
-        setAttachmentFile(file);
-        openAttachmentDetailsInput();
-    };
-
     const handleContactInput = () => {
-        dispatch(setContactCards(selectContactListRef.current?.ids ?? []));
+        dispatch(
+            setAttachments(selectContactListRef.current?.attachmentId ?? [])
+        );
+        dispatch(
+            setContactCards(selectContactListRef.current?.contactId ?? [])
+        );
     };
 
     const setSelectedRecipients = (ids: string[]) => {
         if (details.type === 'GROUP' || details.type === 'GROUP_INDIVIDUAL') {
-            // handleChange({ name: 'group_ids', value: ids });
             dispatch(setGroupRecipients(ids));
         } else if (details.type === 'LABEL') {
-            // handleChange({ name: 'label_ids', value: ids });
             dispatch(setLabelRecipients(ids));
         }
     };
@@ -307,7 +274,6 @@ export default function Scheduler() {
                 ...prev,
                 campaignName: 'Campaign Name is required',
             }));
-            console.log(error);
             return;
         }
 
@@ -316,7 +282,6 @@ export default function Scheduler() {
                 ...prev,
                 recipients: 'Recipients are required',
             }));
-            console.log(error);
             return;
         }
         if (details.type === 'GROUP' && details.group_ids.length === 0) {
@@ -324,7 +289,6 @@ export default function Scheduler() {
                 ...prev,
                 recipients: 'Recipients are required',
             }));
-            console.log(error);
             return;
         }
         if (
@@ -335,7 +299,6 @@ export default function Scheduler() {
                 ...prev,
                 recipients: 'Recipients are required',
             }));
-            console.log(error);
             return;
         }
         if (details.type === 'LABEL' && details.label_ids.length === 0) {
@@ -343,7 +306,6 @@ export default function Scheduler() {
                 ...prev,
                 recipients: 'Recipients are required',
             }));
-            console.log(error);
             return;
         }
         if (!details.message) {
@@ -356,7 +318,6 @@ export default function Scheduler() {
                 ...prev,
                 minDelay: 'Minimum Delay is required',
             }));
-            console.log(error);
             return;
         }
         if (details.max_delay < 1) {
@@ -364,7 +325,6 @@ export default function Scheduler() {
                 ...prev,
                 maxDelay: 'Maximum Delay is required',
             }));
-            console.log(error);
             return;
         }
         if (details.batch_size < 1) {
@@ -372,7 +332,6 @@ export default function Scheduler() {
                 ...prev,
                 batchSize: 'Batch Size is required',
             }));
-            console.log(error);
             return;
         }
         if (details.batch_delay < 1) {
@@ -380,7 +339,6 @@ export default function Scheduler() {
                 ...prev,
                 batchDelay: 'Batch Delay is required',
             }));
-            console.log(error);
             return;
         }
         setUIDetails((prev) => ({
@@ -553,10 +511,6 @@ export default function Scheduler() {
                                                 dispatch(
                                                     setCSVFile(e.target.value)
                                                 );
-                                                // handleChange({
-                                                //     name: 'csv_file',
-                                                //     value: e.target.value,
-                                                // });
                                                 const recipient =
                                                     recipients.find(
                                                         (recipient) =>
@@ -573,10 +527,6 @@ export default function Scheduler() {
                                                         (item) => `{{${item}}}`
                                                     );
                                                 if (recipient)
-                                                    // handleChange({
-                                                    //     name: 'variables',
-                                                    //     value: headers,
-                                                    // });
                                                     dispatch(
                                                         setVariables(headers)
                                                     );
@@ -676,7 +626,6 @@ export default function Scheduler() {
                                         flexGrow={4}
                                         variant={'outline'}
                                         colorScheme="blue"
-                                        // isDisabled={isDisabled}
                                         onClick={() =>
                                             document
                                                 .getElementById(
@@ -688,31 +637,10 @@ export default function Scheduler() {
                                     >
                                         <Text>Upload</Text>
                                     </Button>
-                                    {/* <IconButton
-                                        variant="outline"
-                                        colorScheme="blue"
-                                        aria-label="Download"
-                                        _hover={{
-                                            backgroundColor: 'transparent',
-                                        }}
-                                        icon={
-                                            <Icon
-                                                // as={GrDocumentCsv}
-                                                className="dark:invert"
-                                            />
-                                        }
-                                        onClick={() => {
-                                            window.open(
-                                                'https://docs.google.com/spreadsheets/d/1qj7u0e8OhrFHYj6bHlPAnORC5uRpKI3xoxW7PRAjxWM/edit#gid=0',
-                                                '_blank'
-                                            );
-                                        }}
-                                    /> */}
                                     <Button
                                         flexGrow={1}
                                         variant={'outline'}
                                         colorScheme="green"
-                                        // isDisabled={isDisabled}
                                         onClick={() => {
                                             window.open(
                                                 'https://docs.google.com/spreadsheets/d/1qj7u0e8OhrFHYj6bHlPAnORC5uRpKI3xoxW7PRAjxWM/edit#gid=0',
@@ -760,10 +688,6 @@ export default function Scheduler() {
                                                                     false,
                                                             })
                                                         );
-                                                        // handleChange({
-                                                        //     name: 'csv_file',
-                                                        //     value: 'select',
-                                                        // });
                                                         dispatch(
                                                             setCSVFile('select')
                                                         );
@@ -778,7 +702,6 @@ export default function Scheduler() {
                                         }
                                         isLoading={uiDetails.deletingCSV}
                                         leftIcon={<DeleteIcon />}
-                                        // disabled={isDisabled}
                                     >
                                         <Text>Delete</Text>
                                     </Button>
@@ -795,7 +718,6 @@ export default function Scheduler() {
                                         isLoading={
                                             uiDetails.loadingVerifiedContacts
                                         }
-                                        // disabled={isDisabled}
                                         leftIcon={<FiFilter />}
                                     >
                                         <Text>Filter Numbers</Text>
@@ -838,38 +760,35 @@ export default function Scheduler() {
                         ) : null}
                     </Flex>
                     <HStack gap={8} alignItems={'start'}>
-                        <Flex
-                            direction={'column'}
-                            gap={2}
-                            // hidden={isHidden}
-                        >
+                        <Flex flex={1} direction={'column'} gap={2}>
                             <Box justifyContent={'space-between'}>
                                 <Text
                                     className="text-gray-700 dark:text-white"
                                     py={4}
+                                    fontWeight={'medium'}
                                 >
                                     Message Section
+                                </Text>
+                                <Text
+                                    className="text-gray-700 dark:text-white"
+                                    size={'m'}
+                                >
+                                    Write a message or select from a template
                                 </Text>
                                 <Flex gap={3} alignItems={'center'}>
                                     <Select
                                         className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
                                         border={'none'}
                                         rounded={'md'}
-                                        onChange={(e) =>
-                                            // handleChange({
-                                            //     name: 'message',
-                                            //     value: e.target.value,
-                                            // })
-                                            {
-                                                setError((prev) => ({
-                                                    ...prev,
-                                                    message: '',
-                                                }));
-                                                dispatch(
-                                                    setMessage(e.target.value)
-                                                );
-                                            }
-                                        }
+                                        onChange={(e) => {
+                                            setError((prev) => ({
+                                                ...prev,
+                                                message: '',
+                                            }));
+                                            dispatch(
+                                                setMessage(e.target.value)
+                                            );
+                                        }}
                                     >
                                         <option
                                             className="text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
@@ -938,18 +857,13 @@ export default function Scheduler() {
                                     }}
                                     _focus={{ border: 'none', outline: 'none' }}
                                     value={details.message ?? ''}
-                                    onChange={(e) =>
-                                        // handleChange({ name: 'message', value: e.target.value })
-                                        {
-                                            setError((prev) => ({
-                                                ...prev,
-                                                message: '',
-                                            }));
-                                            dispatch(
-                                                setMessage(e.target.value)
-                                            );
-                                        }
-                                    }
+                                    onChange={(e) => {
+                                        setError((prev) => ({
+                                            ...prev,
+                                            message: '',
+                                        }));
+                                        dispatch(setMessage(e.target.value));
+                                    }}
                                 />
                                 {error.message && (
                                     <FormErrorMessage>
@@ -977,23 +891,17 @@ export default function Scheduler() {
                                                 variant="solid"
                                                 colorScheme="gray"
                                                 _hover={{ cursor: 'pointer' }}
-                                                onClick={() =>
-                                                    // handleChange({
-                                                    //     name: 'message',
-                                                    //     value: `${details.message} ${variable}`,
-                                                    // })
-                                                    {
-                                                        setError((prev) => ({
-                                                            ...prev,
-                                                            message: '',
-                                                        }));
-                                                        dispatch(
-                                                            setMessage(
-                                                                `${details.message} ${variable}`
-                                                            )
-                                                        );
-                                                    }
-                                                }
+                                                onClick={() => {
+                                                    setError((prev) => ({
+                                                        ...prev,
+                                                        message: '',
+                                                    }));
+                                                    dispatch(
+                                                        setMessage(
+                                                            `${details.message} ${variable}`
+                                                        )
+                                                    );
+                                                }}
                                             >
                                                 <TagLabel>{variable}</TagLabel>
                                             </Tag>
@@ -1002,216 +910,59 @@ export default function Scheduler() {
                                 </Box>
                             </Box>
                             <Box>
-                                <Text className="text-gray-700 dark:text-white">
+                                <Text className="text-gray-700 dark:text-gray-400">
                                     Attachments
                                 </Text>
-                                <Flex
-                                    gap={2}
-                                    alignItems={'center'}
-                                    width={'full'}
-                                >
-                                    <Multiselect
-                                        displayValue="displayValue"
-                                        placeholder={'Select Attachments'}
-                                        onRemove={(
-                                            selectedList: typeof allAttachments
-                                        ) =>
-                                            // handleChange({
-                                            //     name: 'attachments',
-                                            //     value: selectedList.map(
-                                            //         (attachment) => attachment.id
-                                            //     ),
-                                            // })
-                                            dispatch(
-                                                setAttachments(
-                                                    selectedList.map(
-                                                        (attachment) =>
-                                                            attachment.id
-                                                    )
-                                                )
-                                            )
-                                        }
-                                        onSelect={(
-                                            selectedList: typeof allAttachments
-                                        ) =>
-                                            // handleChange({
-                                            //     name: 'attachments',
-                                            //     value: selectedList.map(
-                                            //         (attachment) => attachment.id
-                                            //     ),
-                                            // })
-                                            dispatch(
-                                                setAttachments(
-                                                    selectedList.map(
-                                                        (attachment) =>
-                                                            attachment.id
-                                                    )
-                                                )
-                                            )
-                                        }
-                                        options={allAttachments.map(
-                                            (item, index) => ({
-                                                ...item,
-                                                displayValue: `${index + 1}. ${
-                                                    item.name
-                                                }`,
-                                            })
-                                        )}
-                                        ref={
-                                            multiselectRef
-                                                ? (ref) =>
-                                                      (multiselectRef.current =
-                                                          ref)
-                                                : null
-                                        }
-                                        className="!w-[350px] bg-[#ECECEC] dark:bg-[#535353] rounded-md border-none "
-                                    />
-                                    {/* {allAttachments.map((attachment, index) => {
-                                        return (
-                                            <Tag
-                                                size={'sm'}
-                                                m={'0.25rem'}
-                                                p={'0.5rem'}
-                                                key={index}
-                                                borderRadius="md"
-                                                variant="solid"
-                                                colorScheme="gray"
-                                                _hover={{ cursor: 'pointer' }}
-                                                // onClick={() =>
-                                                //     // handleChange({
-                                                //     //     name: 'message',
-                                                //     //     value: `${details.message} ${variable}`,
-                                                //     // })
-                                                //     dispatch(
-                                                //         setMessage(
-                                                //             `${details.message} ${variable}`
-                                                //         )
-                                                //     )
-                                                // }
-                                            >
-                                                <Avatar
-                                                    src={attachment.thumbnail}
-                                                    size={'xs'}
-                                                />
-                                                <TagLabel>
-                                                    {attachment.filename}
-                                                </TagLabel>
-                                            </Tag>
-                                        );
-                                    })} */}
-                                    {/* <IconButton
-                                        size={'sm'}
-                                        colorScheme="green"
-                                        backgroundColor={'transparent'}
-                                        rounded={'full'}
-                                        borderWidth={'1px'}
-                                        borderColor={'green.400'}
-                                        icon={
-                                            <AttachmentIcon
-                                                color={'green.400'}
-                                            />
-                                        }
-                                        _hover={{
-                                            opacity: 1,
-                                            borderColor: 'green.500',
-                                        }}
-                                        aria-label="Add Attachment"
-                                        isLoading={addingAttachment}
-                                        onClick={() => {
-                                            document
-                                                .getElementById(
-                                                    'attachment-file-input'
-                                                )
-                                                ?.click();
-                                        }}
-                                    /> */}
-                                    <Button
-                                        colorScheme="green"
-                                        backgroundColor={'transparent'}
-                                        variant={'outline'}
-                                        leftIcon={
-                                            <AttachmentIcon
-                                                color={'green.400'}
-                                            />
-                                        }
-                                        aria-label="Add Attachment"
-                                        isLoading={addingAttachment}
-                                        onClick={() => {
-                                            document
-                                                .getElementById(
-                                                    'attachment-file-input'
-                                                )
-                                                ?.click();
-                                        }}
-                                    >
-                                        Add Attachments
-                                    </Button>
-                                </Flex>
-                                <AttachmentDetailsInputDialog
-                                    isOpen={isAttachmentDetailsOpen}
-                                    onClose={() => {
-                                        closeAttachmentDetailsInput();
-                                        setAttachmentFile(null);
-                                    }}
-                                    onConfirm={(
-                                        name: string,
-                                        caption: string
-                                    ) => {
-                                        if (!attachmentFile || !name) return;
-                                        addAttachment(
-                                            name,
-                                            caption,
-                                            attachmentFile
-                                        );
-                                        closeAttachmentDetailsInput();
-                                    }}
-                                    variables={details.variables}
-                                />
-                                <input
-                                    type="file"
-                                    name="attachment-file-input"
-                                    id="attachment-file-input"
-                                    className="invisible h-[1px] absolute"
-                                    multiple={false}
-                                    ref={(ref) => (fileInputRef.current = ref)}
-                                    onInput={handleAttachmentInput}
-                                />
-                            </Box>
-                            <Box flexGrow={1}>
-                                <Text className="text-gray-700 dark:text-gray-400">
-                                    Share Contact
-                                </Text>
                                 <Button
-                                    size={'sm'}
                                     width={'full'}
                                     variant={'outline'}
                                     colorScheme="green"
                                     onClick={() => {
                                         selectContactListRef.current?.open();
-                                        selectContactListRef.current?.setIds(
+                                        selectContactListRef.current?.setAttachmentId(
+                                            details.attachments
+                                        );
+                                        selectContactListRef.current?.setType(
+                                            'Attachments'
+                                        );
+                                    }}
+                                >
+                                    Select Atachment (
+                                    {details.attachments.length})
+                                </Button>
+                            </Box>
+                            <Box>
+                                <Text className="text-gray-700 dark:text-gray-400">
+                                    Share Contact
+                                </Text>
+                                <Button
+                                    width={'full'}
+                                    variant={'outline'}
+                                    colorScheme="green"
+                                    onClick={() => {
+                                        selectContactListRef.current?.open();
+                                        selectContactListRef.current?.setContactId(
                                             details.shared_contact_cards
+                                        );
+                                        selectContactListRef.current?.setType(
+                                            'Contacts'
                                         );
                                     }}
                                 >
                                     Select Contact (
                                     {details.shared_contact_cards.length})
                                 </Button>
-                                <SelectContactsList
+                                <SelectContactsOrAttachmentsList
                                     ref={selectContactListRef}
-                                    type="Contacts"
                                     onConfirm={handleContactInput}
                                 />
                             </Box>
-                            {fileError && (
-                                <Text color={'tomato'}>{fileError}</Text>
-                            )}
                         </Flex>
                         <FormControl
-                            // isInvalid={!!error}
+                            flex={1}
                             display={'flex'}
                             flexDirection={'column'}
                             gap={2}
-                            // hidden={isHidden}
                         >
                             <Box justifyContent={'space-between'}>
                                 <Text
@@ -1245,25 +996,17 @@ export default function Scheduler() {
                                             type="number"
                                             min={1}
                                             value={details.min_delay.toString()}
-                                            onChange={(e) =>
-                                                // handleChange({
-                                                //     name: 'min_delay',
-                                                //     value: Number(e.target.value),
-                                                // })
-                                                {
-                                                    setError((prev) => ({
-                                                        ...prev,
-                                                        minDelay: '',
-                                                    }));
-                                                    dispatch(
-                                                        setMinDelay(
-                                                            Number(
-                                                                e.target.value
-                                                            )
-                                                        )
-                                                    );
-                                                }
-                                            }
+                                            onChange={(e) => {
+                                                setError((prev) => ({
+                                                    ...prev,
+                                                    minDelay: '',
+                                                }));
+                                                dispatch(
+                                                    setMinDelay(
+                                                        Number(e.target.value)
+                                                    )
+                                                );
+                                            }}
                                         />
                                         {error.minDelay && (
                                             <FormErrorMessage>
@@ -1294,25 +1037,17 @@ export default function Scheduler() {
                                             type="number"
                                             min={1}
                                             value={details.max_delay.toString()}
-                                            onChange={(e) =>
-                                                // handleChange({
-                                                //     name: 'max_delay',
-                                                //     value: Number(e.target.value),
-                                                // })
-                                                {
-                                                    setError((prev) => ({
-                                                        ...prev,
-                                                        maxDelay: '',
-                                                    }));
-                                                    dispatch(
-                                                        setMaxDelay(
-                                                            Number(
-                                                                e.target.value
-                                                            )
-                                                        )
-                                                    );
-                                                }
-                                            }
+                                            onChange={(e) => {
+                                                setError((prev) => ({
+                                                    ...prev,
+                                                    maxDelay: '',
+                                                }));
+                                                dispatch(
+                                                    setMaxDelay(
+                                                        Number(e.target.value)
+                                                    )
+                                                );
+                                            }}
                                         />
                                         {error.maxDelay && (
                                             <FormErrorMessage>
@@ -1356,25 +1091,17 @@ export default function Scheduler() {
                                             type="number"
                                             min={1}
                                             value={details.batch_size.toString()}
-                                            onChange={(e) =>
-                                                // handleChange({
-                                                //     name: 'batch_size',
-                                                //     value: Number(e.target.value),
-                                                // })
-                                                {
-                                                    setError((prev) => ({
-                                                        ...prev,
-                                                        batchSize: '',
-                                                    }));
-                                                    dispatch(
-                                                        setBatchSize(
-                                                            Number(
-                                                                e.target.value
-                                                            )
-                                                        )
-                                                    );
-                                                }
-                                            }
+                                            onChange={(e) => {
+                                                setError((prev) => ({
+                                                    ...prev,
+                                                    batchSize: '',
+                                                }));
+                                                dispatch(
+                                                    setBatchSize(
+                                                        Number(e.target.value)
+                                                    )
+                                                );
+                                            }}
                                         />
                                         {error.batchSize && (
                                             <FormErrorMessage>
@@ -1405,25 +1132,17 @@ export default function Scheduler() {
                                             type="number"
                                             min={1}
                                             value={details.batch_delay.toString()}
-                                            onChange={(e) =>
-                                                // handleChange({
-                                                //     name: 'batch_delay',
-                                                //     value: Number(e.target.value),
-                                                // })
-                                                {
-                                                    setError((prev) => ({
-                                                        ...prev,
-                                                        batchDelay: '',
-                                                    }));
-                                                    dispatch(
-                                                        setBatchDelay(
-                                                            Number(
-                                                                e.target.value
-                                                            )
-                                                        )
-                                                    );
-                                                }
-                                            }
+                                            onChange={(e) => {
+                                                setError((prev) => ({
+                                                    ...prev,
+                                                    batchDelay: '',
+                                                }));
+                                                dispatch(
+                                                    setBatchDelay(
+                                                        Number(e.target.value)
+                                                    )
+                                                );
+                                            }}
                                         />
                                         {error.batchDelay && (
                                             <FormErrorMessage>
@@ -1464,10 +1183,6 @@ export default function Scheduler() {
                                             }}
                                             value={details.startTime}
                                             onChange={(e) =>
-                                                // handleChange({
-                                                //     name: 'startTime',
-                                                //     value: e.target.value,
-                                                // })
                                                 dispatch(
                                                     setStartTime(e.target.value)
                                                 )
@@ -1494,10 +1209,6 @@ export default function Scheduler() {
                                             }}
                                             value={details.endTime}
                                             onChange={(e) =>
-                                                // handleChange({
-                                                //     name: 'endTime',
-                                                //     value: e.target.value,
-                                                // })
                                                 dispatch(
                                                     setEndTime(e.target.value)
                                                 )
@@ -1519,6 +1230,7 @@ export default function Scheduler() {
                         width="full"
                         mt={8}
                         onClick={scheduleMessage}
+                        isLoading={uiDetails.schedulingMessages}
                     >
                         Schedule
                     </Button>

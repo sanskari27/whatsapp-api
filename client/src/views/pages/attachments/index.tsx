@@ -29,6 +29,7 @@ import {
     findAttachmentById,
     setError,
     setFile,
+    setSelectedAttachment,
     startAttachmentDeleting,
     startAttachmentUpdating,
 } from '../../../store/reducers/AttachmentReducers';
@@ -86,6 +87,7 @@ const AttachmentPage = () => {
         dispatch(setFile(files[0]));
         if (fileInputRef.current) fileInputRef.current.value = '';
         if (isUpdating) {
+            console.log(selectedAttachment);
             AttachmentService.updateAtachmentFile(
                 selectedAttachment.id,
                 file as File
@@ -103,8 +105,9 @@ const AttachmentPage = () => {
         AttachmentDetailsInputRef.current?.open();
     };
 
-    const handleFileChange = () => {
+    const handleFileChange = (id: string) => {
         dispatch(startAttachmentUpdating());
+        dispatch(setSelectedAttachment({ id }));
         document.getElementById('attachment-file-input')?.click();
     };
 
@@ -235,24 +238,32 @@ const AttachmentPage = () => {
                                                 }
                                             />
                                         </Tooltip>
-                                        <Tooltip
-                                            hasArrow
-                                            label="Edit Attachment File"
-                                            bg="gray.300"
-                                            color="black"
-                                        >
-                                            <IconButton
-                                                aria-label="change file"
-                                                icon={
-                                                    <Icon
-                                                        as={MdOutlineAttachment}
-                                                        height={5}
-                                                        width={5}
-                                                    />
-                                                }
-                                                onClick={handleFileChange}
-                                            />
-                                        </Tooltip>
+                                        <Box as="span">
+                                            <Tooltip
+                                                hasArrow
+                                                label="Edit Attachment File"
+                                                bg="gray.300"
+                                                color="black"
+                                            >
+                                                <IconButton
+                                                    aria-label="change file"
+                                                    icon={
+                                                        <Icon
+                                                            as={
+                                                                MdOutlineAttachment
+                                                            }
+                                                            height={5}
+                                                            width={5}
+                                                        />
+                                                    }
+                                                    onClick={() =>
+                                                        handleFileChange(
+                                                            attachment.id
+                                                        )
+                                                    }
+                                                />
+                                            </Tooltip>
+                                        </Box>
                                     </HStack>
                                 </Td>
                             </Tr>

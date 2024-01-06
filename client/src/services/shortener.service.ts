@@ -15,6 +15,7 @@ export default class ShortenerService {
                 link: data.link as string,
                 base64: data.base64 as string,
                 id: data.id as string,
+                title: data.title as string,
             };
         } catch (err) {
             return null;
@@ -31,6 +32,7 @@ export default class ShortenerService {
                 link: data.link as string,
                 base64: data.base64 as string,
                 id: data.id as string,
+                title: data.title as string,
             };
         } catch (err) {
             return {
@@ -38,6 +40,7 @@ export default class ShortenerService {
                 link: '',
                 base64: '',
                 id: '',
+                title: '',
             };
         }
     }
@@ -50,6 +53,7 @@ export default class ShortenerService {
                 link: string;
                 base64: string;
                 id: string;
+                title: string;
             }[];
         } catch (err) {
             return [] as {
@@ -57,6 +61,7 @@ export default class ShortenerService {
                 link: string;
                 base64: string;
                 id: string;
+                title: string;
             }[];
         }
     }
@@ -90,6 +95,7 @@ export default class ShortenerService {
                 shorten_link: string;
                 link: string;
                 base64: string;
+                title: string;
             };
         } catch (err) {
             return null;
