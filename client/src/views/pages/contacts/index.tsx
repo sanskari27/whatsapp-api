@@ -10,24 +10,29 @@ import {
 	TableContainer,
 	Tbody,
 	Td,
-	Text,
 	Th,
 	Thead,
 	Tr,
 } from '@chakra-ui/react';
-import React, { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { MdContactPage, MdContacts } from 'react-icons/md';
+import { TbDatabaseExport } from 'react-icons/tb';
 import { useDispatch, useSelector } from 'react-redux';
+import { NAVIGATION } from '../../../config/const';
+import { popFromNavbar, pushToNavbar } from '../../../hooks/useNavbar';
 import { useTheme } from '../../../hooks/useTheme';
 import ContactCardService from '../../../services/contant-card.service';
 import { StoreNames, StoreState } from '../../../store';
 import {
+	addSelectedContact,
 	deleteContactCard,
 	deletingContactCard,
 	findContactById,
+	removeSelectedContact,
 	updatingContactCard,
 } from '../../../store/reducers/ContactCardReducers';
 import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
+import ExporterModal, { ExportsModalHandler } from '../../components/exporter';
 import QrImage from '../../components/qr-image';
 import ContactInputDialog, { ContactInputDialogHandle } from './components/contact-input-dialog';
 
@@ -36,18 +41,11 @@ const ContactsPage = () => {
 	const dispatch = useDispatch();
 	const confirmationDialogRef = useRef<ConfirmationDialogHandle>(null);
 
-	const [selectedContacts, setSelectedContacts] = React.useState<string[]>([]);
-
-	const { list } = useSelector((state: StoreState) => state[StoreNames.CONTACT_CARD]);
+	const { list, selectedContacts } = useSelector(
+		(state: StoreState) => state[StoreNames.CONTACT_CARD]
+	);
 	const drawerRef = useRef<ContactInputDialogHandle>(null);
-
-	const addSelectedContactList = (campaign_id: string) => {
-		setSelectedContacts((prev) => [...prev, campaign_id]);
-	};
-
-	const removeSelectedContactList = (campaign_id: string) => {
-		setSelectedContacts((prev) => prev.filter((id) => id !== campaign_id));
-	};
+	const exporterRef = useRef<ExportsModalHandler>(null);
 
 	const handleDeleteContacts = async () => {
 		dispatch(deletingContactCard());
@@ -63,14 +61,22 @@ const ContactsPage = () => {
 		drawerRef.current?.open();
 	};
 
-	return (
-		<Box py={'1rem'} textColor={theme === 'dark' ? 'white' : 'black'}>
-			<HStack px={4}>
-				<HStack width={'full'}>
-					<Icon as={MdContacts} height={5} width={5} color={'green.400'} />
-					<Text fontSize={'xl'}>Contacts</Text>
-				</HStack>
+	useEffect(() => {
+		pushToNavbar({
+			title: 'Contacts',
+			icon: MdContacts,
+			link: NAVIGATION.CONTACT,
+			actions: (
 				<HStack>
+					<Button
+						leftIcon={<Icon as={TbDatabaseExport} height={5} width={5} />}
+						colorScheme={'blue'}
+						variant={'solid'}
+						size={'sm'}
+						onClick={() => exporterRef.current?.open()}
+					>
+						Export Contacts
+					</Button>
 					<Button
 						leftIcon={<Icon as={MdContactPage} height={5} width={5} />}
 						colorScheme={'green'}
@@ -93,7 +99,15 @@ const ContactsPage = () => {
 						Delete Contact
 					</Button>
 				</HStack>
-			</HStack>
+			),
+		});
+		return () => {
+			popFromNavbar();
+		};
+	}, [selectedContacts.length]);
+
+	return (
+		<Box py={'1rem'} textColor={theme === 'dark' ? 'white' : 'black'}>
 			<TableContainer pt={'0.5rem'}>
 				<Table>
 					<Thead>
@@ -117,9 +131,9 @@ const ContactsPage = () => {
 										isChecked={selectedContacts.includes(contact.id)}
 										onChange={(e) => {
 											if (e.target.checked) {
-												addSelectedContactList(contact.id);
+												dispatch(addSelectedContact(contact.id));
 											} else {
-												removeSelectedContactList(contact.id);
+												dispatch(removeSelectedContact(contact.id));
 											}
 										}}
 									/>
@@ -149,6 +163,7 @@ const ContactsPage = () => {
 				</Table>
 			</TableContainer>
 			<ContactInputDialog ref={drawerRef} />
+			<ExporterModal ref={exporterRef} />
 			<ConfirmationDialog
 				type={'Campaign'}
 				ref={confirmationDialogRef}

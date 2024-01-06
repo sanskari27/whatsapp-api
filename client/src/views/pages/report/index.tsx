@@ -3,14 +3,12 @@ import {
 	Checkbox,
 	Flex,
 	HStack,
-	Icon,
 	SkeletonCircle,
 	SkeletonText,
 	Table,
 	TableContainer,
 	Tbody,
 	Td,
-	Text,
 	Th,
 	Thead,
 	Tr,
@@ -18,6 +16,8 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FiBarChart2 } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
+import { NAVIGATION } from '../../../config/const';
+import { popFromNavbar, pushToNavbar } from '../../../hooks/useNavbar';
 import { useTheme } from '../../../hooks/useTheme';
 import ReportsService from '../../../services/reports.service';
 import { StoreNames, StoreState } from '../../../store';
@@ -42,6 +42,57 @@ const Reports = () => {
 	// add a campaign to the export make a state for it
 	const [selectedCampaign, setSelectedCampaign] = useState<string[]>([]);
 
+	const exportCampaign = useCallback(
+		async (selectedCampaigns: string[]) => {
+			dispatch(setExportingCampaign(true));
+			const promises = selectedCampaigns.map(async (campaign) => {
+				await ReportsService.generateReport(campaign);
+			});
+			await Promise.all(promises).then(() => {
+				dispatch(setExportingCampaign(false));
+				setSelectedCampaign([]);
+			});
+		},
+		[dispatch]
+	);
+
+	useEffect(() => {
+		pushToNavbar({
+			title: 'Campaign Reports',
+			icon: FiBarChart2,
+			link: NAVIGATION.REPORTS,
+			actions: (
+				<HStack alignItems={'center'} justifyContent={'flex-end'}>
+					<Button
+						colorScheme={'green'}
+						onClick={() => exportCampaign(selectedCampaign)}
+						isDisabled={selectedCampaign.length === 0}
+						isLoading={exportingCampaign}
+					>
+						Export
+					</Button>
+					<Button
+						colorScheme={'red'}
+						onClick={() => confirmationDialogRef.current?.open()}
+						isDisabled={selectedCampaign.length === 0}
+						isLoading={deletingCampaign}
+					>
+						Delete
+					</Button>
+				</HStack>
+			),
+		});
+		return () => {
+			popFromNavbar();
+		};
+	}, [
+		deletingCampaign,
+		selectedCampaign.length,
+		exportCampaign,
+		exportingCampaign,
+		selectedCampaign,
+	]);
+
 	const fetchCampaigns = useCallback(() => {
 		ReportsService.generateAllCampaigns()
 			.then((res) => {
@@ -56,18 +107,6 @@ const Reports = () => {
 		dispatch(setCampaignLoading(true));
 		fetchCampaigns();
 	}, [dispatch, fetchCampaigns]);
-
-	const exportCampaign = async () => {
-		dispatch(setExportingCampaign(true));
-		const promises = selectedCampaign.map(async (campaign) => {
-			await ReportsService.generateReport(campaign);
-		});
-		await Promise.all(promises).then(() => {
-			dispatch(setExportingCampaign(false));
-			setSelectedCampaign([]);
-			fetchCampaigns();
-		});
-	};
 
 	const deleteCampaign = async () => {
 		dispatch(setDeletingCampaign(true));
@@ -91,30 +130,6 @@ const Reports = () => {
 
 	return (
 		<Flex direction={'column'} padding={'1rem'} justifyContent={'start'}>
-			<HStack justifyContent={'space-between'} width={'full'} pb={'2rem'}>
-				<Text textColor={theme === 'dark' ? 'white' : 'black'} fontSize={'xl'}>
-					<Icon as={FiBarChart2} className='mr-2' size={'1.5rem'} color={'green'} />
-					Campaign Reports
-				</Text>
-				<HStack justifyContent={'flex-end'} pt={4}>
-					<Button
-						colorScheme={'green'}
-						onClick={exportCampaign}
-						isDisabled={selectedCampaign.length === 0}
-						isLoading={exportingCampaign}
-					>
-						Export
-					</Button>
-					<Button
-						colorScheme={'red'}
-						onClick={() => confirmationDialogRef.current?.open()}
-						isDisabled={selectedCampaign.length === 0}
-						isLoading={deletingCampaign}
-					>
-						Delete
-					</Button>
-				</HStack>
-			</HStack>
 			<TableContainer>
 				<Table variant={'unstyled'}>
 					<Thead>

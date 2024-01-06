@@ -4,6 +4,7 @@ import { ContactCardState } from '../types/ContactCardState';
 
 const initialState: ContactCardState = {
 	list: [],
+	selectedContacts: [],
 	selectedCard: {
 		id: '',
 		first_name: '',
@@ -188,6 +189,12 @@ const ContactCardReducers = createSlice({
 		setError: (state, action: PayloadAction<string>) => {
 			state.uiDetails.error = action.payload;
 		},
+		addSelectedContact: (state, action: PayloadAction<string>) => {
+			state.selectedContacts.push(action.payload);
+		},
+		removeSelectedContact: (state, action: PayloadAction<string>) => {
+			state.selectedContacts = state.selectedContacts.filter((el) => el !== action.payload);
+		},
 	},
 });
 
@@ -228,6 +235,8 @@ export const {
 	removeContactNumberOther,
 	setLinks,
 	deleteContactCard,
+	addSelectedContact,
+	removeSelectedContact
 } = ContactCardReducers.actions;
 
 export default ContactCardReducers.reducer;
