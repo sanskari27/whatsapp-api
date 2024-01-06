@@ -71,7 +71,7 @@ export default class AttachmentService {
 				const percentCompleted = Math.round(
 					(progressEvent.loaded * 100) / (progressEvent.total ?? progressEvent.loaded)
 				);
-				cb(percentCompleted);
+				cb(Math.max(0, Math.min(100, percentCompleted)));
 			},
 		});
 	}
