@@ -4,4 +4,5 @@ export enum StoreNames {
     USER = 'user',
     LINK = 'link',
     CONTACT_CARD = 'contact_card',
+    ATTACHMENT = 'attachment',
 }
