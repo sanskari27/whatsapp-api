@@ -12,6 +12,9 @@ const ShortnerSchema = new mongoose.Schema<IShortner>({
 		type: String,
 		unique: true,
 	},
+	title: {
+		type: String,
+	},
 	link: {
 		type: String,
 	},
