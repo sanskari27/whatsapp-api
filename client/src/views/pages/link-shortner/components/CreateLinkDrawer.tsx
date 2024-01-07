@@ -94,7 +94,12 @@ const CreateLinkDrawer = forwardRef<
             title: string;
         } | null = null;
         if (type === 'WHATSAPP') {
-            data = await ShortenerService.getShortenedURL(number, message);
+            console.log(title, number, message);
+            data = await ShortenerService.getShortenedURL(
+                number,
+                message,
+                title
+            );
         } else {
             data = await ShortenerService.createLink(link);
         }

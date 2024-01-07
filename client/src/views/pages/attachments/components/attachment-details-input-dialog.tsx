@@ -1,4 +1,5 @@
 import {
+    Box,
     Button,
     FormControl,
     FormLabel,
@@ -10,9 +11,11 @@ import {
     ModalFooter,
     ModalHeader,
     ModalOverlay,
+    Text,
     Textarea,
 } from '@chakra-ui/react';
 import { forwardRef, useImperativeHandle, useState } from 'react';
+import Dropzone from 'react-dropzone';
 import { useDispatch, useSelector } from 'react-redux';
 import AttachmentService from '../../../../services/attachment.service';
 import { StoreNames, StoreState } from '../../../../store';
@@ -22,6 +25,7 @@ import {
     setCaption,
     setCustomCaption,
     setError,
+    setFile,
     setName,
     startAttachmentSaving,
     updateAttachment,
@@ -60,7 +64,14 @@ const AttachmentDetailsInputDialog =
             },
         }));
 
-        const handleAddAttachment = () => {
+        const handleAttachmentInput = (files: File) => {
+            if (files === null) return;
+            if (files.size > 62914560)
+                return dispatch(setError('File size should be less than 60MB'));
+            dispatch(setFile(files));
+        };
+
+        const handleAddAttachment = async () => {
             if (!name) {
                 dispatch(setError('Please enter a file name'));
                 return;
@@ -68,7 +79,15 @@ const AttachmentDetailsInputDialog =
 
             if (isUpdating) {
                 dispatch(startAttachmentSaving());
-                AttachmentService.updateAttachmentDetails(
+                if (file) {
+                    await AttachmentService.updateAttachmentFile(
+                        selectedAttachment.id,
+                        file
+                    ).then((res) => {
+                        if (!res) return;
+                    });
+                }
+                await AttachmentService.updateAttachmentDetails(
                     selectedAttachment
                 ).then((res) => {
                     if (!res) return;
@@ -90,18 +109,58 @@ const AttachmentDetailsInputDialog =
                     if (!res) return;
                     dispatch(addAttachment(res));
                     setOpen(false);
-                    console.log(isSaving);
                 });
             }
         };
 
         return (
-            <Modal isOpen={isOpen} onClose={onClose}>
+            <Modal isOpen={isOpen} onClose={onClose} size={'2xl'}>
                 <ModalOverlay />
                 <ModalContent>
                     <ModalHeader>Add Attachment</ModalHeader>
                     <ModalBody pb={6}>
-                        <FormControl isInvalid={!!errorMessage}>
+                        <Dropzone
+                            onDropAccepted={(acceptedFile) => {
+                                handleAttachmentInput(acceptedFile[0]);
+                            }}
+                            maxSize={62914560}
+                            onDropRejected={() =>
+                                dispatch(
+                                    setError(
+                                        'File size should be less than 60MB'
+                                    )
+                                )
+                            }
+                            multiple={false}
+                            onError={(err) => {
+                                dispatch(setError(err.message));
+                            }}
+                        >
+                            {({ getRootProps, getInputProps }) => (
+                                <Box
+                                    {...getRootProps()}
+                                    borderWidth={'1px'}
+                                    borderColor={'gray'}
+                                    borderStyle={'dashed'}
+                                    borderRadius={'lg'}
+                                    py={'3rem'}
+                                    textAlign={'center'}
+                                    textColor={'gray'}
+                                >
+                                    <input {...getInputProps()} />
+                                    <Text>
+                                        Drag and drop file here, or click to
+                                        select files
+                                    </Text>
+                                </Box>
+                            )}
+                        </Dropzone>
+                        {file && (
+                            <Text mt={'0.5rem'}>
+                                Selected file : {file.name}
+                            </Text>
+                        )}
+                        <FormControl isInvalid={!!errorMessage} pt={'1rem'}>
                             <FormLabel>File name</FormLabel>
                             <Input
                                 placeholder="file name"
@@ -119,40 +178,6 @@ const AttachmentDetailsInputDialog =
                                 pb={'0.5rem'}
                             >
                                 <FormLabel>Caption</FormLabel>
-                                {/* <HStack>
-                                    <IconButton
-                                        isRound={true}
-                                        variant="solid"
-                                        aria-label="Done"
-                                        size="xs"
-                                        icon={
-                                            custom_caption ? (
-                                                <CheckIcon color="white" />
-                                            ) : (
-                                                <></>
-                                            )
-                                        }
-                                        onClick={() => {
-                                            dispatch(
-                                                setCustomCaption(
-                                                    !custom_caption
-                                                )
-                                            );
-                                        }}
-                                        className={`${
-                                            custom_caption
-                                                ? '!bg-[#4CB072]'
-                                                : 'bg-green-500' ||
-                                                  '!bg-[#A6A6A6] dark:!bg-[#252525]'
-                                        } hover:!bg-green-700 `}
-                                    />
-                                    <Text
-                                        className="text-black dark:text-white"
-                                        fontSize="sm"
-                                    >
-                                        Custom Caption
-                                    </Text>
-                                </HStack> */}
                                 <Button
                                     size={'sm'}
                                     onClick={() => {
