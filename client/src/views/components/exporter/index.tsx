@@ -1,10 +1,13 @@
 import {
 	Box,
 	Button,
+	Center,
+	Checkbox,
 	Flex,
 	Icon,
 	Modal,
 	ModalBody,
+	ModalCloseButton,
 	ModalContent,
 	ModalFooter,
 	ModalHeader,
@@ -35,6 +38,7 @@ const initialExportCriteria = {
 	[EXPORTS_TYPE.GROUP_ALL]: false,
 	[EXPORTS_TYPE.LABEL]: false,
 	[EXPORTS_TYPE.LABEL_ALL]: false,
+	[EXPORTS_TYPE.BUSINESS_ONLY]: false,
 };
 
 const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
@@ -79,7 +83,7 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 		labelLoading: false,
 	});
 
-	const { ALL, SAVED, UNSAVED, GROUP, LABEL } = export_criteria;
+	const { ALL, SAVED, UNSAVED, GROUP, LABEL, BUSINESS_ONLY } = export_criteria;
 
 	const handleChange = async ({ name, value }: { name: string; value: boolean }) => {
 		setExportCriteria((prevState) => ({
@@ -125,25 +129,26 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 				? labels.map((item) => item.id)
 				: selectedLabel
 			: undefined;
+		const business_contacts_only = export_criteria[EXPORTS_TYPE.BUSINESS_ONLY];
 
 		if (ALL) {
-			ContactService.contacts({ vcf_only });
+			ContactService.contacts({ vcf_only, business_contacts_only });
 		}
 
 		if (SAVED) {
-			ContactService.contacts({ saved_contacts: true, vcf_only });
+			ContactService.contacts({ saved_contacts: true, vcf_only, business_contacts_only });
 		}
 
 		if (UNSAVED) {
-			ContactService.contacts({ non_saved_contacts: false, vcf_only });
+			ContactService.contacts({ non_saved_contacts: false, vcf_only, business_contacts_only });
 		}
 
 		if (GROUP && selectedGroups && selectedGroups.length > 0) {
-			GroupService.fetchGroup(selectedGroups, vcf_only);
+			GroupService.fetchGroup(selectedGroups, { vcf_only, business_contacts_only });
 		}
 
 		if (LABEL && selectedLabels && selectedLabels.length > 0) {
-			LabelService.fetchLabel(selectedLabels, vcf_only);
+			LabelService.fetchLabel(selectedLabels, { vcf_only, business_contacts_only });
 		}
 
 		setUIDetails((prevState) => ({
@@ -217,193 +222,196 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 	}, []);
 
 	return (
-		<Modal isOpen={isOpen} onClose={onClose} size={'lg'}>
+		<Modal isOpen={isOpen} onClose={onClose}>
 			<ModalOverlay />
 			<ModalContent>
 				<ModalHeader>
-					<Flex alignItems='center' gap={'0.5rem'} mt={'1.5rem'}>
+					<Flex alignItems='center' gap={'0.5rem'}>
 						<Icon as={PiFileCsvLight} height={5} width={5} color={'green.400'} />
 						<Text className='text-black dark:text-white' fontSize='md'>
 							Exports
 						</Text>
 					</Flex>
 				</ModalHeader>
+				<ModalCloseButton />
 				<ModalBody>
-					<Flex direction={'column'} gap={'0.5rem'} justifyContent={'space-between'}>
-						<Flex direction={'column'} gap={'0.5rem'}>
-							<Box
-								className='bg-[#ECECEC] dark:bg-[#535353]'
-								p={'0.5rem'}
-								borderRadius={'20px'}
-								mb={'1rem'}
-							>
-								<Flex flexDirection={'column'} gap={'0.5rem'} width={'full'}>
-									<Flex alignItems='flex-end' justifyContent={'space-between'}>
-										<CheckButton
-											name={'ALL'}
-											label='All Chat Contacts'
-											value={ALL}
-											onChange={handleChange}
-										/>
-										<Text fontSize='xs' className='text-black dark:text-white'>
-											{Loading.contactLoading
-												? 'Loading...'
-												: `${contactsCount[EXPORTS_TYPE.ALL]} Contacts`}
-										</Text>
-									</Flex>
-									<Flex alignItems='flex-end' justifyContent={'space-between'}>
-										<CheckButton
-											name={'SAVED'}
-											label='All Saved Contacts'
-											value={SAVED}
-											onChange={handleChange}
-										/>
-										<Text fontSize='xs' className='text-black dark:text-white'>
-											{Loading.contactLoading
-												? 'Loading...'
-												: `${contactsCount[EXPORTS_TYPE.SAVED]} Contacts`}
-										</Text>
-									</Flex>
-									<Flex alignItems='flex-end' justifyContent={'space-between'}>
-										<CheckButton
-											name={'UNSAVED'}
-											label='All Unsaved Contacts'
-											value={UNSAVED}
-											onChange={handleChange}
-										/>
-										<Text fontSize='xs' className='text-black dark:text-white'>
-											{Loading.contactLoading
-												? 'Loading...'
-												: `${contactsCount[EXPORTS_TYPE.UNSAVED]} Contacts`}
-										</Text>
-									</Flex>
-									<Flex alignItems='flex-end' justifyContent={'space-between'}>
-										<CheckButton
-											name={'GROUP'}
-											label='Group Contacts'
-											value={GROUP}
-											onChange={handleChange}
-										/>
-										<Text
-											fontSize='xs'
-											className='text-black dark:text-white'
-											hidden={!isAuthenticated}
-										>
-											{Loading.groupLoading ? 'Loading...' : `${groups.length} Groups`}
-										</Text>
-									</Flex>
-									<Flex alignItems='center' justifyContent='space-between'>
-										<Multiselect
-											disable={!GROUP || export_criteria[EXPORTS_TYPE.GROUP_ALL]}
-											displayValue='name'
-											placeholder='Select Group'
-											onRemove={(selectedList) =>
-												setSelectedGroup(selectedList.map((group: { id: string }) => group.id))
-											}
-											onSelect={(selectedList) => {
-												setSelectedGroup(selectedList.map((group: { id: string }) => group.id));
-											}}
-											showCheckbox={true}
-											hideSelectedList={true}
-											options={groups}
-											style={{
-												searchBox: {
-													border: 'none',
-												},
-											}}
-											className='!w-[300px] !mr-2 !bg-[#A6A6A6] dark:!bg-[#252525] rounded-md border-none '
-										/>
-										<Button
-											onClick={() => {
-												handleChange({
-													name: 'GROUP_ALL',
-													value: !export_criteria[EXPORTS_TYPE.GROUP_ALL],
-												});
-												setUIDetails((prevState) => ({
-													...prevState,
-													selectAllGroups: !export_criteria[EXPORTS_TYPE.GROUP_ALL],
-												}));
-											}}
-											isDisabled={!GROUP}
-											size='sm'
-											className={`${
-												uiDetails.selectAllGroups
-													? '!bg-green-400'
-													: '!bg-[#A6A6A6] dark:!bg-[#252525]'
-											} !text-white`}
-											color={'white'}
-										>
-											{uiDetails.selectAllGroups ? 'Deselect All' : 'Select All'}
-										</Button>
-									</Flex>
-									<Flex alignItems='flex-end' justifyContent={'space-between'}>
-										<CheckButton
-											name={'LABEL'}
-											label='Label Contacts'
-											value={LABEL}
-											isDisabled={!uiDetails.isBusiness}
-											onChange={handleChange}
-										/>
-										<Text
-											fontSize='xs'
-											className='text-black dark:text-white '
-											hidden={!isAuthenticated || !uiDetails.isBusiness}
-										>
-											{Loading.labelLoading ? 'Loading...' : `${labels.length} Labels`}
-										</Text>
-									</Flex>
-									<Flex alignItems='center' justifyContent='space-between'>
-										<Multiselect
-											disable={!LABEL || export_criteria[EXPORTS_TYPE.LABEL_ALL]}
-											displayValue='name'
-											placeholder={
-												uiDetails.isBusiness ? 'Select Label' : 'For Business Account Only'
-											}
-											onRemove={(selectedList) =>
-												setSelectedLabel(selectedList.map((label: { id: string }) => label.id))
-											}
-											onSelect={(selectedList) =>
-												setSelectedLabel(selectedList.map((label: { id: string }) => label.id))
-											}
-											showCheckbox={true}
-											hideSelectedList={true}
-											options={labels}
-											style={{
-												searchBox: {
-													border: 'none',
-												},
-												inputField: {
-													width: '100%',
-												},
-											}}
-											className='!w-[300px] !mr-2 !bg-[#A6A6A6] dark:!bg-[#252525] rounded-md border-none '
-										/>
-										<Button
-											onClick={() => {
-												handleChange({
-													name: 'LABEL_ALL',
-													value: !export_criteria[EXPORTS_TYPE.LABEL_ALL],
-												});
-												setUIDetails((prevState) => ({
-													...prevState,
-													selectAllLabels: !export_criteria[EXPORTS_TYPE.LABEL_ALL],
-												}));
-											}}
-											isDisabled={!LABEL}
-											size='sm'
-											className={`${
-												uiDetails.selectAllLabels
-													? '!bg-green-400'
-													: '!bg-[#A6A6A6] dark:!bg-[#252525]'
-											} !text-white`}
-											color={'white'}
-										>
-											{uiDetails.selectAllLabels ? 'Deselect All' : 'Select All'}
-										</Button>
-									</Flex>
+					<Flex direction={'column'} gap={'0.5rem'}>
+						<Box className='bg-[#ECECEC] dark:bg-[#535353]' p={'0.5rem'} borderRadius={'20px'}>
+							<Flex flexDirection={'column'} gap={'0.5rem'} width={'full'}>
+								<Flex alignItems='flex-end' justifyContent={'space-between'}>
+									<CheckButton
+										name={'ALL'}
+										label='All Chat Contacts'
+										value={ALL}
+										onChange={handleChange}
+									/>
+									<Text fontSize='xs' className='text-black dark:text-white'>
+										{Loading.contactLoading
+											? 'Loading...'
+											: `${contactsCount[EXPORTS_TYPE.ALL]} Contacts`}
+									</Text>
 								</Flex>
-							</Box>
-						</Flex>
+								<Flex alignItems='flex-end' justifyContent={'space-between'}>
+									<CheckButton
+										name={'SAVED'}
+										label='All Saved Contacts'
+										value={SAVED}
+										onChange={handleChange}
+									/>
+									<Text fontSize='xs' className='text-black dark:text-white'>
+										{Loading.contactLoading
+											? 'Loading...'
+											: `${contactsCount[EXPORTS_TYPE.SAVED]} Contacts`}
+									</Text>
+								</Flex>
+								<Flex alignItems='flex-end' justifyContent={'space-between'}>
+									<CheckButton
+										name={'UNSAVED'}
+										label='All Unsaved Contacts'
+										value={UNSAVED}
+										onChange={handleChange}
+									/>
+									<Text fontSize='xs' className='text-black dark:text-white'>
+										{Loading.contactLoading
+											? 'Loading...'
+											: `${contactsCount[EXPORTS_TYPE.UNSAVED]} Contacts`}
+									</Text>
+								</Flex>
+								<Flex alignItems='flex-end' justifyContent={'space-between'}>
+									<CheckButton
+										name={'GROUP'}
+										label='Group Contacts'
+										value={GROUP}
+										onChange={handleChange}
+									/>
+									<Text
+										fontSize='xs'
+										className='text-black dark:text-white'
+										hidden={!isAuthenticated}
+									>
+										{Loading.groupLoading ? 'Loading...' : `${groups.length} Groups`}
+									</Text>
+								</Flex>
+								<Flex alignItems='center' justifyContent='space-between'>
+									<Multiselect
+										disable={!GROUP || export_criteria[EXPORTS_TYPE.GROUP_ALL]}
+										displayValue='name'
+										placeholder='Select Group'
+										onRemove={(selectedList) =>
+											setSelectedGroup(selectedList.map((group: { id: string }) => group.id))
+										}
+										onSelect={(selectedList) => {
+											setSelectedGroup(selectedList.map((group: { id: string }) => group.id));
+										}}
+										showCheckbox={true}
+										hideSelectedList={true}
+										options={groups}
+										style={{
+											searchBox: {
+												border: 'none',
+											},
+										}}
+										className='!w-[300px] !mr-2 !bg-[#A6A6A6] dark:!bg-[#252525] rounded-md border-none '
+									/>
+									<Button
+										onClick={() => {
+											handleChange({
+												name: 'GROUP_ALL',
+												value: !export_criteria[EXPORTS_TYPE.GROUP_ALL],
+											});
+											setUIDetails((prevState) => ({
+												...prevState,
+												selectAllGroups: !export_criteria[EXPORTS_TYPE.GROUP_ALL],
+											}));
+										}}
+										isDisabled={!GROUP}
+										size='sm'
+										className={`${
+											uiDetails.selectAllGroups
+												? '!bg-green-400'
+												: '!bg-[#A6A6A6] dark:!bg-[#252525]'
+										} !text-white`}
+										color={'white'}
+									>
+										{uiDetails.selectAllGroups ? 'Deselect All' : 'Select All'}
+									</Button>
+								</Flex>
+								<Flex alignItems='flex-end' justifyContent={'space-between'}>
+									<CheckButton
+										name={'LABEL'}
+										label='Label Contacts'
+										value={LABEL}
+										isDisabled={!uiDetails.isBusiness}
+										onChange={handleChange}
+									/>
+									<Text
+										fontSize='xs'
+										className='text-black dark:text-white '
+										hidden={!isAuthenticated || !uiDetails.isBusiness}
+									>
+										{Loading.labelLoading ? 'Loading...' : `${labels.length} Labels`}
+									</Text>
+								</Flex>
+								<Flex alignItems='center' justifyContent='space-between'>
+									<Multiselect
+										disable={!LABEL || export_criteria[EXPORTS_TYPE.LABEL_ALL]}
+										displayValue='name'
+										placeholder={
+											uiDetails.isBusiness ? 'Select Label' : 'For Business Account Only'
+										}
+										onRemove={(selectedList) =>
+											setSelectedLabel(selectedList.map((label: { id: string }) => label.id))
+										}
+										onSelect={(selectedList) =>
+											setSelectedLabel(selectedList.map((label: { id: string }) => label.id))
+										}
+										showCheckbox={true}
+										hideSelectedList={true}
+										options={labels}
+										style={{
+											searchBox: {
+												border: 'none',
+											},
+											inputField: {
+												width: '100%',
+											},
+										}}
+										className='!w-[300px] !mr-2 !bg-[#A6A6A6] dark:!bg-[#252525] rounded-md border-none '
+									/>
+									<Button
+										onClick={() => {
+											handleChange({
+												name: 'LABEL_ALL',
+												value: !export_criteria[EXPORTS_TYPE.LABEL_ALL],
+											});
+											setUIDetails((prevState) => ({
+												...prevState,
+												selectAllLabels: !export_criteria[EXPORTS_TYPE.LABEL_ALL],
+											}));
+										}}
+										isDisabled={!LABEL}
+										size='sm'
+										className={`${
+											uiDetails.selectAllLabels
+												? '!bg-green-400'
+												: '!bg-[#A6A6A6] dark:!bg-[#252525]'
+										} !text-white`}
+										color={'white'}
+									>
+										{uiDetails.selectAllLabels ? 'Deselect All' : 'Select All'}
+									</Button>
+								</Flex>
+							</Flex>
+						</Box>
+						<Center>
+							<Checkbox
+								colorScheme='green'
+								mr={2}
+								isChecked={BUSINESS_ONLY}
+								onChange={(e) => handleChange({ name: 'BUSINESS_ONLY', value: e.target.checked })}
+							/>
+							Business Contacts Only
+						</Center>
 					</Flex>
 				</ModalBody>
 				<ModalFooter>
