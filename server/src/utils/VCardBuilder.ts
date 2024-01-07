@@ -7,6 +7,7 @@ type VCardDetails = {
 	last_name: string;
 	title: string;
 	organization: string;
+	email_personal: string;
 	email_work: string;
 	links: string[];
 	street: string;
@@ -66,6 +67,7 @@ export default class VCardBuilder {
 		this.last_name = details.last_name ?? '';
 		this.title = details.title ?? '';
 		this.organization = details.organization ?? '';
+		this.email_personal = details.email_personal ?? '';
 		this.email_work = details.email_work ?? '';
 		this.links = details.links ?? [];
 		this.street = details.street ?? '';
