@@ -14,7 +14,7 @@ import {
     Text,
     Textarea,
 } from '@chakra-ui/react';
-import { forwardRef, useImperativeHandle, useState } from 'react';
+import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import Dropzone from 'react-dropzone';
 import { useDispatch, useSelector } from 'react-redux';
 import AttachmentService from '../../../../services/attachment.service';
@@ -30,6 +30,9 @@ import {
     startAttachmentSaving,
     updateAttachment,
 } from '../../../../store/reducers/AttachmentReducers';
+import ProgressBar, {
+    ProgressBarHandle,
+} from '../../../components/progress-bar';
 
 export type AttachmentDetailsInputDialogHandle = {
     close: () => void;
@@ -38,6 +41,7 @@ export type AttachmentDetailsInputDialogHandle = {
 
 const AttachmentDetailsInputDialog =
     forwardRef<AttachmentDetailsInputDialogHandle>((_, ref) => {
+        const progressRef = useRef<ProgressBarHandle>(null);
         const dispatch = useDispatch();
         const [isOpen, setOpen] = useState(false);
 
@@ -69,6 +73,11 @@ const AttachmentDetailsInputDialog =
             if (files.size > 62914560)
                 return dispatch(setError('File size should be less than 60MB'));
             dispatch(setFile(files));
+        };
+
+        const onUploadProgress = (progressEvent: number) => {
+            progressRef.current?.setProgressValue(progressEvent);
+            console.log(progressEvent, 'progress value');
         };
 
         const handleAddAttachment = async () => {
@@ -104,17 +113,24 @@ const AttachmentDetailsInputDialog =
                     file,
                     name,
                     caption,
-                    custom_caption
+                    custom_caption,
+                    onUploadProgress
                 ).then((res) => {
                     if (!res) return;
-                    dispatch(addAttachment(res));
+                    console.log(res);
+                    dispatch(addAttachment(res.data.attachment));
                     setOpen(false);
                 });
             }
         };
 
         return (
-            <Modal isOpen={isOpen} onClose={onClose} size={'2xl'}>
+            <Modal
+                isOpen={isOpen}
+                onClose={onClose}
+                size={'2xl'}
+                closeOnOverlayClick={!isSaving}
+            >
                 <ModalOverlay />
                 <ModalContent>
                     <ModalHeader>Add Attachment</ModalHeader>
@@ -219,17 +235,24 @@ const AttachmentDetailsInputDialog =
                     </ModalBody>
 
                     <ModalFooter>
-                        <Button
-                            colorScheme="whatsapp"
-                            mr={3}
-                            onClick={handleAddAttachment}
-                            isLoading={isSaving}
-                        >
-                            Save
-                        </Button>
-                        <Button onClick={onClose} colorScheme="red">
-                            Cancel
-                        </Button>
+                        <HStack width={'full'} justifyContent={'flex-end'}>
+                            <ProgressBar ref={progressRef} />
+                            <Button
+                                onClick={onClose}
+                                colorScheme="red"
+                                isDisabled={isSaving}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                colorScheme="whatsapp"
+                                mr={3}
+                                onClick={handleAddAttachment}
+                                isLoading={isSaving}
+                            >
+                                Save
+                            </Button>
+                        </HStack>
                     </ModalFooter>
                 </ModalContent>
             </Modal>
