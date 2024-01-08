@@ -280,60 +280,49 @@ export default function Bot() {
         }));
     }
 
-    function editResponder(bot: BotDetails) {
-        window.scrollTo(0, 0);
-        setUiDetails((prevState) => ({
-            ...prevState,
-            editBot: {
-                botId: bot.bot_id,
-                isEditing: true,
-            },
-            triggerError: '',
-        }));
-        dispatch(setTrigger(bot.trigger));
-        dispatch(setMessage(bot.message));
-        dispatch(
-            setRespondTo(
-                bot.respond_to as
-                    | ''
-                    | 'ALL'
-                    | 'SAVED_CONTACTS'
-                    | 'NON_SAVED_CONTACTS'
-            )
-        );
-        dispatch(
-            setOptions(
-                bot.options as
-                    | ''
-                    | 'INCLUDES_IGNORE_CASE'
-                    | 'INCLUDES_MATCH_CASE'
-                    | 'EXACT_IGNORE_CASE'
-                    | 'EXACT_MATCH_CASE'
-            )
-        );
-        const attachmentFilenames = bot.attachments.map(
-            (attachment) => attachment.filename
-        );
-        dispatch(setAttachments(attachmentFilenames));
-        dispatch(setContactCards(bot.shared_contact_cards));
-        setTriggerDetails((prevState) => ({
-            ...prevState,
-            trigger_gap_time:
-                bot.trigger_gap_seconds < 60
-                    ? bot.trigger_gap_seconds
-                    : bot.trigger_gap_seconds < 3600
-                    ? Math.floor(bot.trigger_gap_seconds / 60)
-                    : bot.trigger_gap_seconds < 86400
-                    ? Math.floor(bot.trigger_gap_seconds / 3600)
-                    : Math.floor(bot.trigger_gap_seconds / 86400),
-            trigger_gap_type:
-                Math.floor(bot.trigger_gap_seconds / 60) >= 60
-                    ? 'HOUR'
-                    : Math.floor(bot.trigger_gap_seconds / 60) >= 1
-                    ? 'MINUTE'
-                    : 'SECOND',
-        }));
-    }
+	function editResponder(bot: BotDetails) {
+		window.scrollTo(0, 0);
+		setUiDetails((prevState) => ({
+			...prevState,
+			editBot: {
+				botId: bot.bot_id,
+				isEditing: true,
+			},
+			triggerError: '',
+		}));
+		dispatch(setTrigger(bot.trigger));
+		dispatch(setMessage(bot.message));
+		dispatch(setRespondTo(bot.respond_to as '' | 'ALL' | 'SAVED_CONTACTS' | 'NON_SAVED_CONTACTS'));
+		dispatch(
+			setOptions(
+				bot.options as
+					| ''
+					| 'INCLUDES_IGNORE_CASE'
+					| 'INCLUDES_MATCH_CASE'
+					| 'EXACT_IGNORE_CASE'
+					| 'EXACT_MATCH_CASE'
+			)
+		);
+		dispatch(setAttachments(bot.attachments));
+		dispatch(setContactCards(bot.shared_contact_cards));
+		setTriggerDetails((prevState) => ({
+			...prevState,
+			trigger_gap_time:
+				bot.trigger_gap_seconds < 60
+					? bot.trigger_gap_seconds
+					: bot.trigger_gap_seconds < 3600
+					? Math.floor(bot.trigger_gap_seconds / 60)
+					: bot.trigger_gap_seconds < 86400
+					? Math.floor(bot.trigger_gap_seconds / 3600)
+					: Math.floor(bot.trigger_gap_seconds / 86400),
+			trigger_gap_type:
+				Math.floor(bot.trigger_gap_seconds / 60) >= 60
+					? 'HOUR'
+					: Math.floor(bot.trigger_gap_seconds / 60) >= 1
+					? 'MINUTE'
+					: 'SECOND',
+		}));
+	}
 
     return (
         <Flex

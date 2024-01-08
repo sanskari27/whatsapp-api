@@ -6,8 +6,6 @@ export default class TokenService {
 			await APIInstance.get(`/token/validate/${token}`);
 			return true;
 		} catch (err) {
-			console.log(err);
-
 			return false;
 		}
 	}

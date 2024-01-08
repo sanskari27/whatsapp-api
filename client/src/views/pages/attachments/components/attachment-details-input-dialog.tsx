@@ -13,6 +13,7 @@ import {
     ModalOverlay,
     Text,
     Textarea,
+
 } from '@chakra-ui/react';
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import Dropzone from 'react-dropzone';
@@ -20,23 +21,22 @@ import { useDispatch, useSelector } from 'react-redux';
 import AttachmentService from '../../../../services/attachment.service';
 import { StoreNames, StoreState } from '../../../../store';
 import {
-    addAttachment,
-    clearSelectedAttachment,
-    setCaption,
-    setCustomCaption,
-    setError,
-    setFile,
-    setName,
-    startAttachmentSaving,
-    updateAttachment,
+	addAttachment,
+	clearSelectedAttachment,
+	setCaption,
+	setCustomCaption,
+	setError,
+	setName,
+	startAttachmentSaving,
+	updateAttachment,
 } from '../../../../store/reducers/AttachmentReducers';
 import ProgressBar, {
     ProgressBarHandle,
 } from '../../../components/progress-bar';
 
 export type AttachmentDetailsInputDialogHandle = {
-    close: () => void;
-    open: () => void;
+	close: () => void;
+	open: () => void;
 };
 
 const AttachmentDetailsInputDialog =
@@ -45,28 +45,29 @@ const AttachmentDetailsInputDialog =
         const dispatch = useDispatch();
         const [isOpen, setOpen] = useState(false);
 
-        const { selectedAttachment, file, uiDetails } = useSelector(
-            (state: StoreState) => state[StoreNames.ATTACHMENT]
-        );
 
-        const { caption, custom_caption, name } = selectedAttachment;
+	const { selectedAttachment, file, uiDetails } = useSelector(
+		(state: StoreState) => state[StoreNames.ATTACHMENT]
+	);
 
-        const { errorMessage, isSaving, isUpdating } = uiDetails;
+	const { caption, custom_caption, name } = selectedAttachment;
 
-        const onClose = () => {
-            dispatch(clearSelectedAttachment());
-            setOpen(false);
-        };
+	const { errorMessage, isSaving, isUpdating } = uiDetails;
 
-        useImperativeHandle(ref, () => ({
-            close: () => {
-                dispatch(clearSelectedAttachment());
-                setOpen(false);
-            },
-            open: () => {
-                setOpen(true);
-            },
-        }));
+	const onClose = () => {
+		dispatch(clearSelectedAttachment());
+		setOpen(false);
+	};
+
+	useImperativeHandle(ref, () => ({
+		close: () => {
+			dispatch(clearSelectedAttachment());
+			setOpen(false);
+		},
+		open: () => {
+			setOpen(true);
+		},
+	}));
 
         const handleAttachmentInput = (files: File) => {
             if (files === null) return;
@@ -258,5 +259,7 @@ const AttachmentDetailsInputDialog =
             </Modal>
         );
     });
+
+});
 
 export default AttachmentDetailsInputDialog;

@@ -18,7 +18,10 @@ async function allBots(req: Request, res: Response, next: NextFunction) {
 		res,
 		status: 200,
 		data: {
-			bots: bots,
+			bots: bots.map((bot) => ({
+				...bot,
+				attachments: bot.attachments.map((attachments) => attachments.id),
+			})),
 		},
 	});
 }
@@ -36,7 +39,10 @@ async function botById(req: Request, res: Response, next: NextFunction) {
 			res,
 			status: 200,
 			data: {
-				bot: bot,
+				bot: {
+					...bot,
+					attachments: bot.attachments.map((attachments) => attachments.id),
+				},
 			},
 		});
 	} catch (err) {
@@ -181,7 +187,10 @@ async function createBot(req: Request, res: Response, next: NextFunction) {
 		res,
 		status: 201,
 		data: {
-			bot,
+			bot: {
+				...bot,
+				attachments: bot.attachments.map((attachments) => attachments.id),
+			},
 		},
 	});
 }
@@ -269,7 +278,10 @@ async function updateBot(req: Request, res: Response, next: NextFunction) {
 			res,
 			status: 200,
 			data: {
-				bot,
+				bot: {
+					...bot,
+					attachments: bot.attachments.map((attachments) => attachments.id),
+				},
 			},
 		});
 	} catch (err) {

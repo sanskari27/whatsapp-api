@@ -142,7 +142,6 @@ const ContactInputDialog = forwardRef<ContactInputDialogHandle>((_, ref) => {
 				...selectedCard,
 				...details,
 			}).then((res) => {
-				console.log(res);
 				if (!res) {
 					dispatch(setError('Something went wrong'));
 					return;
