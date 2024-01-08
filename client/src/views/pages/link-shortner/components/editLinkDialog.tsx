@@ -1,106 +1,217 @@
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
 
 import {
-	AlertDialog,
-	AlertDialogBody,
-	AlertDialogContent,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogOverlay,
-	Box,
-	Button,
-	Input,
-	Text,
+    AlertDialog,
+    AlertDialogBody,
+    AlertDialogContent,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogOverlay,
+    Box,
+    Button,
+    Input,
+    Text,
+    Textarea,
 } from '@chakra-ui/react';
 import { useTheme } from '../../../../hooks/useTheme';
 
 export type EditLinkDialogHandle = {
-	open: (id: { id: string; link: string; shortLink: string }) => void;
-	close: () => void;
+    open: (link_details: {
+        id: string;
+        link: string;
+        shortLink: string;
+        title: string;
+    }) => void;
+    close: () => void;
 };
 
 type Props = {
-	onConfirm: (id: string, newLink: string) => void;
+    onConfirm: (id: string, newLink: string, newTitle: string) => void;
 };
 
-const EditLinkDialog = forwardRef<EditLinkDialogHandle, Props>(({ onConfirm }: Props, ref) => {
-	const theme = useTheme();
-	const [isOpen, setOpen] = useState(false);
-	const [newLink, setNewLink] = useState('' as string);
-	const [link, setLink] = useState({
-		id: '',
-		link: '',
-		shorten_link: '',
-	} as {
-		id: string;
-		link: string;
-		shorten_link: string;
-	});
-	const close = () => {
-		setOpen(false);
-	};
+const EditLinkDialog = forwardRef<EditLinkDialogHandle, Props>(
+    ({ onConfirm }: Props, ref) => {
+        const theme = useTheme();
+        const [isOpen, setOpen] = useState(false);
 
-	const cancelRef = React.useRef() as React.RefObject<HTMLButtonElement>;
+        const [link, setLink] = useState({
+            type: 'LINK',
+            id: '',
+            link: '',
+            shorten_link: '',
+            title: '',
+            number: '',
+            message: '',
+        } as {
+            type: 'LINK' | 'NUMBER';
+            id: string;
+            link: string;
+            shorten_link: string;
+            title: string;
+            number: string;
+            message: string;
+        });
 
-	useImperativeHandle(ref, () => ({
-		close: () => {
-			setOpen(false);
-		},
-		open: (id: { id: string; link: string; shortLink: string }) => {
-			setOpen(true);
-			setNewLink('');
-			setLink({
-				id: id.id,
-				link: id.link,
-				shorten_link: id.shortLink,
-			});
-		},
-	}));
+        const close = () => {
+            setOpen(false);
+        };
 
-	const handleEdit = () => {
-		if (newLink === '') return;
-		onConfirm(link.id, newLink);
-		setOpen(false);
-	};
+        const cancelRef = React.useRef() as React.RefObject<HTMLButtonElement>;
 
-	return (
-		<AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={close}>
-			<AlertDialogOverlay>
-				<AlertDialogContent
-					backgroundColor={theme === 'dark' ? '#252525' : 'white'}
-					textColor={theme === 'dark' ? 'white' : 'black'}
-				>
-					<AlertDialogHeader fontSize='lg' fontWeight='bold'>
-						Change Link
-					</AlertDialogHeader>
+        useImperativeHandle(ref, () => ({
+            close: () => {
+                setOpen(false);
+            },
+            open: (link_details: {
+                id: string;
+                link: string;
+                shortLink: string;
+                title: string;
+            }) => {
+                setOpen(true);
+                if (link_details.link.includes('wa.me')) {
+                    setLink({
+                        ...link,
+                        id: link_details.id,
+                        type: 'NUMBER',
+                        number: link_details.link
+                            .split('wa.me/')[1]
+                            .split('?')[0],
+                        message: link_details.link.split('text=')[1],
+                        title: link_details.title,
+                    });
+                } else {
+                    setLink({
+                        ...link,
+                        id: link_details.id,
+                        type: 'LINK',
+                        link: link_details.link,
+                        shorten_link: link_details.shortLink,
+                        title: link_details.title,
+                    });
+                }
+            },
+        }));
 
-					<AlertDialogBody>
-						<Box pb={4}>
-							<Text>Current Link</Text>
-							<Input value={link.link} isReadOnly mt={2} />
-						</Box>
-						<Box pb={4}>
-							<Text>Shorten Link</Text>
-							<Input value={link.shorten_link} isReadOnly mt={2} />
-						</Box>
-						<Box>
-							<Text>New Link</Text>
-							<Input value={newLink} onChange={(e) => setNewLink(e.target.value)} mt={2} />
-						</Box>
-					</AlertDialogBody>
+        const handleEdit = () => {
+            console.log(link);
+            if (link.type === 'NUMBER') {
+                onConfirm(
+                    link.id,
+                    `wa.me/${link.number}?text=${link.message}`,
+                    link.title
+                );
+            } else {
+                onConfirm(link.id, link.link, link.title);
+            }
+        };
 
-					<AlertDialogFooter>
-						<Button ref={cancelRef} onClick={close}>
-							Cancel
-						</Button>
-						<Button colorScheme='yellow' onClick={handleEdit} ml={3}>
-							Edit
-						</Button>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialogOverlay>
-		</AlertDialog>
-	);
-});
+        return (
+            <AlertDialog
+                isOpen={isOpen}
+                leastDestructiveRef={cancelRef}
+                onClose={close}
+            >
+                <AlertDialogOverlay>
+                    <AlertDialogContent
+                        backgroundColor={theme === 'dark' ? '#252525' : 'white'}
+                        textColor={theme === 'dark' ? 'white' : 'black'}
+                    >
+                        <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                            Edit Link
+                        </AlertDialogHeader>
+
+                        <AlertDialogBody>
+                            <Box pb={4}>
+                                <Text>Change Title</Text>
+                                <Input
+                                    value={link.title}
+                                    onChange={(e) =>
+                                        setLink({
+                                            ...link,
+                                            title: e.target.value,
+                                        })
+                                    }
+                                    mt={2}
+                                />
+                            </Box>
+                            {link.type === 'NUMBER' ? (
+                                <>
+                                    <Box pb={4}>
+                                        <Text>Change Number</Text>
+                                        <Input
+                                            value={link.number}
+                                            onChange={(e) =>
+                                                setLink({
+                                                    ...link,
+                                                    number: e.target.value,
+                                                })
+                                            }
+                                            mt={2}
+                                        />
+                                    </Box>
+                                    <Box pb={4}>
+                                        <Text>Change Message</Text>
+                                        <Textarea
+                                            value={link.message
+                                                .split('%20')
+                                                .join(' ')
+                                                .split('%0A')
+                                                .join('\n')}
+                                            onChange={(e) =>
+                                                setLink({
+                                                    ...link,
+                                                    message: e.target.value,
+                                                })
+                                            }
+                                            mt={2}
+                                        />
+                                    </Box>
+                                </>
+                            ) : (
+                                <>
+                                    <Box pb={4}>
+                                        <Text>Change Link</Text>
+                                        <Input
+                                            value={link.link}
+                                            onChange={(e) =>
+                                                setLink({
+                                                    ...link,
+                                                    link: e.target.value,
+                                                })
+                                            }
+                                            mt={2}
+                                        />
+                                    </Box>
+                                    <Box pb={4}>
+                                        <Text>Shorten Link</Text>
+                                        <Input
+                                            value={link.shorten_link}
+                                            isReadOnly
+                                            mt={2}
+                                        />
+                                    </Box>
+                                </>
+                            )}
+                        </AlertDialogBody>
+
+                        <AlertDialogFooter>
+                            <Button ref={cancelRef} onClick={close}>
+                                Cancel
+                            </Button>
+                            <Button
+                                colorScheme="yellow"
+                                onClick={handleEdit}
+                                ml={3}
+                            >
+                                Edit
+                            </Button>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialogOverlay>
+            </AlertDialog>
+        );
+    }
+);
 
 export default EditLinkDialog;

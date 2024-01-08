@@ -4,6 +4,7 @@ import { LinkShortenerState } from '../types/LinkShortnerState';
 
 const initialState: LinkShortenerState = {
     create_details: {
+        id: '',
         title: '',
         link: '',
         number: '',

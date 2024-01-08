@@ -9,6 +9,7 @@ import {
     DrawerHeader,
     DrawerOverlay,
     Flex,
+    HStack,
     Table,
     TableContainer,
     Tbody,
@@ -17,6 +18,7 @@ import {
     Th,
     Thead,
     Tr,
+    VStack,
 } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -195,7 +197,7 @@ export default function Settings({ isOpen, onClose }: SettingsProps) {
                                     />
                                 </Flex>
 
-                                <Flex
+                                <VStack
                                     marginTop={'0.25rem'}
                                     paddingX={'1rem'}
                                     paddingY={'0.5rem'}
@@ -204,22 +206,36 @@ export default function Settings({ isOpen, onClose }: SettingsProps) {
                                     flexDirection={'column'}
                                     hidden={PAYMENT_RECORDS.length === 0}
                                 >
-                                    <Button
-                                        variant="solid"
-                                        backgroundColor={'green.500'}
-                                        marginX={'auto'}
-                                        color={'white'}
-                                        onClick={() =>
-                                            PaymentService.paymentRecords({
-                                                csv: true,
-                                            })
-                                        }
-                                        _hover={{
-                                            backgroundColor: 'green.600',
-                                        }}
+                                    <HStack
+                                        justifyContent={'end'}
+                                        width={'full'}
                                     >
-                                        Export
-                                    </Button>
+                                        <Button
+                                            variant="solid"
+                                            backgroundColor={'green.500'}
+                                            color={'white'}
+                                            onClick={() =>
+                                                PaymentService.paymentRecords({
+                                                    csv: true,
+                                                })
+                                            }
+                                            _hover={{
+                                                backgroundColor: 'green.600',
+                                            }}
+                                        >
+                                            Export
+                                        </Button>
+                                        <Button
+                                            variant="solid"
+                                            backgroundColor={'blue.500'}
+                                            color={'white'}
+                                            _hover={{
+                                                backgroundColor: 'blue.600',
+                                            }}
+                                        >
+                                            Download Invoice
+                                        </Button>
+                                    </HStack>
                                     <TableContainer
                                         border={'1px'}
                                         borderColor={'gray.100'}
@@ -287,7 +303,7 @@ export default function Settings({ isOpen, onClose }: SettingsProps) {
                                             </Tbody>
                                         </Table>
                                     </TableContainer>
-                                </Flex>
+                                </VStack>
                             </section>
                         </Box>
                     </Box>

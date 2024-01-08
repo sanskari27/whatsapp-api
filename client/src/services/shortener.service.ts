@@ -1,13 +1,18 @@
 import APIInstance from '../config/APIInstance';
 
 export default class ShortenerService {
-    static async getShortenedURL(number: string, message: string) {
+    static async getShortenedURL(
+        number: string,
+        message: string,
+        title: string
+    ) {
         try {
             const { data } = await APIInstance.post(
                 `/shortner/create-whatsapp-link`,
                 {
                     number,
                     message,
+                    title,
                 }
             );
             return {
@@ -85,11 +90,16 @@ export default class ShortenerService {
         }
     }
 
-    static async updateLink(shorten_link_id: string, link: string) {
+    static async updateLink(
+        shorten_link_id: string,
+        link: string,
+        title: string
+    ) {
+        console.log(shorten_link_id, link, title);
         try {
             const { data } = await APIInstance.patch(
                 `/shortner/${shorten_link_id}`,
-                { link }
+                { link, title }
             );
             return data as {
                 shorten_link: string;

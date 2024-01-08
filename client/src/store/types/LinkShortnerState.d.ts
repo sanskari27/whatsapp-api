@@ -1,5 +1,6 @@
 export type LinkShortenerState = {
     create_details: {
+        id: string;
         link: string;
         number: string;
         message: string;
