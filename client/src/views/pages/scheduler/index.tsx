@@ -316,7 +316,6 @@ export default function Scheduler() {
 		}
 		if (!details.message) {
 			setError((prev) => ({ ...prev, message: 'Message is required' }));
-			console.log(error);
 			return;
 		}
 		if (details.min_delay < 1) {
@@ -806,7 +805,7 @@ export default function Scheduler() {
 									colorScheme='green'
 									onClick={() => {
 										selectContactListRef.current?.open();
-										selectContactListRef.current?.setAttachmentId(details.attachments);
+										selectContactListRef.current?.setAttachmentIds(details.attachments);
 										selectContactListRef.current?.setType('Attachments');
 									}}
 								>

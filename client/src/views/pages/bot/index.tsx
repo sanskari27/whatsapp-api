@@ -57,6 +57,7 @@ export default function Bot() {
 		(state: StoreState) => state[StoreNames.CHATBOT]
 	);
 	const { add: addBot, addingBot, bots: allBots, deleteBot, editBot, toggleBot } = useBot();
+
 	const [trigger_details, setTriggerDetails] = useState<{
 		trigger_gap_type: 'SECOND' | 'MINUTE' | 'HOUR';
 		trigger_gap_time: number;
@@ -271,8 +272,7 @@ export default function Bot() {
 					| 'EXACT_MATCH_CASE'
 			)
 		);
-		const attachmentFilenames = bot.attachments.map((attachment) => attachment.filename);
-		dispatch(setAttachments(attachmentFilenames));
+		dispatch(setAttachments(bot.attachments));
 		dispatch(setContactCards(bot.shared_contact_cards));
 		setTriggerDetails((prevState) => ({
 			...prevState,
@@ -645,7 +645,7 @@ export default function Bot() {
 								colorScheme='green'
 								onClick={() => {
 									contactAttachmentSelectRef.current?.open();
-									contactAttachmentSelectRef.current?.setAttachmentId(attachments);
+									contactAttachmentSelectRef.current?.setAttachmentIds(attachments);
 									contactAttachmentSelectRef.current?.setType('Attachments');
 								}}
 								// isDisabled={!isAuthenticated}
