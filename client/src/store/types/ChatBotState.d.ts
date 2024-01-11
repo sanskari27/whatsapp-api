@@ -1,6 +1,7 @@
 export type ChatBotState = {
     all_chatbos: ChatBot[];
     trigger: string;
+    message_delay: string;
     message: string;
     respond_to: 'ALL' | 'SAVED_CONTACTS' | 'NON_SAVED_CONTACTS' | '';
     options:

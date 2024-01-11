@@ -10,6 +10,7 @@ const initialState: ChatBotState = {
     respond_to: 'ALL',
     shared_contact_cards: [],
     trigger: '',
+    message_delay: '',
 };
 
 const ChatBotSlice = createSlice({
@@ -67,6 +68,12 @@ const ChatBotSlice = createSlice({
         ) => {
             state.shared_contact_cards = action.payload;
         },
+        setResponseDelay: (
+            state,
+            action: PayloadAction<typeof initialState.message_delay>
+        ) => {
+            state.message_delay = action.payload;
+        },
     },
 });
 
@@ -79,6 +86,7 @@ export const {
     setOptions,
     setAttachments,
     setContactCards,
+    setResponseDelay,
 } = ChatBotSlice.actions;
 
 export default ChatBotSlice.reducer;

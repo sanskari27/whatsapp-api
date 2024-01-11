@@ -9,7 +9,6 @@ export const SERVER_URL = 'http://localhost:8282/';
 export const NAVIGATION = {
     WELCOME: '/welcome',
     HOME: '/',
-    EXPORTS: '/exports',
     SCHEDULER: '/scheduler',
     BOT: '/bot',
     SETTINGS: '/settings',

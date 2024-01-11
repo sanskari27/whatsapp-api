@@ -14,7 +14,6 @@ import { useNavbar } from './hooks/useNavbar';
 import { useTheme } from './hooks/useTheme';
 import PageWrapper from './views/components/page-wrapper';
 const Welcome = lazy(() => import('./views/pages/welcome'));
-const Exports = lazy(() => import('./views/components/exporter'));
 const Scheduler = lazy(() => import('./views/pages/scheduler'));
 const Bot = lazy(() => import('./views/pages/bot'));
 const Home = lazy(() => import('./views/pages/home'));
@@ -41,10 +40,6 @@ function App() {
                             <Route
                                 path={NAVIGATION.CONTACT}
                                 element={<Contact />}
-                            />
-                            <Route
-                                path={NAVIGATION.EXPORTS}
-                                element={<Exports />}
                             />
                             <Route
                                 path={NAVIGATION.SCHEDULER}

@@ -309,7 +309,7 @@ export default function Scheduler() {
 
     return (
         <Flex padding={'1rem'} justifyContent={'center'} width={'full'}>
-            <Flex direction={'column'}>
+            <Flex direction={'column'} width={'full'}>
                 <Heading
                     color={theme === 'dark' ? 'white' : 'GrayText'}
                     fontSize={'large'}

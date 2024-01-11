@@ -11,7 +11,6 @@ import {
 } from '@chakra-ui/react';
 import { IconType } from 'react-icons';
 import { FiBarChart2, FiLink2 } from 'react-icons/fi';
-import { PiExportBold } from 'react-icons/pi';
 import { SiProbot } from 'react-icons/si';
 import { TbCsv, TbLogout2, TbMessage2Minus } from 'react-icons/tb';
 
@@ -92,10 +91,6 @@ export default function NavigationDrawer() {
                         <MenuButton
                             icon={FiBarChart2}
                             route={NAVIGATION.REPORTS}
-                        />
-                        <MenuButton
-                            icon={PiExportBold}
-                            route={NAVIGATION.EXPORTS}
                         />
                         <MenuButton icon={TbCsv} route={NAVIGATION.CSV} />
                     </Flex>
