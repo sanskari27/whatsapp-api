@@ -18,6 +18,7 @@ export default function useBot() {
         message: string;
         respond_to: string;
         trigger_gap_seconds: number;
+        response_delay_seconds: number;
         options: string;
         shared_contact_cards: string[];
         attachments: string[];
@@ -51,6 +52,8 @@ export default function useBot() {
             message: string;
             respond_to: string;
             trigger_gap_seconds: number;
+            shared_contact_cards: string[];
+            response_delay_seconds: number;
             options: string;
             attachments: string[];
         }

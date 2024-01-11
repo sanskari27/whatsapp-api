@@ -1,14 +1,17 @@
 import { ChevronRightIcon } from '@chakra-ui/icons';
 import { Box, Button, Flex, Image, Progress, Text } from '@chakra-ui/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ReactCardFlip from 'react-card-flip';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { GREEN_SHADOW, LOGO, WELCOME_TYPING } from '../../../assets/Images';
 import { NAVIGATION } from '../../../config/const';
 import { startAuth, useAuth } from '../../../hooks/useAuth';
+import { useNetwork } from '../../../hooks/useNetwork';
 import QRLogo from '../../components/qr-logo';
 
 export default function Welcome() {
+    const status = useNetwork();
+    const navigate = useNavigate();
     const [login, setLogin] = useState(false);
     const {
         isAuthenticated,
@@ -17,6 +20,12 @@ export default function Welcome() {
         qrGenerated,
         isSocketInitialized,
     } = useAuth();
+
+    useEffect(() => {
+        if (status === 'NO-NETWORK') {
+            navigate(NAVIGATION.NETWORK_ERROR);
+        }
+    }, [status, navigate]);
 
     if (isSocketInitialized) {
         return <Navigate to={NAVIGATION.HOME} />;

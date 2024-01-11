@@ -10,7 +10,9 @@ import '../../../index.css';
 import AttachmentService from '../../../services/attachment.service';
 import AuthService from '../../../services/auth.service';
 import ContactCardService from '../../../services/contant-card.service';
+import UploadsService from '../../../services/uploads.service';
 import { setAttachments } from '../../../store/reducers/AttachmentReducers';
+import { setCSVFileList } from '../../../store/reducers/CSVFileReducers';
 import { setContactList } from '../../../store/reducers/ContactCardReducers';
 import { setUserDetails } from '../../../store/reducers/UserDetailsReducres';
 import Navbar from '../../components/navbar';
@@ -41,6 +43,7 @@ export default function Home() {
         AttachmentService.getAttachments().then((res) => {
             dispatch(setAttachments(res));
         });
+        UploadsService.listCSV().then((data) => dispatch(setCSVFileList(data)));
     }, [dispatch, navigate]);
     if (isAuthenticating) {
         return (

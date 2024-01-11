@@ -48,6 +48,22 @@ import SelectContactsOrAttachmentsList, {
     SelectContactOrAttachmentListHandle,
 } from '../../components/contact-detail-input-dialog';
 
+const initialUiState = {
+    isAddingBot: false,
+    triggerError: '',
+    messageError: '',
+    respondToError: '',
+    optionsError: '',
+    contactCardsError: '',
+    attachmentError: '',
+    triggerGapError: '',
+    delayGapError: '',
+    editBot: {
+        isEditing: false,
+        botId: '',
+    },
+};
+
 export default function Bot() {
     const multiselectRef = useRef<Multiselect | null>();
     const dispatch = useDispatch();
@@ -88,35 +104,8 @@ export default function Bot() {
         delay_gap_time: 1,
     });
 
-    const [uiDetails, setUiDetails] = useState<{
-        isAddingBot: boolean;
-        triggerError: string;
-        messageError: string;
-        respondToError: string;
-        optionsError: string;
-        contactCardsError: string;
-        attachmentError: string;
-        triggerGapError: string;
-        delayGapError: string;
-        editBot: {
-            isEditing: boolean;
-            botId: string;
-        };
-    }>({
-        isAddingBot: false,
-        triggerError: '',
-        messageError: '',
-        respondToError: '',
-        optionsError: '',
-        contactCardsError: '',
-        attachmentError: '',
-        triggerGapError: '',
-        delayGapError: '',
-        editBot: {
-            isEditing: false,
-            botId: '',
-        },
-    });
+    const [uiDetails, setUiDetails] =
+        useState<typeof initialUiState>(initialUiState);
 
     useEffect(() => {
         pushToNavbar({
@@ -203,6 +192,16 @@ export default function Bot() {
             }));
             return;
         }
+        if (
+            !delay_details.delay_gap_time ||
+            delay_details.delay_gap_time <= 0
+        ) {
+            setUiDetails((prevState) => ({
+                ...prevState,
+                delayGapError: 'Invalid Message Delay',
+            }));
+            return;
+        }
         if (allBots.map((bot) => bot.trigger).includes(trigger)) {
             setUiDetails((prevState) => ({
                 ...prevState,
@@ -216,6 +215,12 @@ export default function Bot() {
                 : trigger_details.trigger_gap_type === 'MINUTE'
                 ? trigger_details.trigger_gap_time * 60
                 : trigger_details.trigger_gap_time;
+        const message_delay_seconds =
+            delay_details.delay_gap_type === 'HOUR'
+                ? delay_details.delay_gap_time * 3600
+                : delay_details.delay_gap_type === 'MINUTE'
+                ? delay_details.delay_gap_time * 60
+                : delay_details.delay_gap_time;
         addBot({
             message,
             trigger,
@@ -224,6 +229,7 @@ export default function Bot() {
             attachments,
             shared_contact_cards,
             trigger_gap_seconds: Number(trigger_gap_seconds),
+            response_delay_seconds: Number(message_delay_seconds),
         }).then(() => {
             multiselectRef.current?.resetSelectedValues();
             dispatch(reset());
@@ -248,13 +254,22 @@ export default function Bot() {
                 : trigger_details.trigger_gap_type === 'MINUTE'
                 ? trigger_details.trigger_gap_time * 60
                 : trigger_details.trigger_gap_time;
+
+        const message_delay_seconds =
+            delay_details.delay_gap_type === 'HOUR'
+                ? delay_details.delay_gap_time * 3600
+                : delay_details.delay_gap_type === 'MINUTE'
+                ? delay_details.delay_gap_time * 60
+                : delay_details.delay_gap_time;
         editBot(uiDetails.editBot.botId, {
             message,
             trigger,
             respond_to,
             options,
             attachments,
+            shared_contact_cards,
             trigger_gap_seconds: Number(trigger_gap_seconds),
+            response_delay_seconds: Number(message_delay_seconds),
         }).then(() => {
             multiselectRef.current?.resetSelectedValues();
             setUiDetails((prevState) => ({
@@ -280,49 +295,74 @@ export default function Bot() {
         }));
     }
 
-	function editResponder(bot: BotDetails) {
-		window.scrollTo(0, 0);
-		setUiDetails((prevState) => ({
-			...prevState,
-			editBot: {
-				botId: bot.bot_id,
-				isEditing: true,
-			},
-			triggerError: '',
-		}));
-		dispatch(setTrigger(bot.trigger));
-		dispatch(setMessage(bot.message));
-		dispatch(setRespondTo(bot.respond_to as '' | 'ALL' | 'SAVED_CONTACTS' | 'NON_SAVED_CONTACTS'));
-		dispatch(
-			setOptions(
-				bot.options as
-					| ''
-					| 'INCLUDES_IGNORE_CASE'
-					| 'INCLUDES_MATCH_CASE'
-					| 'EXACT_IGNORE_CASE'
-					| 'EXACT_MATCH_CASE'
-			)
-		);
-		dispatch(setAttachments(bot.attachments));
-		dispatch(setContactCards(bot.shared_contact_cards));
-		setTriggerDetails((prevState) => ({
-			...prevState,
-			trigger_gap_time:
-				bot.trigger_gap_seconds < 60
-					? bot.trigger_gap_seconds
-					: bot.trigger_gap_seconds < 3600
-					? Math.floor(bot.trigger_gap_seconds / 60)
-					: bot.trigger_gap_seconds < 86400
-					? Math.floor(bot.trigger_gap_seconds / 3600)
-					: Math.floor(bot.trigger_gap_seconds / 86400),
-			trigger_gap_type:
-				Math.floor(bot.trigger_gap_seconds / 60) >= 60
-					? 'HOUR'
-					: Math.floor(bot.trigger_gap_seconds / 60) >= 1
-					? 'MINUTE'
-					: 'SECOND',
-		}));
-	}
+    function editResponder(bot: BotDetails) {
+        window.scrollTo(0, 0);
+        setUiDetails((prevState) => ({
+            ...prevState,
+            editBot: {
+                botId: bot.bot_id,
+                isEditing: true,
+            },
+            triggerError: '',
+        }));
+        dispatch(setTrigger(bot.trigger));
+        dispatch(setMessage(bot.message));
+        dispatch(
+            setRespondTo(
+                bot.respond_to as
+                    | ''
+                    | 'ALL'
+                    | 'SAVED_CONTACTS'
+                    | 'NON_SAVED_CONTACTS'
+            )
+        );
+        dispatch(
+            setOptions(
+                bot.options as
+                    | ''
+                    | 'INCLUDES_IGNORE_CASE'
+                    | 'INCLUDES_MATCH_CASE'
+                    | 'EXACT_IGNORE_CASE'
+                    | 'EXACT_MATCH_CASE'
+            )
+        );
+        dispatch(setAttachments(bot.attachments));
+        dispatch(setContactCards(bot.shared_contact_cards));
+        setTriggerDetails((prevState) => ({
+            ...prevState,
+            trigger_gap_time:
+                bot.trigger_gap_seconds < 60
+                    ? bot.trigger_gap_seconds
+                    : bot.trigger_gap_seconds < 3600
+                    ? Math.floor(bot.trigger_gap_seconds / 60)
+                    : bot.trigger_gap_seconds < 86400
+                    ? Math.floor(bot.trigger_gap_seconds / 3600)
+                    : Math.floor(bot.trigger_gap_seconds / 86400),
+            trigger_gap_type:
+                Math.floor(bot.trigger_gap_seconds / 60) >= 60
+                    ? 'HOUR'
+                    : Math.floor(bot.trigger_gap_seconds / 60) >= 1
+                    ? 'MINUTE'
+                    : 'SECOND',
+        }));
+        setDelayDetails((prevState) => ({
+            ...prevState,
+            delay_gap_time:
+                bot.response_delay_seconds < 60
+                    ? bot.response_delay_seconds
+                    : bot.response_delay_seconds < 3600
+                    ? Math.floor(bot.response_delay_seconds / 60)
+                    : bot.response_delay_seconds < 86400
+                    ? Math.floor(bot.response_delay_seconds / 3600)
+                    : Math.floor(bot.response_delay_seconds / 86400),
+            delay_gap_type:
+                Math.floor(bot.response_delay_seconds / 60) >= 60
+                    ? 'HOUR'
+                    : Math.floor(bot.response_delay_seconds / 60) >= 1
+                    ? 'MINUTE'
+                    : 'SECOND',
+        }));
+    }
 
     return (
         <Flex
@@ -730,7 +770,7 @@ export default function Bot() {
                                 colorScheme="green"
                                 onClick={() => {
                                     contactAttachmentSelectRef.current?.open();
-                                    contactAttachmentSelectRef.current?.setAttachmentId(
+                                    contactAttachmentSelectRef.current?.setAttachmentIds(
                                         attachments
                                     );
                                     contactAttachmentSelectRef.current?.setType(

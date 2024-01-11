@@ -5,6 +5,7 @@ import { SERVER_URL } from '../config/const';
 
 type InitialStatusType = 'RUNNING' | 'NO-NETWORK';
 const initStatus: InitialStatusType = 'RUNNING';
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let globalSet: any = () => {
     throw new Error('you must useNetwork before setting its state');
 };
@@ -38,13 +39,13 @@ function checkNetwork() {
 export const setNetworkStatus = (data: InitialStatusType) => globalSet(data);
 
 export const recheckNetwork = async () => {
-    checkNetwork().then((res) => {
-        if (res) {
-            setNetworkStatus('RUNNING');
-        } else {
-            setNetworkStatus('NO-NETWORK');
-        }
-    });
+    const status = await checkNetwork();
+    if (status) {
+        setNetworkStatus('RUNNING');
+    } else {
+        setNetworkStatus('NO-NETWORK');
+    }
+    return status;
 };
 export const networkFound = async () => {
     setNetworkStatus('RUNNING');
