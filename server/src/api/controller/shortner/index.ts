@@ -32,6 +32,7 @@ async function createWhatsappLink(req: Request, res: Response, next: NextFunctio
 		data: {
 			shorten_link: `${SHORTNER_REDIRECT}${doc.key}`,
 			link: doc.link,
+			title: doc.title,
 			base64: doc.qrString,
 		},
 	});
@@ -72,7 +73,9 @@ async function updateLink(req: Request, res: Response, next: NextFunction) {
 
 	const reqValidator = z.object({
 		title: z.string().default(''),
-		link: z.string(),
+		link: z.string().default(''),
+		number: z.string().default(''),
+		message: z.string().default(''),
 	});
 	const reqValidatorResult = reqValidator.safeParse(req.body);
 
@@ -80,7 +83,7 @@ async function updateLink(req: Request, res: Response, next: NextFunction) {
 		return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
 	}
 
-	const { link, title } = reqValidatorResult.data;
+	const { link, title, number, message } = reqValidatorResult.data;
 	const doc = await ShortnerDB.findOne({
 		_id: id,
 		title,
@@ -90,7 +93,11 @@ async function updateLink(req: Request, res: Response, next: NextFunction) {
 	if (!doc) {
 		return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
 	}
-	doc.link = link;
+	if (!link) {
+		doc.link = `wa.me/${number}?text=${encodeURIComponent(message)}`;
+	} else {
+		doc.link = link;
+	}
 	doc.title = title;
 	await doc.save();
 
@@ -100,6 +107,7 @@ async function updateLink(req: Request, res: Response, next: NextFunction) {
 		data: {
 			shorten_link: `${SHORTNER_REDIRECT}${doc.key}`,
 			link: doc.link,
+			title: doc.title,
 			base64: doc.qrString,
 		},
 	});
