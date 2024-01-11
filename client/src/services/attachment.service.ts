@@ -24,10 +24,12 @@ export default class AttachmentService {
 				responseType: 'blob',
 			});
 			const blob = new Blob([response.data]);
+			console.log(response.headers);
 
 			const contentDisposition = response.headers['content-disposition'];
 			const filenameMatch = contentDisposition && contentDisposition.match(/filename="(.*)"/);
 			const filename = filenameMatch ? filenameMatch[1] : 'downloaded-file';
+			console.log(contentDisposition);
 
 			// Create a temporary link element
 			const downloadLink = document.createElement('a');

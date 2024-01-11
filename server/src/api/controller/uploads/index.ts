@@ -201,7 +201,7 @@ export async function downloadAttachment(req: Request, res: Response, next: Next
 		const path = __basedir + ATTACHMENTS_PATH + attachment.filename;
 		return RespondFile({
 			res,
-			filename: attachment.filename,
+			filename: attachment.name,
 			filepath: path,
 		});
 	} catch (err: unknown) {
