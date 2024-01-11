@@ -12,14 +12,13 @@ import {
     Input,
     Text,
 } from '@chakra-ui/react';
-import React, { forwardRef, useEffect, useImperativeHandle } from 'react';
+import React, { forwardRef, useImperativeHandle } from 'react';
 import Dropzone from 'react-dropzone';
 import { useDispatch, useSelector } from 'react-redux';
 import UploadsService from '../../../../services/uploads.service';
 import { StoreNames, StoreState } from '../../../../store';
 import {
     addCsvFileList,
-    clearSelectedCSVFile,
     setError,
     setFile,
     setName,
@@ -40,9 +39,9 @@ const CSVNameInputDialog = forwardRef<CSVNameInputDialoagHandle>((_, ref) => {
     const [isOpen, setIsOpen] = React.useState(false);
 
     const {
-        selectedCSV: { name, id },
+        selectedCSV: { name },
         csvFile,
-        uiDetails: { error, isSaving, isUpdating },
+        uiDetails: { error, isSaving },
     } = useSelector((state: StoreState) => state[StoreNames.CSV]);
 
     useImperativeHandle(ref, () => ({
@@ -74,10 +73,6 @@ const CSVNameInputDialog = forwardRef<CSVNameInputDialoagHandle>((_, ref) => {
                 dispatch(stopSaving());
             });
     }
-
-    useEffect(() => {
-        dispatch(clearSelectedCSVFile());
-    }, [dispatch]);
 
     return (
         <AlertDialog
@@ -177,7 +172,7 @@ const CSVNameInputDialog = forwardRef<CSVNameInputDialoagHandle>((_, ref) => {
                                 size={'sm'}
                                 isLoading={isSaving}
                             >
-                                {isUpdating ? 'Update' : 'Save'}
+                                Save
                             </Button>
                         </HStack>
                     </HStack>

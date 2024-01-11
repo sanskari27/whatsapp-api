@@ -1,11 +1,9 @@
-import { EditIcon } from '@chakra-ui/icons';
 import {
     Box,
     Button,
     Checkbox,
     HStack,
     Icon,
-    IconButton,
     Table,
     TableContainer,
     Tbody,
@@ -26,9 +24,7 @@ import { StoreNames, StoreState } from '../../../store';
 import {
     clearSelectedCSVFile,
     deleteSelectedCSVFile,
-    findSelectedCSVFile,
     setIsDeleting,
-    setIsUpdating,
 } from '../../../store/reducers/CSVFileReducers';
 import ConfirmationDialog, {
     ConfirmationDialogHandle,
@@ -61,12 +57,6 @@ const CSVUpload = () => {
         setSelectedFiles([]);
     };
 
-    const handleCSVEdit = (id: string) => {
-        dispatch(findSelectedCSVFile({ id }));
-        dispatch(setIsUpdating(true));
-        csvFileInputRef.current?.open();
-    };
-
     useEffect(() => {
         pushToNavbar({
             title: 'CSV Upload',
@@ -89,7 +79,10 @@ const CSVUpload = () => {
                         colorScheme={'green'}
                         variant={'solid'}
                         size={'sm'}
-                        onClick={() => csvFileInputRef.current?.open()}
+                        onClick={() => {
+                            dispatch(clearSelectedCSVFile());
+                            csvFileInputRef.current?.open();
+                        }}
                     >
                         Add CSV
                     </Button>
@@ -99,13 +92,11 @@ const CSVUpload = () => {
         return () => {
             popFromNavbar();
         };
-    }, [selectedFiles.length]);
+    }, [dispatch, selectedFiles.length]);
 
     useEffect(() => {
         dispatch(clearSelectedCSVFile());
     }, [dispatch]);
-
-    console.log(list);
 
     return (
         <Box p={'1rem'} textColor={theme === 'dark' ? 'white' : 'black'}>
@@ -116,7 +107,6 @@ const CSVUpload = () => {
                             <Th width={'5%'}>sl no</Th>
                             <Th width={'40%'}>CSV Name</Th>
                             <Th width={'50%'}>Headers</Th>
-                            <Th width={'5%'}>Edit</Th>
                         </Tr>
                     </Thead>
                     <Tbody>
@@ -150,25 +140,6 @@ const CSVUpload = () => {
                                     </Td>
                                     <Td>{csv.name}</Td>
                                     <Td>{csv.headers.join(', ')}</Td>
-                                    <Td>
-                                        <IconButton
-                                            aria-label="Edit CSV"
-                                            icon={
-                                                <Icon
-                                                    as={EditIcon}
-                                                    height={5}
-                                                    width={5}
-                                                />
-                                            }
-                                            backgroundColor={'transparent'}
-                                            _hover={{
-                                                backgroundColor: 'transparent',
-                                            }}
-                                            onClick={() =>
-                                                handleCSVEdit(csv.id)
-                                            }
-                                        />
-                                    </Td>
                                 </Tr>
                             );
                         })}

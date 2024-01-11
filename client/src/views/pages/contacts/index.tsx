@@ -1,18 +1,18 @@
 import { DeleteIcon, EditIcon } from '@chakra-ui/icons';
 import {
-	Box,
-	Button,
-	Checkbox,
-	HStack,
-	Icon,
-	IconButton,
-	Table,
-	TableContainer,
-	Tbody,
-	Td,
-	Th,
-	Thead,
-	Tr,
+    Box,
+    Button,
+    Checkbox,
+    HStack,
+    Icon,
+    IconButton,
+    Table,
+    TableContainer,
+    Tbody,
+    Td,
+    Th,
+    Thead,
+    Tr,
 } from '@chakra-ui/react';
 import { useEffect, useRef } from 'react';
 import { MdContactPage, MdContacts } from 'react-icons/md';
@@ -24,153 +24,175 @@ import { useTheme } from '../../../hooks/useTheme';
 import ContactCardService from '../../../services/contant-card.service';
 import { StoreNames, StoreState } from '../../../store';
 import {
-	addSelectedContact,
-	deleteContactCard,
-	deletingContactCard,
-	findContactById,
-	removeSelectedContact,
-	updatingContactCard,
+    addSelectedContact,
+    deleteContactCard,
+    deletingContactCard,
+    findContactById,
+    removeSelectedContact,
+    updatingContactCard,
 } from '../../../store/reducers/ContactCardReducers';
-import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
+import ConfirmationDialog, {
+    ConfirmationDialogHandle,
+} from '../../components/confirmation-alert';
 import ExporterModal, { ExportsModalHandler } from '../../components/exporter';
 import QrImage from '../../components/qr-image';
-import ContactInputDialog, { ContactInputDialogHandle } from './components/contact-input-dialog';
+import ContactInputDialog, {
+    ContactInputDialogHandle,
+} from './components/contact-input-dialog';
 
 const ContactsPage = () => {
-	const theme = useTheme();
-	const dispatch = useDispatch();
-	const confirmationDialogRef = useRef<ConfirmationDialogHandle>(null);
+    const theme = useTheme();
+    const dispatch = useDispatch();
+    const confirmationDialogRef = useRef<ConfirmationDialogHandle>(null);
 
-	const { list, selectedContacts } = useSelector(
-		(state: StoreState) => state[StoreNames.CONTACT_CARD]
-	);
-	const drawerRef = useRef<ContactInputDialogHandle>(null);
-	const exporterRef = useRef<ExportsModalHandler>(null);
+    const { list, selectedContacts } = useSelector(
+        (state: StoreState) => state[StoreNames.CONTACT_CARD]
+    );
+    const drawerRef = useRef<ContactInputDialogHandle>(null);
+    const exporterRef = useRef<ExportsModalHandler>(null);
 
-	const handleDeleteContacts = async () => {
-		dispatch(deletingContactCard());
-		selectedContacts.forEach(async (contact) => {
-			ContactCardService.DeleteContacts(contact);
-			dispatch(deleteContactCard(contact));
-		});
-	};
+    const handleDeleteContacts = async () => {
+        dispatch(deletingContactCard());
+        selectedContacts.forEach(async (contact) => {
+            ContactCardService.DeleteContacts(contact);
+            dispatch(deleteContactCard(contact));
+        });
+    };
 
-	const handleContactEdit = (id: string) => {
-		dispatch(findContactById(id));
-		dispatch(updatingContactCard());
-		drawerRef.current?.open();
-	};
+    const handleContactEdit = (id: string) => {
+        dispatch(findContactById(id));
+        dispatch(updatingContactCard());
+        drawerRef.current?.open();
+    };
 
-	useEffect(() => {
-		pushToNavbar({
-			title: 'Contacts',
-			icon: MdContacts,
-			link: NAVIGATION.CONTACT,
-			actions: (
-				<HStack>
-					<Button
-						leftIcon={<Icon as={TbDatabaseExport} height={5} width={5} />}
-						colorScheme={'blue'}
-						variant={'solid'}
-						size={'sm'}
-						onClick={() => exporterRef.current?.open()}
-					>
-						Export Contacts
-					</Button>
-					<Button
-						leftIcon={<Icon as={MdContactPage} height={5} width={5} />}
-						colorScheme={'green'}
-						variant={'solid'}
-						size={'sm'}
-						onClick={() => drawerRef.current?.open()}
-					>
-						Add Contact
-					</Button>
-					<Button
-						isDisabled={selectedContacts.length === 0}
-						leftIcon={<Icon as={DeleteIcon} height={5} width={5} />}
-						colorScheme={'red'}
-						variant={'solid'}
-						size={'sm'}
-						onClick={() => {
-							confirmationDialogRef.current?.open('');
-						}}
-					>
-						Delete Contact
-					</Button>
-				</HStack>
-			),
-		});
-		return () => {
-			popFromNavbar();
-		};
-	}, [selectedContacts.length]);
+    useEffect(() => {
+        pushToNavbar({
+            title: 'Contacts',
+            icon: MdContacts,
+            link: NAVIGATION.CONTACT,
+            actions: (
+                <HStack>
+                    <Button
+                        leftIcon={
+                            <Icon as={TbDatabaseExport} height={5} width={5} />
+                        }
+                        colorScheme={'blue'}
+                        variant={'solid'}
+                        size={'sm'}
+                        onClick={() => exporterRef.current?.open()}
+                    >
+                        Export Contacts
+                    </Button>
+                    <Button
+                        leftIcon={
+                            <Icon as={MdContactPage} height={5} width={5} />
+                        }
+                        colorScheme={'green'}
+                        variant={'solid'}
+                        size={'sm'}
+                        onClick={() => drawerRef.current?.open()}
+                    >
+                        Add Contact
+                    </Button>
+                    <Button
+                        isDisabled={selectedContacts.length === 0}
+                        leftIcon={<Icon as={DeleteIcon} height={5} width={5} />}
+                        colorScheme={'red'}
+                        variant={'solid'}
+                        size={'sm'}
+                        onClick={() => {
+                            confirmationDialogRef.current?.open('');
+                        }}
+                    >
+                        Delete Contact
+                    </Button>
+                </HStack>
+            ),
+        });
+        return () => {
+            popFromNavbar();
+        };
+    }, [selectedContacts.length]);
 
-	return (
-		<Box py={'1rem'} textColor={theme === 'dark' ? 'white' : 'black'}>
-			<TableContainer pt={'0.5rem'}>
-				<Table>
-					<Thead>
-						<Tr>
-							<Th width={'5%'}>Sl no</Th>
-							<Th width={'15%'}>QR</Th>
-							<Th width={'30%'}>Name</Th>
-							<Th width={'10%'}>Personal Number</Th>
-							<Th width={'10%'}>Work Number</Th>
-							<Th width={'15%'}>Email</Th>
-							<Th width={'10%'}>Edit</Th>
-						</Tr>
-					</Thead>
-					<Tbody>
-						{list.map((contact, index) => (
-							<Tr key={index}>
-								<Td>
-									<Checkbox
-										colorScheme='green'
-										mr={2}
-										isChecked={selectedContacts.includes(contact.id)}
-										onChange={(e) => {
-											if (e.target.checked) {
-												dispatch(addSelectedContact(contact.id));
-											} else {
-												dispatch(removeSelectedContact(contact.id));
-											}
-										}}
-									/>
-									{index + 1}.
-								</Td>
-								<Td>
-									<QrImage base64={contact.base64} />
-								</Td>
-								<Td>
-									<Box>
-										{contact.first_name} {contact.middle_name} {contact.last_name}
-									</Box>
-								</Td>
-								<Td>{contact.contact_details_phone?.number}</Td>
-								<Td>{contact.contact_details_work?.number}</Td>
-								<Td>{contact.email_personal}</Td>
-								<Td>
-									<IconButton
-										aria-label='Edit'
-										icon={<Icon as={EditIcon} />}
-										onClick={() => handleContactEdit(contact.id)}
-									/>
-								</Td>
-							</Tr>
-						))}
-					</Tbody>
-				</Table>
-			</TableContainer>
-			<ContactInputDialog ref={drawerRef} />
-			<ExporterModal ref={exporterRef} />
-			<ConfirmationDialog
-				type={'Campaign'}
-				ref={confirmationDialogRef}
-				onConfirm={handleDeleteContacts}
-			/>
-		</Box>
-	);
+    return (
+        <Box py={'1rem'} textColor={theme === 'dark' ? 'white' : 'black'}>
+            <TableContainer pt={'0.5rem'}>
+                <Table>
+                    <Thead>
+                        <Tr>
+                            <Th width={'5%'}>Sl no</Th>
+                            <Th width={'15%'}>QR</Th>
+                            <Th width={'30%'}>Name</Th>
+                            <Th width={'10%'}>Personal Number</Th>
+                            <Th width={'10%'}>Work Number</Th>
+                            <Th width={'15%'}>Email</Th>
+                            <Th width={'10%'}>Edit</Th>
+                        </Tr>
+                    </Thead>
+                    <Tbody>
+                        {list.map((contact, index) => (
+                            <Tr key={index}>
+                                <Td>
+                                    <Checkbox
+                                        colorScheme="green"
+                                        mr={2}
+                                        isChecked={selectedContacts.includes(
+                                            contact.id
+                                        )}
+                                        onChange={(e) => {
+                                            if (e.target.checked) {
+                                                dispatch(
+                                                    addSelectedContact(
+                                                        contact.id
+                                                    )
+                                                );
+                                            } else {
+                                                dispatch(
+                                                    removeSelectedContact(
+                                                        contact.id
+                                                    )
+                                                );
+                                            }
+                                        }}
+                                    />
+                                    {index + 1}.
+                                </Td>
+                                <Td>
+                                    <QrImage base64={contact.base64} />
+                                </Td>
+                                <Td>
+                                    <Box>
+                                        {contact.first_name}{' '}
+                                        {contact.middle_name}{' '}
+                                        {contact.last_name}
+                                    </Box>
+                                </Td>
+                                <Td>{contact.contact_details_phone?.number}</Td>
+                                <Td>{contact.contact_details_work?.number}</Td>
+                                <Td>{contact.email_personal}</Td>
+                                <Td>
+                                    <IconButton
+                                        aria-label="Edit"
+                                        icon={<Icon as={EditIcon} />}
+                                        onClick={() =>
+                                            handleContactEdit(contact.id)
+                                        }
+                                    />
+                                </Td>
+                            </Tr>
+                        ))}
+                    </Tbody>
+                </Table>
+            </TableContainer>
+            <ContactInputDialog ref={drawerRef} />
+            <ExporterModal ref={exporterRef} />
+            <ConfirmationDialog
+                type={'Contacts'}
+                ref={confirmationDialogRef}
+                onConfirm={handleDeleteContacts}
+            />
+        </Box>
+    );
 };
 
 export default ContactsPage;

@@ -5,10 +5,12 @@ import { useNavigate } from 'react-router-dom';
 import { NETWORK_ERROR } from '../../../assets/Images';
 import { NAVIGATION } from '../../../config/const';
 import { recheckNetwork, useNetwork } from '../../../hooks/useNetwork';
+import { useTheme } from '../../../hooks/useTheme';
 
 const NetworkError = () => {
     const status = useNetwork();
     const navigate = useNavigate();
+    const theme = useTheme();
 
     useEffect(() => {
         if (status === 'NO-NETWORK') {
@@ -54,6 +56,7 @@ const NetworkError = () => {
                 textAlign={'center'}
                 cursor={'pointer'}
                 onClick={recheckNetwork}
+                textColor={theme === 'dark' ? 'white' : 'black'}
             >
                 <RepeatIcon mr={1} />
                 refresh

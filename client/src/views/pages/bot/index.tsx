@@ -1,5 +1,7 @@
 import { EditIcon } from '@chakra-ui/icons';
 import {
+    Alert,
+    AlertIcon,
     Box,
     Button,
     Flex,
@@ -8,6 +10,7 @@ import {
     HStack,
     IconButton,
     Input,
+    Link,
     Select,
     Table,
     TableContainer,
@@ -47,6 +50,7 @@ import ConfirmationDialog, {
 import SelectContactsOrAttachmentsList, {
     SelectContactOrAttachmentListHandle,
 } from '../../components/contact-detail-input-dialog';
+import SubscriptionAlert from '../../components/subscription-alert';
 
 const initialUiState = {
     isAddingBot: false,
@@ -80,6 +84,9 @@ export default function Bot() {
         shared_contact_cards,
         attachments,
     } = useSelector((state: StoreState) => state[StoreNames.CHATBOT]);
+    const { canSendMessage } = useSelector(
+        (state: StoreState) => state[StoreNames.USER]
+    );
     const {
         add: addBot,
         addingBot,
@@ -374,6 +381,20 @@ export default function Bot() {
             pl={'70px'}
         >
             <Flex direction={'column'} gap={'0.5rem'}>
+                <Alert hidden={canSendMessage} status="warning">
+                    <AlertIcon />
+                    Seems this feature needs a subscription
+                    <Link
+                        flexGrow={1}
+                        display={'inline-flex'}
+                        justifyContent={'flex-end'}
+                        href={'https://whatsleads.in/pricing'}
+                        target="_blank"
+                        _hover={{ textColor: 'black' }}
+                    >
+                        Subscribe Now
+                    </Link>
+                </Alert>
                 <Flex
                     direction={'column'}
                     borderRadius={'20px'}
@@ -1025,6 +1046,7 @@ export default function Bot() {
                 ref={contactAttachmentSelectRef}
                 onConfirm={handleAddContactAndAttachment}
             />
+            <SubscriptionAlert />
         </Flex>
     );
 }
