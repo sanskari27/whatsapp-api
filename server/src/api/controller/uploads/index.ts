@@ -5,7 +5,7 @@ import { MessageSchedulerService } from '../../../database/services';
 import UploadService from '../../../database/services/uploads';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
-import { Respond, idValidator } from '../../../utils/ExpressUtils';
+import { Respond, RespondFile, idValidator } from '../../../utils/ExpressUtils';
 import { FileUtils, SingleFileUploadOptions } from '../../../utils/files';
 import FileUpload, { ONLY_CSV_ALLOWED } from '../../../utils/files/FileUpload';
 
@@ -190,6 +190,25 @@ export async function updateAttachment(req: Request, res: Response, next: NextFu
 	}
 }
 
+export async function downloadAttachment(req: Request, res: Response, next: NextFunction) {
+	const [isIDValid, id] = idValidator(req.params.id);
+
+	if (!isIDValid) {
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
+	}
+	try {
+		const attachment = await new UploadService(req.locals.user).getAttachment(id);
+		const path = __basedir + ATTACHMENTS_PATH + attachment.filename;
+		return RespondFile({
+			res,
+			filename: attachment.name,
+			filepath: path,
+		});
+	} catch (err: unknown) {
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
+	}
+}
+
 export async function deleteAttachment(req: Request, res: Response, next: NextFunction) {
 	const [isIDValid, id] = idValidator(req.params.id);
 
@@ -252,6 +271,7 @@ const UploadsController = {
 	deleteAttachment,
 	updateAttachment,
 	updateAttachmentFile,
+	downloadAttachment,
 };
 
 export default UploadsController;

@@ -23,7 +23,7 @@ const ShortnerSchema = new mongoose.Schema<IShortner>({
 
 ShortnerSchema.pre('save', async function (next) {
 	if (!this.key) {
-		this.key = nanoid();
+		this.key = nanoid(6);
 	}
 	if (!this.qrString) {
 		const qrCodeBuffer = await QRUtils.generateQR(`https://open.whatsleads.in/${this.key}`);

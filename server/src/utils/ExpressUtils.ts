@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { Request, Response } from 'express';
+import mime from 'mime';
 import { Types } from 'mongoose';
 import { z } from 'zod';
 import { SUBSCRIPTION_STATUS } from '../config/const';
@@ -12,6 +13,10 @@ type ResponseData = {
 type CSVResponseData = Omit<ResponseData, 'status' | 'data'> & {
 	filename: string;
 	data: string;
+};
+type FileResponseData = Omit<ResponseData, 'status' | 'data'> & {
+	filename: string;
+	filepath: string;
 };
 
 export const Respond = ({ res, status, data = {} }: ResponseData) => {
@@ -30,6 +35,11 @@ export const RespondVCF = ({ res, filename, data }: CSVResponseData) => {
 	res.setHeader('Content-Disposition', `attachment; filename="${filename}.vcf"`);
 	res.set('Content-Type', 'text/vcf');
 	res.status(200).send(data);
+};
+export const RespondFile = ({ res, filename, filepath }: FileResponseData) => {
+	res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+	res.set('Content-Type', mime.getType(filepath) ?? '');
+	res.status(200).sendFile(filepath);
 };
 
 export const Delay = async (seconds: number) => {
