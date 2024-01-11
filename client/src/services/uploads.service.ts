@@ -64,32 +64,43 @@ export default class UploadsService {
             return {
                 name: response.name,
                 id: response.filename,
+                headers: response.headers,
             };
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             if (err.response.data.title === 'ALREADY_EXISTS')
-                return { name: 'ERROR', id: 'File name already exists' };
+                return {
+                    name: 'ERROR',
+                    id: 'File name already exists',
+                    headers: [],
+                };
             if (err.response.data.title === 'INVALID_FIELDS')
-                return { name: 'ERROR', id: 'Invalid Fields in CSV' };
+                return {
+                    name: 'ERROR',
+                    id: 'Invalid Fields in CSV',
+                    headers: [],
+                };
 
-            return { name: 'ERROR', id: 'Something went wrong' };
+            return { name: 'ERROR', id: 'Something went wrong', headers: [] };
         }
     }
 
-    static async listCSV(): Promise<
-        {
-            name: string;
-            id: string;
-            headers: string[];
-        }[]
-    > {
+    static async listCSV() {
         try {
             const { data: response } = await APIInstance.get(`/uploads/csv`);
-            return response.csv_list.map((csv: any) => ({
-                name: csv.name,
-                id: csv.filename,
-                headers: csv.headers,
-                _id: csv.id,
-            }));
+            return response.csv_list.map(
+                (csv: {
+                    name: string;
+                    filename: string;
+                    headers: string[];
+                    id: string;
+                }) => ({
+                    name: csv.name,
+                    id: csv.filename,
+                    headers: csv.headers,
+                    _id: csv.id,
+                })
+            );
         } catch (err) {
             return [];
         }

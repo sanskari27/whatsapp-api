@@ -2,6 +2,7 @@ import { configureStore } from '@reduxjs/toolkit';
 
 import { StoreNames } from './config';
 import { default as AttachmentReduers } from './reducers/AttachmentReducers';
+import { default as CSVFileReducers } from './reducers/CSVFileReducers';
 import { default as ChatBoReducers } from './reducers/ChatBoReducers';
 import { default as ContactCardReducres } from './reducers/ContactCardReducers';
 import { default as LinkShortenerReducer } from './reducers/LinkShortnerReducers';
@@ -16,6 +17,7 @@ const store = configureStore({
         [StoreNames.LINK]: LinkShortenerReducer,
         [StoreNames.CONTACT_CARD]: ContactCardReducres,
         [StoreNames.ATTACHMENT]: AttachmentReduers,
+        [StoreNames.CSV]: CSVFileReducers,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
