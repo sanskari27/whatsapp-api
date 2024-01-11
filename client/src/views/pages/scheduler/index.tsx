@@ -700,7 +700,7 @@ export default function Scheduler() {
                                     colorScheme="green"
                                     onClick={() => {
                                         selectContactListRef.current?.open();
-                                        selectContactListRef.current?.setAttachmentId(
+                                        selectContactListRef.current?.setAttachmentIds(
                                             details.attachments
                                         );
                                         selectContactListRef.current?.setType(

@@ -156,79 +156,73 @@ export default class PaymentBucketService {
 	}
 
 	static async getPaymentRecords(user: IUser) {
-		//TODO
-		try {
-			const paymentRecords = await PaymentDB.aggregate([
-				{
-					$lookup: {
-						from: PaymentBucketDB.collection.name, // Name of the OtherModel collection
-						localField: 'bucket',
-						foreignField: '_id',
-						as: 'payment_bucket',
-					},
+		const paymentRecords = await PaymentDB.aggregate([
+			{
+				$lookup: {
+					from: PaymentBucketDB.collection.name, // Name of the OtherModel collection
+					localField: 'bucket',
+					foreignField: '_id',
+					as: 'payment_bucket',
 				},
-				{ $addFields: { payment_bucket: { $arrayElemAt: ['$payment_bucket', 0] } } },
-				{ $addFields: { whatsapp_numbers: '$payment_bucket.whatsapp_numbers' } },
-				{
-					$match: {
-						$and: [{ whatsapp_numbers: user.phone }, { payment_id: { $ne: null } }],
-					},
+			},
+			{ $addFields: { payment_bucket: { $arrayElemAt: ['$payment_bucket', 0] } } },
+			{ $addFields: { whatsapp_numbers: '$payment_bucket.whatsapp_numbers' } },
+			{
+				$match: {
+					$and: [{ whatsapp_numbers: user.phone }, { payment_id: { $ne: null } }],
 				},
-			]);
+			},
+		]);
 
-			const subscriptionRecords = await SubscriptionDB.aggregate([
-				{
-					$lookup: {
-						from: PaymentBucketDB.collection.name, // Name of the OtherModel collection
-						localField: 'bucket',
-						foreignField: '_id',
-						as: 'payment_bucket',
-					},
+		const subscriptionRecords = await SubscriptionDB.aggregate([
+			{
+				$lookup: {
+					from: PaymentBucketDB.collection.name, // Name of the OtherModel collection
+					localField: 'bucket',
+					foreignField: '_id',
+					as: 'payment_bucket',
 				},
-				{ $addFields: { payment_bucket: { $arrayElemAt: ['$payment_bucket', 0] } } },
-				{ $addFields: { whatsapp_numbers: '$payment_bucket.whatsapp_numbers' } },
-				{
-					$match: {
-						$and: [{ whatsapp_numbers: user.phone }],
-					},
+			},
+			{ $addFields: { payment_bucket: { $arrayElemAt: ['$payment_bucket', 0] } } },
+			{ $addFields: { whatsapp_numbers: '$payment_bucket.whatsapp_numbers' } },
+			{
+				$match: {
+					$and: [{ whatsapp_numbers: user.phone }],
 				},
-				{
-					$lookup: {
-						from: PlanDB.collection.name, // Name of the OtherModel collection
-						localField: 'plan',
-						foreignField: '_id',
-						as: 'plan',
-					},
+			},
+			{
+				$lookup: {
+					from: PlanDB.collection.name, // Name of the OtherModel collection
+					localField: 'plan',
+					foreignField: '_id',
+					as: 'plan',
 				},
-				{ $addFields: { plan: { $arrayElemAt: ['$plan', 0] } } },
-			]);
+			},
+			{ $addFields: { plan: { $arrayElemAt: ['$plan', 0] } } },
+		]);
 
-			const records: (PaymentRecord | SubscriptionRecord)[] = [];
-			const _paymentRecords = paymentRecords.map(
-				(paymentRecord): PaymentRecord => ({
-					type: 'payment',
-					id: paymentRecord._id.toString(),
-					date: DateUtils.getMoment(paymentRecord.transaction_date).format('DD MMM yyyy'),
-					amount: paymentRecord.amount,
-				})
-			);
+		const records: (PaymentRecord | SubscriptionRecord)[] = [];
+		const _paymentRecords = paymentRecords.map(
+			(paymentRecord): PaymentRecord => ({
+				type: 'payment',
+				id: paymentRecord._id.toString(),
+				date: DateUtils.getMoment(paymentRecord.transaction_date).format('DD MMM yyyy'),
+				amount: paymentRecord.amount,
+			})
+		);
 
-			const _subscriptionRecords = subscriptionRecords.map(
-				(paymentRecord): SubscriptionRecord => ({
-					type: 'subscription',
-					id: paymentRecord._id.toString(),
-					plan: paymentRecord.plan.code,
-					isActive: paymentRecord.subscription_status === SUBSCRIPTION_STATUS.ACTIVE,
-					isPaused: paymentRecord.subscription_status === SUBSCRIPTION_STATUS.PAUSED,
-				})
-			);
+		const _subscriptionRecords = subscriptionRecords.map(
+			(paymentRecord): SubscriptionRecord => ({
+				type: 'subscription',
+				id: paymentRecord._id.toString(),
+				plan: paymentRecord.plan.code,
+				isActive: paymentRecord.subscription_status === SUBSCRIPTION_STATUS.ACTIVE,
+				isPaused: paymentRecord.subscription_status === SUBSCRIPTION_STATUS.PAUSED,
+			})
+		);
 
-			records.push(..._subscriptionRecords);
-			records.push(..._paymentRecords);
-			return records;
-		} catch (error) {
-			console.log(error);
-			throw error;
-		}
+		records.push(..._subscriptionRecords);
+		records.push(..._paymentRecords);
+		return records;
 	}
 }
