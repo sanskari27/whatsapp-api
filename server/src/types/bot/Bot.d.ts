@@ -1,5 +1,6 @@
 import { Document } from 'mongoose';
 import { BOT_TRIGGER_OPTIONS, BOT_TRIGGER_TO } from '../../config/const';
+import IContactCard from '../contact-cards';
 import IUpload from '../uploads';
 import { IUser } from '../users';
 
@@ -16,7 +17,7 @@ export default interface IBot extends Document {
 
 	message: string;
 	attachments: IUpload[];
-	shared_contact_cards: string[];
+	shared_contact_cards: IContactCard[];
 	polls: {
 		title: string;
 		options: string[];
