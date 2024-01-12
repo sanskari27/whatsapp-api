@@ -4,6 +4,7 @@ import cors from 'cors';
 import express, { Express, NextFunction, Request, Response } from 'express';
 import fs from 'fs';
 import cron from 'node-cron';
+import Shortner from './api/controller/shortner';
 import routes from './api/routes';
 
 import Logger from 'n23-logger';
@@ -34,6 +35,7 @@ export default function (app: Express) {
 	);
 	app.use(cookieParser());
 	app.use(express.static(__basedir + 'static'));
+	app.route('/open/:id').get(Shortner.open);
 	app.route('/api-status').get((req, res) => {
 		res.status(200).json({
 			success: true,
