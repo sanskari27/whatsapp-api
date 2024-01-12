@@ -408,7 +408,9 @@ export default class BotService {
 		if (data.attachments) {
 			bot.attachments = data.attachments;
 		}
-		bot.shared_contact_cards = await ContactCardDB.find({ _id: data.shared_contact_cards });
+		bot.shared_contact_cards = await ContactCardDB.find({
+			_id: { $in: data.shared_contact_cards },
+		});
 
 		if (data.polls) {
 			bot.polls = data.polls;
