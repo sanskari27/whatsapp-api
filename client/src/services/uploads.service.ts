@@ -65,6 +65,7 @@ export default class UploadsService {
                 name: response.name,
                 id: response.filename,
                 headers: response.headers,
+                _id: response.id,
             };
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
@@ -73,15 +74,22 @@ export default class UploadsService {
                     name: 'ERROR',
                     id: 'File name already exists',
                     headers: [],
+                    _id: '',
                 };
             if (err.response.data.title === 'INVALID_FIELDS')
                 return {
                     name: 'ERROR',
                     id: 'Invalid Fields in CSV',
                     headers: [],
+                    _id: '',
                 };
 
-            return { name: 'ERROR', id: 'Something went wrong', headers: [] };
+            return {
+                name: 'ERROR',
+                id: 'Something went wrong',
+                headers: [],
+                _id: '',
+            };
         }
     }
 

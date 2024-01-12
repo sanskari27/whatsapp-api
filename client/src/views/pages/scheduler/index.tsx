@@ -1,11 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AddIcon } from '@chakra-ui/icons';
 import {
+    Alert,
     AlertDialog,
     AlertDialogContent,
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogOverlay,
+    AlertIcon,
     Box,
     Button,
     Flex,
@@ -15,6 +17,7 @@ import {
     HStack,
     Heading,
     Input,
+    Link,
     Select,
     Tag,
     TagLabel,
@@ -59,6 +62,7 @@ import {
 import SelectContactsOrAttachmentsList, {
     SelectContactOrAttachmentListHandle,
 } from '../../components/contact-detail-input-dialog';
+import SubscriptionAlert from '../../components/subscription-alert';
 import { TemplateNameInputDialog } from './components';
 
 export type SchedulerDetails = {
@@ -117,6 +121,10 @@ export default function Scheduler() {
 
     const { details, isBusinessAccount, recipients } = useSelector(
         (state: StoreState) => state[StoreNames.SCHEDULER]
+    );
+
+    const { canSendMessage } = useSelector(
+        (state: StoreState) => state[StoreNames.USER]
     );
 
     const [error, setError] = useState({
@@ -310,6 +318,20 @@ export default function Scheduler() {
     return (
         <Flex padding={'1rem'} justifyContent={'center'} width={'full'}>
             <Flex direction={'column'} width={'full'}>
+                <Alert hidden={canSendMessage} status="warning" mb={'2rem'}>
+                    <AlertIcon />
+                    Seems this feature needs a subscription
+                    <Link
+                        flexGrow={1}
+                        display={'inline-flex'}
+                        justifyContent={'flex-end'}
+                        href={'https://whatsleads.in/pricing'}
+                        target="_blank"
+                        _hover={{ textColor: 'black' }}
+                    >
+                        Subscribe Now
+                    </Link>
+                </Alert>
                 <Heading
                     color={theme === 'dark' ? 'white' : 'GrayText'}
                     fontSize={'large'}
@@ -1021,6 +1043,7 @@ export default function Scheduler() {
                     />
                 </Box>
             </Flex>
+            <SubscriptionAlert />
         </Flex>
     );
 }
