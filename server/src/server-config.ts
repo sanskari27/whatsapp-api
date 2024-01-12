@@ -7,7 +7,7 @@ import cron from 'node-cron';
 import routes from './api/routes';
 
 import Logger from 'n23-logger';
-import { ATTACHMENTS_PATH, CSV_PATH, UPLOADS_PATH } from './config/const';
+import { ATTACHMENTS_PATH, CSV_PATH, IS_PRODUCTION, UPLOADS_PATH } from './config/const';
 import { MessageSchedulerService } from './database/services';
 import APIError from './errors/api-errors';
 import { WhatsappProvider } from './provider/whatsapp_provider';
@@ -16,9 +16,9 @@ import WhatsappUtils from './utils/WhatsappUtils';
 export default function (app: Express) {
 	//Defines all global variables and constants
 	let basedir = __dirname;
-	// if (IS_PRODUCTION) {
-	//     basedir = basedir.slice(0, basedir.lastIndexOf('/'));
-	// }
+	if (IS_PRODUCTION) {
+		basedir = basedir.slice(0, basedir.lastIndexOf('/'));
+	}
 	global.__basedir = basedir;
 
 	//Initialize all the middleware
