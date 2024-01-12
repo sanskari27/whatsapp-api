@@ -721,7 +721,7 @@ export default function Bot() {
 								}}
 								// isDisabled={!isAuthenticated}
 							>
-								Select Contacts ({shared_contact_cards.length}) Selected
+								Select Contacts ({shared_contact_cards.length }) Selected
 							</Button>
 						</Box>
 					</HStack>
