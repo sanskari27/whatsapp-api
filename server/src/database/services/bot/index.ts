@@ -37,7 +37,7 @@ export default class BotService {
 	public async allBots() {
 		const bots = await BotDB.find({
 			user: this.user,
-		}).populate('attachments');
+		}).populate('attachments shared_contact_cards');
 		return bots.map((bot) => ({
 			bot_id: bot._id as Types.ObjectId,
 			respond_to: bot.respond_to,
@@ -64,7 +64,7 @@ export default class BotService {
 	}
 
 	public async boyByID(id: Types.ObjectId) {
-		const bot = await BotDB.findById(id).populate('attachments');
+		const bot = await BotDB.findById(id).populate('attachments shared_contact_cards');
 
 		if (!bot) {
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
@@ -408,9 +408,8 @@ export default class BotService {
 		if (data.attachments) {
 			bot.attachments = data.attachments;
 		}
-		if (data.shared_contact_cards) {
-			bot.shared_contact_cards = await ContactCardDB.find({ _id: data.shared_contact_cards });
-		}
+		bot.shared_contact_cards = await ContactCardDB.find({ _id: data.shared_contact_cards });
+
 		if (data.polls) {
 			bot.polls = data.polls;
 		}
