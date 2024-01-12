@@ -86,7 +86,6 @@ async function updateLink(req: Request, res: Response, next: NextFunction) {
 	const { link, title, number, message } = reqValidatorResult.data;
 	const doc = await ShortnerDB.findOne({
 		_id: id,
-		title,
 		user: req.locals.user,
 	});
 
