@@ -139,7 +139,7 @@ async function deleteLink(req: Request, res: Response, next: NextFunction) {
 
 async function open(req: Request, res: Response, next: NextFunction) {
 	const id = req.params.id;
-	const doc = await ShortnerDB.findById(id);
+	const doc = await ShortnerDB.findOne({ key: id });
 	if (!doc) {
 		return res.send();
 	}
