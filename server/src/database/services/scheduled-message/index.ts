@@ -30,12 +30,10 @@ export type Message = {
 		options: string[];
 		isMultiSelect: boolean;
 	}[];
-	shared_contact_cards: ContactCardMessage;
+	shared_contact_cards: Types.ObjectId[];
 };
 
 type TextMessage = string;
-
-type ContactCardMessage = string[];
 
 type Batch = {
 	campaign_id: string;
@@ -130,19 +128,19 @@ export default class MessageSchedulerService {
 			isSent: false,
 			isFailed: false,
 			isPaused: false,
-		}).populate('attachments sender');
+		}).populate('attachments sender shared_contact_cards');
 
 		scheduledMessages.forEach(async (scheduledMessage) => {
 			const whatsapp = WhatsappProvider.getInstance(scheduledMessage.sender_client_id);
-			if (!whatsapp.isReady()) {
+
+			const userService = new UserService(scheduledMessage.sender);
+			const { isSubscribed, isNew } = userService.isSubscribed();
+			
+			if (!whatsapp.isReady() || (!isSubscribed && !isNew)) {
 				scheduledMessage.isFailed = true;
 				scheduledMessage.save();
 				return null;
 			}
-			const userService = new UserService(scheduledMessage.sender);
-
-			const { isSubscribed, isNew } = userService.isSubscribed();
-
 			let msg = scheduledMessage.message;
 
 			if (msg) {
@@ -157,7 +155,7 @@ export default class MessageSchedulerService {
 			scheduledMessage.shared_contact_cards.forEach(async (card) => {
 				whatsapp
 					.getClient()
-					.sendMessage(scheduledMessage.receiver, card)
+					.sendMessage(scheduledMessage.receiver, card.vCardString)
 					.catch((err) => {
 						Logger.error('Error sending message:', err);
 					});

@@ -6,8 +6,7 @@ import UploadService from '../../../database/services/uploads';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
-import { Respond, generateBatchID, validatePhoneNumber } from '../../../utils/ExpressUtils';
-import VCardBuilder from '../../../utils/VCardBuilder';
+import { Respond, generateBatchID } from '../../../utils/ExpressUtils';
 import WhatsappUtils from '../../../utils/WhatsappUtils';
 import { FileUtils } from '../../../utils/files';
 
@@ -24,26 +23,11 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 			message: z.string().default(''),
 			variables: z.string().array().default([]),
 			shared_contact_cards: z
-				.object({
-					first_name: z.string().default(''),
-					last_name: z.string().default(''),
-					title: z.string().default(''),
-					organization: z.string().default(''),
-					email_personal: z.string().default(''),
-					email_work: z.string().default(''),
-					contact_number_phone: z.string().default(''),
-					contact_number_work: z.string().default(''),
-					contact_number_other: z.string().array().default([]),
-					links: z.string().array().default([]),
-					street: z.string().default(''),
-					city: z.string().default(''),
-					state: z.string().default(''),
-					country: z.string().default(''),
-					pincode: z.string().default(''),
-				})
+				.string()
 				.array()
-				.default([]),
-
+				.default([])
+				.refine((attachments) => !attachments.some((value) => !Types.ObjectId.isValid(value)))
+				.transform((attachments) => attachments.map((value) => new Types.ObjectId(value))),
 			attachments: z
 				.string()
 				.array()
@@ -225,71 +209,6 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 		}
 	}
 
-	const contact_cards_promise = shared_contact_cards.map(async (detail) => {
-		const vcard = new VCardBuilder(detail)
-			.setFirstName(detail.first_name)
-			.setLastName(detail.last_name)
-			.setTitle(detail.title)
-			.setOrganization(detail.organization)
-			.setEmail(detail.email_personal)
-			.setWorkEmail(detail.email_work)
-			.setStreet(detail.street)
-			.setCity(detail.city)
-			.setState(detail.state)
-			.setPincode(detail.pincode)
-			.setCountry(detail.country);
-
-		if (detail.contact_number_phone) {
-			const number = detail.contact_number_phone.startsWith('+')
-				? detail.contact_number_phone.substring(1)
-				: detail.contact_number_phone;
-			if (!validatePhoneNumber(number)) {
-				vcard.setContactWork(`+${number}`);
-			} else {
-				const numberId = await whatsapp.getClient().getNumberId(number);
-				if (numberId) {
-					vcard.setContactWork(`+${numberId.user}`, numberId.user);
-				} else {
-					vcard.setContactWork(`+${number}`);
-				}
-			}
-		}
-
-		if (detail.contact_number_work) {
-			const number = detail.contact_number_work.startsWith('+')
-				? detail.contact_number_work.substring(1)
-				: detail.contact_number_work;
-			if (!validatePhoneNumber(number)) {
-				vcard.setContactPhone(`+${number}`);
-			} else {
-				const numberId = await whatsapp.getClient().getNumberId(number);
-				if (numberId) {
-					vcard.setContactPhone(`+${numberId.user}`, numberId.user);
-				} else {
-					vcard.setContactPhone(`+${number}`);
-				}
-			}
-		}
-
-		for (const number of detail.contact_number_other) {
-			const formattedNumber = number.startsWith('+') ? number.substring(1) : number;
-			if (!validatePhoneNumber(formattedNumber)) {
-				vcard.addContactOther(`+${formattedNumber}`);
-			} else {
-				const numberId = await whatsapp.getClient().getNumberId(formattedNumber);
-				if (numberId) {
-					vcard.addContactOther(`+${numberId.user}`, numberId.user);
-				} else {
-					vcard.addContactOther(`+${formattedNumber}`);
-				}
-			}
-		}
-
-		return vcard.build();
-	});
-
-	const contact_cards = await Promise.all(contact_cards_promise);
-
 	const sendMessageList = numbers.map(async (number, index) => {
 		const _message = messages !== null ? messages[index] : message ?? '';
 		const attachments =
@@ -304,7 +223,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 			number,
 			message: _message,
 			attachments: attachments,
-			shared_contact_cards: contact_cards ?? [],
+			shared_contact_cards: shared_contact_cards,
 			polls: polls,
 		};
 	});

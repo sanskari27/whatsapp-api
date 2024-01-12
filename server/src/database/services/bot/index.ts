@@ -327,7 +327,7 @@ export default class BotService {
 		options: BOT_TRIGGER_OPTIONS;
 		trigger: string;
 		message: string;
-		shared_contact_cards: string[];
+		shared_contact_cards: Types.ObjectId[];
 		attachments: IUpload[];
 		group_respond: boolean;
 		polls: {

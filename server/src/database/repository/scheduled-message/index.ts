@@ -30,7 +30,12 @@ const scheduledMessageSchema = new mongoose.Schema<IScheduledMessage>({
 			caption: String,
 		},
 	],
-	shared_contact_cards: [String],
+	shared_contact_cards: [
+		{
+			type: Schema.Types.ObjectId,
+			ref: 'ContactCard',
+		},
+	],
 	polls: [
 		{
 			title: String,

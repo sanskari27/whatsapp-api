@@ -1,5 +1,6 @@
 import { Document } from 'mongoose';
 import { IUser } from '../users';
+import IContactCard from '../contact-cards';
 
 export default interface IScheduledMessage extends Document {
 	sender: IUser;
@@ -15,7 +16,7 @@ export default interface IScheduledMessage extends Document {
 		caption: string;
 	}[];
 
-	shared_contact_cards: string[];
+	shared_contact_cards: IContactCard[];
 
 	polls: {
 		title: string;

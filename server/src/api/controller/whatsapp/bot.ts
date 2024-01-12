@@ -7,8 +7,7 @@ import UploadService from '../../../database/services/uploads';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
-import { Respond, idValidator, validatePhoneNumber } from '../../../utils/ExpressUtils';
-import VCardBuilder from '../../../utils/VCardBuilder';
+import { Respond, idValidator } from '../../../utils/ExpressUtils';
 
 async function allBots(req: Request, res: Response, next: NextFunction) {
 	const botService = new BotService(req.locals.user);
@@ -75,25 +74,11 @@ async function createBot(req: Request, res: Response, next: NextFunction) {
 			BOT_TRIGGER_OPTIONS.INCLUDES_MATCH_CASE,
 		]),
 		shared_contact_cards: z
-			.object({
-				first_name: z.string().default(''),
-				last_name: z.string().default(''),
-				title: z.string().default(''),
-				organization: z.string().default(''),
-				email_personal: z.string().default(''),
-				email_work: z.string().default(''),
-				contact_number_phone: z.string().default(''),
-				contact_number_work: z.string().default(''),
-				contact_number_other: z.string().array().default([]),
-				links: z.string().array().default([]),
-				street: z.string().default(''),
-				city: z.string().default(''),
-				state: z.string().default(''),
-				country: z.string().default(''),
-				pincode: z.string().default(''),
-			})
+			.string()
 			.array()
-			.default([]),
+			.default([])
+			.refine((attachments) => !attachments.some((value) => !Types.ObjectId.isValid(value)))
+			.transform((attachments) => attachments.map((value) => new Types.ObjectId(value))),
 		attachments: z
 			.string()
 			.array()
@@ -118,68 +103,12 @@ async function createBot(req: Request, res: Response, next: NextFunction) {
 	}
 
 	const botService = new BotService(req.locals.user);
-	const data = reqValidatorResult.data;
 	const [_, media_attachments] = await new UploadService(req.locals.user).listAttachments(
 		reqValidatorResult.data.attachments
 	);
 
-	const contact_cards_promise = data.shared_contact_cards.map(async (detail) => {
-		const vcard = new VCardBuilder(detail);
-
-		if (detail.contact_number_phone) {
-			const number = detail.contact_number_phone.startsWith('+')
-				? detail.contact_number_phone.substring(1)
-				: detail.contact_number_phone;
-			if (!validatePhoneNumber(number)) {
-				vcard.setContactPhone(`+${number}`);
-			} else {
-				const numberId = await whatsapp.getClient().getNumberId(number);
-				if (numberId) {
-					vcard.setContactPhone(`+${numberId.user}`, numberId.user);
-				} else {
-					vcard.setContactPhone(`+${number}`);
-				}
-			}
-		}
-
-		if (detail.contact_number_work) {
-			const number = detail.contact_number_work.startsWith('+')
-				? detail.contact_number_work.substring(1)
-				: detail.contact_number_work;
-			if (!validatePhoneNumber(number)) {
-				vcard.setContactWork(`+${number}`);
-			} else {
-				const numberId = await whatsapp.getClient().getNumberId(number);
-				if (numberId) {
-					vcard.setContactWork(`+${numberId.user}`, numberId.user);
-				} else {
-					vcard.setContactWork(`+${number}`);
-				}
-			}
-		}
-
-		for (const number of detail.contact_number_other) {
-			const formattedNumber = number.startsWith('+') ? number.substring(1) : number;
-			if (!validatePhoneNumber(formattedNumber)) {
-				vcard.addContactOther(`+${formattedNumber}`);
-			} else {
-				const numberId = await whatsapp.getClient().getNumberId(formattedNumber);
-				if (numberId) {
-					vcard.addContactOther(`+${numberId.user}`, numberId.user);
-				} else {
-					vcard.addContactOther(`+${formattedNumber}`);
-				}
-			}
-		}
-
-		return vcard.build();
-	});
-
-	const contact_cards = await Promise.all(contact_cards_promise);
-
 	const bot = botService.createBot({
 		...reqValidatorResult.data,
-		shared_contact_cards: contact_cards,
 		attachments: media_attachments,
 	});
 
