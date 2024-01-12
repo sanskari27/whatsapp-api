@@ -32,7 +32,12 @@ const botSchema = new mongoose.Schema<IBot>({
 			ref: 'Upload',
 		},
 	],
-	shared_contact_cards: [String],
+	shared_contact_cards: [
+		{
+			type: Schema.Types.ObjectId,
+			ref: 'ContactCard',
+		},
+	],
 	group_respond: {
 		type: Boolean,
 		default: false,

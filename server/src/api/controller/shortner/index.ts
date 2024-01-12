@@ -18,7 +18,7 @@ async function createWhatsappLink(req: Request, res: Response, next: NextFunctio
 	}
 
 	const { number, message, title } = reqValidatorResult.data;
-	const link = `wa.me/${number}?text=${encodeURIComponent(message)}`;
+	const link = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
 
 	const doc = await ShortnerDB.create({
 		title,
@@ -94,7 +94,7 @@ async function updateLink(req: Request, res: Response, next: NextFunction) {
 		return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
 	}
 	if (!link) {
-		doc.link = `wa.me/${number}?text=${encodeURIComponent(message)}`;
+		doc.link = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
 	} else {
 		doc.link = link;
 	}
@@ -143,7 +143,6 @@ async function open(req: Request, res: Response, next: NextFunction) {
 	if (!doc) {
 		return res.send();
 	}
-
 	return res.redirect(doc.link);
 }
 
