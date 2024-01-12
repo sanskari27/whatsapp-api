@@ -17,6 +17,7 @@ import DateUtils from '../../../utils/DateUtils';
 import { Delay } from '../../../utils/ExpressUtils';
 import { BotResponseDB } from '../../repository/bot';
 import BotDB from '../../repository/bot/Bot';
+import ContactCardDB from '../../repository/contact-cards';
 import UserService from '../user';
 
 export default class BotService {
@@ -259,7 +260,7 @@ export default class BotService {
 			(bot.shared_contact_cards ?? []).forEach(async (card) => {
 				whatsapp
 					.getClient()
-					.sendMessage(from, card)
+					.sendMessage(from, card.vCardString)
 					.catch((err) => {
 						Logger.error('Error sending message:', err);
 					});
@@ -370,7 +371,7 @@ export default class BotService {
 			options?: BOT_TRIGGER_OPTIONS;
 			trigger?: string;
 			message?: string;
-			shared_contact_cards?: string[];
+			shared_contact_cards?: Types.ObjectId[];
 			attachments?: IUpload[];
 			polls?: {
 				title: string;
@@ -379,7 +380,7 @@ export default class BotService {
 			}[];
 		}
 	) {
-		const bot = await BotDB.findById(id).populate('attachments');
+		const bot = await BotDB.findById(id).populate('attachments shared_contact_cards');
 		if (!bot) {
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
 		}
@@ -408,7 +409,7 @@ export default class BotService {
 			bot.attachments = data.attachments;
 		}
 		if (data.shared_contact_cards) {
-			bot.shared_contact_cards = data.shared_contact_cards;
+			bot.shared_contact_cards = await ContactCardDB.find({ _id: data.shared_contact_cards });
 		}
 		if (data.polls) {
 			bot.polls = data.polls;
