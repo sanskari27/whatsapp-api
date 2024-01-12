@@ -768,12 +768,12 @@ export default function Bot() {
 							<Thead>
 								<Tr>
 									<Th width={'15%'}>Trigger</Th>
-									<Th width={'15%'}>Message</Th>
+									<Th width={'25%'}>Message</Th>
 									<Th width={'10%'}>Recipients</Th>
 									<Th width={'10%'}>Conditions</Th>
 									<Th width={'10%'}>Attachments/Contacts</Th>
 									<Th width={'10%'}>Delay</Th>
-									<Th width={'20%'}>Actions</Th>
+									<Th width={'10%'}>Actions</Th>
 								</Tr>
 							</Thead>
 							<Tbody textColor={theme === 'dark' ? 'white' : 'black'}>
