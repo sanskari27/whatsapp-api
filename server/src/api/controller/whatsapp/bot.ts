@@ -144,26 +144,12 @@ async function updateBot(req: Request, res: Response, next: NextFunction) {
 			BOT_TRIGGER_OPTIONS.INCLUDES_IGNORE_CASE,
 			BOT_TRIGGER_OPTIONS.INCLUDES_MATCH_CASE,
 		]),
-		// shared_contact_cards: z
-		// 	.object({
-		// 		first_name: z.string().default(''),
-		// 		last_name: z.string().default(''),
-		// 		title: z.string().default(''),
-		// 		organization: z.string().default(''),
-		// 		email_personal: z.string().default(''),
-		// 		email_work: z.string().default(''),
-		// 		contact_number_phone: z.string().default(''),
-		// 		contact_number_work: z.string().default(''),
-		// 		contact_number_other: z.string().array().default([]),
-		// 		links: z.string().array().default([]),
-		// 		street: z.string().default(''),
-		// 		city: z.string().default(''),
-		// 		state: z.string().default(''),
-		// 		country: z.string().default(''),
-		// 		pincode: z.string().default(''),
-		// 	})
-		// 	.array()
-		// 	.default([]),
+		shared_contact_cards: z
+			.string()
+			.array()
+			.default([])
+			.refine((attachments) => !attachments.some((value) => !Types.ObjectId.isValid(value)))
+			.transform((attachments) => attachments.map((value) => new Types.ObjectId(value))),
 		attachments: z
 			.string()
 			.array()
@@ -199,7 +185,6 @@ async function updateBot(req: Request, res: Response, next: NextFunction) {
 	try {
 		const bot = await botService.modifyBot(bot_id, {
 			...reqValidatorResult.data,
-			shared_contact_cards: undefined, //TODO
 			attachments: media_attachments,
 		});
 
