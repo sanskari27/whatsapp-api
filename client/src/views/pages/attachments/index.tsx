@@ -130,8 +130,8 @@ const AttachmentPage = () => {
                     <Thead>
                         <Tr>
                             <Th width={'5%'}>Sl no</Th>
-                            <Th width={'10%'}>Name</Th>
-                            <Th width={''}>Caption</Th>
+                            <Th width={'20%'}>Name</Th>
+                            <Th width={'60'}>Caption</Th>
                             <Th width={'5%'}>Custom Caption</Th>
                             <Th width={'10%'} textAlign={'center'}>
                                 Actions
@@ -157,7 +157,7 @@ const AttachmentPage = () => {
                                     {index + 1}.
                                 </Td>
                                 <Td>{attachment.name}</Td>
-                                <Td>
+                                <Td textOverflow={'revert-layer'}>
                                     {attachment.caption
                                         .split('\n')
                                         .map((caption, index) => (

@@ -9,7 +9,26 @@ export default function useBot() {
     useEffect(() => {
         setLoading(true);
         BotService.listBots()
-            .then(setBots)
+            .then((res) => {
+                if (!res) return;
+                setBots(
+                    res.map((bot_response) => ({
+                        trigger_gap_seconds:
+                            bot_response.trigger_gap_seconds || 0,
+                        response_delay_seconds:
+                            bot_response.response_delay_seconds || 0,
+                        options: bot_response.options || '',
+                        shared_contact_cards:
+                            bot_response.shared_contact_cards || [],
+                        attachments: bot_response.attachments || [],
+                        bot_id: bot_response.bot_id || '',
+                        trigger: bot_response.trigger || '',
+                        isActive: bot_response.isActive || false,
+                        message: bot_response.message || '',
+                        respond_to: bot_response.respond_to || '',
+                    }))
+                );
+            })
             .finally(() => setLoading(false));
     }, []);
 
@@ -28,7 +47,23 @@ export default function useBot() {
             BotService.createBot(data)
                 .then((res) => {
                     if (!res) return;
-                    setBots((prev) => [...prev, res]);
+                    setBots((prev) => [
+                        ...prev,
+                        {
+                            trigger_gap_seconds: res.trigger_gap_seconds || 0,
+                            response_delay_seconds:
+                                res.response_delay_seconds || 0,
+                            options: res.options || '',
+                            shared_contact_cards:
+                                res.shared_contact_cards || [],
+                            attachments: res.attachments || [],
+                            bot_id: res.bot_id || '',
+                            trigger: res.trigger || '',
+                            isActive: res.isActive || false,
+                            message: res.message || '',
+                            respond_to: res.respond_to || '',
+                        },
+                    ]);
                 })
                 .finally(() => {
                     setAddingBot(false);
@@ -62,14 +97,18 @@ export default function useBot() {
             setAddingBot(true);
             BotService.updateBot(id, data)
                 .then((res) => {
+                    setAddingBot(false);
                     if (!res) return;
-                    setBots((prev) => [...prev, res]);
+                    setBots((prev) =>
+                        prev.map((bot) => {
+                            if (bot.bot_id === id) {
+                                return res;
+                            }
+                            return bot;
+                        })
+                    );
                 })
                 .finally(() => {
-                    setAddingBot(false);
-                    BotService.listBots()
-                        .then(setBots)
-                        .finally(() => setLoading(false));
                     resolve();
                 });
         });
@@ -80,9 +119,14 @@ export default function useBot() {
             if (!res) {
                 return;
             }
-            BotService.listBots()
-                .then(setBots)
-                .finally(() => setLoading(false));
+            setBots((prev) =>
+                prev.map((bot) => {
+                    if (bot.bot_id === id) {
+                        return res;
+                    }
+                    return bot;
+                })
+            );
         });
     };
 
