@@ -37,7 +37,10 @@ export const RespondVCF = ({ res, filename, data }: CSVResponseData) => {
 	res.status(200).send(data);
 };
 export const RespondFile = ({ res, filename, filepath }: FileResponseData) => {
-	res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+	res.setHeader(
+		'Content-Disposition',
+		`attachment; filename="${filename}.${mime.getExtension(mime.getType(filepath) ?? '')}"`
+	);
 	res.set('Content-Type', mime.getType(filepath) ?? '');
 	res.status(200).sendFile(filepath);
 };
