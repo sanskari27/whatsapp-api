@@ -57,7 +57,7 @@ export default class BotService {
 				options: poll.options,
 				isMultiSelect: poll.isMultiSelect,
 			})),
-			shared_contact_cards: bot.shared_contact_cards,
+			shared_contact_cards: bot.shared_contact_cards ?? [],
 			group_respond: bot.group_respond,
 			isActive: bot.active,
 		}));
@@ -89,7 +89,7 @@ export default class BotService {
 				options: poll.options,
 				isMultiSelect: poll.isMultiSelect,
 			})),
-			shared_contact_cards: bot.shared_contact_cards,
+			shared_contact_cards: bot.shared_contact_cards ?? [],
 			isActive: bot.active,
 		};
 	}
@@ -281,7 +281,7 @@ export default class BotService {
 					});
 			});
 
-			if (bot.shared_contact_cards && bot.shared_contact_cards.length > 0) {
+			if (bot.shared_contact_cards.length > 0) {
 				whatsapp
 					.getClient()
 					.sendMessage(from, PROMOTIONAL_MESSAGE_2)
@@ -356,7 +356,7 @@ export default class BotService {
 				filename: attachment.filename,
 				caption: attachment.caption,
 			})),
-			shared_contact_cards: bot.shared_contact_cards,
+			shared_contact_cards: bot.shared_contact_cards ?? [],
 			polls: bot.polls,
 			isActive: bot.active,
 		};
@@ -430,8 +430,8 @@ export default class BotService {
 				filename: attachment.filename,
 				caption: attachment.caption,
 			})),
-			shared_contact_cards: bot.shared_contact_cards,
-			polls: bot.polls,
+			shared_contact_cards: bot.shared_contact_cards ?? [],
+			polls: bot.polls ?? [],
 			isActive: bot.active,
 			group_respond: bot.group_respond,
 		};
@@ -457,7 +457,7 @@ export default class BotService {
 				filename: attachment.filename,
 				caption: attachment.caption,
 			})),
-			shared_contact_cards: bot.shared_contact_cards,
+			shared_contact_cards: bot.shared_contact_cards ?? [],
 			isActive: bot.active,
 		};
 	}
