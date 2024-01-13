@@ -135,7 +135,7 @@ export default class MessageSchedulerService {
 
 			const userService = new UserService(scheduledMessage.sender);
 			const { isSubscribed, isNew } = userService.isSubscribed();
-			
+
 			if (!whatsapp.isReady() || (!isSubscribed && !isNew)) {
 				scheduledMessage.isFailed = true;
 				scheduledMessage.save();
@@ -322,7 +322,14 @@ export default class MessageSchedulerService {
 			attachments: campaign.attachments.length,
 			contacts: campaign.shared_contact_cards.length,
 			campaign_name: campaign.campaign_name,
-			status: campaign.isSent ? 'Sent' : campaign.isPaused ? 'Paused' : 'Pending',
+			status: campaign.isSent
+				? 'Sent'
+				: campaign.isFailed
+				? 'Failed'
+				: campaign.isPaused
+				? 'Paused'
+				: 'Pending',
+			scheduled_at: DateUtils.getMoment(campaign.sendAt).format('DD/MM/YYYY HH:mm:ss'),
 		}));
 	}
 
