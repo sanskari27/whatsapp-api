@@ -20,6 +20,7 @@ async function allBots(req: Request, res: Response, next: NextFunction) {
 			bots: bots.map((bot) => ({
 				...bot,
 				attachments: bot.attachments.map((attachments) => attachments.id),
+				shared_contact_cards: bot.shared_contact_cards.map((cards) => cards._id),
 			})),
 		},
 	});
