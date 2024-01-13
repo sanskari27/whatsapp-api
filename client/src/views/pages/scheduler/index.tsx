@@ -56,9 +56,12 @@ import {
 	setStartTime,
 	setVariables,
 } from '../../../store/reducers/SchedulerReducer';
-import SelectContactsOrAttachmentsList, {
-	SelectContactOrAttachmentListHandle,
-} from '../../components/contact-detail-input-dialog';
+import AttachmentSelectorDialog, {
+	AttachmentDialogHandle,
+} from '../../components/selector-dialog/AttachmentSelectorDialog';
+import ContactSelectorDialog, {
+	ContactDialogHandle,
+} from '../../components/selector-dialog/ContactSelectorDialog';
 import SubscriptionAlert, { SubscriptionPopup } from '../../components/subscription-alert';
 import { TemplateNameInputDialog } from './components';
 
@@ -82,8 +85,8 @@ export type SchedulerDetails = {
 };
 
 export default function Scheduler() {
-	const multiselectRef = useRef<Multiselect | null>();
-	const selectContactListRef = useRef<SelectContactOrAttachmentListHandle>(null);
+	const attachmentRef = useRef<AttachmentDialogHandle>(null);
+	const contactRef = useRef<ContactDialogHandle>(null);
 	const messageRef = useRef<HTMLTextAreaElement>(null);
 	const dispatch = useDispatch();
 	const theme = useTheme();
@@ -183,11 +186,6 @@ export default function Scheduler() {
 		},
 		[dispatch]
 	);
-
-	const handleContactInput = () => {
-		dispatch(setAttachments(selectContactListRef.current?.attachmentId ?? []));
-		dispatch(setContactCards(selectContactListRef.current?.contactId ?? []));
-	};
 
 	const setSelectedRecipients = (ids: string[]) => {
 		if (details.type === 'GROUP' || details.type === 'GROUP_INDIVIDUAL') {
@@ -289,7 +287,6 @@ export default function Scheduler() {
 				}, 5000);
 				return;
 			}
-			multiselectRef.current?.resetSelectedValues();
 			openCampaignCreation();
 			dispatch(reset());
 			setUIDetails((prev) => ({
@@ -617,9 +614,7 @@ export default function Scheduler() {
 									variant={'outline'}
 									colorScheme='green'
 									onClick={() => {
-										selectContactListRef.current?.open();
-										selectContactListRef.current?.setAttachmentIds(details.attachments);
-										selectContactListRef.current?.setType('Attachments');
+										attachmentRef.current?.open(details.attachments);
 									}}
 								>
 									Select Attachment ({details.attachments.length})
@@ -632,17 +627,11 @@ export default function Scheduler() {
 									variant={'outline'}
 									colorScheme='green'
 									onClick={() => {
-										selectContactListRef.current?.open();
-										selectContactListRef.current?.setContactId(details.shared_contact_cards);
-										selectContactListRef.current?.setType('Contacts');
+										attachmentRef.current?.open(details.shared_contact_cards);
 									}}
 								>
 									Select Contact ({details.shared_contact_cards.length})
 								</Button>
-								<SelectContactsOrAttachmentsList
-									ref={selectContactListRef}
-									onConfirm={handleContactInput}
-								/>
 							</Box>
 						</Flex>
 						<FormControl flex={1} display={'flex'} flexDirection={'column'} gap={2}>
@@ -836,6 +825,11 @@ export default function Scheduler() {
 				</Box>
 			</Flex>
 			<SubscriptionAlert />
+			<AttachmentSelectorDialog
+				ref={attachmentRef}
+				onConfirm={(ids) => dispatch(setAttachments(ids))}
+			/>
+			<ContactSelectorDialog ref={contactRef} onConfirm={(ids) => dispatch(setContactCards(ids))} />
 		</Flex>
 	);
 }
