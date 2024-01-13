@@ -1,26 +1,26 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AddIcon } from '@chakra-ui/icons';
 import {
-    AlertDialog,
-    AlertDialogContent,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogOverlay,
-    Box,
-    Button,
-    Flex,
-    FormControl,
-    FormErrorMessage,
-    FormLabel,
-    HStack,
-    Heading,
-    Input,
-    Select,
-    Tag,
-    TagLabel,
-    Text,
-    Textarea,
-    useDisclosure,
+	AlertDialog,
+	AlertDialogContent,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogOverlay,
+	Box,
+	Button,
+	Flex,
+	FormControl,
+	FormErrorMessage,
+	FormLabel,
+	HStack,
+	Heading,
+	Input,
+	Select,
+	Tag,
+	TagLabel,
+	Text,
+	Textarea,
+	useDisclosure,
 } from '@chakra-ui/react';
 import Multiselect from 'multiselect-react-dropdown';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -36,31 +36,31 @@ import MessageService from '../../../services/message.service';
 import UploadsService from '../../../services/uploads.service';
 import { StoreNames, StoreState } from '../../../store';
 import {
-    reset,
-    setAttachments,
-    setBatchDelay,
-    setBatchSize,
-    setBusinessAccount,
-    setCSVFile,
-    setCampaignName,
-    setContactCards,
-    setEndTime,
-    setGroupRecipients,
-    setLabelRecipients,
-    setMaxDelay,
-    setMessage,
-    setMinDelay,
-    setRecipients,
-    setRecipientsFrom,
-    setRecipientsLoading,
-    setStartTime,
-    setVariables,
+	reset,
+	setAttachments,
+	setBatchDelay,
+	setBatchSize,
+	setBusinessAccount,
+	setCSVFile,
+	setCampaignName,
+	setContactCards,
+	setEndTime,
+	setGroupRecipients,
+	setLabelRecipients,
+	setMaxDelay,
+	setMessage,
+	setMinDelay,
+	setRecipients,
+	setRecipientsFrom,
+	setRecipientsLoading,
+	setStartTime,
+	setVariables,
 } from '../../../store/reducers/SchedulerReducer';
+import SelectContactsOrAttachmentsList, {
+	SelectContactOrAttachmentListHandle,
+} from '../../components/contact-detail-input-dialog';
 import SubscriptionAlert, { SubscriptionPopup } from '../../components/subscription-alert';
 import { TemplateNameInputDialog } from './components';
-import Se;ectorDialog, {
-	SelectContactOrAttachmentListHandle,
-} from '../../components/selector-dialog';
 
 export type SchedulerDetails = {
 	type: 'NUMBERS' | 'CSV' | 'GROUP' | 'LABEL' | 'GROUP_INDIVIDUAL';
@@ -639,7 +639,7 @@ export default function Scheduler() {
 								>
 									Select Contact ({details.shared_contact_cards.length})
 								</Button>
-								<Se;ectorDialog
+								<SelectContactsOrAttachmentsList
 									ref={selectContactListRef}
 									onConfirm={handleContactInput}
 								/>
