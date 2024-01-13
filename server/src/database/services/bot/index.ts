@@ -438,7 +438,7 @@ export default class BotService {
 	}
 
 	public async toggleActive(bot_id: Types.ObjectId) {
-		const bot = await BotDB.findById(bot_id).populate('attachments');
+		const bot = await BotDB.findById(bot_id);
 		if (!bot) {
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
 		}
@@ -452,11 +452,7 @@ export default class BotService {
 			response_delay_seconds: bot.response_delay_seconds,
 			options: bot.options,
 			message: bot.message,
-			attachments: bot.attachments.map((attachment) => ({
-				id: attachment._id,
-				filename: attachment.filename,
-				caption: attachment.caption,
-			})),
+			attachments: bot.attachments ?? [],
 			shared_contact_cards: bot.shared_contact_cards ?? [],
 			isActive: bot.active,
 		};
