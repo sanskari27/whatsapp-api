@@ -196,6 +196,7 @@ async function updateBot(req: Request, res: Response, next: NextFunction) {
 				bot: {
 					...bot,
 					attachments: bot.attachments.map((attachments) => attachments.id),
+					shared_contact_cards: bot.shared_contact_cards.map((cards) => cards._id),
 				},
 			},
 		});
