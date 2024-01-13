@@ -31,6 +31,7 @@ const server = app.listen(PORT, async () => {
 	Logger.info('Running Status', `Server started on port ${PORT}`);
 });
 
+process.setMaxListeners(0);
 process.on('unhandledRejection', (err: Error) => {
 	Logger.critical('Unhandled rejection', err);
 	server.close(() => process.exit(1));
