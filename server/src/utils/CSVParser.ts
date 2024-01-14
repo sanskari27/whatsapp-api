@@ -330,6 +330,10 @@ export default class CSVParser {
 				field: 'status',
 				title: 'Status',
 			},
+			{
+				field: 'scheduled_at',
+				title: 'Scheduled At',
+			},
 		];
 
 		return json2csv(records, {
