@@ -25,10 +25,3 @@ jobs:
         npm install
         npm run build
         sudo cp -r dist/* /var/www/app.whatsleads.in/
-
-    - name: Install dependencies and build server
-      run: |
-        cd server  # Adjust the path if needed
-        npm install
-        npm run build
-        pm2 restart 0
