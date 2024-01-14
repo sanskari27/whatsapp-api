@@ -19,9 +19,15 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
         
-    - name: Install dependencies and build client
+    - name: Install dependencies and build client and server
       run: |
         cd client
         npm install
         npm run build
         sudo cp -r dist/* /var/www/app.whatsleads.in/
+
+        cd ../server
+        npm install
+        npm run build
+        pm2 restart 0
+
