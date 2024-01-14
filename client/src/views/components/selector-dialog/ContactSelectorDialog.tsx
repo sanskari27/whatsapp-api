@@ -65,12 +65,10 @@ const ContactSelectorDialog = forwardRef<ContactDialogHandle, Props>(
 							<Table>
 								<Thead>
 									<Tr>
-										<Tr>
-											<Th>Sl no</Th>
-											<Th>First Name</Th>
-											<Th>Last Name</Th>
-											<Th>Phone</Th>
-										</Tr>
+										<Th>Sl no</Th>
+										<Th>First Name</Th>
+										<Th>Last Name</Th>
+										<Th>Phone</Th>
 									</Tr>
 								</Thead>
 								<Tbody>
