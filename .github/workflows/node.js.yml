@@ -28,7 +28,7 @@ jobs:
 
     - name: Install dependencies and build server
       run: |
-        cd ../server  # Adjust the path if needed
+        cd server  # Adjust the path if needed
         npm install
         npm run build
         pm2 restart 0
