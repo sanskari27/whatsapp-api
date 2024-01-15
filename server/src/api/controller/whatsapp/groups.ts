@@ -42,6 +42,7 @@ async function groups(req: Request, res: Response, next: NextFunction) {
 						return {
 							id: groupChat.id._serialized,
 							name: groupChat.name,
+							isMergedGroup: false,
 						};
 					});
 
@@ -128,11 +129,17 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 							groupChat.id._serialized,
 							options.business_contacts_only
 						),
-						async () =>
-							await whatsappUtils.getGroupContacts(groupChat, {
+						async () => {
+							const group_contacts = await whatsappUtils.getGroupContacts(groupChat, {
 								business_details: options.business_contacts_only,
 								mapped_contacts: contacts,
-							})
+							});
+
+							return group_contacts.map((contact) => ({
+								...contact,
+								group_id: groupChat.id._serialized.split('@')[0],
+							}));
+						}
 					);
 					return group_participants;
 				})

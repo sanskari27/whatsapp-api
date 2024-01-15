@@ -17,6 +17,7 @@ export default class GroupMergeService {
 		return merged_groups.map((group) => ({
 			id: group._id as string,
 			name: group.name as string,
+			isMergedGroup: true,
 		}));
 	}
 

@@ -97,6 +97,10 @@ export default class CSVParser {
 	static exportGroupContacts(contacts: TGroupContact[]) {
 		const keys = [
 			{
+				field: 'group_id',
+				title: 'Recipient ID',
+			},
+			{
 				field: 'group_name',
 				title: 'Group Name',
 			},
@@ -134,6 +138,10 @@ export default class CSVParser {
 	}
 	static exportGroupBusinessContacts(contacts: TGroupBusinessContact[]) {
 		const keys = [
+			{
+				field: 'group_id',
+				title: 'Recipient ID',
+			},
 			{
 				field: 'group_name',
 				title: 'Group Name',
