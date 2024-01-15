@@ -9,13 +9,13 @@ import { useNetwork } from '../../../hooks/useNetwork';
 import '../../../index.css';
 import AttachmentService from '../../../services/attachment.service';
 import AuthService from '../../../services/auth.service';
-import ContactCardService from '../../../services/contant-card.service';
+import ContactCardService from '../../../services/contact-card.service';
 import UploadsService from '../../../services/uploads.service';
 import { StoreNames, StoreState } from '../../../store';
 import { setAttachments } from '../../../store/reducers/AttachmentReducers';
 import { setCSVFileList } from '../../../store/reducers/CSVFileReducers';
 import { setContactList } from '../../../store/reducers/ContactCardReducers';
-import { setUserDetails } from '../../../store/reducers/UserDetailsReducres';
+import { setUserDetails } from '../../../store/reducers/UserDetailsReducers';
 import Navbar from '../../components/navbar';
 import NavigationDrawer from '../../components/navigation-drawer';
 

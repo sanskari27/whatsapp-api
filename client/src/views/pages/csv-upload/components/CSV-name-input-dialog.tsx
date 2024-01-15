@@ -26,12 +26,12 @@ import {
     stopSaving,
 } from '../../../../store/reducers/CSVFileReducers';
 
-export type CSVNameInputDialoagHandle = {
+export type CSVNameInputDialogHandle = {
     open: () => void;
     close: () => void;
 };
 
-const CSVNameInputDialog = forwardRef<CSVNameInputDialoagHandle>((_, ref) => {
+const CSVNameInputDialog = forwardRef<CSVNameInputDialogHandle>((_, ref) => {
     const dispatch = useDispatch();
 
     const cancelRef = React.useRef<HTMLButtonElement>(null);

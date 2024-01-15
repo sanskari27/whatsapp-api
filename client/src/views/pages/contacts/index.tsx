@@ -21,7 +21,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { NAVIGATION } from '../../../config/const';
 import { popFromNavbar, pushToNavbar } from '../../../hooks/useNavbar';
 import { useTheme } from '../../../hooks/useTheme';
-import ContactCardService from '../../../services/contant-card.service';
+import ContactCardService from '../../../services/contact-card.service';
 import { StoreNames, StoreState } from '../../../store';
 import {
     addSelectedContact,
