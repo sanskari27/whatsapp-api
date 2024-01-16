@@ -195,7 +195,10 @@ export class WhatsappProvider {
 
 			details.selected_options.map((opt) => {
 				if (!this.bot_service) return;
-				this.bot_service.handleMessage(chat.id._serialized, opt, contact);
+				this.bot_service.handleMessage(chat.id._serialized, opt, contact, {
+					fromPoll: true,
+					isGroup: false,
+				});
 			});
 		});
 
@@ -215,6 +218,7 @@ export class WhatsappProvider {
 			const isGroup = (await message.getChat()).isGroup;
 			this.bot_service.handleMessage(message.from, message.body, await message.getContact(), {
 				isGroup,
+				fromPoll: false,
 			});
 		});
 	}

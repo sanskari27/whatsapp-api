@@ -23,7 +23,7 @@ router
 	.route('/groups/merge/:group_id')
 	.patch(GroupsController.removeGroupFromMerge)
 	.delete(GroupsController.deleteMergedGroup);
-router.route('/groups/merge').post(GroupsController.mergeGroup);
+router.route('/groups/merge').post(GroupsController.mergeGroup).get(GroupsController.mergedGroups);
 
 router.route('/groups').get(GroupsController.groups).post(GroupsController.createGroup);
 
