@@ -96,7 +96,7 @@ paymentSchema.pre('save', async function (next) {
 		generator.addFooter({
 			invoice_date: DateUtils.getMoment(this.transaction_date).format('DD/MMM/YYYY'),
 		});
-		generator.build();
+		await generator.build();
 	}
 	next();
 });
