@@ -22,7 +22,7 @@ const voteResponseSchema = new mongoose.Schema<IVoteResponse>({
 });
 
 voteResponseSchema.index(
-	{ title: 1, options: 1, isMultiSelect: 1, chat_id: 1, voter_number: 1 },
+	{ title: 1, options: 1, isMultiSelect: 1, chat_id: 1, voter_number: 1, user: 1 },
 	{ unique: true }
 );
 
