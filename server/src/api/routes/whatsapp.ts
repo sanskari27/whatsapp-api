@@ -36,6 +36,11 @@ router.route('/labels/remove').post(LabelsController.removeLabel);
 router.route('/labels').get(LabelsController.labels);
 
 router
+	.route('/bot/:id/responses')
+	.all(PaymentValidator.isPseudoSubscribed)
+	.get(BotController.downloadResponses);
+
+router
 	.route('/bot/:id')
 	.all(PaymentValidator.isPseudoSubscribed)
 	.get(BotController.botById)

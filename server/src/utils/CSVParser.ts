@@ -436,4 +436,32 @@ export default class CSVParser {
 			emptyFieldValue: '',
 		});
 	}
+
+	static exportBotResponses(
+		records: {
+			trigger: string;
+			triggered_at: string;
+			triggered_by: string;
+		}[]
+	) {
+		const keys = [
+			{
+				field: 'trigger',
+				title: 'Trigger',
+			},
+			{
+				field: 'triggered_at',
+				title: 'Triggered At',
+			},
+			{
+				field: 'triggered_by',
+				title: 'Triggered Bt',
+			},
+		];
+
+		return json2csv(records, {
+			keys: keys,
+			emptyFieldValue: '',
+		});
+	}
 }
