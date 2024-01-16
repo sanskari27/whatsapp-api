@@ -466,4 +466,34 @@ export default class BotService {
 		await BotDB.deleteOne({ _id: bot_id });
 		await BotResponseDB.deleteMany({ bot: bot_id });
 	}
+
+	public async botResponses(bot_id: Types.ObjectId) {
+		const bot = await BotDB.findById(bot_id);
+		const responses = await BotResponseDB.find({ bot: bot_id });
+		if (!bot) {
+			return [];
+		}
+		const result: {
+			trigger: string;
+			triggered_at: string;
+			triggered_by: string;
+		}[] = [];
+		responses.forEach((response) => {
+			response.triggered_at.BOT.forEach((triggered_at) => {
+				result.push({
+					trigger: bot.trigger,
+					triggered_at: DateUtils.getMoment(triggered_at).format('DD-MM-YYYY HH:mm:ss'),
+					triggered_by: 'BOT',
+				});
+			});
+			response.triggered_at.POLL.forEach((triggered_at) => {
+				result.push({
+					trigger: bot.trigger,
+					triggered_at: DateUtils.getMoment(triggered_at).format('DD-MM-YYYY HH:mm:ss'),
+					triggered_by: 'POLL',
+				});
+			});
+		});
+		return result;
+	}
 }

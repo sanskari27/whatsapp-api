@@ -7,7 +7,8 @@ import UploadService from '../../../database/services/uploads';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
-import { Respond, idValidator } from '../../../utils/ExpressUtils';
+import CSVParser from '../../../utils/CSVParser';
+import { Respond, RespondCSV, idValidator } from '../../../utils/ExpressUtils';
 
 async function allBots(req: Request, res: Response, next: NextFunction) {
 	const botService = new BotService(req.locals.user);
@@ -232,6 +233,7 @@ async function toggleActive(req: Request, res: Response, next: NextFunction) {
 		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR));
 	}
 }
+
 async function deleteBot(req: Request, res: Response, next: NextFunction) {
 	const [isIDValid, id] = idValidator(req.params.id);
 
@@ -249,6 +251,23 @@ async function deleteBot(req: Request, res: Response, next: NextFunction) {
 	});
 }
 
+async function downloadResponses(req: Request, res: Response, next: NextFunction) {
+	const [isIDValid, id] = idValidator(req.params.id);
+
+	if (!isIDValid) {
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
+	}
+
+	const botService = new BotService(req.locals.user);
+	const responses = await botService.botResponses(id);
+
+	return RespondCSV({
+		res,
+		filename: 'Exported Bot Responses',
+		data: CSVParser.exportBotResponses(responses),
+	});
+}
+
 const BotController = {
 	allBots,
 	botById,
@@ -256,6 +275,7 @@ const BotController = {
 	updateBot,
 	toggleActive,
 	deleteBot,
+	downloadResponses,
 };
 
 export default BotController;
