@@ -475,6 +475,7 @@ export default class BotService {
 		}
 		const result: {
 			trigger: string;
+			recipient: string;
 			triggered_at: string;
 			triggered_by: string;
 		}[] = [];
@@ -482,6 +483,7 @@ export default class BotService {
 			response.triggered_at.BOT.forEach((triggered_at) => {
 				result.push({
 					trigger: bot.trigger,
+					recipient: response.recipient,
 					triggered_at: DateUtils.getMoment(triggered_at).format('DD-MM-YYYY HH:mm:ss'),
 					triggered_by: 'BOT',
 				});
@@ -489,6 +491,7 @@ export default class BotService {
 			response.triggered_at.POLL.forEach((triggered_at) => {
 				result.push({
 					trigger: bot.trigger,
+					recipient: response.recipient,
 					triggered_at: DateUtils.getMoment(triggered_at).format('DD-MM-YYYY HH:mm:ss'),
 					triggered_by: 'POLL',
 				});
