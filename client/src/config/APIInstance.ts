@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { logout } from '../hooks/useAuth';
 import { networkError } from '../hooks/useNetwork';
 import { getClientID } from '../utils/ChromeUtils';
 import { SERVER_URL } from './const';
@@ -29,9 +28,9 @@ APIInstance.interceptors.response.use(
 			return Promise.reject(error);
 		}
 
-		if (error.response?.data?.error?.title === 'SESSION_INVALIDATED') {
-			logout();
-		}
+		// if (error.response?.data?.title === 'SESSION_INVALIDATED') {
+		// 	window.location.href = NAVIGATION.WELCOME;
+		// }
 
 		return Promise.reject(error);
 	}

@@ -122,8 +122,6 @@ export const startAuth = async () => {
 };
 
 export const logout = async () => {
-	console.log('logout');
-
 	setAuth({
 		isAuthenticating: true,
 		qrGenerated: false,

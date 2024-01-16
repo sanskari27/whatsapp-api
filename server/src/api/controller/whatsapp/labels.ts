@@ -31,7 +31,7 @@ async function labels(req: Request, res: Response, next: NextFunction) {
 			return next(new APIError(API_ERRORS.WHATSAPP_ERROR.BUSINESS_ACCOUNT_REQUIRED));
 		}
 		const labels = await getOrCache<WAWebJS.Label[]>(
-			CACHE_TOKEN_GENERATOR.LABELS(client_id),
+			CACHE_TOKEN_GENERATOR.LABELS(req.locals.user._id),
 			async () => await whatsapp.getClient().getLabels()
 		);
 
@@ -73,13 +73,17 @@ async function exportLabels(req: Request, res: Response, next: NextFunction) {
 	try {
 		const label_ids_array = ((label_ids ?? '') as string).split(',');
 		const contacts = await getOrCache(
-			CACHE_TOKEN_GENERATOR.MAPPED_CONTACTS(client_id, options.business_contacts_only),
+			CACHE_TOKEN_GENERATOR.MAPPED_CONTACTS(req.locals.user._id, options.business_contacts_only),
 			async () => await whatsappUtils.getMappedContacts(options.business_contacts_only)
 		);
 
 		const participants_promise = label_ids_array.map(async (label_id) => {
 			const label_participants = await getOrCache(
-				CACHE_TOKEN_GENERATOR.LABELS_EXPORT(client_id, label_id, options.business_contacts_only),
+				CACHE_TOKEN_GENERATOR.LABELS_EXPORT(
+					req.locals.user._id,
+					label_id,
+					options.business_contacts_only
+				),
 				async () =>
 					await whatsappUtils.getContactsByLabel(label_id, {
 						business_details: options.business_contacts_only,

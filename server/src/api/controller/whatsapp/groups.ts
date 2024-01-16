@@ -33,7 +33,7 @@ async function groups(req: Request, res: Response, next: NextFunction) {
 
 	try {
 		const groups = await getOrCache<GroupDetail[]>(
-			CACHE_TOKEN_GENERATOR.GROUPS(client_id),
+			CACHE_TOKEN_GENERATOR.GROUPS(req.locals.user._id),
 			async () => {
 				const groups = (await whatsapp.getClient().getChats())
 					.filter((chat) => chat.isGroup)
@@ -88,7 +88,7 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 
 	try {
 		const contacts = await getOrCache(
-			CACHE_TOKEN_GENERATOR.MAPPED_CONTACTS(client_id, options.business_contacts_only),
+			CACHE_TOKEN_GENERATOR.MAPPED_CONTACTS(req.locals.user._id, options.business_contacts_only),
 			async () => await whatsappUtils.getMappedContacts(options.business_contacts_only)
 		);
 		const groupMergeService = new GroupMergeService(req.locals.user);
@@ -125,7 +125,7 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 				filtered_chats.map(async (groupChat) => {
 					const group_participants = await getOrCache(
 						CACHE_TOKEN_GENERATOR.GROUPS_EXPORT(
-							client_id,
+							req.locals.user._id,
 							groupChat.id._serialized,
 							options.business_contacts_only
 						),

@@ -53,7 +53,7 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 		}[];
 
 		const saved = await getOrCache(
-			CACHE_TOKEN_GENERATOR.SAVED_CONTACTS(client_id, options.business_contacts_only),
+			CACHE_TOKEN_GENERATOR.SAVED_CONTACTS(req.locals.user._id, options.business_contacts_only),
 			async () => {
 				let saved = await whatsappUtils.getSavedContacts();
 				if (options.business_contacts_only) {
@@ -67,7 +67,7 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 		);
 
 		const non_saved = await getOrCache(
-			CACHE_TOKEN_GENERATOR.NON_SAVED_CONTACTS(client_id, options.business_contacts_only),
+			CACHE_TOKEN_GENERATOR.NON_SAVED_CONTACTS(req.locals.user._id, options.business_contacts_only),
 			async () => {
 				let non_saved = await whatsappUtils.getNonSavedContacts();
 				if (options.business_contacts_only) {
@@ -118,14 +118,17 @@ async function countContacts(req: Request, res: Response, next: NextFunction) {
 	}
 
 	try {
-		const saved = await getOrCache(CACHE_TOKEN_GENERATOR.SAVED_CONTACTS(client_id), async () => {
-			const saved = await whatsappUtils.getSavedContacts();
-			const contact_with_country_code = await whatsappUtils.contactsWithCountry(saved);
-			return await Promise.all(contact_with_country_code);
-		});
+		const saved = await getOrCache(
+			CACHE_TOKEN_GENERATOR.SAVED_CONTACTS(req.locals.user._id),
+			async () => {
+				const saved = await whatsappUtils.getSavedContacts();
+				const contact_with_country_code = await whatsappUtils.contactsWithCountry(saved);
+				return await Promise.all(contact_with_country_code);
+			}
+		);
 
 		const non_saved = await getOrCache(
-			CACHE_TOKEN_GENERATOR.NON_SAVED_CONTACTS(client_id),
+			CACHE_TOKEN_GENERATOR.NON_SAVED_CONTACTS(req.locals.user._id),
 			async () => {
 				const non_saved = await whatsappUtils.getNonSavedContacts();
 				const contact_with_country_code = await whatsappUtils.contactsWithCountry(non_saved);
