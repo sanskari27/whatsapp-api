@@ -173,13 +173,14 @@ async function createGroup(req: Request, res: Response, next: NextFunction) {
 
 	const reqValidator = z.object({
 		csv_file: z.string().default(''),
+		name: z.string(),
 	});
 	const reqValidatorResult = reqValidator.safeParse(req.body);
 
 	if (!reqValidatorResult.success) {
 		return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
 	}
-	const { csv_file } = reqValidatorResult.data;
+	const { csv_file, name } = reqValidatorResult.data;
 
 	const whatsapp = WhatsappProvider.getInstance(client_id);
 	const whatsappUtils = new WhatsappUtils(whatsapp);
@@ -193,30 +194,19 @@ async function createGroup(req: Request, res: Response, next: NextFunction) {
 			return next(new APIError(API_ERRORS.COMMON_ERRORS.ERROR_PARSING_CSV));
 		}
 
-		const groups_map: {
-			[group_name: string]: string[];
-		} = {};
+		const numberIds = (
+			await Promise.all(
+				parsed_csv.map(async (row) => {
+					const numberWithId = await whatsappUtils.getNumberWithId(row.number);
+					if (!numberWithId) {
+						return null; // Skips to the next iteration
+					}
+					return numberWithId.numberId;
+				})
+			)
+		).filter((number) => number) as string[];
 
-		whatsapp.getClient().createGroup('');
-
-		await Promise.all(
-			parsed_csv.map(async (row) => {
-				const numberWithId = await whatsappUtils.getNumberWithId(row.number);
-				if (!numberWithId) {
-					return; // Skips to the next iteration
-				}
-				const group_name = row.group;
-
-				if (!groups_map[group_name]) {
-					groups_map[group_name] = [];
-				}
-				groups_map[group_name].push(numberWithId.numberId);
-			})
-		);
-
-		Object.keys(groups_map).forEach((group_name) => {
-			whatsappUtils.createGroup(group_name, groups_map[group_name]);
-		});
+		whatsappUtils.createGroup(name, numberIds);
 
 		return Respond({
 			res,
@@ -273,6 +263,18 @@ async function mergeGroup(req: Request, res: Response, next: NextFunction) {
 	});
 }
 
+async function mergedGroups(req: Request, res: Response, next: NextFunction) {
+	const merged_groups = await new GroupMergeService(req.locals.user).listGroups();
+
+	return Respond({
+		res,
+		status: 200,
+		data: {
+			groups: merged_groups,
+		},
+	});
+}
+
 async function deleteMergedGroup(req: Request, res: Response, next: NextFunction) {
 	const [isGroupIDValid, group_id] = idValidator(req.params.group_id);
 
@@ -324,6 +326,7 @@ const GroupsController = {
 	mergeGroup,
 	deleteMergedGroup,
 	removeGroupFromMerge,
+	mergedGroups,
 };
 
 export default GroupsController;

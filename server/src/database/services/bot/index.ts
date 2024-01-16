@@ -197,8 +197,10 @@ export default class BotService {
 		contact: WAWebJS.Contact,
 		opts: {
 			isGroup: boolean;
+			fromPoll: boolean;
 		} = {
 			isGroup: false,
+			fromPoll: false,
 		}
 	) {
 		if (!this.whatsapp) {
@@ -230,12 +232,6 @@ export default class BotService {
 					.catch((err) => {
 						Logger.error('Error sending message:', err);
 					});
-			}
-
-			if (bot.shared_contact_cards && bot.shared_contact_cards.length > 0) {
-				msg += '\n' + PROMOTIONAL_MESSAGE_2;
-			} else if (!isSubscribed && isNew) {
-				msg += '\n' + PROMOTIONAL_MESSAGE_1;
 			}
 
 			for (const mediaObject of bot.attachments) {
@@ -299,7 +295,15 @@ export default class BotService {
 		});
 	}
 
-	private async responseSent(bot_id: Types.ObjectId, message_from: string) {
+	private async responseSent(
+		bot_id: Types.ObjectId,
+		message_from: string,
+		opts: {
+			fromPoll: boolean;
+		} = {
+			fromPoll: false,
+		}
+	) {
 		const bot_response = await BotResponseDB.findOne({
 			user: this.user,
 			recipient: message_from,
@@ -308,7 +312,7 @@ export default class BotService {
 
 		if (bot_response) {
 			bot_response.last_message = DateUtils.getMomentNow().toDate();
-			bot_response.triggered_at.push(bot_response.last_message);
+			bot_response.triggered_at[opts.fromPoll ? 'POLL' : 'BOT'].push(bot_response.last_message);
 			await bot_response.save();
 		} else {
 			await BotResponseDB.create({

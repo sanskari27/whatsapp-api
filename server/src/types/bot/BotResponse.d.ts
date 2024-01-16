@@ -7,5 +7,8 @@ export default interface IBotResponse extends Document {
 	recipient: string;
 	bot: IBot;
 	last_message: Date;
-	triggered_at: Date[];
+	triggered_at: {
+		BOT: Date[];
+		POLL: Date[];
+	};
 }

@@ -21,7 +21,10 @@ const botResponseSchema = new mongoose.Schema<IBotResponse>({
 		default: Date.now,
 		required: true,
 	},
-	triggered_at: [Date],
+	triggered_at: {
+		BOT: [{ type: Date }],
+		POLL: [{ type: Date }],
+	},
 });
 
 const BotResponseDB = mongoose.model<IBotResponse>('BotResponse', botResponseSchema);
