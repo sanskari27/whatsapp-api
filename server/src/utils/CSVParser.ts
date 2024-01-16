@@ -450,6 +450,10 @@ export default class CSVParser {
 				title: 'Trigger',
 			},
 			{
+				field: 'recipient',
+				title: 'Recipient',
+			},
+			{
 				field: 'triggered_at',
 				title: 'Triggered At',
 			},
