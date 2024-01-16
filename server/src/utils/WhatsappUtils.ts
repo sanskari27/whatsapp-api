@@ -413,10 +413,13 @@ export default class WhatsappUtils {
 		const client_ids = (await fs.promises.readdir(path, { withFileTypes: true }))
 			.filter((dirent) => dirent.isDirectory())
 			.map((dirent) => dirent.name.split('session-')[1]);
+		const inactive_client_ids = (await UserService.getInactiveSessions()).map(
+			(session) => session.client_id
+		);
 
 		const valid_sessions_promises = client_ids.map(async (client_id) => {
 			const [isValidAuth] = await UserService.isValidAuth(client_id);
-			if (isValidAuth) {
+			if (isValidAuth && !inactive_client_ids.includes(client_id)) {
 				return client_id;
 			}
 			return null;
