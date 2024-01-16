@@ -94,7 +94,6 @@ const EditLinkDialog = forwardRef<EditLinkDialogHandle, Props>(
         }));
 
         const handleEdit = () => {
-            console.log(link);
             if (link.type === 'NUMBER') {
                 onConfirm(
                     link.id,

@@ -1,12 +1,14 @@
 import { NextFunction, Request, Response } from 'express';
 import { z } from 'zod';
-import { BILLING_PLANS_DETAILS, BILLING_PLANS_TYPE } from '../../../config/const';
+import { BILLING_PLANS_DETAILS, BILLING_PLANS_TYPE, INVOICE_PATH } from '../../../config/const';
+import PaymentDB from '../../../database/repository/payments/payment';
 import { UserService } from '../../../database/services';
 import PaymentBucketService from '../../../database/services/payments/payment-bucket';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
-import { Respond, RespondCSV, idValidator } from '../../../utils/ExpressUtils';
 import CSVParser from '../../../utils/CSVParser';
+import { Respond, RespondCSV, RespondFile, idValidator } from '../../../utils/ExpressUtils';
+import { FileUtils } from '../../../utils/files';
 
 async function fetchTransactionDetail(req: Request, res: Response, next: NextFunction) {
 	const [isBucketValid, bucket_id] = idValidator(req.params.bucket_id);
@@ -252,6 +254,39 @@ async function initializeBucketPayment(req: Request, res: Response, next: NextFu
 	}
 }
 
+async function downloadInvoice(req: Request, res: Response, next: NextFunction) {
+	const [isIDValid, payment_id] = idValidator(req.params.id);
+
+	if (!isIDValid) {
+		return next(new APIError(INTERNAL_ERRORS.COMMON_ERRORS.INVALID_FIELD));
+	}
+
+	try {
+		const destination = __basedir + INVOICE_PATH + payment_id + '.pdf';
+
+		if (FileUtils.exists(destination)) {
+			return RespondFile({
+				res,
+				filepath: destination,
+				filename: 'Invoice.pdf',
+			});
+		} else {
+			const payment = await PaymentDB.findById(payment_id);
+			if (!payment) {
+				return next(new APIError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND));
+			}
+			await payment.save();
+			return RespondFile({
+				res,
+				filepath: destination,
+				filename: 'Invoice.pdf',
+			});
+		}
+	} catch (err) {
+		res.status(404);
+	}
+}
+
 async function confirmTransaction(req: Request, res: Response, next: NextFunction) {
 	const [isBucketValid, bucket_id] = idValidator(req.params.bucket_id);
 	const order_id = req.body.order_id;
@@ -359,6 +394,7 @@ const TokenController = {
 	confirmTransaction,
 	pauseSubscription,
 	resumeSubscription,
+	downloadInvoice,
 };
 
 export default TokenController;

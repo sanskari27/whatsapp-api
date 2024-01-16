@@ -15,6 +15,7 @@ const initialState: BotState = {
 		isActive: false,
 		response_delay_seconds: 0,
 		trigger_gap_seconds: 0,
+		polls: [],
 	},
 	ui: {
 		isAddingBot: false,
@@ -72,6 +73,7 @@ const BotSlice = createSlice({
 			state.details.isActive = state.all_bots[index].isActive;
 			state.details.response_delay_seconds = state.all_bots[index].response_delay_seconds;
 			state.details.trigger_gap_seconds = state.all_bots[index].trigger_gap_seconds;
+			state.details.polls = state.all_bots[index].polls;
 
 			state.ui.isEditingBot = true;
 
@@ -164,6 +166,7 @@ const BotSlice = createSlice({
 			state.details.trigger_gap_seconds =
 				state.trigger_gap.time *
 				(state.trigger_gap.type === 'HOUR' ? 3600 : state.trigger_gap.type === 'MINUTE' ? 60 : 1);
+			state.ui.triggerGapError = '';
 		},
 		setTriggerGapType: (state, action: PayloadAction<string>) => {
 			state.trigger_gap.type = action.payload;
@@ -171,6 +174,9 @@ const BotSlice = createSlice({
 				state.trigger_gap.time *
 				(state.trigger_gap.type === 'HOUR' ? 3600 : state.trigger_gap.type === 'MINUTE' ? 60 : 1);
 			state.ui.triggerGapError = '';
+		},
+		setPolls: (state, action: PayloadAction<typeof initialState.details.polls>) => {
+			state.details.polls = action.payload;
 		},
 		setAddingBot: (state, action: PayloadAction<boolean>) => {
 			state.ui.isAddingBot = action.payload;
@@ -216,6 +222,7 @@ export const {
 	setResponseDelayType,
 	setTriggerGapTime,
 	setTriggerGapType,
+	setPolls,
 	setError,
 	setAddingBot,
 	setEditingBot,

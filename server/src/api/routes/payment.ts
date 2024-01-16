@@ -21,6 +21,7 @@ router
 	.all(VerifyClientID)
 	.post(PaymentController.resumeSubscription);
 
+router.route('/:id/invoice').all(VerifyClientID).get(PaymentController.downloadInvoice);
 router.route('/').all(VerifyClientID).get(PaymentController.fetchTransactions);
 
 export default router;

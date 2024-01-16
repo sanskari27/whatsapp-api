@@ -30,11 +30,11 @@ import ConfirmationDialog, {
     ConfirmationDialogHandle,
 } from '../../components/confirmation-alert';
 import CSVNameInputDialog, {
-    CSVNameInputDialoagHandle,
+    CSVNameInputDialogHandle,
 } from './components/CSV-name-input-dialog';
 
 const CSVUpload = () => {
-    const csvFileInputRef = useRef<CSVNameInputDialoagHandle>(null);
+    const csvFileInputRef = useRef<CSVNameInputDialogHandle>(null);
     const confirmationDialogRef = useRef<ConfirmationDialogHandle>(null);
 
     const { list } = useSelector((state: StoreState) => state[StoreNames.CSV]);

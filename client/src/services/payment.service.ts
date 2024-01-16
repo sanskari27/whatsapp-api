@@ -68,4 +68,26 @@ export default class PaymentService {
             //ignore
         }
     }
+    static async paymentInvoiceDownload(id: string, date: string) {
+        try {
+            const response = await APIInstance.get(`/payment/${id}/invoice`, {
+                responseType: 'blob',
+            });
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+
+            // Create a temporary link element
+            const downloadLink = document.createElement('a');
+            downloadLink.href = window.URL.createObjectURL(blob);
+            downloadLink.download = `invoice ${date}.pdf`; // Specify the filename
+
+            // Append the link to the body and trigger the download
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+
+            // Clean up - remove the link
+            document.body.removeChild(downloadLink);
+        } catch (err) {
+            //ignore
+        }
+    }
 }
