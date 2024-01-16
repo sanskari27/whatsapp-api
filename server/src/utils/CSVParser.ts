@@ -98,7 +98,7 @@ export default class CSVParser {
 		const keys = [
 			{
 				field: 'group_id',
-				title: 'Recipient ID',
+				title: 'Group ID',
 			},
 			{
 				field: 'group_name',
