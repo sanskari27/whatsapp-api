@@ -6,6 +6,7 @@ import { default as BotReducers } from './reducers/BotReducers';
 import { default as CSVFileReducers } from './reducers/CSVFileReducers';
 import { default as ContactCardReducers } from './reducers/ContactCardReducers';
 import { default as LinkShortenerReducer } from './reducers/LinkShortnerReducers';
+import { default as PollReducers } from './reducers/PollReducers';
 import { default as SchedulerReducer } from './reducers/SchedulerReducer';
 import { default as UserDetailsReducers } from './reducers/UserDetailsReducers';
 
@@ -18,6 +19,7 @@ const store = configureStore({
         [StoreNames.CONTACT_CARD]: ContactCardReducers,
         [StoreNames.ATTACHMENT]: AttachmentReducers,
         [StoreNames.CSV]: CSVFileReducers,
+        [StoreNames.POLL]: PollReducers,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
