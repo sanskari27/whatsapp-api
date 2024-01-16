@@ -24,6 +24,7 @@ export type ScheduledCampaign = {
     failed: number;
     pending: number;
     isPaused: boolean;
+    createdAt: string;
 };
 
 export type SchedulerDetails = {

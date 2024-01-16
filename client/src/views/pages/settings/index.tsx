@@ -226,6 +226,7 @@ export default function Settings({ isOpen, onClose }: SettingsProps) {
                                             Export
                                         </Button>
                                         <Button
+                                            hidden={true}
                                             variant="solid"
                                             backgroundColor={'blue.500'}
                                             color={'white'}

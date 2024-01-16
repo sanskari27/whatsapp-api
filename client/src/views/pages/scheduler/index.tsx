@@ -244,9 +244,17 @@ export default function Scheduler() {
             }));
             return;
         }
-        if (!details.message) {
-            setError((prev) => ({ ...prev, message: 'Message is required' }));
-            console.log(error);
+        if (
+            !details.message &&
+            details.attachments.length === 0 &&
+            details.shared_contact_cards.length === 0 &&
+            details.polls.length === 0
+        ) {
+            setError((prev) => ({
+                ...prev,
+                message:
+                    'Message, attachment, contact card or poll is required ',
+            }));
             return;
         }
         if (details.min_delay < 1) {
@@ -329,6 +337,10 @@ export default function Scheduler() {
     useEffect(() => {
         fetchRecipients(details.type);
     }, [fetchRecipients, details.type]);
+
+    useEffect(() => {
+        dispatch(reset());
+    }, [dispatch]);
 
     return (
         <Flex padding={'1rem'} justifyContent={'center'} width={'full'}>
@@ -742,7 +754,7 @@ export default function Scheduler() {
                                         variant={'outline'}
                                         colorScheme="green"
                                         onClick={() => {
-                                            attachmentRef.current?.open(
+                                            contactRef.current?.open(
                                                 details.shared_contact_cards
                                             );
                                         }}
@@ -1040,6 +1052,7 @@ export default function Scheduler() {
                             </Box>
                         </FormControl>
                     </HStack>
+                    {/* ---------------------------SCHEDULE BUTTON SECTION---------------------- */}
                     {error.apiError && (
                         <Text pt={4} color={'tomato'}>
                             {error.apiError}
