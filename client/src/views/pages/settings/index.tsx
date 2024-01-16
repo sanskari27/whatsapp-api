@@ -1,4 +1,4 @@
-import { InfoOutlineIcon } from '@chakra-ui/icons';
+import { DownloadIcon, InfoOutlineIcon } from '@chakra-ui/icons';
 import {
     Box,
     Button,
@@ -10,6 +10,7 @@ import {
     DrawerOverlay,
     Flex,
     HStack,
+    IconButton,
     Table,
     TableContainer,
     Tbody,
@@ -253,6 +254,7 @@ export default function Settings({ isOpen, onClose }: SettingsProps) {
                                                 <Tr>
                                                     <Th>Date</Th>
                                                     <Th isNumeric>Amount</Th>
+                                                    <Th>Invoice</Th>
                                                 </Tr>
                                             </Thead>
                                             <Tbody>
@@ -296,6 +298,23 @@ export default function Settings({ isOpen, onClose }: SettingsProps) {
                                                                         {
                                                                             record.amount
                                                                         }
+                                                                    </Td>
+                                                                    <Td>
+                                                                        <IconButton
+                                                                            aria-label="Download Invoice"
+                                                                            icon={
+                                                                                <DownloadIcon />
+                                                                            }
+                                                                            colorScheme="blue"
+                                                                            size="sm"
+                                                                            variant="ghost"
+                                                                            onClick={() =>
+                                                                                PaymentService.downloadInvoice(
+                                                                                    record.id,
+                                                                                    record.date
+                                                                                )
+                                                                            }
+                                                                        />
                                                                     </Td>
                                                                 </Tr>
                                                             );
