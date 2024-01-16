@@ -14,6 +14,7 @@ export const NAVIGATION = {
 	SETTINGS: '/settings',
 	NETWORK_ERROR: '/network-error',
 	REPORTS: '/reports',
+	POLL_RESPONSES: '/poll-responses',
 	SHORT: '/short',
 	CONTACT: '/contact',
 	ATTACHMENTS: '/attachments',
