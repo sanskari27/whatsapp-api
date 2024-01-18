@@ -15,7 +15,7 @@ import { SiProbot } from 'react-icons/si';
 import { TbCsv, TbLogout2, TbMessage2Minus } from 'react-icons/tb';
 
 import { BiPoll } from 'react-icons/bi';
-import { MdOutlineAttachment, MdOutlineContactPhone } from 'react-icons/md';
+import { MdGroups3, MdOutlineAttachment, MdOutlineContactPhone } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
 import { LOGO } from '../../../assets/Images';
 import { NAVIGATION } from '../../../config/const';
@@ -77,6 +77,7 @@ export default function NavigationDrawer() {
 						<MenuButton icon={BiPoll} route={NAVIGATION.POLL_RESPONSES} />
 						<MenuButton icon={FiBarChart2} route={NAVIGATION.REPORTS} />
 						<MenuButton icon={TbCsv} route={NAVIGATION.CSV} />
+						<MenuButton icon={MdGroups3} route={NAVIGATION.GROUP_LABEL} />
 					</Flex>
 				</Box>
 				<VStack>

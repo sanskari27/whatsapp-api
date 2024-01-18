@@ -39,4 +39,12 @@ export default class GroupService {
 			//ignore
 		}
 	}
+	static async createGroup(name: string, csv_file: string) {
+		try {
+			await APIInstance.post(`/whatsapp/groups`, { name, csv_file });
+			return true;
+		} catch (err) {
+			return false;
+		}
+	}
 }
