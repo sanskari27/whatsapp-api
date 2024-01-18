@@ -11,18 +11,29 @@ import {
 	ModalOverlay,
 	Select,
 	Text,
+	useDisclosure,
 } from '@chakra-ui/react';
-import { useState } from 'react';
+import { forwardRef, useImperativeHandle, useState } from 'react';
 import { useSelector } from 'react-redux';
 import GroupService from '../../../../services/group.service';
 import { StoreNames, StoreState } from '../../../../store';
 
-type CreateGroupDialogProps = {
-	isOpen: boolean;
-	onClose: () => void;
+export type CreateGroupDialogHandler = {
+	open: () => void;
+	close: () => void;
 };
 
-const CreateGroupDialog = ({ isOpen, onClose }: CreateGroupDialogProps) => {
+const CreateGroupDialog = forwardRef<CreateGroupDialogHandler>((_, ref) => {
+	const { onOpen, onClose, isOpen } = useDisclosure();
+	useImperativeHandle(ref, () => ({
+		open: () => {
+			onOpen();
+		},
+		close: () => {
+			onClose();
+		},
+	}));
+
 	const [groupDetails, setGroupDetails] = useState({
 		groupName: '',
 		csvId: '',
@@ -101,6 +112,6 @@ const CreateGroupDialog = ({ isOpen, onClose }: CreateGroupDialogProps) => {
 			</ModalContent>
 		</Modal>
 	);
-};
+});
 
 export default CreateGroupDialog;

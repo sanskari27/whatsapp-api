@@ -19,6 +19,7 @@ export const NAVIGATION = {
 	CONTACT: '/contact',
 	ATTACHMENTS: '/attachments',
 	CSV: '/csv',
+	GROUP_LABEL: '/group-label',
 };
 
 export enum CHROME_ACTION {
