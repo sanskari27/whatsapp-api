@@ -18,7 +18,7 @@ const Contact = lazy(() => import('./views/pages/contacts'));
 const Attachments = lazy(() => import('./views/pages/attachments'));
 const CSVUpload = lazy(() => import('./views/pages/csv-upload'));
 const PollReport = lazy(() => import('./views/pages/polls-report'));
-const GroupLabelPage = lazy(() => import('./views/pages/group-label'));
+const GroupLabelPage = lazy(() => import('./views/pages/merge-group'));
 const NetworkError = lazy(() => import('./views/pages/network-error'));
 
 function App() {
