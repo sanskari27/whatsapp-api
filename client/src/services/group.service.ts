@@ -7,6 +7,7 @@ export default class GroupService {
 			return data.groups as {
 				id: string;
 				name: string;
+				isMergedGroup:boolean;
 			}[];
 		} catch (err) {
 			return [];
@@ -44,6 +45,16 @@ export default class GroupService {
 			await APIInstance.post(`/whatsapp/groups`, { name, csv_file });
 			return true;
 		} catch (err) {
+			return false;
+		}
+	}
+
+	static async mergeGroups(group_name:string,group_ids:string[]){
+		try{
+			await APIInstance.post(`/whatsapp/groups/merge`,{group_name,group_ids});
+			return true;
+		}
+		catch(err){
 			return false;
 		}
 	}
