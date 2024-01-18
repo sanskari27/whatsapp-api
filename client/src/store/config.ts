@@ -7,4 +7,5 @@ export enum StoreNames {
 	ATTACHMENT = 'attachment',
 	CSV = 'csv',
 	POLL = 'poll',
+	MERGE_GROUP = 'merge_group',
 }

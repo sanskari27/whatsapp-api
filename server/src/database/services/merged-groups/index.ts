@@ -18,6 +18,7 @@ export default class GroupMergeService {
 			id: group._id as string,
 			name: group.name as string,
 			isMergedGroup: true,
+			groups: group.groups,
 		}));
 	}
 

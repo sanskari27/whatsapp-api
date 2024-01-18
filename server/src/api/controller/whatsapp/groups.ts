@@ -33,7 +33,7 @@ async function groups(req: Request, res: Response, next: NextFunction) {
 
 	try {
 		const groups = await getOrCache<GroupDetail[]>(
-			CACHE_TOKEN_GENERATOR.GROUPS(client_id),
+			CACHE_TOKEN_GENERATOR.GROUPS(req.locals.user._id),
 			async () => {
 				const groups = (await whatsapp.getClient().getChats())
 					.filter((chat) => chat.isGroup)
@@ -55,7 +55,52 @@ async function groups(req: Request, res: Response, next: NextFunction) {
 			res,
 			status: 200,
 			data: {
-				groups: [...groups, ...merged_groups],
+				groups: [...groups, ...merged_groups.map((group) => ({ ...group, groups: undefined }))],
+			},
+		});
+	} catch (err) {
+		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+	}
+}
+
+async function mergedGroups(req: Request, res: Response, next: NextFunction) {
+	const client_id = req.locals.client_id;
+
+	const whatsapp = WhatsappProvider.getInstance(client_id);
+	if (!whatsapp.isReady()) {
+		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+	}
+
+	try {
+		const merged_groups = await new GroupMergeService(req.locals.user).listGroups();
+
+		const groupDetails = merged_groups.map(async (group) => {
+			const group_details_by_id = await Promise.all(
+				group.groups.map(async (group_id) => {
+					const details = await whatsapp.getClient().getChatById(group_id);
+
+					if (!details || !details.isGroup) {
+						return null;
+					}
+
+					return {
+						id: group_id,
+						name: details.name,
+					};
+				})
+			);
+
+			return {
+				...group,
+				groups: group_details_by_id.filter((group) => group !== null),
+			};
+		});
+
+		return Respond({
+			res,
+			status: 200,
+			data: {
+				groups: await Promise.all(groupDetails),
 			},
 		});
 	} catch (err) {
@@ -88,7 +133,7 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 
 	try {
 		const contacts = await getOrCache(
-			CACHE_TOKEN_GENERATOR.MAPPED_CONTACTS(client_id, options.business_contacts_only),
+			CACHE_TOKEN_GENERATOR.MAPPED_CONTACTS(req.locals.user._id, options.business_contacts_only),
 			async () => await whatsappUtils.getMappedContacts(options.business_contacts_only)
 		);
 		const groupMergeService = new GroupMergeService(req.locals.user);
@@ -125,7 +170,7 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 				filtered_chats.map(async (groupChat) => {
 					const group_participants = await getOrCache(
 						CACHE_TOKEN_GENERATOR.GROUPS_EXPORT(
-							client_id,
+							req.locals.user._id,
 							groupChat.id._serialized,
 							options.business_contacts_only
 						),
@@ -259,18 +304,6 @@ async function mergeGroup(req: Request, res: Response, next: NextFunction) {
 		status: 200,
 		data: {
 			message: 'Groups merged successfully',
-		},
-	});
-}
-
-async function mergedGroups(req: Request, res: Response, next: NextFunction) {
-	const merged_groups = await new GroupMergeService(req.locals.user).listGroups();
-
-	return Respond({
-		res,
-		status: 200,
-		data: {
-			groups: merged_groups,
 		},
 	});
 }

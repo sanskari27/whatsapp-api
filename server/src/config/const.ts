@@ -6,6 +6,8 @@ export const CHROMIUM_PATH = process.env.CHROMIUM_PATH as string;
 
 export const IS_PRODUCTION = process.env.MODE === 'production';
 
+export const IS_WINDOWS = process.env.OS === 'WINDOWS';
+
 export const PORT = process.env.PORT !== undefined ? process.env.PORT : undefined;
 
 export enum SOCKET_EVENTS {
@@ -107,22 +109,22 @@ export const SESSION_STARTUP_WAIT_TIME = 5 * 60 * 1000; //milis
 export const CACHE_TIMEOUT = 10 * 60; //seconds
 
 export const CACHE_TOKEN_GENERATOR = {
-	SAVED_CONTACTS: (client_id: string, business_only: boolean = false) =>
-		`SAVED_CONTACTS?client_id=${client_id}&business_only=${business_only}`,
+	SAVED_CONTACTS: (user_id: string, business_only: boolean = false) =>
+		`SAVED_CONTACTS?user_id=${user_id}&business_only=${business_only}`,
 
-	NON_SAVED_CONTACTS: (client_id: string, business_only: boolean = false) =>
-		`NON_SAVED_CONTACTS?client_id=${client_id}&business_only=${business_only}`,
+	NON_SAVED_CONTACTS: (user_id: string, business_only: boolean = false) =>
+		`NON_SAVED_CONTACTS?user_id=${user_id}&business_only=${business_only}`,
 
-	GROUPS: (client_id: string) => `GROUPS?client_id=${client_id}`,
+	GROUPS: (user_id: string) => `GROUPS?user_id=${user_id}`,
 
-	LABELS: (client_id: string) => `LABELS?client_id=${client_id}`,
+	LABELS: (user_id: string) => `LABELS?user_id=${user_id}`,
 
-	MAPPED_CONTACTS: (client_id: string, business_only: boolean = false) =>
-		`MAPPED_CONTACTS?client_id=${client_id}&business_only=${business_only}`,
+	MAPPED_CONTACTS: (user_id: string, business_only: boolean = false) =>
+		`MAPPED_CONTACTS?user_id=${user_id}&business_only=${business_only}`,
 
-	GROUPS_EXPORT: (client_id: string, group_id: string, business_only: boolean = false) =>
-		`GROUPS_EXPORT?client_id=${client_id}&group_id=${group_id}&business_only=${business_only}`,
+	GROUPS_EXPORT: (user_id: string, group_id: string, business_only: boolean = false) =>
+		`GROUPS_EXPORT?user_id=${user_id}&group_id=${group_id}&business_only=${business_only}`,
 
-	LABELS_EXPORT: (client_id: string, label_id: string, business_only: boolean = false) =>
-		`LABELS_EXPORT?client_id=${client_id}&label_id=${label_id}&business_only=${business_only}`,
+	LABELS_EXPORT: (user_id: string, label_id: string, business_only: boolean = false) =>
+		`LABELS_EXPORT?user_id=${user_id}&label_id=${label_id}&business_only=${business_only}`,
 };

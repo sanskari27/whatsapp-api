@@ -7,6 +7,7 @@ export default class GroupService {
 			return data.groups as {
 				id: string;
 				name: string;
+				isMergedGroup: boolean;
 			}[];
 		} catch (err) {
 			return [];
@@ -37,6 +38,50 @@ export default class GroupService {
 			document.body.removeChild(downloadLink);
 		} catch (err) {
 			//ignore
+		}
+	}
+	static async createGroup(name: string, csv_file: string) {
+		try {
+			await APIInstance.post(`/whatsapp/groups`, { name, csv_file });
+			return true;
+		} catch (err) {
+			return false;
+		}
+	}
+
+	static async mergeGroups(group_name: string, group_ids: string[]) {
+		try {
+			await APIInstance.post(`/whatsapp/groups/merge`, { group_name, group_ids });
+			return true;
+		} catch (err) {
+			return false;
+		}
+	}
+
+	static async mergedGroups() {
+		try {
+			const { data } = await APIInstance.get(`/whatsapp/group/merge`);
+			return data.groups as {
+				id: string;
+				name: string;
+				isMergedGroup: boolean;
+				groups: {
+					id: string;
+					name: string;
+					isAdmin: boolean;
+				}[];
+			}[];
+		} catch (err) {
+			return [];
+		}
+	}
+
+	static async deleteMerged(id: string) {
+		try {
+			await APIInstance.delete(`/whatsapp/group/merge/${id}`);
+			return true;
+		} catch (err) {
+			return false;
 		}
 	}
 }

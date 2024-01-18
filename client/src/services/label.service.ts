@@ -43,4 +43,20 @@ export default class LabelService {
 			return [];
 		}
 	}
+	static async assignLabel(
+		type: string,
+		label_id: string,
+		opts: { csv_file?: string; group_ids?: string[] }
+	) {
+		try {
+			await APIInstance.post(`/whatsapp/labels/assign`, {
+				type,
+				label_id,
+				...opts,
+			});
+			return true;
+		} catch (err) {
+			return false;
+		}
+	}
 }

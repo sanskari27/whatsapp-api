@@ -1,8 +1,8 @@
 import axios from 'axios';
-import { logout } from '../hooks/useAuth';
-import { networkError } from '../hooks/useNetwork';
+import { recheckNetwork } from '../hooks/useNetwork';
+import AuthService from '../services/auth.service';
 import { getClientID } from '../utils/ChromeUtils';
-import { SERVER_URL } from './const';
+import { NAVIGATION, SERVER_URL } from './const';
 
 const APIInstance = axios.create({
 	baseURL: SERVER_URL,
@@ -22,15 +22,25 @@ APIInstance.interceptors.request.use(async (request) => {
 APIInstance.interceptors.response.use(
 	async (response) => response,
 	async (error) => {
-		if (!axios.isAxiosError(error)) return Promise.reject(error);
+		const originalRequest = error.config;
 
 		if (error.code === 'ERR_NETWORK') {
-			networkError();
-			return Promise.reject(error);
+			if (await recheckNetwork()) {
+				originalRequest._retry = true;
+				return APIInstance(originalRequest);
+			} else {
+				return Promise.reject(error);
+			}
 		}
 
-		if (error.response?.data?.error?.title === 'SESSION_INVALIDATED') {
-			logout();
+		if (error.response?.data?.title === 'SESSION_INVALIDATED' && !originalRequest._retry) {
+			originalRequest._retry = true;
+			const res = await AuthService.isAuthenticated();
+			if (res) {
+				return APIInstance(originalRequest);
+			} else {
+				window.location.assign(NAVIGATION.WELCOME);
+			}
 		}
 
 		return Promise.reject(error);
