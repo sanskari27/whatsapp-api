@@ -1,9 +1,9 @@
-import { Request, Response, NextFunction } from 'express';
-import { Respond, idValidator } from '../../../utils/ExpressUtils';
+import { NextFunction, Request, Response } from 'express';
 import { z } from 'zod';
-import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import { TemplateService } from '../../../database/services';
+import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
+import { Respond, idValidator } from '../../../utils/ExpressUtils';
 
 async function listTemplates(req: Request, res: Response, next: NextFunction) {
 	const templateService = new TemplateService(req.locals.user);

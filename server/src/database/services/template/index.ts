@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
+import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 import { IUser } from '../../../types/user';
 import TemplateDB from '../../repository/template';
-import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 
 export default class TemplateService {
 	private user: IUser;
@@ -42,8 +42,12 @@ export default class TemplateService {
 		if (!template) {
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
 		}
-		template.name = name;
-		template.message = message;
+		if (name) {
+			template.name = name;
+		}
+		if (message) {
+			template.message = message;
+		}
 		template.save();
 		return {
 			id: template._id,
