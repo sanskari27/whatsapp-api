@@ -8,7 +8,14 @@ import Shortner from './api/controller/shortner';
 import routes from './api/routes';
 
 import Logger from 'n23-logger';
-import { ATTACHMENTS_PATH, CSV_PATH, IS_PRODUCTION, UPLOADS_PATH } from './config/const';
+import {
+	ATTACHMENTS_PATH,
+	CSV_PATH,
+	INVOICE_PATH,
+	IS_PRODUCTION,
+	IS_WINDOWS,
+	UPLOADS_PATH,
+} from './config/const';
 import { MessageSchedulerService } from './database/services';
 import APIError from './errors/api-errors';
 import { WhatsappProvider } from './provider/whatsapp_provider';
@@ -17,9 +24,9 @@ import WhatsappUtils from './utils/WhatsappUtils';
 export default function (app: Express) {
 	//Defines all global variables and constants
 	let basedir = __dirname;
-	basedir = basedir.slice(0, basedir.lastIndexOf('/'));
+	basedir = basedir.slice(0, basedir.lastIndexOf(IS_WINDOWS ? '/' : '\\'));
 	if (IS_PRODUCTION) {
-		basedir = basedir.slice(0, basedir.lastIndexOf('/'));
+		basedir = basedir.slice(0, basedir.lastIndexOf(IS_WINDOWS ? '/' : '\\'));
 	}
 	global.__basedir = basedir;
 
@@ -134,4 +141,5 @@ function createDir() {
 	fs.mkdirSync(__basedir + ATTACHMENTS_PATH, { recursive: true });
 	fs.mkdirSync(__basedir + CSV_PATH, { recursive: true });
 	fs.mkdirSync(__basedir + UPLOADS_PATH, { recursive: true });
+	fs.mkdirSync(__basedir + INVOICE_PATH, { recursive: true });
 }

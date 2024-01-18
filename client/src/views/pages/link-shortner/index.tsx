@@ -135,7 +135,7 @@ const LinkShortner = () => {
 						</Tr>
 					</Thead>
 					<Tbody>
-						{loading_links ? (
+						{loading_links && list.length === 0 ? (
 							<Tr
 								bg={theme === 'light' ? 'gray.50' : 'gray.700'}
 								color={theme === 'dark' ? 'white' : 'black'}

@@ -6,6 +6,8 @@ export const CHROMIUM_PATH = process.env.CHROMIUM_PATH as string;
 
 export const IS_PRODUCTION = process.env.MODE === 'production';
 
+export const IS_WINDOWS = process.env.OS === 'WINDOWS';
+
 export const PORT = process.env.PORT !== undefined ? process.env.PORT : undefined;
 
 export enum SOCKET_EVENTS {
