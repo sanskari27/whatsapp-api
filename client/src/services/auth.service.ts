@@ -6,7 +6,7 @@ import { getClientID } from '../utils/ChromeUtils';
 export default class AuthService {
 	static async isAuthenticated() {
 		try {
-			await axios.get(SERVER_URL + '/auth/validate', {
+			await axios.get(SERVER_URL + 'auth/validate', {
 				headers: {
 					'client-id': getClientID(),
 				},

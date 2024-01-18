@@ -18,7 +18,7 @@ const Contact = lazy(() => import('./views/pages/contacts'));
 const Attachments = lazy(() => import('./views/pages/attachments'));
 const CSVUpload = lazy(() => import('./views/pages/csv-upload'));
 const PollReport = lazy(() => import('./views/pages/polls-report'));
-const GroupLabelPage = lazy(() => import('./views/pages/merge-group'));
+const GroupMergePage = lazy(() => import('./views/pages/merge-group'));
 const NetworkError = lazy(() => import('./views/pages/network-error'));
 
 function App() {
@@ -39,7 +39,7 @@ function App() {
 							<Route path={NAVIGATION.ATTACHMENTS} element={<Attachments />} />
 							<Route path={NAVIGATION.CSV} element={<CSVUpload />} />
 							<Route path={NAVIGATION.POLL_RESPONSES} element={<PollReport />} />
-							<Route path={NAVIGATION.GROUP_LABEL} element={<GroupLabelPage />} />
+							<Route path={NAVIGATION.GROUP_MERGE} element={<GroupMergePage />} />
 						</Route>
 						<Route path={NAVIGATION.NETWORK_ERROR} element={<NetworkError />} />
 						<Route path='*' element={<Navigate to={NAVIGATION.WELCOME} />} />

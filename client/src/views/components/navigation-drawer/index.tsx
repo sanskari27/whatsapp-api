@@ -77,7 +77,7 @@ export default function NavigationDrawer() {
 						<MenuButton icon={BiPoll} route={NAVIGATION.POLL_RESPONSES} />
 						<MenuButton icon={FiBarChart2} route={NAVIGATION.REPORTS} />
 						<MenuButton icon={TbCsv} route={NAVIGATION.CSV} />
-						<MenuButton icon={MdGroups3} route={NAVIGATION.GROUP_LABEL} />
+						<MenuButton icon={MdGroups3} route={NAVIGATION.GROUP_MERGE} />
 					</Flex>
 				</Box>
 				<VStack>
