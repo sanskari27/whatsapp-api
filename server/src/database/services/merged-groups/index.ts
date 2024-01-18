@@ -29,6 +29,16 @@ export default class GroupMergeService {
 			groups: group_ids,
 		});
 	}
+
+	async updateGroup(id: Types.ObjectId, group_ids: string[]) {
+		const merged_group = await MergedGroupDB.findById(id);
+
+		if (!merged_group) {
+			return false;
+		}
+		merged_group.groups = group_ids;
+		await merged_group.save();
+	}
 	async deleteGroup(group_id: Types.ObjectId) {
 		await MergedGroupDB.deleteOne({ _id: group_id });
 	}

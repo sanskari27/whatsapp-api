@@ -21,7 +21,7 @@ router
 
 router
 	.route('/groups/merge/:group_id')
-	.patch(GroupsController.removeGroupFromMerge)
+	.patch(GroupsController.updateMergedGroup)
 	.delete(GroupsController.deleteMergedGroup);
 router.route('/groups/merge').post(GroupsController.mergeGroup).get(GroupsController.mergedGroups);
 
