@@ -96,7 +96,7 @@ export default class VoteResponseService {
 		isMultiSelect: boolean;
 	}) {
 		const polls = await VoteResponseDB.find({
-			user: this.user.id,
+			user: this.user._id,
 			title,
 			options: { $all: options },
 			isMultiSelect,
