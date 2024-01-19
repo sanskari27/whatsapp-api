@@ -15,12 +15,14 @@ async function validateClientID(req: Request, res: Response, next: NextFunction)
 		}
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
+	const whatsapp = WhatsappProvider.getInstance(client_id);
 
 	return Respond({
 		res,
 		status: 200,
 		data: {
 			session_expires_at: revoke_at,
+			isWhatsappReady: whatsapp.isReady(),
 		},
 	});
 }

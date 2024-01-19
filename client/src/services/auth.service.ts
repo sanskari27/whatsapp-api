@@ -6,7 +6,7 @@ import { getClientID } from '../utils/ChromeUtils';
 export default class AuthService {
 	static async isAuthenticated() {
 		try {
-			await axios.get(SERVER_URL + 'auth/validate', {
+			const { data } = await axios.get(SERVER_URL + 'auth/validate', {
 				headers: {
 					'client-id': getClientID(),
 					'Cache-Control': 'no-cache',
@@ -14,9 +14,15 @@ export default class AuthService {
 					Expires: '0',
 				},
 			});
-			return true;
+			return {
+				session_active: true,
+				whatsapp_ready: data.isWhatsappReady,
+			};
 		} catch (err) {
-			return false;
+			return {
+				session_active: false,
+				whatsapp_ready: false,
+			};
 		}
 	}
 	static async getUserDetails() {
