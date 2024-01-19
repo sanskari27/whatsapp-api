@@ -59,6 +59,7 @@ export default class VoteResponseService {
 
 	async allPolls() {
 		const polls = await VoteResponseDB.aggregate([
+			{ $match: { user: this.user._id } },
 			{
 				$group: {
 					_id: {
@@ -95,7 +96,7 @@ export default class VoteResponseService {
 		isMultiSelect: boolean;
 	}) {
 		const polls = await VoteResponseDB.find({
-			user: this.user.id,
+			user: this.user._id,
 			title,
 			options: { $all: options },
 			isMultiSelect,
@@ -105,7 +106,6 @@ export default class VoteResponseService {
 			title: poll.title,
 			options: poll.options,
 			isMultiSelect: poll.isMultiSelect,
-			chat_id: poll.chat_id,
 			voter_number: poll.voter_number,
 			voter_name: poll.voter_name,
 			group_name: poll.group_name,

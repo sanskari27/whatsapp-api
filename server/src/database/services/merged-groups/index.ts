@@ -30,13 +30,22 @@ export default class GroupMergeService {
 		});
 	}
 
-	async updateGroup(id: Types.ObjectId, group_ids: string[]) {
+	async updateGroup(
+		id: Types.ObjectId,
+		{ name, group_ids }: { name?: string; group_ids?: string[] }
+	) {
 		const merged_group = await MergedGroupDB.findById(id);
 
 		if (!merged_group) {
 			return false;
 		}
-		merged_group.groups = group_ids;
+		if (name) {
+			merged_group.name = name;
+		}
+		if (group_ids) {
+			merged_group.groups = group_ids;
+		}
+
 		await merged_group.save();
 	}
 	async deleteGroup(group_id: Types.ObjectId) {

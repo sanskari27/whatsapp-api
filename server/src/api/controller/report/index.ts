@@ -81,7 +81,7 @@ async function listPolls(req: Request, res: Response, next: NextFunction) {
 
 	const polls = await service.getPoll({
 		title: String(title),
-		options: (options as string).split('||'),
+		options: (options as string).split('|$|'),
 		isMultiSelect: String(isMultiSelect) === 'true',
 	});
 
