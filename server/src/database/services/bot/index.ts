@@ -58,6 +58,7 @@ export default class BotService {
 				isMultiSelect: poll.isMultiSelect,
 			})),
 			shared_contact_cards: bot.shared_contact_cards ?? [],
+			forward: bot.forward ?? { number: '', message: '' },
 			group_respond: bot.group_respond,
 			isActive: bot.active,
 		}));
@@ -292,6 +293,23 @@ export default class BotService {
 						Logger.error('Error sending message:', err);
 					});
 			}
+
+			if (bot.forward.number) {
+				whatsapp
+					.getClient()
+					.sendMessage(bot.forward.number, contact)
+					.catch((err) => {
+						Logger.error('Error sending message:', err);
+					});
+				if (bot.forward.message) {
+					whatsapp
+						.getClient()
+						.sendMessage(bot.forward.number, bot.forward.message)
+						.catch((err) => {
+							Logger.error('Error sending message:', err);
+						});
+				}
+			}
 		});
 	}
 
@@ -340,6 +358,10 @@ export default class BotService {
 			options: string[];
 			isMultiSelect: boolean;
 		}[];
+		forward: {
+			number: string;
+			message: string;
+		};
 	}) {
 		const bot = new BotDB({
 			...data,
@@ -362,6 +384,7 @@ export default class BotService {
 			})),
 			shared_contact_cards: bot.shared_contact_cards ?? [],
 			polls: bot.polls,
+			forward: bot.forward ?? { number: '', message: '' },
 			isActive: bot.active,
 		};
 	}
@@ -382,6 +405,10 @@ export default class BotService {
 				options: string[];
 				isMultiSelect: boolean;
 			}[];
+			forward?: {
+				number: string;
+				message: string;
+			};
 		}
 	) {
 		const bot = await BotDB.findById(id).populate('attachments shared_contact_cards');
@@ -412,13 +439,16 @@ export default class BotService {
 		if (data.attachments) {
 			bot.attachments = data.attachments;
 		}
+		if (data.forward) {
+			bot.forward = data.forward;
+		}
+		if (data.polls) {
+			bot.polls = data.polls;
+		}
 		bot.shared_contact_cards = await ContactCardDB.find({
 			_id: { $in: data.shared_contact_cards },
 		});
 
-		if (data.polls) {
-			bot.polls = data.polls;
-		}
 		await bot.save();
 
 		return {
@@ -436,6 +466,7 @@ export default class BotService {
 			})),
 			shared_contact_cards: bot.shared_contact_cards ?? [],
 			polls: bot.polls ?? [],
+			forward: bot.forward ?? { number: '', message: '' },
 			isActive: bot.active,
 			group_respond: bot.group_respond,
 		};
@@ -456,9 +487,16 @@ export default class BotService {
 			response_delay_seconds: bot.response_delay_seconds,
 			options: bot.options,
 			message: bot.message,
-			attachments: bot.attachments ?? [],
+			attachments: bot.attachments.map((attachment) => ({
+				id: attachment._id,
+				filename: attachment.filename,
+				caption: attachment.caption,
+			})),
 			shared_contact_cards: bot.shared_contact_cards ?? [],
+			polls: bot.polls ?? [],
+			forward: bot.forward ?? { number: '', message: '' },
 			isActive: bot.active,
+			group_respond: bot.group_respond,
 		};
 	}
 

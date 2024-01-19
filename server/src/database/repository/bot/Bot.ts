@@ -49,6 +49,10 @@ const botSchema = new mongoose.Schema<IBot>({
 			isMultiSelect: Boolean,
 		},
 	],
+	forward: {
+		number: String,
+		message: String,
+	},
 	active: {
 		type: Boolean,
 		default: true,
