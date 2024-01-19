@@ -104,10 +104,7 @@ const GroupAndLabelPage = () => {
 					</Thead>
 					<Tbody>
 						{isFetching && list.length === 0 ? (
-							<Tr
-								bg={theme === 'light' ? 'gray.50' : 'gray.700'}
-								color={theme === 'dark' ? 'white' : 'black'}
-							>
+							<Tr color={theme === 'dark' ? 'white' : 'black'}>
 								<Td>
 									<LineSkeleton />
 								</Td>
@@ -123,7 +120,7 @@ const GroupAndLabelPage = () => {
 						) : (
 							list.map((group, index) => {
 								return (
-									<Tr key={index} cursor={'pointer'}>
+									<Tr key={index} cursor={'pointer'} color={theme === 'dark' ? 'white' : 'black'}>
 										<Td>
 											<Checkbox
 												mr={'1rem'}
