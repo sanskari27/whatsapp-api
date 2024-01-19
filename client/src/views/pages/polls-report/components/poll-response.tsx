@@ -21,9 +21,8 @@ import {
 	Tr,
 } from '@chakra-ui/react';
 import { useSelector } from 'react-redux';
+import { Cell, Pie, PieChart } from 'recharts';
 import { StoreNames, StoreState } from '../../../../store';
-
-import { Pie } from 'react-chartjs-2';
 
 type PollResponseDialogProps = {
 	isOpen: boolean;
@@ -35,43 +34,43 @@ const PollResponseDialog = ({ onClose, isOpen }: PollResponseDialogProps) => {
 
 	if (!selectedPollDetails) return null;
 
-	const uniqueResponses = selectedPollDetails.map((poll) => poll.selected_option).flat();
+	const getOptionResponses = (
+		pollDetails: {
+			group_name: string;
+			isMultiSelect: boolean;
+			options: string[];
+			selected_option: string[];
+			title: string;
+			voted_at: string;
+			voter_name: string;
+			voter_number: string;
+		}[]
+	) => {
+		const responseCounts = pollDetails.reduce((acc, curr) => {
+			curr.selected_option.forEach((option) => {
+				if (acc[option as keyof typeof acc]) {
+					acc[option] += 1;
+				} else {
+					acc[option] = 1;
+				}
+			});
+			return acc;
+		}, {});
 
-	const responseCount = uniqueResponses.reduce((acc, curr) => {
-		if (acc[curr]) {
-			acc[curr] += 1;
-		} else {
-			acc[curr] = 1;
-		}
-		return acc;
-	}, {} as { [key: string]: number });
-
-	const data = {
-		labels: Object.keys(responseCount),
-		datasets: [
-			{
-				label: '# of Votes',
-				data: Object.values(responseCount),
-				backgroundColor: selectedPollDetails.map(() => {
-					const r = Math.floor(Math.random() * 255);
-					const g = Math.floor(Math.random() * 255);
-					const b = Math.floor(Math.random() * 255);
-					return `rgb(${r}, ${g}, ${b})`;
-				}),
-				borderWidth: 1,
-			},
-		],
-		hoverOffset: 4,
+		return Object.entries(responseCounts).map(([name, value]) => ({ name, value }));
 	};
 
-	console.log(responseCount);
+	const COLORS = selectedPollDetails[0].options.map(
+		(_option, index) => `hsl(${(index * 360) / selectedPollDetails[0].options.length}, 100%, 50%)`
+	);
+
 	return (
 		<Modal isOpen={isOpen} onClose={onClose} size={'5xl'} scrollBehavior='inside'>
 			<ModalOverlay />
 			<ModalContent>
 				<ModalHeader>Modal Title</ModalHeader>
 				<ModalBody>
-					<Tabs variant='unstyled'>
+					<Tabs isFitted variant='enclosed'>
 						<TabList>
 							<Tab>Details</Tab>
 							<Tab>Responses</Tab>
@@ -103,13 +102,26 @@ const PollResponseDialog = ({ onClose, isOpen }: PollResponseDialogProps) => {
 										</Tbody>
 									</Table>
 								</TableContainer>
-								{Object.keys(responseCount).length > 0 ? (
-									<Box mt={'2rem'} width={'30%'}>
-										<Pie data={data} />
-									</Box>
-								) : (
-									<Box mt={'2rem'}>No responses yet</Box>
-								)}
+								<Box>
+									{getOptionResponses(selectedPollDetails).length === 0 ? (
+										<Box mt={'2rem'}>No responses yet</Box>
+									) : (
+										<PieChart width={800} height={400}>
+											<Pie
+												data={getOptionResponses(selectedPollDetails)}
+												outerRadius={150}
+												fill='#8884d8'
+												paddingAngle={0}
+												dataKey='value'
+												label
+											>
+												{getOptionResponses(selectedPollDetails).map((_entry, index) => (
+													<Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+												))}
+											</Pie>
+										</PieChart>
+									)}
+								</Box>
 							</TabPanel>
 							<TabPanel>
 								<TableContainer>
@@ -123,7 +135,7 @@ const PollResponseDialog = ({ onClose, isOpen }: PollResponseDialogProps) => {
 										</Thead>
 										<Tbody>
 											{selectedPollDetails?.map((poll, index) => (
-												<Tr>
+												<Tr key={index}>
 													<Td>{index + 1}</Td>
 													<Td>{poll.voter_name}</Td>
 													<Td>
@@ -144,10 +156,9 @@ const PollResponseDialog = ({ onClose, isOpen }: PollResponseDialogProps) => {
 				</ModalBody>
 
 				<ModalFooter>
-					<Button colorScheme='blue' mr={3} onClick={onClose}>
+					<Button colorScheme='green' mr={3} onClick={onClose}>
 						Close
 					</Button>
-					<Button variant='ghost'>Secondary Action</Button>
 				</ModalFooter>
 			</ModalContent>
 		</Modal>
