@@ -1,5 +1,10 @@
 import APIInstance from '../config/APIInstance';
 
+type Poll = {
+	title: string;
+	isMultiSelect: boolean;
+	options: string[];
+};
 export default class ReportsService {
 	static async generateAllCampaigns() {
 		try {
@@ -61,20 +66,31 @@ export default class ReportsService {
 			//ignore
 		}
 	}
-	static async listPolls() {
+	static async listPolls(): Promise<Poll[]> {
 		try {
 			const { data } = await APIInstance.get('/reports/polls');
 			return data.polls.map(
 				(poll: { title: string; options: string[]; isMultiSelect: boolean }) => {
 					return {
-						title: poll.title ?? '',
-						isMultiSelect: poll.isMultiSelect ?? false,
-						options: poll.options?.map((option: string) => option ?? ''),
+						title: (poll.title ?? '') as string,
+						isMultiSelect: (poll.isMultiSelect ?? false) as boolean,
+						options: poll.options?.map((option: string) => option ?? '') as string[],
 					};
 				}
 			);
 		} catch (err) {
-			//ignore
+			return [];
+		}
+	}
+
+	static async pollDetails({ title, isMultiSelect, options }: Poll) {
+		try {
+			const { data } = await APIInstance.get('/reports/polls', {
+				params: { title, isMultiSelect, options: options.join('|$|') },
+			});
+			console.log(data);
+		} catch (err) {
+			return null;
 		}
 	}
 }
