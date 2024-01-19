@@ -67,6 +67,7 @@ import ContactSelectorDialog, {
 } from '../../components/selector-dialog/ContactSelectorDialog';
 import SubscriptionAlert, { SubscriptionPopup } from '../../components/subscription-alert';
 import { TemplateNameInputDialog } from './components';
+import NumberInputDialog from './components/numbers-input-dialog';
 
 export type SchedulerDetails = {
 	type: 'NUMBERS' | 'CSV' | 'GROUP' | 'LABEL' | 'GROUP_INDIVIDUAL';
@@ -109,6 +110,11 @@ export default function Scheduler() {
 		isOpen: isNameInputOpen,
 		onOpen: openNameInput,
 		onClose: closeNameInput,
+	} = useDisclosure();
+	const {
+		isOpen: isNumberInputOpen,
+		onOpen: openNumberInput,
+		onClose: closeNumberInput,
 	} = useDisclosure();
 
 	const {
@@ -402,6 +408,12 @@ export default function Scheduler() {
 									</option>
 									<option
 										className="'text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
+										value='NUMBERS'
+									>
+										Numbers
+									</option>
+									<option
+										className="'text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
 										value='GROUP'
 									>
 										Groups
@@ -425,12 +437,11 @@ export default function Scheduler() {
 							<FormControl
 								alignItems='flex-end'
 								justifyContent={'space-between'}
-								hidden={!['CSV', 'GROUP', 'GROUP_INDIVIDUAL', 'LABEL'].includes(details.type)}
 								width={'full'}
 								isInvalid={!!error.recipients}
 							>
 								<FormLabel color={theme === 'dark' ? 'white' : 'GrayText'}>
-									Choose Existing Database
+									{details.type === 'NUMBERS' ? 'Selected Numbers' : 'Choose Existing Database'}
 								</FormLabel>
 								{details.type === 'CSV' ? (
 									<Flex direction={'column'} gap={2}>
@@ -468,6 +479,15 @@ export default function Scheduler() {
 												</option>
 											))}
 										</Select>
+									</Flex>
+								) : details.type === 'NUMBERS' ? (
+									<Flex direction={'column'} gap={2} justifyContent={'center'}>
+										<Button
+											className='!bg-[#ECECEC] dark:!bg-[#535353] rounded-md w-full text-black dark:text-white '
+											onClick={openNumberInput}
+										>
+											<Text>Selected Numbers ({details.numbers?.length ?? 0})</Text>
+										</Button>
 									</Flex>
 								) : (
 									<Multiselect
@@ -912,6 +932,7 @@ export default function Scheduler() {
 					closeNameInput();
 				}}
 			/>
+			<NumberInputDialog isOpen={isNumberInputOpen} onClose={closeNumberInput} />
 		</Flex>
 	);
 }
