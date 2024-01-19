@@ -11,11 +11,11 @@ import {
 	Thead,
 	Tr,
 } from '@chakra-ui/react';
-import { useTheme } from '@emotion/react';
 import { useEffect, useRef } from 'react';
 import { MdDelete, MdHistory } from 'react-icons/md';
 import { PiPause, PiPlay } from 'react-icons/pi';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTheme } from '../../../../hooks/useTheme';
 import BotService from '../../../../services/bot.service';
 import { StoreNames, StoreState } from '../../../../store';
 import {
@@ -80,9 +80,9 @@ export default function AllResponders() {
 							<Th width={'10%'}>Actions</Th>
 						</Tr>
 					</Thead>
-					<Tbody textColor={theme === 'dark' ? 'white' : 'black'}>
+					<Tbody>
 						{all_bots.map((bot, index) => (
-							<Tr key={index}>
+							<Tr key={index} color={theme === 'dark' ? 'white' : 'black'}>
 								<Td>
 									{bot.trigger.split('\n').map((trigger, index) => (
 										<Box key={index}>
