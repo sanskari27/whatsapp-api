@@ -23,11 +23,9 @@ import { useTheme } from '../../../hooks/useTheme';
 import GroupService from '../../../services/group.service';
 import { StoreNames, StoreState } from '../../../store';
 import {
-	addSelectedGroup,
 	addSelectedMergedGroups,
 	deleteMergedGroup,
 	editSelectedGroup,
-	removeSelectedGroup,
 	removeSelectedMergedGroups,
 	setIsDeleting,
 	setIsFetching,
