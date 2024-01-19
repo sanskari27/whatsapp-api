@@ -88,7 +88,29 @@ export default class ReportsService {
 			const { data } = await APIInstance.get('/reports/polls', {
 				params: { title, isMultiSelect, options: options.join('|$|') },
 			});
-			console.log(data);
+			return data.polls.map(
+				(poll: {
+					group_name: string;
+					isMultiSelect: boolean;
+					options: string[];
+					selected_option: string[];
+					title: string;
+					voted_at: string;
+					voter_name: string;
+					voter_number: string;
+				}) => {
+					return {
+						group_name: (poll.group_name ?? '') as string,
+						isMultiSelect: (poll.isMultiSelect ?? false) as boolean,
+						options: poll.options?.map((option: string) => option ?? '') as string[],
+						selected_option: poll.selected_option?.map((option: string) => option ?? '') as string[],
+						title: (poll.title ?? '') as string,
+						voted_at: (poll.voted_at ?? '') as string,
+						voter_name: (poll.voter_name ?? '') as string,
+						voter_number: (poll.voter_number ?? '') as string,
+					};
+				}
+			);
 		} catch (err) {
 			return null;
 		}
