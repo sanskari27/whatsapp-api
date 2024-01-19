@@ -1,6 +1,11 @@
 export type MergeGroupState = {
 	list: MergedGroup[];
 	selectedGroups: string[];
+	editSelectedGroup:{
+		id: string;
+		name: string;
+		groups: string[];
+	};
 	uiDetails: {
 		isSaving: boolean;
 		isFetching: boolean;

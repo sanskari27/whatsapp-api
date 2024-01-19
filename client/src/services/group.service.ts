@@ -85,9 +85,18 @@ export default class GroupService {
 		}
 	}
 
+	static async editMergedGroup(id:string, name:string, groups:string[]){
+		try {
+			await APIInstance.patch(`/whatsapp/groups/merge/${id}`, { name, group_ids: groups });
+			return true;
+		} catch (err) {
+			return false;
+		}
+	}
+
 	static async deleteMerged(id: string) {
 		try {
-			await APIInstance.delete(`/whatsapp/group/merge/${id}`);
+			await APIInstance.delete(`/whatsapp/groups/merge/${id}`);
 			return true;
 		} catch (err) {
 			return false;

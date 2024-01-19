@@ -1,8 +1,10 @@
+import { EditIcon } from '@chakra-ui/icons';
 import {
 	Box,
 	Button,
 	Checkbox,
 	HStack,
+	IconButton,
 	SkeletonText,
 	Table,
 	TableContainer,
@@ -22,8 +24,11 @@ import GroupService from '../../../services/group.service';
 import { StoreNames, StoreState } from '../../../store';
 import {
 	addSelectedGroup,
+	addSelectedMergedGroups,
 	deleteMergedGroup,
+	editSelectedGroup,
 	removeSelectedGroup,
+	removeSelectedMergedGroups,
 	setIsDeleting,
 	setIsFetching,
 	setMergedGroupList,
@@ -96,10 +101,11 @@ const GroupAndLabelPage = () => {
 					<Thead>
 						<Tr>
 							<Th width={'5%'}>sl no</Th>
-							<Th width={'75%'}>Group Name</Th>
-							<Th width={'20%'} isNumeric>
+							<Th width={'70%'}>Group Name</Th>
+							<Th width={'15%'} isNumeric>
 								No of Whatsapp Groups
 							</Th>
+							<Th>Edit</Th>
 						</Tr>
 					</Thead>
 					<Tbody>
@@ -119,6 +125,9 @@ const GroupAndLabelPage = () => {
 								<Td>
 									<LineSkeleton />
 								</Td>
+								<Td>
+									<LineSkeleton />
+								</Td>
 							</Tr>
 						) : (
 							list.map((group, index) => {
@@ -130,9 +139,9 @@ const GroupAndLabelPage = () => {
 												isChecked={selectedGroups.includes(group.id)}
 												onChange={(e) => {
 													if (e.target.checked) {
-														dispatch(addSelectedGroup(group.id));
+														dispatch(addSelectedMergedGroups(group.id));
 													} else {
-														dispatch(removeSelectedGroup(group.id));
+														dispatch(removeSelectedMergedGroups(group.id));
 													}
 												}}
 												colorScheme='green'
@@ -141,6 +150,17 @@ const GroupAndLabelPage = () => {
 										</Td>
 										<Td>{group.name}</Td>
 										<Td isNumeric>{group.groups.length}</Td>
+										<Td>
+											<IconButton
+												aria-label='edit merge group'
+												icon={<EditIcon />}
+												colorScheme='gray'
+												onClick={() => {
+													onOpen();
+													dispatch(editSelectedGroup(group.id));
+												}}
+											/>
+										</Td>
 									</Tr>
 								);
 							})

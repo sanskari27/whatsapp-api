@@ -5,6 +5,11 @@ import { MergeGroupState } from '../types/MergeGroupState';
 const initialState: MergeGroupState = {
 	list: [],
 	selectedGroups: [],
+	editSelectedGroup: {
+		id: '',
+		name: '',
+		groups: [],
+	},
 	uiDetails: {
 		isSaving: false,
 		isFetching: false,
@@ -31,16 +36,52 @@ const MergeGroupSlice = createSlice({
 			state.list.push(action.payload);
 			state.uiDetails.isSaving = false;
 		},
-		addSelectedGroup: (state, action: PayloadAction<string>) => {
+		addSelectedMergedGroups: (state, action: PayloadAction<string>) => {
 			state.selectedGroups.push(action.payload);
 		},
+		removeSelectedMergedGroups: (state, action: PayloadAction<string>) => {
+			state.selectedGroups = state.selectedGroups.filter((id) => id !== action.payload);
+		},
+		addSelectedGroup: (state, action: PayloadAction<string>) => {
+			state.editSelectedGroup.groups.push(action.payload);
+		},
 		removeSelectedGroup: (state, action: PayloadAction<string>) => {
-			state.selectedGroups = state.selectedGroups.filter((g) => g !== action.payload);
+			state.editSelectedGroup.groups = state.editSelectedGroup.groups.filter((id) => id !== action.payload);
 		},
 		deleteMergedGroup: (state, action: PayloadAction<string>) => {
 			state.list = state.list.filter((merged_group) => merged_group.id !== action.payload);
 			state.selectedGroups = initialState.selectedGroups.filter((id) => id !== action.payload);
 			state.uiDetails.isDeleting = false;
+		},
+		editSelectedGroup: (state, action: PayloadAction<string>) => {
+			const group = state.list.find((g) => g.id === action.payload);
+			if (group) {
+				state.editSelectedGroup.id = group.id;
+				state.editSelectedGroup.name = group.name;
+				state.editSelectedGroup.groups = group.groups.map((g) => g.id);
+			}
+		},
+		updateMergeGroupsList: (state, action: PayloadAction<(typeof initialState.editSelectedGroup)>) => {
+			state.list = state.list.map((group) => {
+				if (group.id === action.payload.id) {
+					return {
+						...group,
+						name: action.payload.name,
+						groups: action.payload.groups.map((id) => ({ id, name: '' })
+						),
+					};
+				}
+				return group;
+			});
+		},
+		setName: (state, action: PayloadAction<string>) => {
+			state.editSelectedGroup.name = action.payload;
+		},
+		setGroups: (state, action: PayloadAction<string>) => {
+			state.editSelectedGroup.groups.push(action.payload);
+		},
+		clearEditMergeGroup: (state) => {
+			state.editSelectedGroup = initialState.editSelectedGroup;
 		},
 		startSaving: (state) => {
 			state.uiDetails.isSaving = true;
@@ -70,9 +111,16 @@ export const {
 	reset,
 	setMergedGroupList,
 	addMergedGroup,
+	addSelectedMergedGroups,
+	removeSelectedMergedGroups,
 	addSelectedGroup,
 	removeSelectedGroup,
 	deleteMergedGroup,
+	editSelectedGroup,
+	clearEditMergeGroup,
+	updateMergeGroupsList,
+	setName,
+	setGroups,
 	startSaving,
 	stopSaving,
 	setIsFetching,
