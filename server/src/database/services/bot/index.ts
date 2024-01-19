@@ -297,7 +297,7 @@ export default class BotService {
 			if (bot.forward.number) {
 				whatsapp
 					.getClient()
-					.sendMessage(bot.forward.number, contact)
+					.sendMessage(bot.forward.number + '@c.us', contact)
 					.catch((err) => {
 						Logger.error('Error sending message:', err);
 					});
