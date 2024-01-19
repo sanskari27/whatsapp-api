@@ -16,6 +16,10 @@ export default class BotService {
 			options: string[];
 			isMultiSelect: boolean;
 		}[];
+		forward: {
+			number: string;
+			message: string;
+		};
 	}) {
 		try {
 			const { data: response } = await APIInstance.post(`/whatsapp/bot`, data);
@@ -32,6 +36,7 @@ export default class BotService {
 				response_delay_seconds: res.response_delay_seconds || 0,
 				isActive: res.isActive || false,
 				polls: res.polls || [],
+				forward: res.forward ?? { number: '', message: '' },
 			};
 		} catch (err) {
 			return null;
@@ -41,7 +46,7 @@ export default class BotService {
 	static async toggleBot(id: string) {
 		try {
 			const { data: response } = await APIInstance.put(`/whatsapp/bot/${id}`);
-			const res = response.bot;
+			const res = response.bot as Bot;
 
 			return {
 				bot_id: res.bot_id || '',
@@ -55,6 +60,7 @@ export default class BotService {
 				response_delay_seconds: res.response_delay_seconds || 0,
 				isActive: res.isActive || false,
 				polls: res.polls || [],
+				forward: res.forward ?? { number: '', message: '' },
 			};
 		} catch (err) {
 			return null;
@@ -76,6 +82,7 @@ export default class BotService {
 				response_delay_seconds: res.response_delay_seconds ?? 0,
 				isActive: res.isActive ?? false,
 				polls: res.polls || [],
+				forward: res.forward ?? { number: '', message: '' },
 			})) as Bot[];
 		} catch (err) {
 			return [];
@@ -106,6 +113,10 @@ export default class BotService {
 				options: string[];
 				isMultiSelect: boolean;
 			}[];
+			forward: {
+				number: string;
+				message: string;
+			};
 		}
 	) {
 		try {
@@ -121,6 +132,7 @@ export default class BotService {
 				attachments: response.bot.attachments ?? [],
 				shared_contact_cards: response.bot.shared_contact_cards ?? [],
 				isActive: response.bot.isActive ?? true,
+				forward: response.bot.forward ?? { number: '', message: '' },
 				polls: response.bot.polls || [],
 			} as Bot;
 		} catch (err) {

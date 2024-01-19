@@ -96,6 +96,15 @@ async function createBot(req: Request, res: Response, next: NextFunction) {
 			})
 			.array()
 			.default([]),
+		forward: z
+			.object({
+				number: z.string(),
+				message: z.string().default(''),
+			})
+			.default({
+				number: '',
+				message: '',
+			}),
 	});
 
 	const reqValidatorResult = reqValidator.safeParse(req.body);

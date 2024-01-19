@@ -16,6 +16,10 @@ const initialState: BotState = {
 		response_delay_seconds: 0,
 		trigger_gap_seconds: 0,
 		polls: [],
+		forward: {
+			number: '',
+			message: '',
+		},
 	},
 	ui: {
 		isAddingBot: false,
@@ -74,6 +78,7 @@ const BotSlice = createSlice({
 			state.details.response_delay_seconds = state.all_bots[index].response_delay_seconds;
 			state.details.trigger_gap_seconds = state.all_bots[index].trigger_gap_seconds;
 			state.details.polls = state.all_bots[index].polls;
+			state.details.forward = state.all_bots[index].forward;
 
 			state.ui.isEditingBot = true;
 
@@ -184,6 +189,12 @@ const BotSlice = createSlice({
 		setEditingBot: (state, action: PayloadAction<boolean>) => {
 			state.ui.isEditingBot = action.payload;
 		},
+		setForwardTo: (state, action: PayloadAction<string>) => {
+			state.details.forward.number = action.payload;
+		},
+		setForwardMessage: (state, action: PayloadAction<string>) => {
+			state.details.forward.message = action.payload;
+		},
 		setError: (
 			state,
 			action: PayloadAction<{
@@ -226,6 +237,8 @@ export const {
 	setError,
 	setAddingBot,
 	setEditingBot,
+	setForwardMessage,
+	setForwardTo,
 } = BotSlice.actions;
 
 export default BotSlice.reducer;

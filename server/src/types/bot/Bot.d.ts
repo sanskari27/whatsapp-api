@@ -23,7 +23,10 @@ export default interface IBot extends Document {
 		options: string[];
 		isMultiSelect: boolean;
 	}[];
-
+	forward: {
+		number: string;
+		message: string;
+	};
 	group_respond: boolean;
 	active: boolean;
 }
