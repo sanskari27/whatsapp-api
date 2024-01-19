@@ -19,7 +19,16 @@ import {
 	Tr,
 } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import GroupService from '../../../../services/group.service';
+import { StoreNames, StoreState } from '../../../../store';
+import {
+	addSelectedGroup,
+	clearEditMergeGroup,
+	removeSelectedGroup,
+	setName,
+	updateMergeGroupsList,
+} from '../../../../store/reducers/MergeGroupReducer';
 
 type GroupMergeProps = {
 	onClose: () => void;
@@ -27,6 +36,8 @@ type GroupMergeProps = {
 };
 
 const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
+	const dispatch = useDispatch();
+
 	const [groups, setGroups] = useState<
 		{
 			id: string;
@@ -35,43 +46,56 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 		}[]
 	>([]);
 
-	const [mergeGroupDetails, setMergeGroupDetails] = useState<{
-		name: string;
-		groups: string[];
-	}>({
-		name: '',
-		groups: [],
-	});
-
-	const setSelectedGroups = (id: string) => {
-		setMergeGroupDetails((prev) => {
-			return { ...prev, groups: [...prev.groups, id] };
-		});
-	};
+	const { editSelectedGroup } = useSelector((store: StoreState) => store[StoreNames.MERGE_GROUP]);
 
 	const handleMergeGroup = () => {
-		if (mergeGroupDetails.name === '') {
+		if (editSelectedGroup.name === '') {
 			return;
 		}
-		if (mergeGroupDetails.groups.length === 0) {
+		if (editSelectedGroup.groups.length === 0) {
 			return;
 		}
 
-		GroupService.mergeGroups(mergeGroupDetails.name, mergeGroupDetails.groups).then((response) => {
-			if (!response) {
-				return;
-			}
-			onClose();
-		});
+		if (editSelectedGroup.id) {
+			GroupService.editMergedGroup(
+				editSelectedGroup.id,
+				editSelectedGroup.name,
+				editSelectedGroup.groups
+			).then((response) => {
+				if (!response) {
+					return;
+				}
+				dispatch(updateMergeGroupsList(editSelectedGroup));
+				onClose();
+			});
+		} else {
+			GroupService.mergeGroups(editSelectedGroup.name, editSelectedGroup.groups).then(
+				(response) => {
+					if (!response) {
+						return;
+					}
+					onClose();
+				}
+			);
+		}
+	};
+
+	const handleSelectGroup = (id: string) => {
+		if (editSelectedGroup.groups.includes(id)) {
+			dispatch(removeSelectedGroup(id));
+		} else {
+			dispatch(addSelectedGroup(id));
+		}
+	};
+
+	const handleClose = () => {
+		dispatch(clearEditMergeGroup());
+		onClose();
 	};
 
 	useEffect(() => {
 		GroupService.listGroups().then((response) => {
 			setGroups(response);
-		});
-		setMergeGroupDetails({
-			name: '',
-			groups: [],
 		});
 	}, []);
 
@@ -85,12 +109,8 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 						<FormLabel>Enter Name</FormLabel>
 						<Input
 							placeholder='Enter Name'
-							value={mergeGroupDetails.name}
-							onChange={(e) =>
-								setMergeGroupDetails((prev) => {
-									return { ...prev, name: e.target.value };
-								})
-							}
+							value={editSelectedGroup.name}
+							onChange={(e) => dispatch(setName(e.target.value))}
 						/>
 					</FormControl>
 					<TableContainer>
@@ -108,8 +128,8 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 											<Tr key={index}>
 												<Td>
 													<Checkbox
-														checked={mergeGroupDetails.groups.includes(group.id)}
-														onChange={() => setSelectedGroups(group.id)}
+														isChecked={editSelectedGroup.groups.includes(group.id)}
+														onChange={() => handleSelectGroup(group.id)}
 														mr={'0.5rem'}
 													/>
 													{index + 1}
@@ -124,11 +144,11 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 				</ModalBody>
 
 				<ModalFooter>
-					<Button colorScheme='red' mr={3} onClick={onClose}>
+					<Button colorScheme='red' mr={3} onClick={handleClose}>
 						Cancel
 					</Button>
 					<Button colorScheme='green' onClick={handleMergeGroup}>
-						Merge Group
+						{editSelectedGroup.id ? 'Update' : 'Merge'}
 					</Button>
 				</ModalFooter>
 			</ModalContent>
