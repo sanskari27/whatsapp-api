@@ -468,7 +468,7 @@ export default function Bot() {
 							<Text className='text-gray-700 dark:text-gray-400'>Forward To</Text>
 							<TextInput
 								placeholder='ex 9175XXXXXX68'
-								value={forward.number}
+								value={forward.number ?? ''}
 								onChangeText={(text) => dispatch(setForwardTo(text))}
 							/>
 						</Box>
@@ -476,7 +476,7 @@ export default function Bot() {
 						<Box flex={1}>
 							<Text className='text-gray-700 dark:text-gray-400'>Forward Message</Text>
 							<TextAreaElement
-								value={forward.message}
+								value={forward.message ?? ''}
 								onChange={(e) => dispatch(setForwardMessage(e.target.value))}
 								isInvalid={false}
 								placeholder={'ex. Forwarded Lead'}
