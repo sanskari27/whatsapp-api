@@ -34,8 +34,8 @@ export const useAuth = singletonHook(initStatus, () => {
 	useEffect(() => {
 		const checkAuthStatus = async () => {
 			setAuth((prev) => ({ ...prev, isAuthenticating: true }));
-			const isAuthenticated = await AuthService.isAuthenticated();
-			if (isAuthenticated) {
+			const { session_active } = await AuthService.isAuthenticated();
+			if (session_active) {
 				startAuth();
 			} else {
 				setAuth((prev) => ({
@@ -85,7 +85,6 @@ socket.on(SOCKET_EVENT.WHATSAPP_AUTHENTICATED, () => {
 });
 
 socket.on(SOCKET_EVENT.WHATSAPP_CLOSED, () => {
-	console.log('whatsapp closed');
 	setAuth({
 		isAuthenticated: false,
 		isAuthenticating: false,

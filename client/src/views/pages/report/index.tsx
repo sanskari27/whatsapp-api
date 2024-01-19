@@ -179,7 +179,6 @@ const Reports = () => {
 							all_campaigns.map((campaign, index) => (
 								<Tr
 									key={index}
-									bg={theme === 'light' ? 'gray.50' : 'gray.700'}
 									color={theme === 'dark' ? 'white' : 'black'}
 								>
 									<Td>
