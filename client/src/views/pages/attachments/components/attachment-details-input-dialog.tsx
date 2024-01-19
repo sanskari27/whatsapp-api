@@ -73,7 +73,6 @@ const AttachmentDetailsInputDialog = forwardRef<AttachmentDetailsInputDialogHand
 
 	const onUploadProgress = (progressEvent: number) => {
 		progressRef.current?.setProgressValue(progressEvent);
-		console.log(progressEvent, 'progress value');
 	};
 
 	const handleAddAttachment = async () => {
@@ -108,7 +107,6 @@ const AttachmentDetailsInputDialog = forwardRef<AttachmentDetailsInputDialogHand
 				onUploadProgress
 			).then((res) => {
 				if (!res) return;
-				console.log(res);
 				dispatch(addAttachment(res.data.attachment));
 				setOpen(false);
 			});

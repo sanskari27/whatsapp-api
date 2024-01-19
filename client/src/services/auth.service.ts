@@ -9,6 +9,9 @@ export default class AuthService {
 			await axios.get(SERVER_URL + 'auth/validate', {
 				headers: {
 					'client-id': getClientID(),
+					'Cache-Control': 'no-cache',
+					Pragma: 'no-cache',
+					Expires: '0',
 				},
 			});
 			return true;

@@ -85,7 +85,6 @@ socket.on(SOCKET_EVENT.WHATSAPP_AUTHENTICATED, () => {
 });
 
 socket.on(SOCKET_EVENT.WHATSAPP_CLOSED, () => {
-	console.log('whatsapp closed');
 	setAuth({
 		isAuthenticated: false,
 		isAuthenticating: false,
