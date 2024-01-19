@@ -66,6 +66,9 @@ const SchedulerSlice = createSlice({
 		setRecipients: (state, action: PayloadAction<typeof initialState.recipients>) => {
 			state.recipients = action.payload;
 		},
+		setNumbers: (state, action: PayloadAction<typeof initialState.details.numbers>) => {
+			state.details.numbers = action.payload;
+		},
 		setCSVFile: (state, action: PayloadAction<typeof initialState.details.csv_file>) => {
 			state.details.csv_file = action.payload;
 		},
@@ -154,6 +157,7 @@ export const {
 	setCampaignLoading,
 	setDeletingCampaign,
 	setExportingCampaign,
+	setNumbers,
 } = SchedulerSlice.actions;
 
 export default SchedulerSlice.reducer;

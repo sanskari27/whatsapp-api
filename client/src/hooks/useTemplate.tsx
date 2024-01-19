@@ -31,5 +31,29 @@ export default function useTemplate() {
 			});
 	};
 
-	return { templates, isLoading, add, addingTemplate };
+	const remove = (id: string) => {
+		setAddingTemplate(true);
+		TemplateService.deleteTemplate(id)
+			.then((res) => {
+				if (!res) return;
+				setTemplates((prev) => prev.filter((t) => t.id !== id));
+			})
+			.finally(() => {
+				setAddingTemplate(false);
+			});
+	};
+
+	const update = (id: string, name: string, message: string) => {
+		setAddingTemplate(true);
+		TemplateService.updateTemplate({ id, name, message })
+			.then((res) => {
+				if (!res) return;
+				setTemplates((prev) => prev.map((t) => (t.id !== id ? t : res)));
+			})
+			.finally(() => {
+				setAddingTemplate(false);
+			});
+	};
+
+	return { templates, isLoading, add, addingTemplate, update, remove };
 }

@@ -12,7 +12,10 @@ export default class TemplateService {
 
 	static async updateTemplate(data: { message: string; name: string; id: string }) {
 		try {
-			const { data: response } = await APIInstance.put(`/template/${data.id}`);
+			const { data: response } = await APIInstance.put(`/template/${data.id}`, {
+				name: data.name,
+				message: data.message,
+			});
 			return response.template as { id: string; name: string; message: string };
 		} catch (err) {
 			return null;

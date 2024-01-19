@@ -63,51 +63,6 @@ async function groups(req: Request, res: Response, next: NextFunction) {
 	}
 }
 
-async function mergedGroups(req: Request, res: Response, next: NextFunction) {
-	const client_id = req.locals.client_id;
-
-	const whatsapp = WhatsappProvider.getInstance(client_id);
-	if (!whatsapp.isReady()) {
-		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
-	}
-
-	try {
-		const merged_groups = await new GroupMergeService(req.locals.user).listGroups();
-
-		const groupDetails = merged_groups.map(async (group) => {
-			const group_details_by_id = await Promise.all(
-				group.groups.map(async (group_id) => {
-					const details = await whatsapp.getClient().getChatById(group_id);
-
-					if (!details || !details.isGroup) {
-						return null;
-					}
-
-					return {
-						id: group_id,
-						name: details.name,
-					};
-				})
-			);
-
-			return {
-				...group,
-				groups: group_details_by_id.filter((group) => group !== null),
-			};
-		});
-
-		return Respond({
-			res,
-			status: 200,
-			data: {
-				groups: await Promise.all(groupDetails),
-			},
-		});
-	} catch (err) {
-		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
-	}
-}
-
 async function exportGroups(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
 	const { group_ids } = req.query;
@@ -308,6 +263,98 @@ async function mergeGroup(req: Request, res: Response, next: NextFunction) {
 	});
 }
 
+async function updateMergedGroup(req: Request, res: Response, next: NextFunction) {
+	const client_id = req.locals.client_id;
+	const [isGroupIDValid, group_id] = idValidator(req.params.group_id);
+
+	if (!isGroupIDValid) {
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
+	}
+
+	const reqValidator = z
+		.object({
+			group_ids: z.string().array().default([]),
+		})
+		.refine((obj) => obj.group_ids.length !== 0);
+	const reqValidatorResult = reqValidator.safeParse(req.body);
+
+	if (!reqValidatorResult.success) {
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
+	}
+	const { group_ids } = reqValidatorResult.data;
+
+	const whatsapp = WhatsappProvider.getInstance(client_id);
+	const whatsappUtils = new WhatsappUtils(whatsapp);
+	if (!whatsapp.isReady()) {
+		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+	}
+
+	const chat_ids = (
+		await Promise.all(
+			group_ids.map(async (id) => {
+				const chat = await whatsappUtils.getChat(id);
+				if (!chat || !chat.isGroup) return null;
+				return chat.id._serialized;
+			})
+		)
+	).filter((chat) => chat !== null) as string[];
+
+	await new GroupMergeService(req.locals.user).updateGroup(group_id, chat_ids);
+
+	return Respond({
+		res,
+		status: 200,
+		data: {
+			message: 'Groups updated successfully',
+		},
+	});
+}
+
+async function mergedGroups(req: Request, res: Response, next: NextFunction) {
+	const client_id = req.locals.client_id;
+
+	const whatsapp = WhatsappProvider.getInstance(client_id);
+	if (!whatsapp.isReady()) {
+		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+	}
+
+	try {
+		const merged_groups = await new GroupMergeService(req.locals.user).listGroups();
+
+		const groupDetails = merged_groups.map(async (group) => {
+			const group_details_by_id = await Promise.all(
+				group.groups.map(async (group_id) => {
+					const details = await whatsapp.getClient().getChatById(group_id);
+
+					if (!details || !details.isGroup) {
+						return null;
+					}
+
+					return {
+						id: group_id,
+						name: details.name,
+					};
+				})
+			);
+
+			return {
+				...group,
+				groups: group_details_by_id.filter((group) => group !== null),
+			};
+		});
+
+		return Respond({
+			res,
+			status: 200,
+			data: {
+				groups: await Promise.all(groupDetails),
+			},
+		});
+	} catch (err) {
+		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+	}
+}
+
 async function deleteMergedGroup(req: Request, res: Response, next: NextFunction) {
 	const [isGroupIDValid, group_id] = idValidator(req.params.group_id);
 
@@ -326,40 +373,14 @@ async function deleteMergedGroup(req: Request, res: Response, next: NextFunction
 	});
 }
 
-async function removeGroupFromMerge(req: Request, res: Response, next: NextFunction) {
-	const [isGroupIDValid, group_id] = idValidator(req.params.group_id);
-	const reqValidator = z
-		.object({
-			group_ids: z.string().array().default([]),
-		})
-		.refine((obj) => obj.group_ids.length !== 0);
-
-	const reqValidatorResult = reqValidator.safeParse(req.body);
-
-	if (!isGroupIDValid || !reqValidatorResult.success) {
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
-	}
-	const { group_ids } = reqValidatorResult.data;
-
-	new GroupMergeService(req.locals.user).removeFromGroup(group_id, group_ids);
-
-	return Respond({
-		res,
-		status: 200,
-		data: {
-			message: 'GroupIDs removed successfully',
-		},
-	});
-}
-
 const GroupsController = {
 	groups,
 	exportGroups,
 	createGroup,
 	mergeGroup,
 	deleteMergedGroup,
-	removeGroupFromMerge,
 	mergedGroups,
+	updateMergedGroup,
 };
 
 export default GroupsController;

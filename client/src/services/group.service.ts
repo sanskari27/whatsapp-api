@@ -58,9 +58,18 @@ export default class GroupService {
 		}
 	}
 
+	static async updateGroups(id: string, group_ids: string[]) {
+		try {
+			await APIInstance.patch(`/whatsapp/groups/merge/${id}`, { group_ids });
+			return true;
+		} catch (err) {
+			return false;
+		}
+	}
+
 	static async mergedGroups() {
 		try {
-			const { data } = await APIInstance.get(`/whatsapp/group/merge`);
+			const { data } = await APIInstance.get(`/whatsapp/groups/merge`);
 			return data.groups as {
 				id: string;
 				name: string;
