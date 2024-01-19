@@ -273,6 +273,7 @@ async function updateMergedGroup(req: Request, res: Response, next: NextFunction
 
 	const reqValidator = z
 		.object({
+			name: z.string().default(''),
 			group_ids: z.string().array().default([]),
 		})
 		.refine((obj) => obj.group_ids.length !== 0);
@@ -281,7 +282,7 @@ async function updateMergedGroup(req: Request, res: Response, next: NextFunction
 	if (!reqValidatorResult.success) {
 		return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
 	}
-	const { group_ids } = reqValidatorResult.data;
+	const { group_ids, name } = reqValidatorResult.data;
 
 	const whatsapp = WhatsappProvider.getInstance(client_id);
 	const whatsappUtils = new WhatsappUtils(whatsapp);
@@ -299,7 +300,7 @@ async function updateMergedGroup(req: Request, res: Response, next: NextFunction
 		)
 	).filter((chat) => chat !== null) as string[];
 
-	await new GroupMergeService(req.locals.user).updateGroup(group_id, chat_ids);
+	await new GroupMergeService(req.locals.user).updateGroup(group_id, { group_ids: chat_ids, name });
 
 	return Respond({
 		res,
