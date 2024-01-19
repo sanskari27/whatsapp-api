@@ -24,9 +24,9 @@ import WhatsappUtils from './utils/WhatsappUtils';
 export default function (app: Express) {
 	//Defines all global variables and constants
 	let basedir = __dirname;
-	basedir = basedir.slice(0, basedir.lastIndexOf(IS_WINDOWS ? '/' : '\\'));
+	basedir = basedir.slice(0, basedir.lastIndexOf(IS_WINDOWS ? '\\' : '/'));
 	if (IS_PRODUCTION) {
-		basedir = basedir.slice(0, basedir.lastIndexOf(IS_WINDOWS ? '/' : '\\'));
+		basedir = basedir.slice(0, basedir.lastIndexOf(IS_WINDOWS ? '\\' : '/'));
 	}
 	global.__basedir = basedir;
 
