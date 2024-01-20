@@ -106,7 +106,7 @@ export default class VCardBuilder {
 			vCardString += 'TEL;TYPE=PHONE';
 			if (waid) {
 				vCardString += `;waid=${waid}:${c_no}`;
-			} else {
+			} else if (c_no) {
 				vCardString += `,VOICE:${c_no}`;
 			}
 			vCardString += '\n';
@@ -117,7 +117,7 @@ export default class VCardBuilder {
 			vCardString += 'TEL;TYPE=WORK';
 			if (waid) {
 				vCardString += `;waid=${waid}:${c_no}`;
-			} else {
+			} else if (c_no) {
 				vCardString += `,VOICE:${c_no}`;
 			}
 			vCardString += '\n';
@@ -128,7 +128,7 @@ export default class VCardBuilder {
 			vCardString += 'TEL;TYPE=OTHER';
 			if (waid) {
 				vCardString += `;waid=${waid}:${c_no}`;
-			} else {
+			} else if (c_no) {
 				vCardString += `,VOICE:${c_no}`;
 			}
 			vCardString += '\n';
@@ -138,6 +138,7 @@ export default class VCardBuilder {
 		if (this.email_personal) vCardString += `EMAIL;type=HOME,INTERNET:${this.email_personal}\n`;
 		if (this.email_work) vCardString += `EMAIL;type=WORK,INTERNET:${this.email_work}\n`;
 		for (const link of this.links) {
+			if (!link) continue;
 			vCardString += `URL;OTHER:${link}\r\n`;
 		}
 

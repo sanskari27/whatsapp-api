@@ -459,7 +459,7 @@ export default class CSVParser {
 			},
 			{
 				field: 'triggered_by',
-				title: 'Triggered Bt',
+				title: 'Triggered By',
 			},
 		];
 
