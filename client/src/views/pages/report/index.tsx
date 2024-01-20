@@ -202,8 +202,8 @@ const Reports = () => {
 											: campaign.campaignName}
 									</Td>
 									<Td>
-										{campaign.createdAt.split(' ').map((time) => (
-											<Box>{time}</Box>
+										{campaign.createdAt.split(' ').map((time,index) => (
+											<Box key={index}>{time}</Box>
 										))}
 									</Td>
 									<Td textColor={'green'}>{campaign.sent}</Td>
