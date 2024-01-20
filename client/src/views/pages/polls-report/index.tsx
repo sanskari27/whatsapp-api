@@ -69,8 +69,8 @@ const PollReport = () => {
 								<Td>{index + 1}</Td>
 								<Td>{poll.title}</Td>
 								<Td>
-									{poll.options.map((option) => (
-										<Box>{option}</Box>
+									{poll.options.map((option, index) => (
+										<Box key={index}>{option}</Box>
 									))}
 								</Td>
 								<Td>{poll.isMultiSelect ? 'Yes' : 'No'}</Td>
@@ -78,7 +78,7 @@ const PollReport = () => {
 						))}
 					</Tbody>
 				</Table>
-			<PollResponseDialog isOpen={isOpen} onClose={onClose} />
+				<PollResponseDialog isOpen={isOpen} onClose={onClose} />
 			</TableContainer>
 		</>
 	);

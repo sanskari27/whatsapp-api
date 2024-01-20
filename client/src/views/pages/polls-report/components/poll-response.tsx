@@ -193,8 +193,8 @@ const PollResponseDialog = ({ onClose, isOpen }: PollResponseDialogProps) => {
 													<Td>{index + 1}</Td>
 													<Td>{poll.voter_name}</Td>
 													<Td>
-														{poll.selected_option.map((option) => (
-															<Box as={'span'} mr={'0.5rem'}>
+														{poll.selected_option.map((option, index) => (
+															<Box as={'span'} mr={'0.5rem'} key={index}>
 																{option}
 															</Box>
 														))}

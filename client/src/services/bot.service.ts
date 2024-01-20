@@ -70,8 +70,6 @@ export default class BotService {
 	static async listBots() {
 		try {
 			const { data: response } = await APIInstance.get(`/whatsapp/bot`);
-			console.log(response.bots);
-
 			return response.bots.map((res: Bot) => ({
 				bot_id: res.bot_id ?? '',
 				trigger: res.trigger ?? '',
