@@ -34,7 +34,6 @@ APIInstance.interceptors.response.use(
 		}
 
 		if (error.response?.data?.title === 'SESSION_INVALIDATED' && !originalRequest._retry) {
-			console.log('Session invalidated');
 
 			originalRequest._retry = true;
 			const { whatsapp_ready } = await AuthService.isAuthenticated();
