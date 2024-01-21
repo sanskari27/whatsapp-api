@@ -2,11 +2,12 @@ import { NextFunction, Request, Response } from 'express';
 import { Types } from 'mongoose';
 import { z } from 'zod';
 import { MessageSchedulerService, UserService } from '../../../database/services';
+import GroupMergeService from '../../../database/services/merged-groups';
 import UploadService from '../../../database/services/uploads';
 import APIError, { API_ERRORS } from '../../../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../../../errors/internal-errors';
 import { WhatsappProvider } from '../../../provider/whatsapp_provider';
-import { Respond, generateBatchID } from '../../../utils/ExpressUtils';
+import { Respond, generateBatchID, idValidator } from '../../../utils/ExpressUtils';
 import WhatsappUtils from '../../../utils/WhatsappUtils';
 import { FileUtils } from '../../../utils/files';
 
@@ -120,6 +121,8 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
 
+	const groupMergeService = new GroupMergeService(req.locals.user);
+
 	const [uploaded_attachments, media_attachments] = await new UploadService(
 		req.locals.user
 	).listAttachments(attachments);
@@ -169,10 +172,15 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 		await Promise.all(promises);
 	} else if (type === 'GROUP_INDIVIDUAL') {
 		try {
+			const whatsapp_ids = group_ids.filter((id) => !idValidator(id)[0]);
+			const merged_group_ids = group_ids.filter((id) => idValidator(id)[0]);
+			const merged_group_whatsapp_ids = await groupMergeService.extractWhatsappGroupIds(
+				merged_group_ids
+			);
 			numbers = (
 				await Promise.all(
-					(group_ids as string[]).map(
-						async (id) => await whatsappUtils.getChatIdsByGroup(id as string)
+					[...whatsapp_ids, ...merged_group_whatsapp_ids].map(
+						async (id) => await whatsappUtils.getParticipantsChatByGroup(id as string)
 					)
 				)
 			).flat();
@@ -181,9 +189,14 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 		}
 	} else if (type === 'GROUP') {
 		try {
+			const whatsapp_ids = group_ids.filter((id) => !idValidator(id)[0]);
+			const merged_group_ids = group_ids.filter((id) => idValidator(id)[0]);
+			const merged_group_whatsapp_ids = await groupMergeService.extractWhatsappGroupIds(
+				merged_group_ids
+			);
 			numbers = (
 				await Promise.all(
-					group_ids.map(async (id) => {
+					[...whatsapp_ids, ...merged_group_whatsapp_ids].map(async (id) => {
 						const chat = await whatsappUtils.getChat(id as string);
 						if (!chat) return null;
 						return chat.id._serialized;
