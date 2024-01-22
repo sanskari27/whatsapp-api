@@ -418,8 +418,8 @@ export default class WhatsappUtils {
 		);
 
 		const valid_sessions_promises = client_ids.map(async (client_id) => {
-			const [isValidAuth] = await UserService.isValidAuth(client_id);
-			if (isValidAuth && !inactive_client_ids.includes(client_id)) {
+			const {valid} = await UserService.isValidAuth(client_id);
+			if (valid && !inactive_client_ids.includes(client_id)) {
 				return client_id;
 			}
 			return null;

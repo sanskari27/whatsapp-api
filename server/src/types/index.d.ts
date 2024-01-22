@@ -25,4 +25,4 @@ export interface Locals {
 	id: Types.ObjectId;
 }
 
-export { APIError, default as ServerError } from './server-error';
+export { IAPIError, default as ServerError } from './server-error';

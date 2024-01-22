@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
-import { APIError } from '../../types';
 import { idValidator } from '../ExpressUtils';
+import APIError from '../../errors/api-errors';
 
 export async function IDValidator(req: Request, res: Response, next: NextFunction) {
 	const [isValid, id] = idValidator(req.params.id);

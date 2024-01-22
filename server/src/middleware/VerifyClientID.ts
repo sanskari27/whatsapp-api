@@ -12,9 +12,9 @@ export default async function VerifyClientID(req: Request, res: Response, next: 
 	}
 
 	try {
-		const [isValidAuth, _, user] = await UserService.isValidAuth(client_id);
+		const { valid, user } = await UserService.isValidAuth(client_id);
 
-		if (!isValidAuth) {
+		if (!valid) {
 			WhatsappProvider.deleteSession(client_id);
 			return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 		}

@@ -22,18 +22,48 @@ export default class UserService {
 		return new UserService(user);
 	}
 
-	static async createUser(phone: string, isBusiness?: boolean) {
+	getName() {
+		return this.user.name;
+	}
+
+	getPhoneNumber() {
+		return this.user.phone;
+	}
+
+	getUserType() {
+		return this.user.userType;
+	}
+
+	static async createUser({
+		name,
+		phone,
+		isBusiness,
+	}: {
+		name?: string;
+		phone: string;
+		isBusiness?: boolean;
+	}) {
 		const user = await UserDB.findOne({ phone });
 
 		if (user) {
+			let isUpdated = false;
 			if (isBusiness !== undefined && user.userType !== (isBusiness ? 'BUSINESS' : 'PERSONAL')) {
 				user.userType = isBusiness ? 'BUSINESS' : 'PERSONAL';
+				isUpdated = true;
+			}
+			if (name !== undefined && user.name !== name) {
+				user.name = name;
+				isUpdated = true;
+			}
+			if (isUpdated) {
 				await user.save();
 			}
+
 			return new UserService(user);
 		}
 
 		const createdUser = await UserDB.create({
+			name,
 			phone,
 			userType: isBusiness ? 'BUSINESS' : 'PERSONAL',
 		});
@@ -85,28 +115,45 @@ export default class UserService {
 			client_id,
 		}).populate('user');
 
-		if (!auth) return [false, null] as [boolean, null];
+		if (!auth) {
+			return {
+				valid: false,
+			};
+		}
 
 		const isPaymentValid = !auth.user.subscription_expiry
 			? DateUtils.getMoment(auth.user.subscription_expiry).isAfter(DateUtils.getMomentNow())
 			: false;
 
 		if (isPaymentValid) {
-			return [true, auth.user.subscription_expiry, auth.user] as [boolean, Date, IUser];
+			return {
+				valid: true,
+				revoke_at: auth.user.subscription_expiry,
+				user: auth.user,
+			};
 		}
 
-		if (auth.isRevoked) return [false, null] as [boolean, null];
-
+		if (auth.isRevoked) {
+			return {
+				valid: false,
+			};
+		}
 		if (DateUtils.getMoment(auth.revoke_at).isBefore(DateUtils.getMomentNow())) {
 			if (!auth.isRevoked) {
 				await auth.updateOne({
 					isRevoked: true,
 				});
 			}
-			return [false, null] as [boolean, null];
+			return {
+				valid: false,
+			};
 		}
 
-		return [true, auth.revoke_at, auth.user] as [boolean, Date, IUser];
+		return {
+			valid: true,
+			revoke_at: auth.revoke_at,
+			user: auth.user,
+		};
 	}
 
 	getUser() {
@@ -126,7 +173,10 @@ export default class UserService {
 		};
 	}
 
-	getExpiration() {
+	getExpiration(format?: string) {
+		if (format) {
+			return DateUtils.getMoment(this.user.subscription_expiry).format(format);
+		}
 		return DateUtils.getMoment(this.user.subscription_expiry);
 	}
 
