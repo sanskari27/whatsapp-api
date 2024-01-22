@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
-import { TemplateService } from '../../database/services';
 import APIError, { API_ERRORS } from '../../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
+import { TemplateService } from '../../services';
 import { Respond } from '../../utils/ExpressUtils';
 import { TemplateValidationResult } from './template.validator';
 

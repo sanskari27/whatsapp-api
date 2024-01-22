@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
-import { MessageSchedulerService } from '../../database/services';
-import VoteResponseService from '../../database/services/vote-response';
 import APIError, { API_ERRORS } from '../../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
+import { MessageSchedulerService } from '../../services';
+import VoteResponseService from '../../services/vote-response';
 import CSVParser from '../../utils/CSVParser';
 import { Respond, RespondCSV } from '../../utils/ExpressUtils';
 

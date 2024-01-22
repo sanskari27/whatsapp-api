@@ -16,9 +16,9 @@ import {
 	IS_WINDOWS,
 	UPLOADS_PATH,
 } from './config/const';
-import { MessageSchedulerService } from './database/services';
 import APIError from './errors/api-errors';
 import { WhatsappProvider } from './provider/whatsapp_provider';
+import { MessageSchedulerService } from './services';
 import WhatsappUtils from './utils/WhatsappUtils';
 
 export default function (app: Express) {

@@ -1,10 +1,10 @@
 import csv from 'csvtojson/v2';
 import { NextFunction, Request, Response } from 'express';
 import { ATTACHMENTS_PATH, CSV_PATH } from '../../config/const';
-import { MessageSchedulerService } from '../../database/services';
-import UploadService from '../../database/services/uploads';
 import APIError, { API_ERRORS } from '../../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
+import { MessageSchedulerService } from '../../services';
+import UploadService from '../../services/uploads';
 import { Respond, RespondFile, idValidator } from '../../utils/ExpressUtils';
 import { FileUtils, SingleFileUploadOptions } from '../../utils/files';
 import FileUpload, { ONLY_CSV_ALLOWED } from '../../utils/files/FileUpload';

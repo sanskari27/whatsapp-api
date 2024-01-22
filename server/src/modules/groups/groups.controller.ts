@@ -2,9 +2,9 @@ import { NextFunction, Request, Response } from 'express';
 import { GroupChat } from 'whatsapp-web.js';
 import { getOrCache } from '../../config/cache';
 import { CACHE_TOKEN_GENERATOR } from '../../config/const';
-import GroupMergeService from '../../database/services/merged-groups';
 import APIError, { API_ERRORS } from '../../errors/api-errors';
 import { WhatsappProvider } from '../../provider/whatsapp_provider';
+import GroupMergeService from '../../services/merged-groups';
 import {
 	TBusinessContact,
 	TContact,

@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 import { INVOICE_PATH } from '../../config/const';
-import PaymentDB from '../../database/repository/payments/payment';
-import { UserService } from '../../database/services';
-import PaymentBucketService from '../../database/services/payments/payment-bucket';
 import APIError, { API_ERRORS } from '../../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
+import PaymentDB from '../../repository/payments/payment';
+import { UserService } from '../../services';
+import PaymentBucketService from '../../services/payments/payment-bucket';
 import CSVParser from '../../utils/CSVParser';
 import { Respond, RespondCSV, RespondFile, idValidator } from '../../utils/ExpressUtils';
 import { FileUtils } from '../../utils/files';

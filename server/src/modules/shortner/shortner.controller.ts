@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { SHORTNER_REDIRECT } from '../../config/const';
-import ShortnerDB from '../../database/repository/shortner';
 import APIError, { API_ERRORS } from '../../errors/api-errors';
+import ShortnerDB from '../../repository/shortner';
 import { Respond } from '../../utils/ExpressUtils';
 import {
 	CreateLinkValidationResult,

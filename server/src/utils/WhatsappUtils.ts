@@ -2,9 +2,9 @@ import fs from 'fs';
 import Logger from 'n23-logger';
 import WAWebJS, { BusinessContact, GroupChat } from 'whatsapp-web.js';
 import { COUNTRIES, IS_PRODUCTION, SESSION_STARTUP_WAIT_TIME } from '../config/const';
-import { UserService } from '../database/services';
 import InternalError, { INTERNAL_ERRORS } from '../errors/internal-errors';
 import { WhatsappProvider } from '../provider/whatsapp_provider';
+import { UserService } from '../services';
 import {
 	TBusinessContact,
 	TContact,
@@ -418,7 +418,7 @@ export default class WhatsappUtils {
 		);
 
 		const valid_sessions_promises = client_ids.map(async (client_id) => {
-			const {valid} = await UserService.isValidAuth(client_id);
+			const { valid } = await UserService.isValidAuth(client_id);
 			if (valid && !inactive_client_ids.includes(client_id)) {
 				return client_id;
 			}

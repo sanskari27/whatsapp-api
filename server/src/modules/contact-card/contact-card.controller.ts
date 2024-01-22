@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
-import ContactCardService from '../../database/services/contact-card';
 import APIError, { API_ERRORS } from '../../errors/api-errors';
 import { WhatsappProvider } from '../../provider/whatsapp_provider';
+import ContactCardService from '../../services/contact-card';
 import { Respond, validatePhoneNumber } from '../../utils/ExpressUtils';
 import { CreateContactValidationResult } from './contact-card.validator';
 

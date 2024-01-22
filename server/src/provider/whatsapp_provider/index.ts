@@ -2,10 +2,10 @@ import QRCode from 'qrcode';
 import { Socket } from 'socket.io';
 import WAWebJS, { Client, LocalAuth } from 'whatsapp-web.js';
 import { CHROMIUM_PATH, SOCKET_RESPONSES } from '../../config/const';
-import { UserService } from '../../database/services';
-import BotService from '../../database/services/bot';
-import VoteResponseService from '../../database/services/vote-response';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
+import { UserService } from '../../services';
+import BotService from '../../services/bot';
+import VoteResponseService from '../../services/vote-response';
 import DateUtils from '../../utils/DateUtils';
 import { Delay } from '../../utils/ExpressUtils';
 
@@ -130,8 +130,8 @@ export class WhatsappProvider {
 
 			this.user_service = await UserService.createUser({
 				name: this.client.info.pushname,
-				phone:this.number,
-				isBusiness:this.contact.isBusiness
+				phone: this.number,
+				isBusiness: this.contact.isBusiness,
 			});
 
 			this.sendToClient({

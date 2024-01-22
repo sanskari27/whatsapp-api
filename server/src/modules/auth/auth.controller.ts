@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
-import { UserService } from '../../database/services';
 import APIError, { API_ERRORS } from '../../errors/api-errors';
 import { WhatsappProvider } from '../../provider/whatsapp_provider';
+import { UserService } from '../../services';
 import { Respond } from '../../utils/ExpressUtils';
 
 async function validateClientID(req: Request, res: Response, next: NextFunction) {

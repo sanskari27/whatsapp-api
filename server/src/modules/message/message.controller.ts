@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
-import { MessageSchedulerService, UserService } from '../../database/services';
-import GroupMergeService from '../../database/services/merged-groups';
-import UploadService from '../../database/services/uploads';
 import APIError, { API_ERRORS } from '../../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import { WhatsappProvider } from '../../provider/whatsapp_provider';
+import { MessageSchedulerService, UserService } from '../../services';
+import GroupMergeService from '../../services/merged-groups';
+import UploadService from '../../services/uploads';
 import { Respond, generateBatchID, idValidator } from '../../utils/ExpressUtils';
 import WhatsappUtils from '../../utils/WhatsappUtils';
 import { FileUtils } from '../../utils/files';

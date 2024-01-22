@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
-import BotService from '../../database/services/bot';
-import UploadService from '../../database/services/uploads';
 import APIError, { API_ERRORS } from '../../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import { WhatsappProvider } from '../../provider/whatsapp_provider';
+import BotService from '../../services/bot';
+import UploadService from '../../services/uploads';
 import CSVParser from '../../utils/CSVParser';
 import { Respond, RespondCSV } from '../../utils/ExpressUtils';
 import { CreateBotValidationResult } from './bot.validator';

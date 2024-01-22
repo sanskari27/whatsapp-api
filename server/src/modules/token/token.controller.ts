@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import TokenService from '../../database/services/token';
+import TokenService from '../../services/token';
 import { Respond } from '../../utils/ExpressUtils';
 
 async function generateToken(req: Request, res: Response, next: NextFunction) {
