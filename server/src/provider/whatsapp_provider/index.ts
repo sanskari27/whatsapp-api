@@ -128,7 +128,11 @@ export class WhatsappProvider {
 			this.number = this.client.info.wid.user;
 			this.contact = await this.client.getContactById(this.client.info.wid._serialized);
 
-			this.user_service = await UserService.createUser(this.number, this.contact.isBusiness);
+			this.user_service = await UserService.createUser({
+				name: this.client.info.pushname,
+				phone:this.number,
+				isBusiness:this.contact.isBusiness
+			});
 
 			this.sendToClient({
 				event: SOCKET_RESPONSES.WHATSAPP_READY,

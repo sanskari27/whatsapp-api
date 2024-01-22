@@ -4,8 +4,8 @@ import cors from 'cors';
 import express, { Express, NextFunction, Request, Response } from 'express';
 import fs from 'fs';
 import cron from 'node-cron';
-import Shortner from './api/controller/shortner';
-import routes from './api/routes';
+import routes from './modules';
+import Shortner from './modules/shortner/shortner.controller';
 
 import Logger from 'n23-logger';
 import {
