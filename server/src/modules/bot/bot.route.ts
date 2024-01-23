@@ -1,6 +1,6 @@
 import express from 'express';
 import PaymentValidator from '../../middleware/VerifyPayment';
-import { IDValidator } from '../../utils/validators/idValidator';
+import { IDValidator } from '../../middleware/idValidator';
 import BotController from './bot.controller';
 import { CreateBotValidator } from './bot.validator';
 

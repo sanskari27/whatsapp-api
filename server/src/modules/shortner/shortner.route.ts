@@ -1,5 +1,5 @@
 import express from 'express';
-import { IDValidator } from '../../utils/validators/idValidator';
+import { IDValidator } from '../../middleware/idValidator';
 import Shortner from './shortner.controller';
 import { LinkValidator, UpdateLinkValidator, WhatsappLinkValidator } from './shortner.validator';
 

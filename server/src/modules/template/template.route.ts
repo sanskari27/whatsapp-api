@@ -1,5 +1,5 @@
 import express from 'express';
-import { IDValidator } from '../../utils/validators/idValidator';
+import { IDValidator } from '../../middleware/idValidator';
 import TemplateController from './template.controller';
 import { TemplateValidator } from './template.validator';
 

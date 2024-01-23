@@ -1,5 +1,5 @@
 import express from 'express';
-import { IDValidator } from '../../utils/validators/idValidator';
+import { IDValidator } from '../../middleware/idValidator';
 import ContactCardController from './contact-card.controller';
 import { CreateContactValidator } from './contact-card.validator';
 

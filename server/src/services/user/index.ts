@@ -34,6 +34,76 @@ export default class UserService {
 		return this.user.userType;
 	}
 
+	async login(client_id: string) {
+		try {
+			const auth = await AuthDetailDB.findOne({
+				user: this.user._id,
+				client_id,
+			});
+			if (auth && !auth.isRevoked) return;
+			if (auth && auth.isRevoked) {
+				await auth.remove();
+			}
+			await AuthDetailDB.create({
+				user: this.user._id,
+				client_id,
+			});
+		} catch (e) {
+			//ignored
+		}
+	}
+	async logout(client_id: string) {
+		UserService.logout(client_id);
+	}
+
+	getUser() {
+		return this.user;
+	}
+
+	isSubscribed() {
+		const isPaymentValid = this.user.subscription_expiry
+			? DateUtils.getMoment(this.user.subscription_expiry).isAfter(DateUtils.getMomentNow())
+			: false;
+		const isNew = DateUtils.getMoment(this.user.createdAt)
+			.add(28, 'days')
+			.isAfter(DateUtils.getMomentNow());
+		return {
+			isSubscribed: isPaymentValid,
+			isNew: isNew,
+		};
+	}
+
+	getExpiration(format?: string) {
+		if (format) {
+			return DateUtils.getMoment(this.user.subscription_expiry).format(format);
+		}
+		return DateUtils.getMoment(this.user.subscription_expiry);
+	}
+
+	async addMonthToExpiry(months: number = 1) {
+		if (this.user.subscription_expiry) {
+			this.user.subscription_expiry = DateUtils.getMoment(this.user.subscription_expiry)
+				.add(months, 'months')
+				.toDate();
+		} else {
+			this.user.subscription_expiry = DateUtils.getMomentNow().add(months, 'months').toDate();
+		}
+
+		await this.user.save();
+	}
+
+	getPaymentRecords() {
+		return PaymentService.getPaymentRecords(this.user.phone);
+	}
+
+	pauseSubscription(id: Types.ObjectId) {
+		return PaymentService.pauseSubscription(id, this.user.phone);
+	}
+
+	resumeSubscription(id: Types.ObjectId) {
+		return PaymentService.resumeSubscription(id, this.user.phone);
+	}
+
 	static async createUser({
 		name,
 		phone,
@@ -69,28 +139,6 @@ export default class UserService {
 		});
 
 		return new UserService(createdUser);
-	}
-
-	async login(client_id: string) {
-		try {
-			const auth = await AuthDetailDB.findOne({
-				user: this.user._id,
-				client_id,
-			});
-			if (auth && !auth.isRevoked) return;
-			if (auth && auth.isRevoked) {
-				await auth.remove();
-			}
-			await AuthDetailDB.create({
-				user: this.user._id,
-				client_id,
-			});
-		} catch (e) {
-			//ignored
-		}
-	}
-	async logout(client_id: string) {
-		UserService.logout(client_id);
 	}
 
 	static async logout(client_id: string) {
@@ -154,59 +202,6 @@ export default class UserService {
 			revoke_at: auth.revoke_at,
 			user: auth.user,
 		};
-	}
-
-	getUser() {
-		return this.user;
-	}
-
-	isSubscribed() {
-		const isPaymentValid = this.user.subscription_expiry
-			? DateUtils.getMoment(this.user.subscription_expiry).isAfter(DateUtils.getMomentNow())
-			: false;
-		const isNew = DateUtils.getMoment(this.user.createdAt)
-			.add(28, 'days')
-			.isAfter(DateUtils.getMomentNow());
-		return {
-			isSubscribed: isPaymentValid,
-			isNew: isNew,
-		};
-	}
-
-	getExpiration(format?: string) {
-		if (format) {
-			return DateUtils.getMoment(this.user.subscription_expiry).format(format);
-		}
-		return DateUtils.getMoment(this.user.subscription_expiry);
-	}
-
-	async addMonthToExpiry(months: number = 1) {
-		if (this.user.subscription_expiry) {
-			this.user.subscription_expiry = DateUtils.getMoment(this.user.subscription_expiry)
-				.add(months, 'months')
-				.toDate();
-		} else {
-			this.user.subscription_expiry = DateUtils.getMomentNow().add(months, 'months').toDate();
-		}
-
-		await this.user.save();
-	}
-
-	getPaymentRecords() {
-		return PaymentService.getPaymentRecords(this.user.phone);
-	}
-
-	pauseSubscription(id: Types.ObjectId) {
-		return PaymentService.pauseSubscription(id, this.user.phone);
-	}
-
-	resumeSubscription(id: Types.ObjectId) {
-		return PaymentService.resumeSubscription(id, this.user.phone);
-	}
-
-	static async getUser(phone: string) {
-		const service = await UserService.getService(phone);
-		return service.getUser();
 	}
 
 	static async getRevokedSessions() {

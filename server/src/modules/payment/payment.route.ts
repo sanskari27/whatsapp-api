@@ -1,6 +1,6 @@
 import express from 'express';
 import { VerifyClientID } from '../../middleware';
-import { IDValidator } from '../../utils/validators/idValidator';
+import { IDValidator } from '../../middleware/idValidator';
 import PaymentController from './payment.controller';
 import { CouponValidator, CreateBucketValidator } from './payment.validator';
 
