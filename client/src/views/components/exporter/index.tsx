@@ -150,7 +150,7 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 		if (UNSAVED) {
 			promises.push(
 				ContactService.contacts({
-					non_saved_contacts: false,
+					non_saved_contacts: true,
 					vcf_only,
 					business_contacts_only,
 				})
