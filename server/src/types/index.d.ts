@@ -1,5 +1,6 @@
 /* eslint-disable no-var */
 
+import { Types } from 'mongoose';
 import { IUser } from './user';
 
 export { APIError } from './server-error';
@@ -20,6 +21,8 @@ declare global {
 export interface Locals {
 	client_id: string;
 	user: IUser;
+	data: any;
+	id: Types.ObjectId;
 }
 
-export { APIError, default as ServerError } from './server-error';
+export { IAPIError, default as ServerError } from './server-error';

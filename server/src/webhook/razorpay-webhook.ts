@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { Request, Response } from 'express';
-import PaymentBucketService from '../database/services/payments/payment-bucket';
 import { RAZORPAY_WEBHOOK_SECRET } from '../provider/razorpay/config/const';
+import PaymentBucketService from '../services/payments/payment-bucket';
 async function subscription(req: Request, res: Response) {
 	const data = req.body;
 	const digest = crypto

@@ -1,8 +1,8 @@
 import * as http from 'http';
 import { Socket, Server as SocketServer } from 'socket.io';
 import { SOCKET_EVENTS } from '../config/const';
-import { UserService } from '../database/services';
 import { WhatsappProvider } from '../provider/whatsapp_provider';
+import { UserService } from '../services';
 import { generateClientID } from '../utils/ExpressUtils';
 
 type WhatsappClientID = string;
@@ -37,8 +37,8 @@ export default class SocketServerProvider {
 			socket.on(SOCKET_EVENTS.INITIALIZE, async (cid: string | undefined) => {
 				let client_id = '';
 				if (cid) {
-					const [isValidAuth] = await UserService.isValidAuth(cid);
-					if (!isValidAuth) {
+					const { valid } = await UserService.isValidAuth(cid);
+					if (!valid) {
 						WhatsappProvider.deleteSession(cid);
 						client_id = generateClientID();
 					} else {

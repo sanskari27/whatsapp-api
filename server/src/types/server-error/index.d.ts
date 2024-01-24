@@ -4,4 +4,4 @@ export default interface IServerError {
 	MESSAGE: string;
 }
 
-export type APIError = typeof IServerError;
+export type IAPIError = IServerError;

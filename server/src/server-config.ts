@@ -4,8 +4,8 @@ import cors from 'cors';
 import express, { Express, NextFunction, Request, Response } from 'express';
 import fs from 'fs';
 import cron from 'node-cron';
-import Shortner from './api/controller/shortner';
-import routes from './api/routes';
+import routes from './modules';
+import Shortner from './modules/shortner/shortner.controller';
 
 import Logger from 'n23-logger';
 import {
@@ -16,9 +16,9 @@ import {
 	IS_WINDOWS,
 	UPLOADS_PATH,
 } from './config/const';
-import { MessageSchedulerService } from './database/services';
 import APIError from './errors/api-errors';
 import { WhatsappProvider } from './provider/whatsapp_provider';
+import { MessageSchedulerService } from './services';
 import WhatsappUtils from './utils/WhatsappUtils';
 
 export default function (app: Express) {
