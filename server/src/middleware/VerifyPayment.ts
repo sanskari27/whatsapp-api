@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
-import { UserService } from '../database/services';
 import APIError, { API_ERRORS } from '../errors/api-errors';
+import { UserService } from '../services';
 
 export async function isSubscribed(req: Request, res: Response, next: NextFunction) {
 	try {
