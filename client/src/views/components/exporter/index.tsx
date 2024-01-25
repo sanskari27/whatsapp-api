@@ -34,6 +34,7 @@ const initialExportCriteria = {
 	[EXPORTS_TYPE.ALL]: false,
 	[EXPORTS_TYPE.SAVED]: false,
 	[EXPORTS_TYPE.UNSAVED]: false,
+	[EXPORTS_TYPE.SAVED_CHAT]: false,
 	[EXPORTS_TYPE.GROUP]: false,
 	[EXPORTS_TYPE.GROUP_ALL]: false,
 	[EXPORTS_TYPE.LABEL]: false,
@@ -62,6 +63,7 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 		[EXPORTS_TYPE.ALL]: 0,
 		[EXPORTS_TYPE.SAVED]: 0,
 		[EXPORTS_TYPE.UNSAVED]: 0,
+		[EXPORTS_TYPE.SAVED_CHAT]: 0,
 	});
 
 	const { isAuthenticated } = useAuth();
@@ -83,7 +85,7 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 		labelLoading: false,
 	});
 
-	const { ALL, SAVED, UNSAVED, GROUP, LABEL, BUSINESS_ONLY } = export_criteria;
+	const { ALL, SAVED, UNSAVED, GROUP, LABEL, BUSINESS_ONLY, SAVED_CHAT } = export_criteria;
 
 	const handleChange = async ({ name, value }: { name: string; value: boolean }) => {
 		setExportCriteria((prevState) => ({
@@ -141,6 +143,16 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 			promises.push(
 				ContactService.contacts({
 					saved_contacts: true,
+					vcf_only,
+					business_contacts_only,
+				})
+			);
+		}
+
+		if (SAVED_CHAT) {
+			promises.push(
+				ContactService.contacts({
+					saved_chat_contacts: true,
 					vcf_only,
 					business_contacts_only,
 				})
@@ -205,6 +217,7 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 					[EXPORTS_TYPE.ALL]: res.total,
 					[EXPORTS_TYPE.SAVED]: res.saved,
 					[EXPORTS_TYPE.UNSAVED]: res.unsaved,
+					[EXPORTS_TYPE.SAVED_CHAT]: res.saved_chat,
 				});
 			})
 			.finally(() => {
@@ -266,7 +279,7 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 								<Flex alignItems='flex-end' justifyContent={'space-between'}>
 									<CheckButton
 										name={'ALL'}
-										label='All Chat Contacts'
+										label='All Contacts'
 										value={ALL}
 										onChange={handleChange}
 									/>
@@ -278,8 +291,21 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 								</Flex>
 								<Flex alignItems='flex-end' justifyContent={'space-between'}>
 									<CheckButton
+										name={'SAVED_CHAT'}
+										label='All Saved Chat Contacts'
+										value={SAVED_CHAT}
+										onChange={handleChange}
+									/>
+									<Text fontSize='xs' className='text-black dark:text-white'>
+										{Loading.contactLoading
+											? 'Loading...'
+											: `${contactsCount[EXPORTS_TYPE.SAVED_CHAT]} Contacts`}
+									</Text>
+								</Flex>
+								<Flex alignItems='flex-end' justifyContent={'space-between'}>
+									<CheckButton
 										name={'SAVED'}
-										label='All Saved Contacts'
+										label='All Phonebook Contacts'
 										value={SAVED}
 										onChange={handleChange}
 									/>

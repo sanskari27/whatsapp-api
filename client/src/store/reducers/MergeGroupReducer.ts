@@ -60,19 +60,21 @@ const MergeGroupSlice = createSlice({
 			if (group) {
 				state.editSelectedGroup.id = group.id;
 				state.editSelectedGroup.name = group.name;
-				state.editSelectedGroup.groups = group.groups.map((g) => g.id);
+				state.editSelectedGroup.groups = group.groups;
 			}
 		},
 		updateMergeGroupsList: (state, action: PayloadAction<(typeof initialState.list)[0]>) => {
 			state.list = state.list.map((group) => {
 				if (group.id === action.payload.id) {
 					return {
-						...group,
-						...action.payload,
+						id: action.payload.id,
+						name: action.payload.name,
+						groups: action.payload.groups,
 					};
 				}
 				return group;
 			});
+			state.uiDetails.isUpdating = false;
 		},
 		setName: (state, action: PayloadAction<string>) => {
 			state.editSelectedGroup.name = action.payload;

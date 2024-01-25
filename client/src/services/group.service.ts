@@ -55,11 +55,7 @@ export default class GroupService {
 			return {
 				id: data.group.id as string,
 				name: data.group.name as string,
-				groups: data.group.groups as {
-					id: string;
-					name: string;
-					isAdmin: boolean;
-				}[],
+				groups: data.group.groups as string[],
 			};
 		} catch (err) {
 			return null;
@@ -73,11 +69,7 @@ export default class GroupService {
 				id: string;
 				name: string;
 				isMergedGroup: boolean;
-				groups: {
-					id: string;
-					name: string;
-					isAdmin: boolean;
-				}[];
+				groups: string[];
 			}[];
 		} catch (err) {
 			return [];
@@ -93,11 +85,7 @@ export default class GroupService {
 			return {
 				id: data.group.id as string,
 				name: data.group.name as string,
-				groups: data.group.groups as {
-					id: string;
-					name: string;
-					isAdmin: boolean;
-				}[],
+				groups: data.group.groups as string[],
 			};
 		} catch (err) {
 			return null;
