@@ -23,6 +23,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import GroupService from '../../../../services/group.service';
 import { StoreNames, StoreState } from '../../../../store';
 import {
+	addMergedGroup,
 	addSelectedGroup,
 	clearEditMergeGroup,
 	removeSelectedGroup,
@@ -65,7 +66,7 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 				if (!response) {
 					return;
 				}
-				dispatch(updateMergeGroupsList(editSelectedGroup));
+				dispatch(updateMergeGroupsList(response));
 				onClose();
 			});
 		} else {
@@ -74,6 +75,13 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 					if (!response) {
 						return;
 					}
+					dispatch(
+						addMergedGroup({
+							id: response.id,
+							name: response.name,
+							groups: response.groups,
+						})
+					);
 					onClose();
 				}
 			);

@@ -6,6 +6,9 @@ import { Respond } from '../../utils/ExpressUtils';
 
 async function validateClientID(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.headers['client-id'] as string;
+	if (!client_id) {
+		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+	}
 
 	const authStatus = await UserService.isValidAuth(client_id);
 	const whatsapp = WhatsappProvider.getInstance(client_id);

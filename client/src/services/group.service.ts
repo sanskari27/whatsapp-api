@@ -51,19 +51,18 @@ export default class GroupService {
 
 	static async mergeGroups(group_name: string, group_ids: string[]) {
 		try {
-			await APIInstance.post(`/whatsapp/groups/merge`, { group_name, group_ids });
-			return true;
+			const { data } = await APIInstance.post(`/whatsapp/groups/merge`, { group_name, group_ids });
+			return {
+				id: data.group.id as string,
+				name: data.group.name as string,
+				groups: data.group.groups as {
+					id: string;
+					name: string;
+					isAdmin: boolean;
+				}[],
+			};
 		} catch (err) {
-			return false;
-		}
-	}
-
-	static async updateGroups(id: string, group_ids: string[]) {
-		try {
-			await APIInstance.patch(`/whatsapp/groups/merge/${id}`, { group_ids });
-			return true;
-		} catch (err) {
-			return false;
+			return null;
 		}
 	}
 
@@ -85,12 +84,23 @@ export default class GroupService {
 		}
 	}
 
-	static async editMergedGroup(id:string, name:string, groups:string[]){
+	static async editMergedGroup(id: string, name: string, groups: string[]) {
 		try {
-			await APIInstance.patch(`/whatsapp/groups/merge/${id}`, { name, group_ids: groups });
-			return true;
+			const { data } = await APIInstance.patch(`/whatsapp/groups/merge/${id}`, {
+				group_name: name,
+				group_ids: groups,
+			});
+			return {
+				id: data.group.id as string,
+				name: data.group.name as string,
+				groups: data.group.groups as {
+					id: string;
+					name: string;
+					isAdmin: boolean;
+				}[],
+			};
 		} catch (err) {
-			return false;
+			return null;
 		}
 	}
 

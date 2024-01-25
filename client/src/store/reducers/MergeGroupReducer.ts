@@ -46,7 +46,9 @@ const MergeGroupSlice = createSlice({
 			state.editSelectedGroup.groups.push(action.payload);
 		},
 		removeSelectedGroup: (state, action: PayloadAction<string>) => {
-			state.editSelectedGroup.groups = state.editSelectedGroup.groups.filter((id) => id !== action.payload);
+			state.editSelectedGroup.groups = state.editSelectedGroup.groups.filter(
+				(id) => id !== action.payload
+			);
 		},
 		deleteMergedGroup: (state, action: PayloadAction<string>) => {
 			state.list = state.list.filter((merged_group) => merged_group.id !== action.payload);
@@ -61,14 +63,12 @@ const MergeGroupSlice = createSlice({
 				state.editSelectedGroup.groups = group.groups.map((g) => g.id);
 			}
 		},
-		updateMergeGroupsList: (state, action: PayloadAction<(typeof initialState.editSelectedGroup)>) => {
+		updateMergeGroupsList: (state, action: PayloadAction<(typeof initialState.list)[0]>) => {
 			state.list = state.list.map((group) => {
 				if (group.id === action.payload.id) {
 					return {
 						...group,
-						name: action.payload.name,
-						groups: action.payload.groups.map((id) => ({ id, name: '' })
-						),
+						...action.payload,
 					};
 				}
 				return group;
