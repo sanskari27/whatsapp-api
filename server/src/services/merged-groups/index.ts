@@ -23,11 +23,18 @@ export default class GroupMergeService {
 	}
 
 	async mergeGroup(name: string, group_ids: string[]) {
-		await MergedGroupDB.create({
+		const group = await MergedGroupDB.create({
 			user: this.user,
 			name,
 			groups: group_ids,
 		});
+
+		return {
+			id: group._id as string,
+			name: group.name as string,
+			isMergedGroup: true,
+			groups: group.groups,
+		};
 	}
 
 	async updateGroup(
@@ -47,6 +54,12 @@ export default class GroupMergeService {
 		}
 
 		await merged_group.save();
+		return {
+			id: merged_group._id as string,
+			name: merged_group.name as string,
+			isMergedGroup: true,
+			groups: merged_group.groups,
+		};
 	}
 	async deleteGroup(group_id: Types.ObjectId) {
 		await MergedGroupDB.deleteOne({ _id: group_id });

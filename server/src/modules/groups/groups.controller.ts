@@ -231,13 +231,13 @@ async function mergeGroup(req: Request, res: Response, next: NextFunction) {
 		)
 	).filter((chat) => chat !== null) as string[];
 
-	new GroupMergeService(req.locals.user).mergeGroup(group_name, chat_ids);
+	const group = await new GroupMergeService(req.locals.user).mergeGroup(group_name, chat_ids);
 
 	return Respond({
 		res,
 		status: 200,
 		data: {
-			message: 'Groups merged successfully',
+			group: group,
 		},
 	});
 }
@@ -262,7 +262,7 @@ async function updateMergedGroup(req: Request, res: Response, next: NextFunction
 		)
 	).filter((chat) => chat !== null) as string[];
 
-	await new GroupMergeService(req.locals.user).updateGroup(req.locals.id, {
+	const group = await new GroupMergeService(req.locals.user).updateGroup(req.locals.id, {
 		group_ids: chat_ids,
 		name: group_name,
 	});
@@ -271,7 +271,7 @@ async function updateMergedGroup(req: Request, res: Response, next: NextFunction
 		res,
 		status: 200,
 		data: {
-			message: 'Groups updated successfully',
+			group,
 		},
 	});
 }
