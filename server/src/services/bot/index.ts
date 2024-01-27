@@ -18,16 +18,19 @@ import IUpload from '../../types/uploads';
 import { IUser } from '../../types/user';
 import DateUtils from '../../utils/DateUtils';
 import { Delay } from '../../utils/ExpressUtils';
+import MessageSchedulerService from '../scheduled-message';
 import UserService from '../user';
 
 export default class BotService {
 	private user: IUser;
 	private userService: UserService;
+	private messageSchedulerService: MessageSchedulerService;
 	private whatsapp: WhatsappProvider | undefined;
 
 	public constructor(user: IUser) {
 		this.user = user;
 		this.userService = new UserService(user);
+		this.messageSchedulerService = new MessageSchedulerService(user);
 	}
 
 	public attachWhatsappProvider(whatsapp_provider: WhatsappProvider) {
@@ -57,6 +60,7 @@ export default class BotService {
 				options: poll.options,
 				isMultiSelect: poll.isMultiSelect,
 			})),
+			nurturing: bot.nurturing ?? [],
 			shared_contact_cards: bot.shared_contact_cards ?? [],
 			forward: bot.forward ?? { number: '', message: '' },
 			group_respond: bot.group_respond,
@@ -90,6 +94,7 @@ export default class BotService {
 				options: poll.options,
 				isMultiSelect: poll.isMultiSelect,
 			})),
+			nurturing: bot.nurturing ?? [],
 			shared_contact_cards: bot.shared_contact_cards ?? [],
 			isActive: bot.active,
 		};
@@ -193,7 +198,7 @@ export default class BotService {
 	}
 
 	public async handleMessage(
-		from: string,
+		triggered_from: string,
 		body: string,
 		contact: WAWebJS.Contact,
 		opts: {
@@ -212,7 +217,7 @@ export default class BotService {
 		if (!isSubscribed && !isNew) {
 			return;
 		}
-		const message_from = from.split('@')[0];
+		const message_from = triggered_from.split('@')[0];
 
 		const botsEngaged = await this.botsEngaged({ message_body: body, message_from, contact });
 
@@ -229,7 +234,7 @@ export default class BotService {
 			if (msg) {
 				whatsapp
 					.getClient()
-					.sendMessage(from, msg)
+					.sendMessage(triggered_from, msg)
 					.catch((err) => {
 						Logger.error('Error sending message:', err);
 					});
@@ -246,7 +251,7 @@ export default class BotService {
 				}
 				whatsapp
 					.getClient()
-					.sendMessage(from, media, {
+					.sendMessage(triggered_from, media, {
 						caption: mediaObject.caption,
 					})
 					.catch((err) => {
@@ -257,7 +262,7 @@ export default class BotService {
 			(bot.shared_contact_cards ?? []).forEach(async (card) => {
 				whatsapp
 					.getClient()
-					.sendMessage(from, card.vCardString)
+					.sendMessage(triggered_from, card.vCardString)
 					.catch((err) => {
 						Logger.error('Error sending message:', err);
 					});
@@ -268,7 +273,7 @@ export default class BotService {
 				whatsapp
 					.getClient()
 					.sendMessage(
-						from,
+						triggered_from,
 						new Poll(title, options, {
 							allowMultipleAnswers: isMultiSelect,
 						})
@@ -281,14 +286,14 @@ export default class BotService {
 			if (bot.shared_contact_cards.length > 0) {
 				whatsapp
 					.getClient()
-					.sendMessage(from, PROMOTIONAL_MESSAGE_2)
+					.sendMessage(triggered_from, PROMOTIONAL_MESSAGE_2)
 					.catch((err) => {
 						Logger.error('Error sending message:', err);
 					});
 			} else if (!isSubscribed && isNew) {
 				whatsapp
 					.getClient()
-					.sendMessage(from, PROMOTIONAL_MESSAGE_1)
+					.sendMessage(triggered_from, PROMOTIONAL_MESSAGE_1)
 					.catch((err) => {
 						Logger.error('Error sending message:', err);
 					});
@@ -309,6 +314,17 @@ export default class BotService {
 							Logger.error('Error sending message:', err);
 						});
 				}
+			}
+
+			if (bot.nurturing.length > 0) {
+				const nurtured_messages = bot.nurturing.map((el) => ({
+					number: triggered_from,
+					message: el.message,
+					send_at: DateUtils.getMomentNow().add(el.after, 'seconds').toDate(),
+				}));
+				this.messageSchedulerService.scheduleMessage(nurtured_messages, {
+					client_id: whatsapp.getClientID(),
+				});
 			}
 		});
 	}
@@ -362,6 +378,10 @@ export default class BotService {
 			number: string;
 			message: string;
 		};
+		nurturing: {
+			message: string;
+			after: number;
+		}[];
 	}) {
 		const bot = new BotDB({
 			...data,
@@ -382,6 +402,7 @@ export default class BotService {
 				filename: attachment.filename,
 				caption: attachment.caption,
 			})),
+			nurturing: bot.nurturing ?? [],
 			shared_contact_cards: bot.shared_contact_cards ?? [],
 			polls: bot.polls,
 			forward: bot.forward ?? { number: '', message: '' },
@@ -409,6 +430,10 @@ export default class BotService {
 				number: string;
 				message: string;
 			};
+			nurturing: {
+				message: string;
+				after: number;
+			}[];
 		}
 	) {
 		const bot = await BotDB.findById(id).populate('attachments shared_contact_cards');
@@ -445,6 +470,9 @@ export default class BotService {
 		if (data.polls) {
 			bot.polls = data.polls;
 		}
+		if (data.nurturing) {
+			bot.nurturing = data.nurturing;
+		}
 		bot.shared_contact_cards = await ContactCardDB.find({
 			_id: { $in: data.shared_contact_cards },
 		});
@@ -464,6 +492,7 @@ export default class BotService {
 				filename: attachment.filename,
 				caption: attachment.caption,
 			})),
+			nurturing: bot.nurturing ?? [],
 			shared_contact_cards: bot.shared_contact_cards ?? [],
 			polls: bot.polls ?? [],
 			forward: bot.forward ?? { number: '', message: '' },
@@ -492,6 +521,7 @@ export default class BotService {
 				filename: attachment.filename,
 				caption: attachment.caption,
 			})),
+			nurturing: bot.nurturing ?? [],
 			shared_contact_cards: bot.shared_contact_cards ?? [],
 			polls: bot.polls ?? [],
 			forward: bot.forward ?? { number: '', message: '' },

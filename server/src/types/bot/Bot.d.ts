@@ -28,5 +28,9 @@ export default interface IBot extends Document {
 		message: string;
 	};
 	group_respond: boolean;
+	nurturing: {
+		message: string;
+		after: number;
+	}[];
 	active: boolean;
 }

@@ -94,6 +94,10 @@ export class WhatsappProvider {
 		return this.client;
 	}
 
+	public getClientID() {
+		return this.client_id;
+	}
+
 	public initialize() {
 		if (this.status !== STATUS.UNINITIALIZED) return;
 		this.client.initialize();

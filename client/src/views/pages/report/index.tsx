@@ -1,12 +1,9 @@
-import { DeleteIcon } from '@chakra-ui/icons';
 import {
 	Box,
 	Button,
 	Checkbox,
 	Flex,
 	HStack,
-	Icon,
-	IconButton,
 	SkeletonCircle,
 	SkeletonText,
 	Table,
@@ -33,7 +30,7 @@ import {
 	setExportingCampaign,
 } from '../../../store/reducers/SchedulerReducer';
 import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
-import { NavbarSearchElement } from '../../components/navbar';
+import { NavbarDeleteElement, NavbarSearchElement } from '../../components/navbar';
 
 const Reports = () => {
 	const dispatch = useDispatch();
@@ -70,15 +67,9 @@ const Reports = () => {
 			actions: (
 				<HStack>
 					<NavbarSearchElement />
-					<IconButton
-						aria-label='delete'
+					<NavbarDeleteElement
 						isDisabled={selectedCampaign.length === 0}
-						icon={<Icon as={DeleteIcon} height={5} width={5} />}
-						colorScheme={'red'}
-						size={'sm'}
-						onClick={() => {
-							confirmationDialogRef.current?.open('');
-						}}
+						onClick={() => confirmationDialogRef.current?.open('')}
 					/>
 					<Button
 						colorScheme={'green'}

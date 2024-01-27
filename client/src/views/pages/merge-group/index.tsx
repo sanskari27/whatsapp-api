@@ -1,10 +1,9 @@
-import { DeleteIcon, EditIcon } from '@chakra-ui/icons';
+import { EditIcon } from '@chakra-ui/icons';
 import {
 	Box,
 	Button,
 	Checkbox,
 	HStack,
-	Icon,
 	IconButton,
 	SkeletonText,
 	Table,
@@ -34,7 +33,7 @@ import {
 	setMergedGroupList,
 } from '../../../store/reducers/MergeGroupReducer';
 import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
-import { NavbarSearchElement } from '../../components/navbar';
+import { NavbarDeleteElement, NavbarSearchElement } from '../../components/navbar';
 import GroupMerge from './components/group-merge-dialog';
 
 const GroupAndLabelPage = () => {
@@ -68,13 +67,9 @@ const GroupAndLabelPage = () => {
 			actions: (
 				<HStack>
 					<NavbarSearchElement />
-					<IconButton
-						aria-label='delete'
-						icon={<Icon as={DeleteIcon} height={5} width={5} />}
-						colorScheme={'red'}
-						size={'sm'}
+					<NavbarDeleteElement
 						isDisabled={selectedGroups.length === 0}
-						onClick={() => confirmationDialogRef.current?.open()}
+						onClick={() => confirmationDialogRef.current?.open('')}
 					/>
 					<Button leftIcon={<MdGroupAdd />} size={'sm'} colorScheme='blue' onClick={onOpen}>
 						MERGE

@@ -1,4 +1,4 @@
-import { DeleteIcon, EditIcon } from '@chakra-ui/icons';
+import { EditIcon } from '@chakra-ui/icons';
 import {
 	Box,
 	Button,
@@ -34,7 +34,7 @@ import {
 } from '../../../store/reducers/ContactCardReducers';
 import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
 import ExporterModal, { ExportsModalHandler } from '../../components/exporter';
-import { NavbarSearchElement } from '../../components/navbar';
+import { NavbarDeleteElement, NavbarSearchElement } from '../../components/navbar';
 import QrImage from '../../components/qr-image';
 import ContactInputDialog, { ContactInputDialogHandle } from './components/contact-input-dialog';
 
@@ -79,15 +79,9 @@ const ContactsPage = () => {
 					>
 						EXPORT
 					</Button>
-					<IconButton
-						aria-label='delete'
+					<NavbarDeleteElement
 						isDisabled={selectedContacts.length === 0}
-						icon={<Icon as={DeleteIcon} height={5} width={5} />}
-						colorScheme={'red'}
-						size={'sm'}
-						onClick={() => {
-							confirmationDialogRef.current?.open('');
-						}}
+						onClick={() => confirmationDialogRef.current?.open('')}
 					/>
 					<Button
 						leftIcon={<Icon as={MdContactPage} height={5} width={5} />}
