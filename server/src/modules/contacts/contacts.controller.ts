@@ -25,15 +25,22 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 	const options = {
 		saved_contacts: true,
 		non_saved_contacts: true,
+		saved_chat_contacts: true,
 		business_contacts_only: false,
 		vcf: false,
 	};
 	if (req.query.saved_contacts && req.query.saved_contacts === 'true') {
 		options.saved_contacts = true;
 		options.non_saved_contacts = false;
+		options.saved_chat_contacts = false;
 	} else if (req.query.non_saved_contacts && req.query.non_saved_contacts === 'true') {
 		options.non_saved_contacts = true;
 		options.saved_contacts = false;
+		options.saved_chat_contacts = false;
+	} else if (req.query.saved_chat_contacts && req.query.saved_chat_contacts === 'true') {
+		options.saved_chat_contacts = true;
+		options.saved_contacts = false;
+		options.non_saved_contacts = false;
 	}
 	if (req.query.business_contacts_only && req.query.business_contacts_only === 'true') {
 		options.business_contacts_only = true;
@@ -84,11 +91,31 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 			}
 		);
 
+		const saved_chat_contacts = await getOrCache(
+			CACHE_TOKEN_GENERATOR.SAVED_CHAT_CONTACTS(
+				req.locals.user._id,
+				options.business_contacts_only
+			),
+			async () => {
+				let saved_chat = await whatsappUtils.getSavedChatContacts();
+				if (options.business_contacts_only) {
+					saved_chat = saved_chat.filter((c) => c.isBusiness);
+				}
+				const contact_with_country_code = await whatsappUtils.contactsWithCountry(saved_chat, {
+					business_details: options.business_contacts_only,
+				});
+				return await Promise.all(contact_with_country_code);
+			}
+		);
+
 		if (options.saved_contacts) {
 			contacts.push(...saved);
 		}
 		if (options.non_saved_contacts) {
 			contacts.push(...non_saved);
+		}
+		if (options.saved_chat_contacts) {
+			contacts.push(...saved_chat_contacts);
 		}
 		if (options.vcf) {
 			return RespondVCF({
@@ -140,13 +167,25 @@ async function countContacts(req: Request, res: Response, next: NextFunction) {
 			}
 		);
 
+		const saved_chat_contacts = await getOrCache(
+			CACHE_TOKEN_GENERATOR.SAVED_CHAT_CONTACTS(req.locals.user._id),
+			async () => {
+				const saved_chat_contacts = await whatsappUtils.getSavedChatContacts();
+				const contact_with_country_code = await whatsappUtils.contactsWithCountry(
+					saved_chat_contacts
+				);
+				return await Promise.all(contact_with_country_code);
+			}
+		);
+
 		return Respond({
 			res,
 			status: 200,
 			data: {
 				saved_contacts: saved.length,
 				non_saved_contacts: non_saved.length,
-				total_contacts: saved.length + non_saved.length,
+				saved_chat_contacts: saved_chat_contacts.length,
+				total_contacts: saved.length + non_saved.length + saved_chat_contacts.length,
 			},
 		});
 	} catch (err) {

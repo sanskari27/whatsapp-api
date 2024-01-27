@@ -117,6 +117,23 @@ export default class WhatsappUtils {
 		return contacts;
 	}
 
+	async getSavedChatContacts() {
+		const chats = await this.whatsapp.getClient().getChats();
+
+		const saved_chat_contacts = await Promise.all(
+			chats.map(async (chat) => {
+				if (chat.isGroup) return Promise.resolve(null);
+				const contact = await this.whatsapp.getClient().getContactById(chat.id._serialized);
+				if (contact.isMyContact && !contact.isMe) {
+					return contact;
+				}
+				return null;
+			})
+		);
+
+		return saved_chat_contacts.filter((contact) => contact !== null) as WAWebJS.Contact[];
+	}
+
 	async getNonSavedContacts() {
 		const chats = await this.whatsapp.getClient().getChats();
 

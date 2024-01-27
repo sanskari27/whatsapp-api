@@ -112,6 +112,9 @@ export const CACHE_TOKEN_GENERATOR = {
 	SAVED_CONTACTS: (user_id: string, business_only: boolean = false) =>
 		`SAVED_CONTACTS?user_id=${user_id}&business_only=${business_only}`,
 
+	SAVED_CHAT_CONTACTS: (user_id: string, business_only: boolean = false) =>
+		`SAVED_CHAT_CONTACTS?user_id=${user_id}&business_only=${business_only}`,
+
 	NON_SAVED_CONTACTS: (user_id: string, business_only: boolean = false) =>
 		`NON_SAVED_CONTACTS?user_id=${user_id}&business_only=${business_only}`,
 
