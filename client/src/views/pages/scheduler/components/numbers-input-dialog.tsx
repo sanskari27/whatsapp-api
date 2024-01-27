@@ -9,7 +9,7 @@ import {
 	Textarea,
 	VStack,
 } from '@chakra-ui/react';
-import { useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { StoreNames, StoreState } from '../../../../store';
 import { setNumbers } from '../../../../store/reducers/SchedulerReducer';
@@ -24,17 +24,22 @@ export default function NumberInputDialog({ isOpen, onClose }: Props) {
 	} = useSelector((state: StoreState) => state[StoreNames.SCHEDULER]);
 	const dispatch = useDispatch();
 
-	const numbersCombined = useMemo(() => {
-		if (!numbers || numbers.length === 0) {
-			return '';
-		}
-		return numbers.join(', ');
-	}, [numbers]);
+	const [numberInput, setNumberInput] = useState('');
 
-	const handleChange = (text: string) => {
-		const numbers = text.split(',').map((number) => number.trim());
-		dispatch(setNumbers(numbers));
+	const handleClose = () => {
+		const number = numberInput
+			.split(',')
+			.filter((number) => number && !isNaN(Number(number)))
+			.map((number) => number.trim());
+		dispatch(setNumbers(number));
+		onClose();
+		setNumberInput('');
 	};
+
+	useEffect(() => {
+		if (!numbers) return;
+		setNumberInput(numbers.join(', '));
+	}, [numbers]);
 
 	return (
 		<Modal isOpen={isOpen} onClose={onClose} size={'3xl'}>
@@ -51,22 +56,24 @@ export default function NumberInputDialog({ isOpen, onClose }: Props) {
 							minHeight={'200px'}
 							size={'sm'}
 							rounded={'md'}
-							placeholder={'Enter recipients numbers separated by commas'}
+							placeholder={
+								'Enter recipients numbers separated by commas\nE.g. 91xxxxxxxxx8, 91xxxxxxxxx8'
+							}
 							// border={'none'}
 							_placeholder={{
 								opacity: 0.4,
 								color: 'inherit',
 							}}
 							_focus={{ border: 'none', outline: 'none' }}
-							value={numbersCombined}
-							onChange={(e) => handleChange(e.target.value)}
+							value={numberInput}
+							onChange={(e) => setNumberInput(e.target.value)}
 							resize={'vertical'}
 						/>
 					</VStack>
 				</ModalBody>
 
 				<ModalFooter>
-					<Button colorScheme='green' variant='solid' width='full' onClick={onClose}>
+					<Button colorScheme='green' variant='solid' width='full' onClick={handleClose}>
 						Done
 					</Button>
 				</ModalFooter>

@@ -287,33 +287,11 @@ async function mergedGroups(req: Request, res: Response, next: NextFunction) {
 	try {
 		const merged_groups = await new GroupMergeService(req.locals.user).listGroups();
 
-		const groupDetails = merged_groups.map(async (group) => {
-			const group_details_by_id = await Promise.all(
-				group.groups.map(async (group_id) => {
-					const details = await whatsapp.getClient().getChatById(group_id);
-
-					if (!details || !details.isGroup) {
-						return null;
-					}
-
-					return {
-						id: group_id,
-						name: details.name,
-					};
-				})
-			);
-
-			return {
-				...group,
-				groups: group_details_by_id.filter((group) => group !== null),
-			};
-		});
-
 		return Respond({
 			res,
 			status: 200,
 			data: {
-				groups: await Promise.all(groupDetails),
+				groups: merged_groups,
 			},
 		});
 	} catch (err) {
