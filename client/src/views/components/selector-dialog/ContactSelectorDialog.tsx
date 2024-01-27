@@ -1,7 +1,11 @@
+import { SearchIcon } from '@chakra-ui/icons';
 import {
 	Button,
 	Checkbox,
 	Flex,
+	Input,
+	InputGroup,
+	InputLeftElement,
 	Modal,
 	ModalBody,
 	ModalContent,
@@ -12,6 +16,7 @@ import {
 	TableContainer,
 	Tbody,
 	Td,
+	Text,
 	Th,
 	Thead,
 	Tr,
@@ -31,6 +36,8 @@ type Props = {
 
 const ContactSelectorDialog = forwardRef<ContactDialogHandle, Props>(
 	({ onConfirm }: Props, ref) => {
+		const [searchText, setSearchText] = useState<string>('');
+
 		const [selected, setSelected] = useState<string[]>([]);
 		const { list } = useSelector((state: StoreState) => state[StoreNames.CONTACT_CARD]);
 		const [isOpen, setOpen] = useState(false);
@@ -55,11 +62,33 @@ const ContactSelectorDialog = forwardRef<ContactDialogHandle, Props>(
 			},
 		}));
 
+		const filtered = list.filter(({ first_name, middle_name, last_name }) =>
+			[first_name, middle_name, last_name].some((name) =>
+				name?.toLowerCase().startsWith(searchText.toLowerCase())
+			)
+		);
+
 		return (
 			<Modal isOpen={isOpen} onClose={onClose} size={'4xl'}>
 				<ModalOverlay />
 				<ModalContent>
-					<ModalHeader>Select Contacts</ModalHeader>
+					<ModalHeader>
+						<Flex alignItems={'center'} justifyContent={'space-between'} direction={'row'}>
+							<Text>Select Contacts</Text>
+							<InputGroup size='sm' variant={'outline'} width={'250px'}>
+								<InputLeftElement pointerEvents='none'>
+									<SearchIcon color='gray.300' />
+								</InputLeftElement>
+								<Input
+									placeholder='Search here...'
+									value={searchText}
+									onChange={(e) => setSearchText(e.target.value)}
+									borderRadius={'5px'}
+									focusBorderColor='gray.300'
+								/>
+							</InputGroup>
+						</Flex>
+					</ModalHeader>
 					<ModalBody>
 						<TableContainer>
 							<Table>
@@ -72,7 +101,7 @@ const ContactSelectorDialog = forwardRef<ContactDialogHandle, Props>(
 									</Tr>
 								</Thead>
 								<Tbody>
-									{list.map((item, index) => (
+									{filtered.map((item, index) => (
 										<Tr key={item.id}>
 											<Td>
 												<Checkbox
@@ -91,7 +120,7 @@ const ContactSelectorDialog = forwardRef<ContactDialogHandle, Props>(
 											<Td>{item.first_name}</Td>
 											<Td>{item.last_name}</Td>
 											<Td>
-												{`${item.contact_details_phone?.country_code} ${item.contact_details_phone?.number}`}
+												{`+${item.contact_details_phone?.country_code} ${item.contact_details_phone?.number}`}
 											</Td>
 										</Tr>
 									))}
@@ -103,7 +132,12 @@ const ContactSelectorDialog = forwardRef<ContactDialogHandle, Props>(
 					<ModalFooter>
 						<Flex justifyContent={'space-between'} width={'100%'}>
 							<Flex>
-								<Button colorScheme='yellow' mr={3} onClick={() => setSelected([])}>
+								<Button
+									colorScheme='yellow'
+									textColor={'white'}
+									mr={3}
+									onClick={() => setSelected([])}
+								>
 									Deselect All
 								</Button>
 								<Button

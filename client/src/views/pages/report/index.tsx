@@ -1,9 +1,12 @@
+import { DeleteIcon } from '@chakra-ui/icons';
 import {
 	Box,
 	Button,
 	Checkbox,
 	Flex,
 	HStack,
+	Icon,
+	IconButton,
 	SkeletonCircle,
 	SkeletonText,
 	Table,
@@ -18,6 +21,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { FiBarChart2 } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { NAVIGATION } from '../../../config/const';
+import useFilteredList from '../../../hooks/useFilteredList';
 import { popFromNavbar, pushToNavbar } from '../../../hooks/useNavbar';
 import { useTheme } from '../../../hooks/useTheme';
 import ReportsService from '../../../services/reports.service';
@@ -29,6 +33,7 @@ import {
 	setExportingCampaign,
 } from '../../../store/reducers/SchedulerReducer';
 import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
+import { NavbarSearchElement } from '../../components/navbar';
 
 const Reports = () => {
 	const dispatch = useDispatch();
@@ -63,22 +68,26 @@ const Reports = () => {
 			icon: FiBarChart2,
 			link: NAVIGATION.REPORTS,
 			actions: (
-				<HStack alignItems={'center'} justifyContent={'flex-end'}>
+				<HStack>
+					<NavbarSearchElement />
+					<IconButton
+						aria-label='delete'
+						isDisabled={selectedCampaign.length === 0}
+						icon={<Icon as={DeleteIcon} height={5} width={5} />}
+						colorScheme={'red'}
+						size={'sm'}
+						onClick={() => {
+							confirmationDialogRef.current?.open('');
+						}}
+					/>
 					<Button
 						colorScheme={'green'}
+						size={'sm'}
 						onClick={() => exportCampaign(selectedCampaign)}
 						isDisabled={selectedCampaign.length === 0}
 						isLoading={exportingCampaign}
 					>
 						Export
-					</Button>
-					<Button
-						colorScheme={'red'}
-						onClick={() => confirmationDialogRef.current?.open()}
-						isDisabled={selectedCampaign.length === 0}
-						isLoading={deletingCampaign}
-					>
-						Delete
 					</Button>
 				</HStack>
 			),
@@ -129,6 +138,8 @@ const Reports = () => {
 		setSelectedCampaign((prev) => [...prev, id]);
 	};
 
+	const filtered = useFilteredList(all_campaigns, { campaignName: 1 });
+
 	return (
 		<Flex direction={'column'} padding={'1rem'} justifyContent={'start'}>
 			<TableContainer>
@@ -138,13 +149,13 @@ const Reports = () => {
 							<Th width={'5%'}>Select</Th>
 							<Th width={'50%'}>Campaign Name</Th>
 							<Th width={'5%'}>Created At</Th>
-							<Th width={'10%'} textColor={'green'}>
+							<Th width={'10%'} textColor={'green'} isNumeric>
 								Messages Sent
 							</Th>
-							<Th width={'10%'} textColor={'yellow.500'}>
+							<Th width={'10%'} textColor={'yellow.500'} isNumeric>
 								Messages Pending
 							</Th>
-							<Th width={'10%'} textColor={'red.400'}>
+							<Th width={'10%'} textColor={'red.400'} isNumeric>
 								Messages Failed
 							</Th>
 							<Th width={'10%'}>Status</Th>
@@ -176,11 +187,8 @@ const Reports = () => {
 								</Td>
 							</Tr>
 						) : (
-							all_campaigns.map((campaign, index) => (
-								<Tr
-									key={index}
-									color={theme === 'dark' ? 'white' : 'black'}
-								>
+							filtered.map((campaign, index) => (
+								<Tr key={index} color={theme === 'dark' ? 'white' : 'black'}>
 									<Td>
 										<Checkbox
 											colorScheme='green'
@@ -202,7 +210,7 @@ const Reports = () => {
 											: campaign.campaignName}
 									</Td>
 									<Td>
-										{campaign.createdAt.split(' ').map((time,index) => (
+										{campaign.createdAt.split(' ').map((time, index) => (
 											<Box key={index}>{time}</Box>
 										))}
 									</Td>

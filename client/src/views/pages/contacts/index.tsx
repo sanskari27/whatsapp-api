@@ -19,6 +19,7 @@ import { MdContactPage, MdContacts } from 'react-icons/md';
 import { TbDatabaseExport } from 'react-icons/tb';
 import { useDispatch, useSelector } from 'react-redux';
 import { NAVIGATION } from '../../../config/const';
+import useFilteredList from '../../../hooks/useFilteredList';
 import { popFromNavbar, pushToNavbar } from '../../../hooks/useNavbar';
 import { useTheme } from '../../../hooks/useTheme';
 import ContactCardService from '../../../services/contact-card.service';
@@ -33,6 +34,7 @@ import {
 } from '../../../store/reducers/ContactCardReducers';
 import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
 import ExporterModal, { ExportsModalHandler } from '../../components/exporter';
+import { NavbarSearchElement } from '../../components/navbar';
 import QrImage from '../../components/qr-image';
 import ContactInputDialog, { ContactInputDialogHandle } from './components/contact-input-dialog';
 
@@ -68,32 +70,32 @@ const ContactsPage = () => {
 			link: NAVIGATION.CONTACT,
 			actions: (
 				<HStack>
+					<NavbarSearchElement />
 					<Button
 						leftIcon={<Icon as={TbDatabaseExport} height={5} width={5} />}
 						colorScheme={'blue'}
 						size={'sm'}
 						onClick={() => exporterRef.current?.open()}
 					>
-						Export Contacts
+						EXPORT
 					</Button>
+					<IconButton
+						aria-label='delete'
+						isDisabled={selectedContacts.length === 0}
+						icon={<Icon as={DeleteIcon} height={5} width={5} />}
+						colorScheme={'red'}
+						size={'sm'}
+						onClick={() => {
+							confirmationDialogRef.current?.open('');
+						}}
+					/>
 					<Button
 						leftIcon={<Icon as={MdContactPage} height={5} width={5} />}
 						colorScheme={'green'}
 						size={'sm'}
 						onClick={() => drawerRef.current?.open()}
 					>
-						Add Contact
-					</Button>
-					<Button
-						isDisabled={selectedContacts.length === 0}
-						leftIcon={<Icon as={DeleteIcon} height={5} width={5} />}
-						colorScheme={'red'}
-						size={'sm'}
-						onClick={() => {
-							confirmationDialogRef.current?.open('');
-						}}
-					>
-						Delete Contact
+						ADD
 					</Button>
 				</HStack>
 			),
@@ -102,6 +104,8 @@ const ContactsPage = () => {
 			popFromNavbar();
 		};
 	}, [selectedContacts.length]);
+
+	const filtered = useFilteredList(list, { first_name: 1, middle_name: 1, last_name: 1 });
 
 	return (
 		<Box py={'1rem'} textColor={theme === 'dark' ? 'white' : 'black'}>
@@ -114,12 +118,12 @@ const ContactsPage = () => {
 							<Th width={'30%'}>Name</Th>
 							<Th width={'10%'}>Personal Number</Th>
 							<Th width={'10%'}>Work Number</Th>
-							<Th width={'15%'}>Email</Th>
+							<Th width={'20%'}>Email</Th>
 							<Th width={'10%'}>Edit</Th>
 						</Tr>
 					</Thead>
 					<Tbody>
-						{list.map((contact, index) => (
+						{filtered.map((contact, index) => (
 							<Tr key={index}>
 								<Td>
 									<Checkbox

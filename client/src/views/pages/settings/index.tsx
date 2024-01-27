@@ -32,6 +32,21 @@ type SettingsProps = {
 	onClose: () => void;
 };
 
+type Payment = {
+	type: 'payment';
+	id: string;
+	date: string;
+	amount: number;
+};
+
+type Subscription = {
+	type: 'subscription';
+	id: string;
+	plan: string;
+	isActive: boolean;
+	isPaused: boolean;
+};
+
 export default function Settings({ isOpen, onClose }: SettingsProps) {
 	const theme = useTheme();
 
@@ -39,23 +54,7 @@ export default function Settings({ isOpen, onClose }: SettingsProps) {
 		(state: StoreState) => state[StoreNames.USER]
 	);
 
-	const [PAYMENT_RECORDS, setPaymentRecords] = useState<
-		(
-			| {
-					type: 'payment';
-					id: string;
-					date: string;
-					amount: number;
-			  }
-			| {
-					type: 'subscription';
-					id: string;
-					plan: string;
-					isActive: boolean;
-					isPaused: boolean;
-			  }
-		)[]
-	>([]);
+	const [PAYMENT_RECORDS, setPaymentRecords] = useState<(Payment | Subscription)[]>([]);
 
 	useEffect(() => {
 		PaymentService.paymentRecords().then(setPaymentRecords);
@@ -183,16 +182,18 @@ export default function Settings({ isOpen, onClose }: SettingsProps) {
 										border={'1px'}
 										borderColor={'gray.100'}
 										rounded={'lg'}
-										padding={'0.5rem'}
+										paddingTop={'0.5rem'}
 										marginTop={'0.5rem'}
 										width={'full'}
 									>
 										<Table size={'sm'} className='text-gray-800 dark:text-gray-300'>
 											<Thead className='text-gray-900 dark:text-gray-100'>
 												<Tr>
-													<Th>Date</Th>
-													<Th isNumeric>Amount</Th>
-													<Th>Invoice</Th>
+													<Th width={'50%'}>Date</Th>
+													<Th width={'40%'} isNumeric>
+														Amount
+													</Th>
+													<Th width={'10%'}>Invoice</Th>
 												</Tr>
 											</Thead>
 											<Tbody>
@@ -208,6 +209,7 @@ export default function Settings({ isOpen, onClose }: SettingsProps) {
 																		? 'paused'
 																		: 'on-hold'}
 																</Td>
+																<Td>Invoice</Td>
 															</Tr>
 														);
 													else

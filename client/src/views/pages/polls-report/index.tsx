@@ -1,5 +1,6 @@
 import {
 	Box,
+	HStack,
 	Table,
 	TableContainer,
 	Tbody,
@@ -12,11 +13,13 @@ import {
 import { useEffect } from 'react';
 import { BiPoll } from 'react-icons/bi';
 import { useDispatch, useSelector } from 'react-redux';
+import useFilteredList from '../../../hooks/useFilteredList';
 import { popFromNavbar, pushToNavbar } from '../../../hooks/useNavbar';
 import ReportsService from '../../../services/reports.service';
 import { StoreNames, StoreState } from '../../../store';
 import { setPollList, setSelectedPollDetails } from '../../../store/reducers/PollReducers';
 import { Poll } from '../../../store/types/PollState';
+import { NavbarSearchElement } from '../../components/navbar';
 import PollResponseDialog from './components/poll-response';
 
 const PollReport = () => {
@@ -41,11 +44,17 @@ const PollReport = () => {
 		pushToNavbar({
 			title: 'Polls Reports',
 			icon: BiPoll,
+			actions: (
+				<HStack>
+					<NavbarSearchElement />
+				</HStack>
+			),
 		});
 		return () => {
 			popFromNavbar();
 		};
 	}, []);
+	const filtered = useFilteredList(list, { title: 1 });
 
 	return (
 		<>
@@ -60,7 +69,7 @@ const PollReport = () => {
 						</Tr>
 					</Thead>
 					<Tbody>
-						{list.map((poll, index) => (
+						{filtered.map((poll, index) => (
 							<Tr
 								key={index}
 								onClick={() => handlePollClick(poll)}

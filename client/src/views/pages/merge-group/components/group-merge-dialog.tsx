@@ -1,9 +1,13 @@
+import { SearchIcon } from '@chakra-ui/icons';
 import {
 	Button,
 	Checkbox,
+	Flex,
 	FormControl,
 	FormLabel,
 	Input,
+	InputGroup,
+	InputLeftElement,
 	Modal,
 	ModalBody,
 	ModalContent,
@@ -14,6 +18,7 @@ import {
 	TableContainer,
 	Tbody,
 	Td,
+	Text,
 	Th,
 	Thead,
 	Tr,
@@ -36,16 +41,17 @@ type GroupMergeProps = {
 	isOpen: boolean;
 };
 
+type Group = {
+	id: string;
+	name: string;
+	isMergedGroup: boolean;
+};
+
 const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 	const dispatch = useDispatch();
 
-	const [groups, setGroups] = useState<
-		{
-			id: string;
-			name: string;
-			isMergedGroup: boolean;
-		}[]
-	>([]);
+	const [groups, setGroups] = useState<Group[]>([]);
+	const [searchText, setSearchText] = useState<string>('');
 
 	const { editSelectedGroup } = useSelector((store: StoreState) => store[StoreNames.MERGE_GROUP]);
 
@@ -56,13 +62,9 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 		if (editSelectedGroup.groups.length === 0) {
 			return;
 		}
-
+		const { id, name, groups } = editSelectedGroup;
 		if (editSelectedGroup.id) {
-			GroupService.editMergedGroup(
-				editSelectedGroup.id,
-				editSelectedGroup.name,
-				editSelectedGroup.groups
-			).then((response) => {
+			GroupService.editMergedGroup(id, name, groups).then((response) => {
 				if (!response) {
 					return;
 				}
@@ -70,21 +72,13 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 				onClose();
 			});
 		} else {
-			GroupService.mergeGroups(editSelectedGroup.name, editSelectedGroup.groups).then(
-				(response) => {
-					if (!response) {
-						return;
-					}
-					dispatch(
-						addMergedGroup({
-							id: response.id,
-							name: response.name,
-							groups: response.groups,
-						})
-					);
-					onClose();
+			GroupService.mergeGroups(name, groups).then((response) => {
+				if (!response) {
+					return;
 				}
-			);
+				dispatch(addMergedGroup(response));
+				onClose();
+			});
 		}
 	};
 
@@ -102,12 +96,12 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 	};
 
 	useEffect(() => {
-		GroupService.listGroups().then((response) => {
-			setGroups(response);
-		});
+		GroupService.listGroups().then(setGroups);
 	}, []);
 
-	console.count('dialog');
+	const filtered = groups.filter((group) =>
+		group.name.toLowerCase().startsWith(searchText.toLowerCase())
+	);
 
 	return (
 		<Modal isOpen={isOpen} onClose={onClose} size={'2xl'} scrollBehavior='inside'>
@@ -116,7 +110,7 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 				<ModalHeader>Merge Group</ModalHeader>
 				<ModalBody>
 					<FormControl>
-						<FormLabel>Enter Name</FormLabel>
+						<FormLabel>Group Name</FormLabel>
 						<Input
 							placeholder='Enter Name'
 							value={editSelectedGroup.name}
@@ -128,11 +122,27 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 							<Thead>
 								<Tr>
 									<Th width={'5%'}>Select</Th>
-									<Th>Name</Th>
+									<Th>
+										<Flex alignItems={'center'} justifyContent={'space-between'} direction={'row'}>
+											<Text>Name</Text>
+											<InputGroup size='sm' variant={'outline'} width={'250px'}>
+												<InputLeftElement pointerEvents='none'>
+													<SearchIcon color='gray.300' />
+												</InputLeftElement>
+												<Input
+													placeholder='Search here...'
+													value={searchText}
+													onChange={(e) => setSearchText(e.target.value)}
+													borderRadius={'5px'}
+													focusBorderColor='gray.300'
+												/>
+											</InputGroup>
+										</Flex>
+									</Th>
 								</Tr>
 							</Thead>
 							<Tbody>
-								{groups.map((group, index) => {
+								{filtered.map((group, index) => {
 									if (!group.isMergedGroup)
 										return (
 											<Tr key={index}>

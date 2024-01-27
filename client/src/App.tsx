@@ -7,7 +7,6 @@ import { Flex, Image, Progress, Text } from '@chakra-ui/react';
 import { LOGO } from './assets/Images';
 import { useNavbar } from './hooks/useNavbar';
 import { useTheme } from './hooks/useTheme';
-import PageWrapper from './views/components/page-wrapper';
 const Welcome = lazy(() => import('./views/pages/welcome'));
 const Scheduler = lazy(() => import('./views/pages/scheduler'));
 const Bot = lazy(() => import('./views/pages/bot'));
@@ -25,7 +24,7 @@ function App() {
 	useTheme();
 	useNavbar();
 	return (
-		<PageWrapper>
+		<Flex minHeight={'100vh'} width={'100vw'} className='bg-background dark:bg-background-dark'>
 			<Router>
 				<Suspense fallback={<Loading />}>
 					<Routes>
@@ -46,7 +45,7 @@ function App() {
 					</Routes>
 				</Suspense>
 			</Router>
-		</PageWrapper>
+		</Flex>
 	);
 }
 

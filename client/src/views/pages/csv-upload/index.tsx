@@ -1,9 +1,11 @@
+import { DeleteIcon } from '@chakra-ui/icons';
 import {
 	Box,
 	Button,
 	Checkbox,
 	HStack,
 	Icon,
+	IconButton,
 	Table,
 	TableContainer,
 	Tbody,
@@ -14,10 +16,10 @@ import {
 } from '@chakra-ui/react';
 import { useEffect, useRef, useState } from 'react';
 import { BiGroup, BiLabel } from 'react-icons/bi';
-import { MdDelete } from 'react-icons/md';
 import { TbCsv } from 'react-icons/tb';
 import { useDispatch, useSelector } from 'react-redux';
 import { NAVIGATION } from '../../../config/const';
+import useFilteredList from '../../../hooks/useFilteredList';
 import { popFromNavbar, pushToNavbar } from '../../../hooks/useNavbar';
 import { useTheme } from '../../../hooks/useTheme';
 import UploadsService from '../../../services/uploads.service';
@@ -28,6 +30,7 @@ import {
 	setIsDeleting,
 } from '../../../store/reducers/CSVFileReducers';
 import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
+import { NavbarSearchElement } from '../../components/navbar';
 import CSVNameInputDialog, { CSVNameInputDialogHandle } from './components/CSV-name-input-dialog';
 import AssignLabelDialog, { AssignLabelDialogHandler } from './components/assign-label-dialog';
 import CreateGroupDialog, { CreateGroupDialogHandler } from './components/create-group-dialog';
@@ -65,13 +68,15 @@ const CSVUpload = () => {
 			link: NAVIGATION.CSV,
 			actions: (
 				<HStack>
+					<NavbarSearchElement />
+
 					<Button
 						size={'sm'}
 						leftIcon={<BiGroup />}
 						colorScheme='green'
 						onClick={() => createGroupDialogRef.current?.open()}
 					>
-						Create Group
+						GROUP
 					</Button>
 					<Button
 						size={'sm'}
@@ -79,17 +84,16 @@ const CSVUpload = () => {
 						colorScheme='blue'
 						onClick={() => assignLabelDialogRef.current?.open()}
 					>
-						Assign Label
+						LABEL
 					</Button>
-					<Button
-						leftIcon={<Icon as={MdDelete} height={5} width={5} />}
+					<IconButton
+						aria-label='delete'
+						icon={<Icon as={DeleteIcon} height={5} width={5} />}
 						colorScheme={'red'}
 						size={'sm'}
 						isDisabled={selectedFiles.length === 0}
 						onClick={() => confirmationDialogRef.current?.open()}
-					>
-						Delete CSV
-					</Button>
+					/>
 					<Button
 						leftIcon={<Icon as={TbCsv} height={5} width={5} />}
 						colorScheme={'green'}
@@ -99,7 +103,7 @@ const CSVUpload = () => {
 							csvFileInputRef.current?.open();
 						}}
 					>
-						Add CSV
+						ADD
 					</Button>
 				</HStack>
 			),
@@ -113,6 +117,8 @@ const CSVUpload = () => {
 		dispatch(clearSelectedCSVFile());
 	}, [dispatch]);
 
+	const filtered = useFilteredList(list, { name: 1 });
+
 	return (
 		<Box p={'1rem'} textColor={theme === 'dark' ? 'white' : 'black'}>
 			<TableContainer>
@@ -125,7 +131,7 @@ const CSVUpload = () => {
 						</Tr>
 					</Thead>
 					<Tbody>
-						{list.map((csv, index) => {
+						{filtered.map((csv, index) => {
 							return (
 								<Tr key={index}>
 									<Td>

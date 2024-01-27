@@ -1,9 +1,10 @@
-import { EditIcon } from '@chakra-ui/icons';
+import { DeleteIcon, EditIcon } from '@chakra-ui/icons';
 import {
 	Box,
 	Button,
 	Checkbox,
 	HStack,
+	Icon,
 	IconButton,
 	SkeletonText,
 	Table,
@@ -16,8 +17,9 @@ import {
 	useDisclosure,
 } from '@chakra-ui/react';
 import { useEffect, useRef } from 'react';
-import { MdDelete, MdGroupAdd, MdGroups3 } from 'react-icons/md';
+import { MdGroupAdd, MdGroups3 } from 'react-icons/md';
 import { useDispatch, useSelector } from 'react-redux';
+import useFilteredList from '../../../hooks/useFilteredList';
 import { popFromNavbar, pushToNavbar } from '../../../hooks/useNavbar';
 import { useTheme } from '../../../hooks/useTheme';
 import GroupService from '../../../services/group.service';
@@ -32,6 +34,7 @@ import {
 	setMergedGroupList,
 } from '../../../store/reducers/MergeGroupReducer';
 import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
+import { NavbarSearchElement } from '../../components/navbar';
 import GroupMerge from './components/group-merge-dialog';
 
 const GroupAndLabelPage = () => {
@@ -64,18 +67,17 @@ const GroupAndLabelPage = () => {
 			icon: MdGroups3,
 			actions: (
 				<HStack>
-					<Button
-						leftIcon={<MdDelete />}
+					<NavbarSearchElement />
+					<IconButton
+						aria-label='delete'
+						icon={<Icon as={DeleteIcon} height={5} width={5} />}
 						colorScheme={'red'}
 						size={'sm'}
-						isLoading={isDeleting}
 						isDisabled={selectedGroups.length === 0}
 						onClick={() => confirmationDialogRef.current?.open()}
-					>
-						Delete Groups
-					</Button>
+					/>
 					<Button leftIcon={<MdGroupAdd />} size={'sm'} colorScheme='blue' onClick={onOpen}>
-						Merge Group
+						MERGE
 					</Button>
 				</HStack>
 			),
@@ -92,6 +94,8 @@ const GroupAndLabelPage = () => {
 			.finally(() => dispatch(setIsFetching(false)));
 	}, [dispatch]);
 
+	const filtered = useFilteredList(list, { name: 1 });
+
 	return (
 		<Box>
 			<TableContainer>
@@ -99,11 +103,11 @@ const GroupAndLabelPage = () => {
 					<Thead>
 						<Tr>
 							<Th width={'5%'}>sl no</Th>
-							<Th width={'70%'}>Group Name</Th>
+							<Th width={'75%'}>Group Name</Th>
 							<Th width={'15%'} isNumeric>
 								No of Whatsapp Groups
 							</Th>
-							<Th>Edit</Th>
+							<Th width={'5%'}>Edit</Th>
 						</Tr>
 					</Thead>
 					<Tbody>
@@ -125,7 +129,7 @@ const GroupAndLabelPage = () => {
 								</Td>
 							</Tr>
 						) : (
-							list.map((group, index) => {
+							filtered.map((group, index) => {
 								return (
 									<Tr key={index} cursor={'pointer'} color={theme === 'dark' ? 'white' : 'black'}>
 										<Td>
