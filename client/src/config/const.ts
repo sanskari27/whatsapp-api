@@ -37,6 +37,7 @@ export enum PRIVACY_TYPE {
 export enum EXPORTS_TYPE {
 	ALL = 'ALL',
 	SAVED = 'SAVED',
+	SAVED_CHAT = 'SAVED_CHAT',
 	UNSAVED = 'UNSAVED',
 	GROUP = 'GROUP',
 	GROUP_ALL = 'GROUP_ALL',
