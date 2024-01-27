@@ -7,6 +7,9 @@ const userSchema = new Schema<IUser>(
 			type: String,
 			required: true,
 		},
+		name: {
+			type: String,
+		},
 		userType: {
 			type: String,
 		},

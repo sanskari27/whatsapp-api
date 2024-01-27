@@ -10,10 +10,14 @@ export type NavbarLocation = {
 	actions?: React.ReactNode;
 };
 
-const initStatus: { locations: NavbarLocation[] } = { locations: [] };
+const initStatus: { locations: NavbarLocation[]; searchText: string } = {
+	locations: [],
+	searchText: '',
+};
 let globalSet: React.Dispatch<
 	React.SetStateAction<{
 		locations: NavbarLocation[];
+		searchText: string;
 	}>
 > = () => {
 	throw new Error('you must useNavbar before setting its state');
@@ -25,6 +29,7 @@ export const useNavbar = singletonHook(initStatus, () => {
 
 	useEffect(() => {
 		setNavDetails({
+			searchText: '',
 			locations: [
 				{
 					title: 'Whatsleads',
@@ -34,12 +39,13 @@ export const useNavbar = singletonHook(initStatus, () => {
 		});
 	}, []);
 
-	return { locations: navDetails.locations };
+	return { locations: navDetails.locations, searchText: navDetails.searchText };
 });
 
 export const pushToNavbar = (data: NavbarLocation) => {
 	globalSet((prev) => ({
 		...prev,
+		searchText: '',
 		locations: [...prev.locations, data],
 	}));
 };
@@ -47,6 +53,14 @@ export const pushToNavbar = (data: NavbarLocation) => {
 export const popFromNavbar = () => {
 	globalSet((prev) => ({
 		...prev,
+		searchText: '',
 		locations: prev.locations.slice(0, -1),
+	}));
+};
+
+export const setNavbarSearchText = (searchText: string) => {
+	globalSet((prev) => ({
+		...prev,
+		searchText: searchText,
 	}));
 };

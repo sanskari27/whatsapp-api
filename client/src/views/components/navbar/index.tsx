@@ -1,3 +1,4 @@
+import { SearchIcon } from '@chakra-ui/icons';
 import {
 	As,
 	Box,
@@ -6,10 +7,13 @@ import {
 	BreadcrumbLink,
 	Flex,
 	Icon,
+	Input,
+	InputGroup,
+	InputLeftElement,
 	Text,
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
-import { useNavbar } from '../../../hooks/useNavbar';
+import { setNavbarSearchText, useNavbar } from '../../../hooks/useNavbar';
 import { useTheme } from '../../../hooks/useTheme';
 
 export default function Navbar() {
@@ -75,5 +79,24 @@ export default function Navbar() {
 				{locations.length > 0 ? locations[locations.length - 1].actions : null}
 			</Flex>
 		</Flex>
+	);
+}
+
+export function NavbarSearchElement() {
+	const { searchText } = useNavbar();
+
+	return (
+		<InputGroup size='sm' variant={'outline'} width={'250px'}>
+			<InputLeftElement pointerEvents='none'>
+				<SearchIcon color='gray.300' />
+			</InputLeftElement>
+			<Input
+				placeholder='Search here...'
+				value={searchText}
+				onChange={(e) => setNavbarSearchText(e.target.value)}
+				borderRadius={'5px'}
+				focusBorderColor='gray.300'
+			/>
+		</InputGroup>
 	);
 }

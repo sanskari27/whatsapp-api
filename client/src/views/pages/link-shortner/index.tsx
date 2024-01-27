@@ -25,6 +25,7 @@ import { useEffect, useRef } from 'react';
 import { CopyIcon, DeleteIcon, EditIcon, LinkIcon } from '@chakra-ui/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { NAVIGATION } from '../../../config/const';
+import useFilteredList from '../../../hooks/useFilteredList';
 import { popFromNavbar, pushToNavbar } from '../../../hooks/useNavbar';
 import { useTheme } from '../../../hooks/useTheme';
 import ShortenerService from '../../../services/shortener.service';
@@ -38,6 +39,7 @@ import {
 	updateShortenLink,
 } from '../../../store/reducers/LinkShortnerReducers';
 import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
+import { NavbarSearchElement } from '../../components/navbar';
 import QrImage from '../../components/qr-image';
 import CreateLinkDrawer, { CreateLinkDrawerHandle } from './components/CreateLinkDrawer';
 import EditLinkDialog, { EditLinkDialogHandle } from './components/editLinkDialog';
@@ -69,6 +71,7 @@ const LinkShortner = () => {
 			link: NAVIGATION.SHORT,
 			actions: (
 				<HStack>
+					<NavbarSearchElement />
 					<Button
 						leftIcon={<LinkIcon />}
 						colorScheme='whatsapp'
@@ -118,6 +121,8 @@ const LinkShortner = () => {
 		}, 5000);
 	}, [link_copied, dispatch]);
 
+	const filtered = useFilteredList(list, { title: 1 });
+
 	return (
 		<Box p={8}>
 			<CreateLinkDrawer ref={drawerRef} onSuccess={() => successfulLinkGenerated()} />
@@ -126,12 +131,12 @@ const LinkShortner = () => {
 				<Table>
 					<Thead>
 						<Tr>
-							<Th>Sl. no</Th>
-							<Th>Qr Code</Th>
-							<Th>Title</Th>
-							<Th>link</Th>
-							<Th>shorten link</Th>
-							<Th>Action</Th>
+							<Th width={'5%'}>Sl. no</Th>
+							<Th width={'15%'}>Qr Code</Th>
+							<Th width={'20%'}>Title</Th>
+							<Th width={'25%'}>link</Th>
+							<Th width={'25%'}>shorten link</Th>
+							<Th width={'5%'}>Action</Th>
 						</Tr>
 					</Thead>
 					<Tbody>
@@ -164,7 +169,7 @@ const LinkShortner = () => {
 								</Td>
 							</Tr>
 						) : (
-							list.map((item, index) => (
+							filtered.map((item, index) => (
 								<Tr key={index} textColor={theme === 'dark' ? 'white' : 'black'}>
 									<Td>{index + 1}.</Td>
 									<Td>

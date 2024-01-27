@@ -1,7 +1,11 @@
+import { SearchIcon } from '@chakra-ui/icons';
 import {
 	Button,
 	Checkbox,
 	Flex,
+	Input,
+	InputGroup,
+	InputLeftElement,
 	Modal,
 	ModalBody,
 	ModalContent,
@@ -12,6 +16,7 @@ import {
 	TableContainer,
 	Tbody,
 	Td,
+	Text,
 	Th,
 	Thead,
 	Tr,
@@ -31,6 +36,7 @@ type Props = {
 
 const AttachmentSelectorDialog = forwardRef<AttachmentDialogHandle, Props>(
 	({ onConfirm }: Props, ref) => {
+		const [searchText, setSearchText] = useState<string>('');
 		const [selected, setSelected] = useState<string[]>([]);
 		const { attachments } = useSelector((state: StoreState) => state[StoreNames.ATTACHMENT]);
 		const [isOpen, setOpen] = useState(false);
@@ -55,11 +61,31 @@ const AttachmentSelectorDialog = forwardRef<AttachmentDialogHandle, Props>(
 			},
 		}));
 
+		const filtered = attachments.filter(({ name }) =>
+			name.toLowerCase().startsWith(searchText.toLowerCase())
+		);
+
 		return (
 			<Modal isOpen={isOpen} onClose={onClose} size={'4xl'}>
 				<ModalOverlay />
 				<ModalContent>
-					<ModalHeader>Select Attachments</ModalHeader>
+					<ModalHeader>
+						<Flex alignItems={'center'} justifyContent={'space-between'} direction={'row'}>
+							<Text>Select Attachments</Text>
+							<InputGroup size='sm' variant={'outline'} width={'250px'}>
+								<InputLeftElement pointerEvents='none'>
+									<SearchIcon color='gray.300' />
+								</InputLeftElement>
+								<Input
+									placeholder='Search here...'
+									value={searchText}
+									onChange={(e) => setSearchText(e.target.value)}
+									borderRadius={'5px'}
+									focusBorderColor='gray.300'
+								/>
+							</InputGroup>
+						</Flex>
+					</ModalHeader>
 					<ModalBody>
 						<TableContainer>
 							<Table>
@@ -72,7 +98,7 @@ const AttachmentSelectorDialog = forwardRef<AttachmentDialogHandle, Props>(
 									</Tr>
 								</Thead>
 								<Tbody>
-									{attachments.map((item, index) => (
+									{filtered.map((item, index) => (
 										<Tr key={item.id}>
 											<Td>
 												<Checkbox
@@ -101,7 +127,12 @@ const AttachmentSelectorDialog = forwardRef<AttachmentDialogHandle, Props>(
 					<ModalFooter>
 						<Flex justifyContent={'space-between'} width={'100%'}>
 							<Flex>
-								<Button colorScheme='yellow' mr={3} onClick={() => setSelected([])}>
+								<Button
+									colorScheme='yellow'
+									textColor={'white'}
+									mr={3}
+									onClick={() => setSelected([])}
+								>
 									Deselect All
 								</Button>
 								<Button

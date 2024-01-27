@@ -1,4 +1,4 @@
-import { EditIcon } from '@chakra-ui/icons';
+import { DeleteIcon, EditIcon } from '@chakra-ui/icons';
 import {
 	Box,
 	Button,
@@ -16,10 +16,11 @@ import {
 } from '@chakra-ui/react';
 import React, { useEffect } from 'react';
 import { IoIosCloudDownload } from 'react-icons/io';
-import { MdDelete, MdOutlineAttachment } from 'react-icons/md';
+import { MdOutlineAttachment } from 'react-icons/md';
 import { RiAttachment2 } from 'react-icons/ri';
 import { useDispatch, useSelector } from 'react-redux';
 import { NAVIGATION } from '../../../config/const';
+import useFilteredList from '../../../hooks/useFilteredList';
 import { popFromNavbar, pushToNavbar } from '../../../hooks/useNavbar';
 import { useTheme } from '../../../hooks/useTheme';
 import AttachmentService from '../../../services/attachment.service';
@@ -34,6 +35,7 @@ import {
 	toggleSelected,
 } from '../../../store/reducers/AttachmentReducers';
 import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
+import { NavbarSearchElement } from '../../components/navbar';
 import AttachmentDetailsInputDialog, {
 	AttachmentDetailsInputDialogHandle,
 } from './components/attachment-details-input-dialog';
@@ -44,11 +46,13 @@ const AttachmentPage = () => {
 	const AttachmentDetailsInputRef = React.useRef<AttachmentDetailsInputDialogHandle>(null);
 	const confirmationDialogRef = React.useRef<ConfirmationDialogHandle>(null);
 
-	const { attachments, uiDetails, selectedAttachments } = useSelector(
-		(state: StoreState) => state[StoreNames.ATTACHMENT]
-	);
+	const {
+		attachments,
+		uiDetails: { isDeleting },
+		selectedAttachments,
+	} = useSelector((state: StoreState) => state[StoreNames.ATTACHMENT]);
 
-	const { isDeleting } = uiDetails;
+	const filtered = useFilteredList(attachments, { name: 1 });
 
 	useEffect(() => {
 		pushToNavbar({
@@ -57,6 +61,18 @@ const AttachmentPage = () => {
 			link: NAVIGATION.ATTACHMENTS,
 			actions: (
 				<HStack>
+					<NavbarSearchElement />
+					<IconButton
+						aria-label='delete'
+						icon={<Icon as={DeleteIcon} height={5} width={5} />}
+						colorScheme={'red'}
+						size={'sm'}
+						onClick={() => {
+							confirmationDialogRef.current?.open('');
+						}}
+						isLoading={isDeleting}
+						isDisabled={selectedAttachments.length === 0}
+					/>
 					<Button
 						leftIcon={<Icon as={MdOutlineAttachment} height={5} width={5} />}
 						colorScheme={'green'}
@@ -65,20 +81,7 @@ const AttachmentPage = () => {
 							AttachmentDetailsInputRef.current?.open();
 						}}
 					>
-						Add Attachment
-					</Button>
-
-					<Button
-						leftIcon={<Icon as={MdDelete} height={5} width={5} />}
-						colorScheme={'red'}
-						size={'sm'}
-						onClick={() => {
-							confirmationDialogRef.current?.open('');
-						}}
-						isLoading={isDeleting}
-						isDisabled={selectedAttachments.length === 0}
-					>
-						Delete Attachment
+						ADD
 					</Button>
 				</HStack>
 			),
@@ -125,7 +128,7 @@ const AttachmentPage = () => {
 						</Tr>
 					</Thead>
 					<Tbody>
-						{attachments.map((attachment, index) => (
+						{filtered.map((attachment, index) => (
 							<Tr key={index} verticalAlign={'middle'}>
 								<Td>
 									<Checkbox
