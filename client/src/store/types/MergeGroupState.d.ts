@@ -19,8 +19,5 @@ export type MergeGroupState = {
 type MergedGroup = {
 	id: string;
 	name: string;
-	groups: {
-		id: string;
-		name: string;
-	}[];
+	groups: string[];
 };

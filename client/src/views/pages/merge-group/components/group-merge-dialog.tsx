@@ -107,6 +107,8 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 		});
 	}, []);
 
+	console.count('dialog');
+
 	return (
 		<Modal isOpen={isOpen} onClose={onClose} size={'2xl'} scrollBehavior='inside'>
 			<ModalOverlay />
