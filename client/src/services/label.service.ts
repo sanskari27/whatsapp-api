@@ -1,4 +1,3 @@
-import axios from 'axios';
 import APIInstance from '../config/APIInstance';
 
 export default class LabelService {
@@ -10,9 +9,9 @@ export default class LabelService {
 				name: string;
 			}[];
 		} catch (err) {
-			if (axios.isAxiosError(err) && err.response?.data?.title === 'BUSINESS_ACCOUNT_REQUIRED') {
-				throw 'BUSINESS_ACCOUNT_REQUIRED';
-			}
+			// if (axios.isAxiosError(err) && err.response?.data?.title === 'BUSINESS_ACCOUNT_REQUIRED') {
+			// 	throw 'BUSINESS_ACCOUNT_REQUIRED';
+			// }
 			return [];
 		}
 	}

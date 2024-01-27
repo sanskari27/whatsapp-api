@@ -5,7 +5,7 @@ import { ScheduledCampaign, SchedulerState } from '../types/SchedulerState';
 const initialState: SchedulerState = {
 	all_campaigns: [] as ScheduledCampaign[],
 	details: {
-		type: 'CSV',
+		type: 'NUMBERS',
 		numbers: [],
 		csv_file: '',
 		group_ids: [],

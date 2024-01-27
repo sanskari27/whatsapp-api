@@ -34,8 +34,6 @@ import {
 	clearCreateDetails,
 	deleteShortenLink,
 	setLinkCopied,
-	setList,
-	setLoadingLinks,
 	updateShortenLink,
 } from '../../../store/reducers/LinkShortnerReducers';
 import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
@@ -104,17 +102,6 @@ const LinkShortner = () => {
 		dispatch(updateShortenLink({ id, data }));
 		editLinkDialogRef.current?.close();
 	};
-
-	useEffect(() => {
-		dispatch(setLoadingLinks(true));
-		ShortenerService.listAll()
-			.then((res) => {
-				dispatch(setList(res));
-			})
-			.finally(() => {
-				dispatch(setLoadingLinks(false));
-			});
-	}, [dispatch]);
 
 	useEffect(() => {
 		setTimeout(() => {

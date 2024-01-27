@@ -31,17 +31,13 @@ import { NAVIGATION } from '../../../config/const';
 import { popFromNavbar, pushToNavbar } from '../../../hooks/useNavbar';
 import useTemplate from '../../../hooks/useTemplate';
 import { useTheme } from '../../../hooks/useTheme';
-import GroupService from '../../../services/group.service';
-import LabelService from '../../../services/label.service';
 import MessageService from '../../../services/message.service';
-import UploadsService from '../../../services/uploads.service';
 import { StoreNames, StoreState } from '../../../store';
 import {
 	reset,
 	setAttachments,
 	setBatchDelay,
 	setBatchSize,
-	setBusinessAccount,
 	setCSVFile,
 	setCampaignName,
 	setContactCards,
@@ -54,7 +50,6 @@ import {
 	setPolls,
 	setRecipients,
 	setRecipientsFrom,
-	setRecipientsLoading,
 	setStartTime,
 	setVariables,
 } from '../../../store/reducers/SchedulerReducer';
@@ -87,6 +82,14 @@ export type SchedulerDetails = {
 	batch_delay: number;
 	batch_size: number;
 };
+
+const DEFAULT_POLL = [
+	{
+		title: '',
+		options: ['', ''],
+		isMultiSelect: false,
+	},
+];
 
 export default function Scheduler() {
 	const attachmentRef = useRef<AttachmentDialogHandle>(null);
@@ -143,7 +146,10 @@ export default function Scheduler() {
 		(state: StoreState) => state[StoreNames.SCHEDULER]
 	);
 
-	const { canSendMessage } = useSelector((state: StoreState) => state[StoreNames.USER]);
+	const { canSendMessage, groups, labels } = useSelector(
+		(state: StoreState) => state[StoreNames.USER]
+	);
+	const { list: csvList } = useSelector((state: StoreState) => state[StoreNames.CSV]);
 
 	const [error, setError] = useState({
 		campaignName: '',
@@ -171,40 +177,15 @@ export default function Scheduler() {
 
 	const fetchRecipients = useCallback(
 		function (type: string) {
-			dispatch(setRecipientsLoading(true));
-			if (type === 'GROUP') {
-				GroupService.listGroups()
-					.then((data) => dispatch(setRecipients(data)))
-					.finally(() => {
-						dispatch(setRecipientsLoading(false));
-					});
-			} else if (type === 'GROUP_INDIVIDUAL') {
-				GroupService.listGroups()
-					.then((data) => dispatch(setRecipients(data)))
-					.finally(() => {
-						dispatch(setRecipientsLoading(false));
-					});
+			if (type === 'GROUP' || type === 'GROUP_INDIVIDUAL') {
+				dispatch(setRecipients(groups));
 			} else if (type === 'LABEL') {
-				LabelService.listLabels()
-					.then((data) => dispatch(setRecipients(data)))
-					.catch((err) => {
-						if (err === 'BUSINESS_ACCOUNT_REQUIRED') {
-							dispatch(setRecipientsFrom('NUMBERS'));
-							dispatch(setBusinessAccount(false));
-						}
-					})
-					.finally(() => {
-						dispatch(setRecipientsLoading(false));
-					});
+				dispatch(setRecipients(labels));
 			} else if (type === 'CSV') {
-				UploadsService.listCSV()
-					.then((data) => dispatch(setRecipients(data)))
-					.finally(() => {
-						dispatch(setRecipientsLoading(false));
-					});
+				dispatch(setRecipients(csvList));
 			}
 		},
-		[dispatch]
+		[dispatch, groups, labels, csvList]
 	);
 
 	const setSelectedRecipients = (ids: string[]) => {
@@ -402,15 +383,15 @@ export default function Scheduler() {
 								>
 									<option
 										className="'text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
-										value='CSV'
-									>
-										CSV
-									</option>
-									<option
-										className="'text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
 										value='NUMBERS'
 									>
 										Numbers
+									</option>
+									<option
+										className="'text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
+										value='CSV'
+									>
+										CSV
 									</option>
 									<option
 										className="'text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
@@ -708,15 +689,7 @@ export default function Scheduler() {
 									colorScheme='green'
 									onClick={() => {
 										pollInputRef.current?.open(
-											details.polls.length === 0
-												? [
-														{
-															title: '',
-															options: ['', ''],
-															isMultiSelect: false,
-														},
-												  ]
-												: details.polls
+											details.polls.length === 0 ? DEFAULT_POLL : details.polls
 										);
 									}}
 								>

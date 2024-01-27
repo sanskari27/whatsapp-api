@@ -23,7 +23,7 @@ import {
 	Thead,
 	Tr,
 } from '@chakra-ui/react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import GroupService from '../../../../services/group.service';
 import { StoreNames, StoreState } from '../../../../store';
@@ -41,19 +41,13 @@ type GroupMergeProps = {
 	isOpen: boolean;
 };
 
-type Group = {
-	id: string;
-	name: string;
-	isMergedGroup: boolean;
-};
-
 const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 	const dispatch = useDispatch();
 
-	const [groups, setGroups] = useState<Group[]>([]);
 	const [searchText, setSearchText] = useState<string>('');
 
 	const { editSelectedGroup } = useSelector((store: StoreState) => store[StoreNames.MERGE_GROUP]);
+	const { groups } = useSelector((store: StoreState) => store[StoreNames.USER]);
 
 	const handleMergeGroup = () => {
 		if (editSelectedGroup.name === '') {
@@ -94,10 +88,6 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 		dispatch(clearEditMergeGroup());
 		onClose();
 	};
-
-	useEffect(() => {
-		GroupService.listGroups().then(setGroups);
-	}, []);
 
 	const filtered = groups.filter((group) =>
 		group.name.toLowerCase().startsWith(searchText.toLowerCase())

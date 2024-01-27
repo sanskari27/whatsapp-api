@@ -9,10 +9,10 @@ const initialState: UserDetailsState = {
 	subscriptionExpiration: '',
 	userType: 'PERSONAL',
 	canSendMessage: false,
-	paymentRecords: {
-		subscriptions: [],
-		payments: [],
-	},
+
+	groups: [],
+	labels: [],
+	contactsCount: null,
 };
 
 const UserDetailsSlice = createSlice({
@@ -26,7 +26,9 @@ const UserDetailsSlice = createSlice({
 			state.canSendMessage = initialState.canSendMessage;
 			state.subscriptionExpiration = initialState.subscriptionExpiration;
 			state.userType = initialState.userType;
-			state.paymentRecords = initialState.paymentRecords;
+
+			state.groups = initialState.groups;
+			state.labels = initialState.labels;
 		},
 		setUserDetails: (state, action: PayloadAction<typeof initialState>) => {
 			state.name = action.payload.name;
@@ -35,7 +37,10 @@ const UserDetailsSlice = createSlice({
 			state.canSendMessage = action.payload.canSendMessage;
 			state.subscriptionExpiration = action.payload.subscriptionExpiration;
 			state.userType = action.payload.userType;
-			state.paymentRecords = action.payload.paymentRecords;
+
+			state.groups = action.payload.groups;
+			state.labels = action.payload.labels;
+			state.contactsCount = action.payload.contactsCount;
 		},
 		setName: (state, action: PayloadAction<typeof initialState.name>) => {
 			state.name = action.payload;
@@ -55,8 +60,14 @@ const UserDetailsSlice = createSlice({
 		setUserType: (state, action: PayloadAction<typeof initialState.userType>) => {
 			state.userType = action.payload;
 		},
-		setPaymentRecords: (state, action: PayloadAction<typeof initialState.paymentRecords>) => {
-			state.paymentRecords = action.payload;
+		setGroups: (state, action: PayloadAction<typeof initialState.groups>) => {
+			state.groups = action.payload;
+		},
+		setLabels: (state, action: PayloadAction<typeof initialState.labels>) => {
+			state.labels = action.payload;
+		},
+		setContactsCount: (state, action: PayloadAction<typeof initialState.contactsCount>) => {
+			state.contactsCount = action.payload;
 		},
 	},
 });
@@ -69,7 +80,9 @@ export const {
 	setIsSubscribed,
 	setSubscriptionExpiration,
 	setUserType,
-	setPaymentRecords,
+	setGroups,
+	setLabels,
+	setContactsCount,
 } = UserDetailsSlice.actions;
 
 export default UserDetailsSlice.reducer;
