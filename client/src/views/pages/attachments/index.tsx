@@ -1,4 +1,4 @@
-import { DeleteIcon, EditIcon } from '@chakra-ui/icons';
+import { EditIcon } from '@chakra-ui/icons';
 import {
 	Box,
 	Button,
@@ -35,7 +35,7 @@ import {
 	toggleSelected,
 } from '../../../store/reducers/AttachmentReducers';
 import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
-import { NavbarSearchElement } from '../../components/navbar';
+import { NavbarDeleteElement, NavbarSearchElement } from '../../components/navbar';
 import AttachmentDetailsInputDialog, {
 	AttachmentDetailsInputDialogHandle,
 } from './components/attachment-details-input-dialog';
@@ -62,16 +62,10 @@ const AttachmentPage = () => {
 			actions: (
 				<HStack>
 					<NavbarSearchElement />
-					<IconButton
-						aria-label='delete'
-						icon={<Icon as={DeleteIcon} height={5} width={5} />}
-						colorScheme={'red'}
-						size={'sm'}
-						onClick={() => {
-							confirmationDialogRef.current?.open('');
-						}}
+					<NavbarDeleteElement
 						isLoading={isDeleting}
 						isDisabled={selectedAttachments.length === 0}
+						onClick={() => confirmationDialogRef.current?.open('')}
 					/>
 					<Button
 						leftIcon={<Icon as={MdOutlineAttachment} height={5} width={5} />}

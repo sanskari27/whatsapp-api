@@ -1,4 +1,4 @@
-import { SearchIcon } from '@chakra-ui/icons';
+import { DeleteIcon, SearchIcon } from '@chakra-ui/icons';
 import {
 	As,
 	Box,
@@ -7,6 +7,7 @@ import {
 	BreadcrumbLink,
 	Flex,
 	Icon,
+	IconButton,
 	Input,
 	InputGroup,
 	InputLeftElement,
@@ -98,5 +99,26 @@ export function NavbarSearchElement() {
 				focusBorderColor='gray.300'
 			/>
 		</InputGroup>
+	);
+}
+export function NavbarDeleteElement({
+	isLoading = false,
+	isDisabled,
+	onClick,
+}: {
+	isLoading?: boolean;
+	isDisabled: boolean;
+	onClick: () => void;
+}) {
+	return (
+		<IconButton
+			aria-label='delete'
+			isDisabled={isDisabled}
+			icon={<Icon as={DeleteIcon} height={4} width={4} />}
+			colorScheme={'red'}
+			size={'sm'}
+			isLoading={isLoading}
+			onClick={onClick}
+		/>
 	);
 }

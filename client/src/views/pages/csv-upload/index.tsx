@@ -1,11 +1,9 @@
-import { DeleteIcon } from '@chakra-ui/icons';
 import {
 	Box,
 	Button,
 	Checkbox,
 	HStack,
 	Icon,
-	IconButton,
 	Table,
 	TableContainer,
 	Tbody,
@@ -30,7 +28,7 @@ import {
 	setIsDeleting,
 } from '../../../store/reducers/CSVFileReducers';
 import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
-import { NavbarSearchElement } from '../../components/navbar';
+import { NavbarDeleteElement, NavbarSearchElement } from '../../components/navbar';
 import CSVNameInputDialog, { CSVNameInputDialogHandle } from './components/CSV-name-input-dialog';
 import AssignLabelDialog, { AssignLabelDialogHandler } from './components/assign-label-dialog';
 import CreateGroupDialog, { CreateGroupDialogHandler } from './components/create-group-dialog';
@@ -86,13 +84,9 @@ const CSVUpload = () => {
 					>
 						LABEL
 					</Button>
-					<IconButton
-						aria-label='delete'
-						icon={<Icon as={DeleteIcon} height={5} width={5} />}
-						colorScheme={'red'}
-						size={'sm'}
+					<NavbarDeleteElement
 						isDisabled={selectedFiles.length === 0}
-						onClick={() => confirmationDialogRef.current?.open()}
+						onClick={() => confirmationDialogRef.current?.open('')}
 					/>
 					<Button
 						leftIcon={<Icon as={TbCsv} height={5} width={5} />}

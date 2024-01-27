@@ -75,6 +75,7 @@ const LinkShortner = () => {
 					<Button
 						leftIcon={<LinkIcon />}
 						colorScheme='whatsapp'
+						size={'sm'}
 						onClick={() => {
 							dispatch(clearCreateDetails());
 							drawerRef.current?.open();
