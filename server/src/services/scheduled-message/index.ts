@@ -118,6 +118,46 @@ export default class MessageSchedulerService {
 		return await Promise.all(docPromise);
 	}
 
+	async scheduleMessage(
+		messages: (Partial<Message> & { number: string; send_at: Date })[],
+		opts: {
+			client_id: string;
+		}
+	) {
+		const docPromise: Promise<
+			IScheduledMessage & {
+				_id: Types.ObjectId;
+			}
+		>[] = [];
+
+		const batch_id = generateBatchID();
+
+		const time_now = DateUtils.getMomentNow();
+
+		for (let i = 0; i < messages.length; i++) {
+			const message = messages[i];
+
+			docPromise.push(
+				ScheduledMessageDB.create({
+					sender: this.user,
+					sender_client_id: opts.client_id,
+					receiver: message.number,
+					message: message.message ?? '',
+					attachments: message.attachments ?? [],
+					shared_contact_cards: message.shared_contact_cards ?? [],
+					polls: message.polls ?? [],
+					sendAt: message.send_at,
+					batch_id: batch_id,
+					campaign_name: 'LEAD_NURTURING',
+					campaign_id: '',
+					campaign_created_at: time_now.toDate(),
+				})
+			);
+		}
+
+		return await Promise.all(docPromise);
+	}
+
 	static async sendScheduledMessage() {
 		const scheduledMessages = await ScheduledMessageDB.find({
 			sendAt: { $lte: DateUtils.getMomentNow().toDate() },
