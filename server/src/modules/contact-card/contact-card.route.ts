@@ -8,8 +8,9 @@ const router = express.Router();
 router
 	.route('/:id')
 	.all(IDValidator)
-	.put(ContactCardController.updateContactCard)
-	.delete(ContactCardController.deleteContactCard);
+	.delete(ContactCardController.deleteContactCard)
+	.all(CreateContactValidator)
+	.put(ContactCardController.updateContactCard);
 
 router
 	.route('/')
