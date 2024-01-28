@@ -142,11 +142,11 @@ export default function Scheduler() {
 		schedulingMessages: false,
 	});
 
-	const { details, isBusinessAccount, recipients } = useSelector(
+	const { details,  recipients } = useSelector(
 		(state: StoreState) => state[StoreNames.SCHEDULER]
 	);
 
-	const { canSendMessage, groups, labels } = useSelector(
+	const { canSendMessage, groups, labels,userType } = useSelector(
 		(state: StoreState) => state[StoreNames.USER]
 	);
 	const { list: csvList } = useSelector((state: StoreState) => state[StoreNames.CSV]);
@@ -405,7 +405,7 @@ export default function Scheduler() {
 									>
 										Group Individuals
 									</option>
-									{isBusinessAccount ? (
+									{userType==='BUSINESS' ? (
 										<option
 											className="'text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
 											value='LABEL'

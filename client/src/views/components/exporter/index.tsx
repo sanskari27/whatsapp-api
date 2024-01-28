@@ -54,7 +54,7 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 		},
 	}));
 
-	const { groups, labels, isSubscribed, contactsCount } = useSelector(
+	const { groups, labels, isSubscribed, contactsCount, userType } = useSelector(
 		(state: StoreState) => state[StoreNames.USER]
 	);
 
@@ -198,15 +198,13 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 				<ModalHeader>
 					<Flex alignItems='center' gap={'0.5rem'}>
 						<Icon as={PiFileCsvLight} height={5} width={5} color={'green.400'} />
-						<Text className='text-black dark:text-white' fontSize='md'>
-							Exports
-						</Text>
+						<Text fontSize='md'>Exports</Text>
 					</Flex>
 				</ModalHeader>
 				<ModalCloseButton />
 				<ModalBody>
 					<Flex direction={'column'} gap={'0.5rem'}>
-						<Box className='bg-[#ECECEC] dark:bg-[#535353]' p={'0.5rem'} borderRadius={'20px'}>
+						<Box className='bg-[#ECECEC] ' p={'0.5rem'} borderRadius={'20px'}>
 							<Flex flexDirection={'column'} gap={'0.5rem'} width={'full'}>
 								<Flex alignItems='flex-end' justifyContent={'space-between'}>
 									<CheckButton
@@ -215,7 +213,7 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 										value={ALL}
 										onChange={handleChange}
 									/>
-									<Text fontSize='xs' className='text-black dark:text-white'>
+									<Text fontSize='xs' className='text-black '>
 										{!contactsCount ? 'Loading...' : `${contactsCount[EXPORTS_TYPE.ALL]} Contacts`}
 									</Text>
 								</Flex>
@@ -226,7 +224,7 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 										value={SAVED_CHAT}
 										onChange={handleChange}
 									/>
-									<Text fontSize='xs' className='text-black dark:text-white'>
+									<Text fontSize='xs' className='text-black '>
 										{!contactsCount
 											? 'Loading...'
 											: `${contactsCount[EXPORTS_TYPE.SAVED_CHAT]} Contacts`}
@@ -239,7 +237,7 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 										value={SAVED}
 										onChange={handleChange}
 									/>
-									<Text fontSize='xs' className='text-black dark:text-white'>
+									<Text fontSize='xs' className='text-black '>
 										{!contactsCount
 											? 'Loading...'
 											: `${contactsCount[EXPORTS_TYPE.SAVED]} Contacts`}
@@ -252,7 +250,7 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 										value={UNSAVED}
 										onChange={handleChange}
 									/>
-									<Text fontSize='xs' className='text-black dark:text-white'>
+									<Text fontSize='xs' className='text-black '>
 										{!contactsCount
 											? 'Loading...'
 											: `${contactsCount[EXPORTS_TYPE.UNSAVED]} Contacts`}
@@ -285,7 +283,7 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 												border: 'none',
 											},
 										}}
-										className='!w-[300px] !mr-2 !bg-[#A6A6A6] dark:!bg-[#252525] rounded-md border-none '
+										className='!w-[300px] !mr-2 !bg-[#A6A6A6]  rounded-md border-none '
 									/>
 									<Button
 										onClick={() => {
@@ -301,13 +299,11 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 										isDisabled={!GROUP}
 										size='sm'
 										className={`${
-											uiDetails.selectAllGroups
-												? '!bg-green-400'
-												: '!bg-[#A6A6A6] dark:!bg-[#252525]'
+											uiDetails.selectAllGroups ? '!bg-green-400' : '!bg-[#A6A6A6] '
 										} !text-white`}
 										color={'white'}
 									>
-										{uiDetails.selectAllGroups ? 'Deselect All' : 'Select All'}
+										ALL
 									</Button>
 								</Flex>
 								<Flex alignItems='flex-end' justifyContent={'space-between'}>
@@ -315,7 +311,7 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 										name={'LABEL'}
 										label='Label Contacts'
 										value={LABEL}
-										isDisabled={!uiDetails.isBusiness}
+										isDisabled={userType !== 'BUSINESS'}
 										onChange={handleChange}
 									/>
 								</Flex>
@@ -343,7 +339,7 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 												width: '100%',
 											},
 										}}
-										className='!w-[300px] !mr-2 !bg-[#A6A6A6] dark:!bg-[#252525] rounded-md border-none '
+										className='!w-[300px] !mr-2 !bg-[#A6A6A6]  rounded-md border-none '
 									/>
 									<Button
 										onClick={() => {
@@ -359,13 +355,11 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 										isDisabled={!LABEL}
 										size='sm'
 										className={`${
-											uiDetails.selectAllLabels
-												? '!bg-green-400'
-												: '!bg-[#A6A6A6] dark:!bg-[#252525]'
+											uiDetails.selectAllLabels ? '!bg-green-400' : '!bg-[#A6A6A6] '
 										} !text-white`}
 										color={'white'}
 									>
-										{uiDetails.selectAllLabels ? 'Deselect All' : 'Select All'}
+										ALL
 									</Button>
 								</Flex>
 							</Flex>
