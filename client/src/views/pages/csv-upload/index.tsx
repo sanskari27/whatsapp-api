@@ -40,6 +40,7 @@ const CSVUpload = () => {
 	const assignLabelDialogRef = useRef<AssignLabelDialogHandler>(null);
 
 	const { list } = useSelector((state: StoreState) => state[StoreNames.CSV]);
+	const { userType } = useSelector((state: StoreState) => state[StoreNames.USER]);
 
 	const theme = useTheme();
 	const dispatch = useDispatch();
@@ -76,14 +77,16 @@ const CSVUpload = () => {
 					>
 						GROUP
 					</Button>
-					<Button
-						size={'sm'}
-						leftIcon={<BiLabel />}
-						colorScheme='blue'
-						onClick={() => assignLabelDialogRef.current?.open()}
-					>
-						LABEL
-					</Button>
+					{userType === 'BUSINESS' && (
+						<Button
+							size={'sm'}
+							leftIcon={<BiLabel />}
+							colorScheme='blue'
+							onClick={() => assignLabelDialogRef.current?.open()}
+						>
+							LABEL
+						</Button>
+					)}
 					<NavbarDeleteElement
 						isDisabled={selectedFiles.length === 0}
 						onClick={() => confirmationDialogRef.current?.open('')}
@@ -131,12 +134,12 @@ const CSVUpload = () => {
 									<Td>
 										<Checkbox
 											mr={'1rem'}
-											isChecked={selectedFiles.includes(csv._id)}
+											isChecked={selectedFiles.includes(csv.id)}
 											onChange={(e) => {
 												if (e.target.checked) {
-													setSelectedFiles((prev) => [...prev, csv._id]);
+													setSelectedFiles((prev) => [...prev, csv.id]);
 												} else {
-													setSelectedFiles((prev) => prev.filter((file) => file !== csv._id));
+													setSelectedFiles((prev) => prev.filter((file) => file !== csv.id));
 												}
 											}}
 											colorScheme='green'
@@ -154,7 +157,7 @@ const CSVUpload = () => {
 			<CSVNameInputDialog ref={csvFileInputRef} />
 			<ConfirmationDialog ref={confirmationDialogRef} onConfirm={deleteCSVFile} type={'CSV'} />
 			<CreateGroupDialog ref={createGroupDialogRef} />
-			<AssignLabelDialog ref={assignLabelDialogRef} />
+			{userType === 'BUSINESS' && <AssignLabelDialog ref={assignLabelDialogRef} />}
 		</Box>
 	);
 };

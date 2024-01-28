@@ -11,19 +11,14 @@ import {
 	Thead,
 	Tr,
 } from '@chakra-ui/react';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { MdDelete, MdHistory } from 'react-icons/md';
 import { PiPause, PiPlay } from 'react-icons/pi';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTheme } from '../../../../hooks/useTheme';
 import BotService from '../../../../services/bot.service';
 import { StoreNames, StoreState } from '../../../../store';
-import {
-	removeBot,
-	setBots,
-	setSelectedBot,
-	updateBot,
-} from '../../../../store/reducers/BotReducers';
+import { removeBot, setSelectedBot, updateBot } from '../../../../store/reducers/BotReducers';
 import ConfirmationDialog, {
 	ConfirmationDialogHandle,
 } from '../../../components/confirmation-alert';
@@ -33,12 +28,6 @@ export default function AllResponders() {
 	const dispatch = useDispatch();
 	const { all_bots } = useSelector((state: StoreState) => state[StoreNames.CHATBOT]);
 	const confirmationDialogRef = useRef<ConfirmationDialogHandle>(null);
-
-	useEffect(() => {
-		BotService.listBots().then((res) => {
-			dispatch(setBots(res));
-		});
-	}, [dispatch]);
 
 	const deleteBot = (id: string) => {
 		BotService.deleteBot(id).then((res) => {

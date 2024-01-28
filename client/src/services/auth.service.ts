@@ -26,28 +26,15 @@ export default class AuthService {
 		}
 	}
 	static async getUserDetails() {
-		try {
-			const { data } = await APIInstance.get(`/auth/details`);
-			return {
-				name: data.name,
-				phoneNumber: data.phoneNumber,
-				isSubscribed: data.isSubscribed,
-				canSendMessage: data.canSendMessage,
-				subscriptionExpiration: data.subscriptionExpiration,
-				userType: data.userType as 'BUSINESS' | 'PERSONAL',
-				paymentRecords: data.paymentRecords,
-			};
-		} catch (err) {
-			return {
-				name: '',
-				phoneNumber: '',
-				isSubscribed: false,
-				canSendMessage: false,
-				subscriptionExpiration: '',
-				userType: 'PERSONAL' as 'BUSINESS' | 'PERSONAL',
-				paymentRecords: {},
-			};
-		}
+		const { data } = await APIInstance.get(`/auth/details`);
+		return {
+			name: data.name as string,
+			phoneNumber: data.phoneNumber as string,
+			isSubscribed: data.isSubscribed as boolean,
+			canSendMessage: data.canSendMessage as boolean,
+			subscriptionExpiration: data.subscriptionExpiration as string,
+			userType: data.userType as 'BUSINESS' | 'PERSONAL',
+		};
 	}
 
 	static async logout() {

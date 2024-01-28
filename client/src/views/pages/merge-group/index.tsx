@@ -29,8 +29,6 @@ import {
 	editSelectedGroup,
 	removeSelectedMergedGroups,
 	setIsDeleting,
-	setIsFetching,
-	setMergedGroupList,
 } from '../../../store/reducers/MergeGroupReducer';
 import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
 import { NavbarDeleteElement, NavbarSearchElement } from '../../components/navbar';
@@ -81,13 +79,6 @@ const GroupAndLabelPage = () => {
 			popFromNavbar();
 		};
 	}, [onOpen, selectedGroups.length, isDeleting]);
-
-	useEffect(() => {
-		dispatch(setIsFetching(true));
-		GroupService.mergedGroups()
-			.then((groups) => dispatch(setMergedGroupList(groups)))
-			.finally(() => dispatch(setIsFetching(false)));
-	}, [dispatch]);
 
 	const filtered = useFilteredList(list, { name: 1 });
 

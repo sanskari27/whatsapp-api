@@ -16,8 +16,8 @@ const QrImage = ({ base64 }: QrImageProps) => {
 	};
 
 	return (
-		<Box position={'relative'} width={'150px'} height={'150px'} className='group '>
-			<Image src={base64} width={'150px'} />
+		<Box position={'relative'} width={'150px'} height={'150px'} className='group rounded-md'>
+			<Image src={base64} width={'150px'} className='rounded-md' />
 			<Center
 				height={'150px'}
 				width={'150px'}

@@ -18,12 +18,13 @@ import {
 import Multiselect from 'multiselect-react-dropdown';
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { PiExportBold, PiFileCsvLight } from 'react-icons/pi';
+import { useDispatch, useSelector } from 'react-redux';
 import { EXPORTS_TYPE } from '../../../config/const';
-import { useAuth } from '../../../hooks/useAuth';
-import AuthService from '../../../services/auth.service';
 import ContactService from '../../../services/contact.service';
 import GroupService from '../../../services/group.service';
 import LabelService from '../../../services/label.service';
+import { StoreNames, StoreState } from '../../../store';
+import { setContactsCount } from '../../../store/reducers/UserDetailsReducers';
 import CheckButton from '../check-button';
 
 export type ExportsModalHandler = {
@@ -44,6 +45,7 @@ const initialExportCriteria = {
 
 const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 	const { isOpen, onOpen, onClose } = useDisclosure();
+	const dispatch = useDispatch();
 
 	useImperativeHandle(ref, () => ({
 		open: () => {
@@ -52,37 +54,22 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 		},
 	}));
 
+	const { groups, labels, isSubscribed, contactsCount, userType } = useSelector(
+		(state: StoreState) => state[StoreNames.USER]
+	);
+
 	const [export_criteria, setExportCriteria] = useState(initialExportCriteria);
-
-	const [exporting, setExporting] = useState({
-		CSV: false,
-		VCF: false,
-	});
-
-	const [contactsCount, setContactsCount] = useState({
-		[EXPORTS_TYPE.ALL]: 0,
-		[EXPORTS_TYPE.SAVED]: 0,
-		[EXPORTS_TYPE.UNSAVED]: 0,
-		[EXPORTS_TYPE.SAVED_CHAT]: 0,
-	});
-
-	const { isAuthenticated } = useAuth();
 
 	const [selectedGroup, setSelectedGroup] = useState([]);
 	const [selectedLabel, setSelectedLabel] = useState([]);
 
 	const [uiDetails, setUIDetails] = useState({
 		exportClicked: false,
-		paymentVerified: false,
 		isBusiness: true,
 		selectAllGroups: false,
 		selectAllLabels: false,
-	});
-
-	const [Loading, setLoading] = useState({
-		contactLoading: false,
-		groupLoading: false,
-		labelLoading: false,
+		CSV_EXPORTING: false,
+		VCF_EXPORTING: false,
 	});
 
 	const { ALL, SAVED, UNSAVED, GROUP, LABEL, BUSINESS_ONLY, SAVED_CHAT } = export_criteria;
@@ -94,29 +81,16 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 		}));
 	};
 
-	const [groups, setGroups] = useState([
-		{
-			id: '',
-			name: 'No Group Selected!',
-		},
-	]);
-	const [labels, setLabels] = useState([
-		{
-			id: '',
-			name: 'No Label Selected!',
-		},
-	]);
-
 	const exportContacts = (vcf_only = false) => {
 		if (vcf_only) {
-			setExporting((prevState) => ({
+			setUIDetails((prevState) => ({
 				...prevState,
-				VCF: true,
+				VCF_EXPORTING: true,
 			}));
 		} else {
-			setExporting((prevState) => ({
+			setUIDetails((prevState) => ({
 				...prevState,
-				CSV: true,
+				CSV_EXPORTING: true,
 			}));
 		}
 
@@ -191,12 +165,8 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 			setUIDetails((prevState) => ({
 				...prevState,
 				exportClicked: false,
-			}));
-
-			setExporting((prevState) => ({
-				...prevState,
-				CSV: false,
-				VCF: false,
+				CSV_EXPORTING: false,
+				VCF_EXPORTING: false,
 			}));
 		});
 	};
@@ -206,58 +176,20 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 	};
 
 	useEffect(() => {
-		setLoading({
-			contactLoading: true,
-			groupLoading: true,
-			labelLoading: true,
-		});
-		ContactService.contactCount()
-			.then((res) => {
+		if (contactsCount !== null) {
+			return;
+		}
+		ContactService.contactCount().then((res) => {
+			dispatch(
 				setContactsCount({
 					[EXPORTS_TYPE.ALL]: res.total,
 					[EXPORTS_TYPE.SAVED]: res.saved,
 					[EXPORTS_TYPE.UNSAVED]: res.unsaved,
 					[EXPORTS_TYPE.SAVED_CHAT]: res.saved_chat,
-				});
-			})
-			.finally(() => {
-				setLoading((prevState) => ({
-					...prevState,
-					contactLoading: false,
-				}));
-			});
-		GroupService.listGroups()
-			.then(setGroups)
-			.finally(() => {
-				setLoading((prevState) => ({
-					...prevState,
-					groupLoading: false,
-				}));
-			});
-
-		LabelService.listLabels()
-			.then(setLabels)
-			.catch((err) => {
-				if (err === 'BUSINESS_ACCOUNT_REQUIRED') {
-					setUIDetails((prevState) => ({
-						...prevState,
-						isBusiness: false,
-					}));
-				}
-			})
-			.finally(() => {
-				setLoading((prevState) => ({
-					...prevState,
-					labelLoading: false,
-				}));
-			});
-		AuthService.getUserDetails().then((res) => {
-			setUIDetails((prevState) => ({
-				...prevState,
-				paymentVerified: res.isSubscribed,
-			}));
+				})
+			);
 		});
-	}, []);
+	}, [dispatch, contactsCount]);
 
 	return (
 		<Modal isOpen={isOpen} onClose={onClose}>
@@ -266,15 +198,13 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 				<ModalHeader>
 					<Flex alignItems='center' gap={'0.5rem'}>
 						<Icon as={PiFileCsvLight} height={5} width={5} color={'green.400'} />
-						<Text className='text-black dark:text-white' fontSize='md'>
-							Exports
-						</Text>
+						<Text fontSize='md'>Exports</Text>
 					</Flex>
 				</ModalHeader>
 				<ModalCloseButton />
 				<ModalBody>
 					<Flex direction={'column'} gap={'0.5rem'}>
-						<Box className='bg-[#ECECEC] dark:bg-[#535353]' p={'0.5rem'} borderRadius={'20px'}>
+						<Box className='bg-[#ECECEC] ' p={'0.5rem'} borderRadius={'20px'}>
 							<Flex flexDirection={'column'} gap={'0.5rem'} width={'full'}>
 								<Flex alignItems='flex-end' justifyContent={'space-between'}>
 									<CheckButton
@@ -283,10 +213,8 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 										value={ALL}
 										onChange={handleChange}
 									/>
-									<Text fontSize='xs' className='text-black dark:text-white'>
-										{Loading.contactLoading
-											? 'Loading...'
-											: `${contactsCount[EXPORTS_TYPE.ALL]} Contacts`}
+									<Text fontSize='xs' className='text-black '>
+										{!contactsCount ? 'Loading...' : `${contactsCount[EXPORTS_TYPE.ALL]} Contacts`}
 									</Text>
 								</Flex>
 								<Flex alignItems='flex-end' justifyContent={'space-between'}>
@@ -296,8 +224,8 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 										value={SAVED_CHAT}
 										onChange={handleChange}
 									/>
-									<Text fontSize='xs' className='text-black dark:text-white'>
-										{Loading.contactLoading
+									<Text fontSize='xs' className='text-black '>
+										{!contactsCount
 											? 'Loading...'
 											: `${contactsCount[EXPORTS_TYPE.SAVED_CHAT]} Contacts`}
 									</Text>
@@ -309,8 +237,8 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 										value={SAVED}
 										onChange={handleChange}
 									/>
-									<Text fontSize='xs' className='text-black dark:text-white'>
-										{Loading.contactLoading
+									<Text fontSize='xs' className='text-black '>
+										{!contactsCount
 											? 'Loading...'
 											: `${contactsCount[EXPORTS_TYPE.SAVED]} Contacts`}
 									</Text>
@@ -322,8 +250,8 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 										value={UNSAVED}
 										onChange={handleChange}
 									/>
-									<Text fontSize='xs' className='text-black dark:text-white'>
-										{Loading.contactLoading
+									<Text fontSize='xs' className='text-black '>
+										{!contactsCount
 											? 'Loading...'
 											: `${contactsCount[EXPORTS_TYPE.UNSAVED]} Contacts`}
 									</Text>
@@ -335,13 +263,6 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 										value={GROUP}
 										onChange={handleChange}
 									/>
-									<Text
-										fontSize='xs'
-										className='text-black dark:text-white'
-										hidden={!isAuthenticated}
-									>
-										{Loading.groupLoading ? 'Loading...' : `${groups.length} Groups`}
-									</Text>
 								</Flex>
 								<Flex alignItems='center' justifyContent='space-between'>
 									<Multiselect
@@ -362,7 +283,7 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 												border: 'none',
 											},
 										}}
-										className='!w-[300px] !mr-2 !bg-[#A6A6A6] dark:!bg-[#252525] rounded-md border-none '
+										className='!w-[300px] !mr-2 !bg-[#A6A6A6]  rounded-md border-none '
 									/>
 									<Button
 										onClick={() => {
@@ -378,13 +299,11 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 										isDisabled={!GROUP}
 										size='sm'
 										className={`${
-											uiDetails.selectAllGroups
-												? '!bg-green-400'
-												: '!bg-[#A6A6A6] dark:!bg-[#252525]'
+											uiDetails.selectAllGroups ? '!bg-green-400' : '!bg-[#A6A6A6] '
 										} !text-white`}
 										color={'white'}
 									>
-										{uiDetails.selectAllGroups ? 'Deselect All' : 'Select All'}
+										ALL
 									</Button>
 								</Flex>
 								<Flex alignItems='flex-end' justifyContent={'space-between'}>
@@ -392,16 +311,9 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 										name={'LABEL'}
 										label='Label Contacts'
 										value={LABEL}
-										isDisabled={!uiDetails.isBusiness}
+										isDisabled={userType !== 'BUSINESS'}
 										onChange={handleChange}
 									/>
-									<Text
-										fontSize='xs'
-										className='text-black dark:text-white '
-										hidden={!isAuthenticated || !uiDetails.isBusiness}
-									>
-										{Loading.labelLoading ? 'Loading...' : `${labels.length} Labels`}
-									</Text>
 								</Flex>
 								<Flex alignItems='center' justifyContent='space-between'>
 									<Multiselect
@@ -427,7 +339,7 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 												width: '100%',
 											},
 										}}
-										className='!w-[300px] !mr-2 !bg-[#A6A6A6] dark:!bg-[#252525] rounded-md border-none '
+										className='!w-[300px] !mr-2 !bg-[#A6A6A6]  rounded-md border-none '
 									/>
 									<Button
 										onClick={() => {
@@ -443,13 +355,11 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 										isDisabled={!LABEL}
 										size='sm'
 										className={`${
-											uiDetails.selectAllLabels
-												? '!bg-green-400'
-												: '!bg-[#A6A6A6] dark:!bg-[#252525]'
+											uiDetails.selectAllLabels ? '!bg-green-400' : '!bg-[#A6A6A6] '
 										} !text-white`}
 										color={'white'}
 									>
-										{uiDetails.selectAllLabels ? 'Deselect All' : 'Select All'}
+										ALL
 									</Button>
 								</Flex>
 							</Flex>
@@ -471,7 +381,7 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 					</Flex>
 				</ModalBody>
 				<ModalFooter>
-					{!uiDetails.paymentVerified ? (
+					{!isSubscribed ? (
 						<Button
 							bgColor={'yellow.400'}
 							_hover={{
@@ -512,7 +422,7 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 								}}
 								width={'48%'}
 								onClick={() => exportContacts(false)}
-								isLoading={exporting.CSV}
+								isLoading={uiDetails.CSV_EXPORTING}
 							>
 								<Text color={'white'}>CSV</Text>
 							</Button>
@@ -522,7 +432,7 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 									bgColor: 'yellow.500',
 								}}
 								width={'48%'}
-								isLoading={exporting.VCF}
+								isLoading={uiDetails.VCF_EXPORTING}
 								onClick={() => exportContacts(true)}
 							>
 								<Text color={'white'}>VCF</Text>
