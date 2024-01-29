@@ -23,6 +23,10 @@ export type CreateBotValidationResult = {
 		number: string;
 		message: string;
 	};
+	nurturing: {
+		message: string;
+		after: number;
+	}[];
 };
 
 export async function CreateBotValidator(req: Request, res: Response, next: NextFunction) {
@@ -72,6 +76,13 @@ export async function CreateBotValidator(req: Request, res: Response, next: Next
 				number: '',
 				message: '',
 			}),
+		nurturing: z
+			.object({
+				after: z.number(),
+				message: z.string(),
+			})
+			.array()
+			.default([]),
 	});
 
 	const reqValidatorResult = reqValidator.safeParse(req.body);
