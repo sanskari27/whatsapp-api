@@ -90,7 +90,7 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 	};
 
 	const filtered = groups.filter((group) =>
-		group.name.toLowerCase().startsWith(searchText.toLowerCase())
+		group.name?.toLowerCase().startsWith(searchText.toLowerCase())
 	);
 
 	return (
