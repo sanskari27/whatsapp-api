@@ -118,7 +118,7 @@ export default class MessageSchedulerService {
 		return await Promise.all(docPromise);
 	}
 
-	async scheduleMessage(
+	async scheduleLeadNurturingMessage(
 		messages: (Partial<Message> & { number: string; send_at: Date })[],
 		opts: {
 			client_id: string;
@@ -149,7 +149,7 @@ export default class MessageSchedulerService {
 					sendAt: message.send_at,
 					batch_id: batch_id,
 					campaign_name: 'LEAD_NURTURING',
-					campaign_id: '',
+					campaign_id: 'LEAD_NURTURING',
 					campaign_created_at: time_now.toDate(),
 				})
 			);
