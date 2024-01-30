@@ -27,6 +27,7 @@ import {
 	setForwardMessage,
 	setForwardTo,
 	setMessage,
+	setNurturing,
 	setOptions,
 	setPolls,
 	setRespondTo,
@@ -48,6 +49,9 @@ import ContactSelectorDialog, {
 } from '../../components/selector-dialog/ContactSelectorDialog';
 import SubscriptionAlert, { SubscriptionPopup } from '../../components/subscription-alert';
 import AllResponders from './components/AllResponders';
+import InputLeadsNurturingDialog, {
+	InputLeadsNurturingDialogHandle,
+} from './components/InputLeadsNurturingDialog';
 import { NumberInput, SelectElement, TextAreaElement, TextInput } from './components/Inputs';
 
 export default function Bot() {
@@ -55,6 +59,7 @@ export default function Bot() {
 	const attachmentSelectorRef = useRef<AttachmentDialogHandle>(null);
 	const contactSelectorRef = useRef<ContactDialogHandle>(null);
 	const pollInputRef = useRef<PollInputDialogHandle>(null);
+	const leadsNurturingRef = useRef<InputLeadsNurturingDialogHandle>(null);
 	const theme = useTheme();
 
 	const { details, trigger_gap, response_delay, ui, all_bots } = useSelector(
@@ -209,6 +214,30 @@ export default function Bot() {
 		dispatch(setPolls(polls));
 	};
 
+	const handleAddLeadsNurturing = (
+		nurturing: {
+			message: string;
+			delay: string;
+			unit: 'MINUTES' | 'HOURS' | 'DAYS';
+		}[]
+	) => {
+		dispatch(
+			setNurturing(
+				nurturing.map((nurturing) => {
+					return {
+						message: nurturing.message,
+						after:
+							nurturing.unit === 'DAYS'
+								? Number(nurturing.delay) * 86400
+								: nurturing.unit === 'HOURS'
+								? Number(nurturing.delay) * 3600
+								: Number(nurturing.delay) * 60,
+					};
+				})
+			)
+		);
+	};
+
 	async function handleEditResponder() {
 		if (!details.bot_id) return;
 		if (!validate()) {
@@ -227,6 +256,39 @@ export default function Bot() {
 
 	function handleCancel() {
 		dispatch(reset());
+	}
+	function openLeadNurturing() {
+		if (details.nurturing.length === 0) {
+			leadsNurturingRef.current?.open([
+				{
+					message: '',
+					delay: '1',
+					unit: 'MINUTES',
+				},
+			]);
+		} else {
+			leadsNurturingRef.current?.open(
+				details.nurturing.map((nurturing) => {
+					let unit = 'MINUTES' as 'MINUTES' | 'HOURS' | 'DAYS';
+					let delay = nurturing.after;
+					if (delay >= 86400) {
+						delay = delay / 86400;
+						unit = 'DAYS';
+					} else if (delay >= 3600) {
+						delay = delay / 3600;
+						unit = 'HOURS';
+					} else {
+						delay = delay / 60;
+						unit = 'MINUTES';
+					}
+					return {
+						message: nurturing.message,
+						delay: delay.toString(),
+						unit: unit,
+					};
+				})
+			);
+		}
 	}
 
 	return (
@@ -433,21 +495,33 @@ export default function Bot() {
 								size={'sm'}
 								variant={'outline'}
 								colorScheme='green'
-								onClick={() =>
-									pollInputRef.current?.open(
-										details.polls.length === 0
-											? [
-													{
-														title: '',
-														options: ['', ''],
-														isMultiSelect: false,
-													},
-											  ]
-											: details.polls
-									)
-								}
+								onClick={() => {
+									if (details.polls.length === 0) {
+										pollInputRef.current?.open([
+											{
+												title: '',
+												options: ['', ''],
+												isMultiSelect: false,
+											},
+										]);
+									} else {
+										pollInputRef.current?.open(details.polls);
+									}
+								}}
 							>
 								Add Polls ({details.polls.length}) Added
+							</Button>
+						</Box>
+						<Box flex={1}>
+							<Text className='text-gray-700 dark:text-gray-400'>Leads Nurturing</Text>
+							<Button
+								width={'full'}
+								size={'sm'}
+								variant={'solid'}
+								colorScheme='green'
+								onClick={openLeadNurturing}
+							>
+								Add Nurturing ({details.nurturing.length}) Added
 							</Button>
 						</Box>
 					</HStack>
@@ -535,6 +609,7 @@ export default function Bot() {
 				onConfirm={(ids) => dispatch(setContactCards(ids))}
 			/>
 			<PollInputDialog ref={pollInputRef} onConfirm={handleAddPolls} />
+			<InputLeadsNurturingDialog ref={leadsNurturingRef} onConfirm={handleAddLeadsNurturing} />
 			<SubscriptionAlert />
 		</Flex>
 	);

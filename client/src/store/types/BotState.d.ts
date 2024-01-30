@@ -43,4 +43,8 @@ export type Bot = {
 		number: string;
 		message: string;
 	};
+	nurturing: {
+		message: string;
+		after: number;
+	}[];
 };

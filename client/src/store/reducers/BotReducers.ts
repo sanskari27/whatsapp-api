@@ -20,6 +20,7 @@ const initialState: BotState = {
 			number: '',
 			message: '',
 		},
+		nurturing: [],
 	},
 	ui: {
 		isAddingBot: false,
@@ -79,6 +80,7 @@ const BotSlice = createSlice({
 			state.details.trigger_gap_seconds = state.all_bots[index].trigger_gap_seconds;
 			state.details.polls = state.all_bots[index].polls;
 			state.details.forward = state.all_bots[index].forward;
+			state.details.nurturing = state.all_bots[index].nurturing;
 
 			state.ui.isEditingBot = true;
 
@@ -183,6 +185,9 @@ const BotSlice = createSlice({
 		setPolls: (state, action: PayloadAction<typeof initialState.details.polls>) => {
 			state.details.polls = action.payload;
 		},
+		setNurturing: (state, action: PayloadAction<typeof initialState.details.nurturing>) => {
+			state.details.nurturing = action.payload;
+		},
 		setAddingBot: (state, action: PayloadAction<boolean>) => {
 			state.ui.isAddingBot = action.payload;
 		},
@@ -235,6 +240,7 @@ export const {
 	setTriggerGapType,
 	setPolls,
 	setError,
+	setNurturing,
 	setAddingBot,
 	setEditingBot,
 	setForwardMessage,

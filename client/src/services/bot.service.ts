@@ -20,6 +20,10 @@ export default class BotService {
 			number: string;
 			message: string;
 		};
+		nurturing: {
+			message: string;
+			after:number;
+		}[];
 	}) {
 		try {
 			const { data: response } = await APIInstance.post(`/whatsapp/bot`, data);
@@ -37,6 +41,7 @@ export default class BotService {
 				isActive: res.isActive || false,
 				polls: res.polls || [],
 				forward: res.forward ?? { number: '', message: '' },
+				nurturing: res.nurturing ?? [],
 			};
 		} catch (err) {
 			return null;
@@ -61,6 +66,7 @@ export default class BotService {
 				isActive: res.isActive || false,
 				polls: res.polls || [],
 				forward: res.forward ?? { number: '', message: '' },
+				nurturing: res.nurturing ?? [],
 			};
 		} catch (err) {
 			return null;
@@ -83,6 +89,7 @@ export default class BotService {
 				isActive: res.isActive ?? false,
 				polls: res.polls || [],
 				forward: res.forward ?? { number: '', message: '' },
+				nurturing: res.nurturing ?? [],
 			})) as Bot[];
 		} catch (err) {
 			return [];
@@ -117,6 +124,10 @@ export default class BotService {
 				number: string;
 				message: string;
 			};
+			nurturing: {
+				message: string;
+				after:number;
+			}[];
 		}
 	) {
 		try {
@@ -134,6 +145,7 @@ export default class BotService {
 				isActive: response.bot.isActive ?? true,
 				forward: response.bot.forward ?? { number: '', message: '' },
 				polls: response.bot.polls || [],
+				nurturing: response.bot.nurturing ?? [],
 			} as Bot;
 		} catch (err) {
 			return null;
