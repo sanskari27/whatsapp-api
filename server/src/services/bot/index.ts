@@ -430,7 +430,7 @@ export default class BotService {
 				number: string;
 				message: string;
 			};
-			nurturing: {
+			nurturing?: {
 				message: string;
 				after: number;
 			}[];
