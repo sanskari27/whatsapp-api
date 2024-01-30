@@ -170,9 +170,9 @@ const InputLeadsNurturingDialog = forwardRef<InputLeadsNurturingDialogHandle, Pr
 														value={nurturing.unit ?? 'min'}
 														onChange={(e) => handleChange('unit', e.target.value, index)}
 													>
-														<option value={'sec'}>Sec</option>
-														<option value={'min'}>Min</option>
-														<option value={'hr'}>Hour</option>
+														<option value={'MINUTES'}>Minutes</option>
+														<option value={'HOURS'}>Hours</option>
+														<option value={'DAYS'}>Days</option>
 													</Select>
 												</HStack>
 											</FormControl>

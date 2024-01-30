@@ -266,28 +266,29 @@ export default function Bot() {
 					unit: 'MINUTES',
 				},
 			]);
+		} else {
+			leadsNurturingRef.current?.open(
+				details.nurturing.map((nurturing) => {
+					let unit = 'MINUTES' as 'MINUTES' | 'HOURS' | 'DAYS';
+					let delay = nurturing.after;
+					if (delay >= 86400) {
+						delay = delay / 86400;
+						unit = 'DAYS';
+					} else if (delay >= 3600) {
+						delay = delay / 3600;
+						unit = 'HOURS';
+					} else {
+						delay = delay / 60;
+						unit = 'MINUTES';
+					}
+					return {
+						message: nurturing.message,
+						delay: delay.toString(),
+						unit: unit,
+					};
+				})
+			);
 		}
-		leadsNurturingRef.current?.open(
-			details.nurturing.map((nurturing) => {
-				let unit = 'MINUTES' as 'MINUTES' | 'HOURS' | 'DAYS';
-				let delay = nurturing.after;
-				if (delay >= 86400) {
-					delay = delay / 86400;
-					unit = 'DAYS';
-				} else if (delay >= 3600) {
-					delay = delay / 3600;
-					unit = 'HOURS';
-				} else {
-					delay = delay / 60;
-					unit = 'MINUTES';
-				}
-				return {
-					message: nurturing.message,
-					delay: delay.toString(),
-					unit: unit,
-				};
-			})
-		);
 	}
 
 	return (
