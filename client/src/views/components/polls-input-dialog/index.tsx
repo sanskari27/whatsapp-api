@@ -58,8 +58,6 @@ type Props = {
 	) => void;
 };
 
-// Define the action type
-
 const PollInputDialog = forwardRef<PollInputDialogHandle, Props>(({ onConfirm }: Props, ref) => {
 	const [isOpen, setOpen] = useState(false);
 	const dispatch = useDispatch();

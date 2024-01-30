@@ -27,6 +27,7 @@ import {
 	setForwardMessage,
 	setForwardTo,
 	setMessage,
+	setNurturing,
 	setOptions,
 	setPolls,
 	setRespondTo,
@@ -48,6 +49,9 @@ import ContactSelectorDialog, {
 } from '../../components/selector-dialog/ContactSelectorDialog';
 import SubscriptionAlert, { SubscriptionPopup } from '../../components/subscription-alert';
 import AllResponders from './components/AllResponders';
+import InputLeadsNurturingDialog, {
+	InputLeadsNurturingDialogHandle,
+} from './components/InputLeadsNurturingDialog';
 import { NumberInput, SelectElement, TextAreaElement, TextInput } from './components/Inputs';
 
 export default function Bot() {
@@ -55,6 +59,7 @@ export default function Bot() {
 	const attachmentSelectorRef = useRef<AttachmentDialogHandle>(null);
 	const contactSelectorRef = useRef<ContactDialogHandle>(null);
 	const pollInputRef = useRef<PollInputDialogHandle>(null);
+	const leadsNurturingRef = useRef<InputLeadsNurturingDialogHandle>(null);
 	const theme = useTheme();
 
 	const { details, trigger_gap, response_delay, ui, all_bots } = useSelector(
@@ -207,6 +212,30 @@ export default function Bot() {
 		}[]
 	) => {
 		dispatch(setPolls(polls));
+	};
+
+	const handleAddLeadsNurturing = (
+		nurturing: {
+			message: string;
+			delay: string;
+			unit: 'sec' | 'min' | 'hr';
+		}[]
+	) => {
+		dispatch(
+			setNurturing(
+				nurturing.map((nurturing) => {
+					return {
+						message: nurturing.message,
+						after:
+							nurturing.unit === 'hr'
+								? Number(nurturing.delay) * 3600
+								: nurturing.unit === 'min'
+								? Number(nurturing.delay) * 60
+								: Number(nurturing.delay),
+					};
+				})
+			)
+		);
 	};
 
 	async function handleEditResponder() {
@@ -450,6 +479,45 @@ export default function Bot() {
 								Add Polls ({details.polls.length}) Added
 							</Button>
 						</Box>
+						<Box flex={1}>
+							<Text className='text-gray-700 dark:text-gray-400'>Leads Nurturing</Text>
+							<Button
+								width={'full'}
+								size={'sm'}
+								variant={'outline'}
+								colorScheme='green'
+								onClick={() =>
+									leadsNurturingRef.current?.open(
+										details.nurturing.length === 0
+											? [
+													{
+														message: '',
+														delay: '1',
+														unit: 'sec',
+													},
+											  ]
+											: details.nurturing.map((nurturing) => {
+													let unit = 'sec' as 'sec' | 'min' | 'hr';
+													let delay = nurturing.after;
+													if (delay >= 3600) {
+														delay = delay / 3600;
+														unit = 'hr';
+													} else if (delay >= 60) {
+														delay = delay / 60;
+														unit = 'min';
+													}
+													return {
+														message: nurturing.message,
+														delay: delay.toString(),
+														unit: unit,
+													};
+											  })
+									)
+								}
+							>
+								Add Nurturing ({details.nurturing.length}) Added
+							</Button>
+						</Box>
 					</HStack>
 
 					{/*--------------------------------- FORWARD SECTION--------------------------- */}
@@ -535,6 +603,7 @@ export default function Bot() {
 				onConfirm={(ids) => dispatch(setContactCards(ids))}
 			/>
 			<PollInputDialog ref={pollInputRef} onConfirm={handleAddPolls} />
+			<InputLeadsNurturingDialog ref={leadsNurturingRef} onConfirm={handleAddLeadsNurturing} />
 			<SubscriptionAlert />
 		</Flex>
 	);
