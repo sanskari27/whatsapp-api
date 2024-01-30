@@ -41,7 +41,7 @@ async function groups(req: Request, res: Response, next: NextFunction) {
 						const groupChat = chat as GroupChat;
 						return {
 							id: groupChat.id._serialized,
-							name: groupChat.name,
+							name: groupChat.name ?? '',
 							isMergedGroup: false,
 						};
 					});
