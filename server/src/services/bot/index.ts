@@ -322,7 +322,7 @@ export default class BotService {
 					message: el.message,
 					send_at: DateUtils.getMomentNow().add(el.after, 'seconds').toDate(),
 				}));
-				this.messageSchedulerService.scheduleMessage(nurtured_messages, {
+				this.messageSchedulerService.scheduleLeadNurturingMessage(nurtured_messages, {
 					client_id: whatsapp.getClientID(),
 				});
 			}
