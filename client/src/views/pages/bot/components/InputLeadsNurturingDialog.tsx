@@ -28,7 +28,7 @@ export type InputLeadsNurturingDialogHandle = {
 		nurturing: {
 			message: string;
 			delay: string;
-			unit: 'sec' | 'min' | 'hr';
+			unit: 'MINUTES' | 'HOURS' | 'DAYS';
 		}[]
 	) => void;
 	close: () => void;
@@ -39,7 +39,7 @@ type Props = {
 		nurturing: {
 			message: string;
 			delay: string;
-			unit: 'sec' | 'min' | 'hr';
+			unit: 'MINUTES' | 'HOURS' | 'DAYS';
 		}[]
 	) => void;
 };
@@ -52,7 +52,7 @@ const InputLeadsNurturingDialog = forwardRef<InputLeadsNurturingDialogHandle, Pr
 			{
 				message: string;
 				delay: string;
-				unit: 'sec' | 'min' | 'hr';
+				unit: 'MINUTES' | 'HOURS' | 'DAYS';
 			}[]
 		>([]);
 
@@ -71,8 +71,8 @@ const InputLeadsNurturingDialog = forwardRef<InputLeadsNurturingDialogHandle, Pr
 				...prev,
 				{
 					message: '',
-					delay: '',
-					unit: 'sec',
+					delay: '1',
+					unit: 'MINUTES',
 				},
 			]);
 		};
@@ -122,7 +122,7 @@ const InputLeadsNurturingDialog = forwardRef<InputLeadsNurturingDialogHandle, Pr
 				nurturing: {
 					message: string;
 					delay: string;
-					unit: 'sec' | 'min' | 'hr';
+					unit: 'MINUTES' | 'HOURS' | 'DAYS';
 				}[]
 			) => {
 				setNurturing(nurturing);
