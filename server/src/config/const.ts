@@ -106,7 +106,7 @@ export const PROMOTIONAL_MESSAGE_2 = '*Powered by: wa.savemyvcard.com*';
 export const SHORTNER_REDIRECT = 'https://open.whatsleads.in/';
 
 export const SESSION_STARTUP_WAIT_TIME = 5 * 60 * 1000; //milis
-export const CACHE_TIMEOUT = 10 * 60; //seconds
+export const CACHE_TIMEOUT = 60 * 60; //seconds
 
 export const CACHE_TOKEN_GENERATOR = {
 	SAVED_CONTACTS: (user_id: string, business_only: boolean = false) =>
@@ -124,9 +124,6 @@ export const CACHE_TOKEN_GENERATOR = {
 
 	MAPPED_CONTACTS: (user_id: string, business_only: boolean = false) =>
 		`MAPPED_CONTACTS?user_id=${user_id}&business_only=${business_only}`,
-
-	CONTACTS: (client_id: string, contact_id: string) =>
-		`MAPPED_CONTACTS?client_id=${client_id}&contact_id=${contact_id}`,
 
 	GROUPS_EXPORT: (user_id: string, group_id: string, business_only: boolean = false) =>
 		`GROUPS_EXPORT?user_id=${user_id}&group_id=${group_id}&business_only=${business_only}`,
