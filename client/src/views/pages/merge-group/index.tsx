@@ -34,7 +34,7 @@ import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/c
 import { NavbarDeleteElement, NavbarSearchElement } from '../../components/navbar';
 import GroupMerge from './components/group-merge-dialog';
 
-const GroupAndLabelPage = () => {
+const GroupMergePage = () => {
 	const { isOpen, onOpen, onClose } = useDisclosure();
 	const confirmationDialogRef = useRef<ConfirmationDialogHandle>(null);
 	const theme = useTheme();
@@ -167,4 +167,4 @@ function LineSkeleton() {
 	return <SkeletonText mt='4' noOfLines={1} spacing='4' skeletonHeight='4' rounded={'md'} />;
 }
 
-export default GroupAndLabelPage;
+export default GroupMergePage;
