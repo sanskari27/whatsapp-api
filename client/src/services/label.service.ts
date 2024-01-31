@@ -17,10 +17,9 @@ export default class LabelService {
 	}
 	static async fetchLabel(ids: string[], { vcf_only = false, business_contacts_only = false }) {
 		try {
-			const { data } = await APIInstance.get(
-				`/whatsapp/labels/export?label_ids=${ids.join(',')}&vcf=${
-					vcf_only ? 'true' : 'false'
-				}&business_contacts_only=${business_contacts_only ? 'true' : 'false'}`,
+			const { data } = await APIInstance.post(
+				`/whatsapp/labels/export`,
+				{ business_contacts_only, vcf_only, label_ids: ids },
 				{ responseType: 'blob' }
 			);
 			const blob = new Blob([data], {

@@ -5,7 +5,7 @@ import { AssignLabelValidator } from './labels.validator';
 
 const router = express.Router();
 
-router.route('/export').all(PaymentValidator.isSubscribed).get(LabelsController.exportLabels);
+router.route('/export').all(PaymentValidator.isSubscribed).post(LabelsController.exportLabels);
 
 router.route('/assign').all(AssignLabelValidator).post(LabelsController.addLabel);
 

@@ -29,23 +29,23 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 		business_contacts_only: false,
 		vcf: false,
 	};
-	if (req.query.saved_contacts && req.query.saved_contacts === 'true') {
+	if (req.body.saved_contacts) {
 		options.saved_contacts = true;
 		options.non_saved_contacts = false;
 		options.saved_chat_contacts = false;
-	} else if (req.query.non_saved_contacts && req.query.non_saved_contacts === 'true') {
+	} else if (req.body.non_saved_contacts) {
 		options.non_saved_contacts = true;
 		options.saved_contacts = false;
 		options.saved_chat_contacts = false;
-	} else if (req.query.saved_chat_contacts && req.query.saved_chat_contacts === 'true') {
+	} else if (req.body.saved_chat_contacts) {
 		options.saved_chat_contacts = true;
 		options.saved_contacts = false;
 		options.non_saved_contacts = false;
 	}
-	if (req.query.business_contacts_only && req.query.business_contacts_only === 'true') {
+	if (req.body.business_contacts_only) {
 		options.business_contacts_only = true;
 	}
-	if (req.query.vcf && req.query.vcf === 'true') {
+	if (req.body.vcf) {
 		options.vcf = true;
 	}
 	try {

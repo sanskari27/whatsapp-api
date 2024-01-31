@@ -65,7 +65,7 @@ async function groups(req: Request, res: Response, next: NextFunction) {
 
 async function exportGroups(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
-	const { group_ids } = req.query;
+	const { group_ids } = req.body;
 
 	const whatsapp = WhatsappProvider.getInstance(client_id);
 	const whatsappUtils = new WhatsappUtils(whatsapp);
@@ -79,10 +79,10 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 		business_contacts_only: false,
 		vcf: false,
 	};
-	if (req.query.business_contacts_only && req.query.business_contacts_only === 'true') {
+	if (req.body.business_contacts_only) {
 		options.business_contacts_only = true;
 	}
-	if (req.query.vcf && req.query.vcf === 'true') {
+	if (req.body.vcf) {
 		options.vcf = true;
 	}
 
