@@ -1,7 +1,13 @@
 import fs from 'fs';
 import Logger from 'n23-logger';
 import WAWebJS, { BusinessContact, GroupChat } from 'whatsapp-web.js';
-import { COUNTRIES, IS_PRODUCTION, SESSION_STARTUP_WAIT_TIME } from '../config/const';
+import { getOrCache } from '../config/cache';
+import {
+	CACHE_TOKEN_GENERATOR,
+	COUNTRIES,
+	IS_PRODUCTION,
+	SESSION_STARTUP_WAIT_TIME,
+} from '../config/const';
 import InternalError, { INTERNAL_ERRORS } from '../errors/internal-errors';
 import { WhatsappProvider } from '../provider/whatsapp_provider';
 import { UserService } from '../services';
@@ -285,9 +291,10 @@ export default class WhatsappUtils {
 				let fetchedContact: WAWebJS.Contact | null = null;
 
 				if (!contact) {
-					fetchedContact = await this.whatsapp
-						.getClient()
-						.getContactById(participant.id._serialized);
+					fetchedContact = await getOrCache(
+						CACHE_TOKEN_GENERATOR.CONTACTS(this.whatsapp.getClientID(), participant.id._serialized),
+						async () => await this.whatsapp.getClient().getContactById(participant.id._serialized)
+					);
 					contact_details.name = fetchedContact.name ?? '';
 					const country_code = await fetchedContact.getCountryCode();
 					contact_details.country = COUNTRIES[country_code as string];

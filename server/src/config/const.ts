@@ -125,6 +125,9 @@ export const CACHE_TOKEN_GENERATOR = {
 	MAPPED_CONTACTS: (user_id: string, business_only: boolean = false) =>
 		`MAPPED_CONTACTS?user_id=${user_id}&business_only=${business_only}`,
 
+	CONTACTS: (client_id: string, contact_id: string) =>
+		`MAPPED_CONTACTS?client_id=${client_id}&contact_id=${contact_id}`,
+
 	GROUPS_EXPORT: (user_id: string, group_id: string, business_only: boolean = false) =>
 		`GROUPS_EXPORT?user_id=${user_id}&group_id=${group_id}&business_only=${business_only}`,
 
