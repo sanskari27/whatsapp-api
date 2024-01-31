@@ -103,10 +103,6 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 
 		const groups = await Promise.all(
 			ids_to_export.map(async (group_id) => {
-				if (idValidator(group_id)[0]) {
-					// Check if group_id is a merged group_id
-					return null;
-				}
 				const chat = await whatsapp.getClient().getChatById(group_id);
 
 				if (!chat || !chat.isGroup) {
