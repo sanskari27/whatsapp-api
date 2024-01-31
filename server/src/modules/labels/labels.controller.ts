@@ -52,7 +52,7 @@ async function labels(req: Request, res: Response, next: NextFunction) {
 
 async function exportLabels(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
-	const { label_ids } = req.body;
+	const { label_ids } = req.body as { label_ids: string[] };
 
 	const whatsapp = WhatsappProvider.getInstance(client_id);
 	const whatsappUtils = new WhatsappUtils(whatsapp);
@@ -71,13 +71,12 @@ async function exportLabels(req: Request, res: Response, next: NextFunction) {
 	}
 
 	try {
-		const label_ids_array = ((label_ids ?? '') as string).split(',');
 		const contacts = await getOrCache(
 			CACHE_TOKEN_GENERATOR.MAPPED_CONTACTS(req.locals.user._id, options.business_contacts_only),
 			async () => await whatsappUtils.getMappedContacts(options.business_contacts_only)
 		);
 
-		const participants_promise = label_ids_array.map(async (label_id) => {
+		const participants_promise = label_ids.map(async (label_id) => {
 			const label_participants = await getOrCache(
 				CACHE_TOKEN_GENERATOR.LABELS_EXPORT(
 					req.locals.user._id,

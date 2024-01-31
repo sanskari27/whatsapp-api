@@ -65,7 +65,7 @@ async function groups(req: Request, res: Response, next: NextFunction) {
 
 async function exportGroups(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
-	const { group_ids } = req.body;
+	const { group_ids } = req.body as { group_ids: string[] };
 
 	const whatsapp = WhatsappProvider.getInstance(client_id);
 	const whatsappUtils = new WhatsappUtils(whatsapp);
@@ -92,13 +92,12 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 			async () => await whatsappUtils.getMappedContacts(options.business_contacts_only)
 		);
 		const groupMergeService = new GroupMergeService(req.locals.user);
-		const group_ids_array = (group_ids as string).split(',');
-		const merged_group_ids = group_ids_array.filter((id) => idValidator(id)[0]);
+		const merged_group_ids = group_ids.filter((id) => idValidator(id)[0]);
 		const merged_group_whatsapp_ids = await groupMergeService.extractWhatsappGroupIds(
 			merged_group_ids
 		);
 
-		const ids_to_export = [...group_ids_array, ...merged_group_whatsapp_ids].filter(
+		const ids_to_export = [...group_ids, ...merged_group_whatsapp_ids].filter(
 			(id) => !idValidator(id)[0] // check if all ids is valid whatsapp group ids
 		);
 
