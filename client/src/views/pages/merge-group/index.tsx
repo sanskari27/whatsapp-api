@@ -88,12 +88,12 @@ const GroupMergePage = () => {
 				<Table>
 					<Thead>
 						<Tr>
-							<Th width={'5%'}>sl no</Th>
-							<Th width={'75%'}>Group Name</Th>
-							<Th width={'15%'} isNumeric>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>sl no</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'75%'}>Group Name</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'15%'} isNumeric>
 								No of Whatsapp Groups
 							</Th>
-							<Th width={'5%'}>Edit</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>Edit</Th>
 						</Tr>
 					</Thead>
 					<Tbody>

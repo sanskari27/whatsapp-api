@@ -43,9 +43,7 @@ const CheckButton = ({
 					value ? '!bg-[#4CB072]' : backgroundClassName || '!bg-[#A6A6A6] '
 				} hover:!bg-green-700 `}
 			/>
-			<Text className='text-black ' fontSize='sm'>
-				{label}
-			</Text>
+			<Text fontSize='sm'>{label}</Text>
 		</Flex>
 	);
 };

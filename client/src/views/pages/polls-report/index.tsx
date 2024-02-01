@@ -21,9 +21,11 @@ import { setPollList, setSelectedPollDetails } from '../../../store/reducers/Pol
 import { Poll } from '../../../store/types/PollState';
 import { NavbarSearchElement } from '../../components/navbar';
 import PollResponseDialog from './components/poll-response';
+import { useTheme } from '../../../hooks/useTheme';
 
 const PollReport = () => {
 	const dispatch = useDispatch();
+	const theme = useTheme()
 
 	const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -62,10 +64,18 @@ const PollReport = () => {
 				<Table>
 					<Thead>
 						<Tr>
-							<Th width={'5%'}>Sl No</Th>
-							<Th width={'40%'}>Title</Th>
-							<Th width={'40%'}>Options</Th>
-							<Th width={'10%'}>Multiple Response</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>
+								Sl No
+							</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'40%'}>
+								Title
+							</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'40%'}>
+								Options
+							</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'10%'}>
+								Multiple Response
+							</Th>
 						</Tr>
 					</Thead>
 					<Tbody>
@@ -73,7 +83,8 @@ const PollReport = () => {
 							<Tr
 								key={index}
 								onClick={() => handlePollClick(poll)}
-								_hover={{ bgColor: 'gray.100', cursor: 'pointer' }}
+								_hover={{ bgColor: theme === 'dark' ? 'grey' : 'whitesmoke', cursor: 'pointer' }}
+								color={theme === 'dark' ? 'whitesmoke' : 'black'}
 							>
 								<Td>{index + 1}</Td>
 								<Td>{poll.title}</Td>

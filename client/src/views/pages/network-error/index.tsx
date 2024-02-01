@@ -5,12 +5,10 @@ import { useNavigate } from 'react-router-dom';
 import { NETWORK_ERROR } from '../../../assets/Images';
 import { NAVIGATION } from '../../../config/const';
 import { recheckNetwork, useNetwork } from '../../../hooks/useNetwork';
-import { useTheme } from '../../../hooks/useTheme';
 
 const NetworkError = () => {
 	const status = useNetwork();
 	const navigate = useNavigate();
-	const theme = useTheme();
 
 	useEffect(() => {
 		if (status === 'NO-NETWORK') {
@@ -56,13 +54,12 @@ const NetworkError = () => {
 
 			<Button
 				marginX={'auto'}
-				className='text-gray-700 dark:text-gray-300'
+				className='text-gray-700'
 				fontWeight={'medium'}
 				fontSize={'large'}
 				textAlign={'center'}
 				cursor={'pointer'}
 				onClick={recheckNetwork}
-				textColor={theme === 'dark' ? 'white' : 'black'}
 			>
 				<RepeatIcon mr={1} />
 				refresh

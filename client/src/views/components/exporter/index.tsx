@@ -306,7 +306,11 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 										ALL
 									</Button>
 								</Flex>
-								<Flex alignItems='flex-end' justifyContent={'space-between'}>
+								<Flex
+									alignItems='flex-end'
+									justifyContent={'space-between'}
+									hidden={userType === 'PERSONAL'}
+								>
 									<CheckButton
 										name={'LABEL'}
 										label='Label Contacts'
@@ -315,7 +319,11 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 										onChange={handleChange}
 									/>
 								</Flex>
-								<Flex alignItems='center' justifyContent='space-between'>
+								<Flex
+									alignItems='center'
+									justifyContent='space-between'
+									hidden={userType === 'PERSONAL'}
+								>
 									<Multiselect
 										disable={!LABEL || export_criteria[EXPORTS_TYPE.LABEL_ALL]}
 										displayValue='name'

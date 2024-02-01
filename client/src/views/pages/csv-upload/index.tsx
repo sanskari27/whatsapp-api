@@ -108,7 +108,7 @@ const CSVUpload = () => {
 		return () => {
 			popFromNavbar();
 		};
-	}, [dispatch, selectedFiles.length]);
+	}, [dispatch, selectedFiles.length, userType]);
 
 	useEffect(() => {
 		dispatch(clearSelectedCSVFile());
@@ -122,9 +122,9 @@ const CSVUpload = () => {
 				<Table>
 					<Thead>
 						<Tr>
-							<Th width={'5%'}>sl no</Th>
-							<Th width={'40%'}>CSV Name</Th>
-							<Th width={'50%'}>Headers</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>sl no</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'40%'}>CSV Name</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'50%'}>Headers</Th>
 						</Tr>
 					</Thead>
 					<Tbody>
