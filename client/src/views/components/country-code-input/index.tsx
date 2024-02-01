@@ -17,7 +17,6 @@ export default function CountryCodeInput({ value, onChange }: Props) {
 			borderBottomLeftRadius={'lg'}
 			width={'100px'}
 			icon={<MdArrowDropDown />}
-			placeholder='Country Code'
 			value={value}
 			border={'none'}
 			textAlign={'left'}
