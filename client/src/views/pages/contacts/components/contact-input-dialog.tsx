@@ -116,14 +116,18 @@ const ContactInputDialog = forwardRef<ContactInputDialogHandle>((_, ref) => {
 			contact_details_other: [] as string[],
 		};
 		if (contact_details_phone?.number) {
-			details.contact_details_phone = `${contact_details_phone.country_code}${contact_details_phone.number}`;
+			details.contact_details_phone = `${contact_details_phone.country_code ?? '91'}${
+				contact_details_phone.number
+			}`;
 		}
 		if (contact_details_work?.number) {
-			details.contact_details_work = `${contact_details_work.country_code}${contact_details_work.number}`;
+			details.contact_details_work = `${contact_details_work.country_code ?? '91'}${
+				contact_details_work.number
+			}`;
 		}
 		if (contact_details_other?.length) {
 			details.contact_details_other = contact_details_other.map(
-				(number) => `${number.country_code}${number.number}`
+				(number) => `${number.country_code ?? '91'}${number.number}`
 			);
 		}
 
