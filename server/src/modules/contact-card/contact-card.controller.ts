@@ -25,7 +25,7 @@ async function createContactCard(req: Request, res: Response, next: NextFunction
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
 
-	const data = res.locals.data as CreateContactValidationResult;
+	const data = req.locals.data as CreateContactValidationResult;
 	const service = new ContactCardService(req.locals.user);
 	const details: {
 		contact_details_phone?: {

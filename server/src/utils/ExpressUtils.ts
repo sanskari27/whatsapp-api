@@ -1,10 +1,12 @@
+import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import { Request, Response } from 'express';
 import mime from 'mime';
 import { Types } from 'mongoose';
 import { z } from 'zod';
-import { SUBSCRIPTION_STATUS } from '../config/const';
+import { SALT_FACTOR, SUBSCRIPTION_STATUS } from '../config/const';
 import DateUtils from './DateUtils';
+
 type ResponseData = {
 	res: Response;
 	status: 200 | 201 | 400 | 401 | 403 | 404 | 500;
@@ -130,4 +132,8 @@ export function validatePhoneNumber(num: string) {
 	var re = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im;
 
 	return re.test(num);
+}
+
+export async function generateHashedPassword(password: string) {
+	return await bcrypt.hash(password, SALT_FACTOR);
 }

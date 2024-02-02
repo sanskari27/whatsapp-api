@@ -23,6 +23,7 @@ export interface Locals {
 	user: IUser;
 	data: any;
 	id: Types.ObjectId;
+	token: string;
 }
 
 export { IAPIError, default as ServerError } from './server-error';
