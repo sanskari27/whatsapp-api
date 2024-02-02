@@ -112,11 +112,11 @@ const AttachmentPage = () => {
 				<Table>
 					<Thead>
 						<Tr>
-							<Th width={'5%'}>Sl no</Th>
-							<Th width={'20%'}>Name</Th>
-							<Th width={'60'}>Caption</Th>
-							<Th width={'5%'}>Custom Caption</Th>
-							<Th width={'10%'} textAlign={'center'}>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>Sl no</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'20%'}>Name</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'60'}>Caption</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>Custom Caption</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'10%'} textAlign={'center'}>
 								Actions
 							</Th>
 						</Tr>

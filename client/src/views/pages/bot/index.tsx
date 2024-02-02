@@ -1,3 +1,4 @@
+import { CheckIcon } from '@chakra-ui/icons';
 import {
 	AbsoluteCenter,
 	Box,
@@ -7,6 +8,7 @@ import {
 	FormControl,
 	FormErrorMessage,
 	HStack,
+	IconButton,
 	Text,
 } from '@chakra-ui/react';
 import { useEffect, useRef } from 'react';
@@ -38,7 +40,6 @@ import {
 	setTriggerGapType,
 	updateBot,
 } from '../../../store/reducers/BotReducers';
-import CheckButton from '../../components/check-button';
 import Info from '../../components/info';
 import PollInputDialog, { PollInputDialogHandle } from '../../components/polls-input-dialog';
 import AttachmentSelectorDialog, {
@@ -311,14 +312,22 @@ export default function Bot() {
 					>
 						<Flex justifyContent={'space-between'} alignItems={'center'}>
 							<Text className='text-gray-700 dark:text-gray-400'>Trigger</Text>
-							<CheckButton
-								gap={2}
-								name={'GROUP'}
-								label='Default Message'
-								value={!trigger}
-								onChange={() => dispatch(setTrigger(''))}
-								backgroundClassName='!bg-[#A6A6A6]'
-							/>
+							<Flex gap={2} alignItems={'center'}>
+								<IconButton
+									isRound={true}
+									variant='solid'
+									aria-label='Done'
+									size='xs'
+									icon={!trigger ? <CheckIcon color='white' /> : <></>}
+									onClick={() => dispatch(setTrigger(''))}
+									className={`${
+										!trigger ? '!bg-[#4CB072]' : '!bg-[#A6A6A6] '
+									} hover:!bg-green-700 `}
+								/>
+								<Text fontSize='sm' color={theme === 'dark' ? 'white' : 'black'}>
+									Default Message
+								</Text>
+							</Flex>
 						</Flex>
 						<TextAreaElement
 							value={trigger ?? ''}

@@ -85,6 +85,7 @@ export default function Navbar() {
 
 export function NavbarSearchElement() {
 	const { searchText } = useNavbar();
+	const theme = useTheme();
 
 	return (
 		<InputGroup size='sm' variant={'outline'} width={'250px'}>
@@ -97,6 +98,7 @@ export function NavbarSearchElement() {
 				onChange={(e) => setNavbarSearchText(e.target.value)}
 				borderRadius={'5px'}
 				focusBorderColor='gray.300'
+				color={theme === 'light' ? 'black' : 'gray.200'}
 			/>
 		</InputGroup>
 	);
