@@ -2,8 +2,10 @@ import { Box, Center, Flex, Icon, IconButton, Image, VStack } from '@chakra-ui/r
 import { IconType } from 'react-icons';
 import { TbLogout2 } from 'react-icons/tb';
 
+import { MdOutlineDashboard } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
 import { LOGO } from '../../../assets/Images';
+import { NAVIGATION } from '../../../config/const';
 import { logout } from '../../../hooks/useAuth';
 import { toggleTheme, useTheme } from '../../../hooks/useTheme';
 
@@ -49,7 +51,9 @@ export default function NavigationDrawer() {
 						justifyContent={'center'}
 						paddingY={'1rem'}
 						className='group'
-					></Flex>
+					>
+						<MenuButton icon={MdOutlineDashboard} route={NAVIGATION.HOME} />
+					</Flex>
 				</Box>
 				<VStack>
 					<IconButton

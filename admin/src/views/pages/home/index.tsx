@@ -10,13 +10,13 @@ import { useNetwork } from '../../../hooks/useNetwork';
 import '../../../index.css';
 import Navbar from '../../components/navbar';
 import NavigationDrawer from '../../components/navigation-drawer';
+import Dashboard from './Dashboard';
 
 export default function Home() {
 	const navigate = useNavigate();
 	const status = useNetwork();
 	const outlet = useOutlet();
 	const { isAuthenticated, isValidating } = useAuth();
-	console.log(isAuthenticated, isValidating);
 
 	useEffect(() => {
 		if (status === 'NO-NETWORK') {
@@ -99,8 +99,8 @@ export default function Home() {
 			<NavigationDrawer />
 			<Navbar />
 			<Box paddingLeft={'70px'} paddingTop={'70px'} overflowX={'hidden'} className='min-h-screen'>
-				{outlet ? outlet : <>Home</>}
-				<Loading isLoaded={false} />
+				{outlet ? outlet : <Dashboard />}
+				<Loading isLoaded={true} />
 			</Box>
 		</Box>
 	);

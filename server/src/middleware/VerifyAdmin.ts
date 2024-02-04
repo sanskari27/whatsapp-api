@@ -21,13 +21,10 @@ export default async function VerifyAdmin(req: Request, res: Response, next: Nex
 	} catch (e) {
 		const refreshToken = req.cookies[JWT_REFRESH_COOKIE];
 		if (!refreshToken) {
-			console.log(23);
-
 			return next(new APIError(API_ERRORS.USER_ERRORS.AUTHORIZATION_ERROR));
 		}
 
 		const [valid_auth, user] = await AdminService.isValidAuth(refreshToken);
-		console.log(user);
 		if (!valid_auth) {
 			return next(new APIError(API_ERRORS.USER_ERRORS.AUTHORIZATION_ERROR));
 		}
@@ -50,8 +47,6 @@ export default async function VerifyAdmin(req: Request, res: Response, next: Nex
 	}
 	const [isIDValid, valid_id] = idValidator(id);
 	if (!id || !isIDValid) {
-		console.log(48);
-
 		return next(new APIError(API_ERRORS.USER_ERRORS.AUTHORIZATION_ERROR));
 	}
 	try {
@@ -65,8 +60,6 @@ export default async function VerifyAdmin(req: Request, res: Response, next: Nex
 		});
 		next();
 	} catch (e) {
-		console.log(e);
-
 		return next(new APIError(API_ERRORS.USER_ERRORS.AUTHORIZATION_ERROR));
 	}
 }
