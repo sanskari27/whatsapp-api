@@ -44,6 +44,7 @@ const AttachmentSlice = createSlice({
             state.attachments.push(action.payload);
             state.selectedAttachment = initialState.selectedAttachment;
             state.uiDetails = initialState.uiDetails;
+            state.file = initialState.file;
         },
         findAttachmentById: (state, action: PayloadAction<{ id: string }>) => {
             state.selectedAttachment =
