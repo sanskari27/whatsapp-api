@@ -20,6 +20,7 @@ export type ScheduleMessageValidationResult = {
 	}[];
 
 	campaign_name: string;
+	startsFrom: string;
 	startTime: string;
 	endTime: string;
 	min_delay: number;
@@ -59,6 +60,7 @@ export async function ScheduleMessageValidator(req: Request, res: Response, next
 				.array()
 				.default([]),
 			campaign_name: z.string().default(''),
+			startsFrom: z.string().optional(),
 			startTime: z.string().optional(),
 			endTime: z.string().optional(),
 			min_delay: z.number().positive(),
