@@ -95,8 +95,7 @@ const CreateLinkDrawer = forwardRef<CreateLinkDrawerHandle, CreateLinkDrawerProp
 				dispatch(setGeneratingLink(true));
 				data = await ShortenerService.getShortenedURL(number, message, title);
 			} else {
-				dispatch(setShortingLink(true));
-				data = await ShortenerService.createLink(link);
+				data = await ShortenerService.createLink(title,link);
 			}
 			dispatch(setGeneratingLink(false));
 			dispatch(setShortingLink(false));
