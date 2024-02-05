@@ -6,6 +6,16 @@ const USER_ERRORS = {
 		TITLE: 'NOT_FOUND',
 		MESSAGE: 'The requested resource was not found.',
 	},
+	INVALID_PASSWORD: {
+		STATUS: 400,
+		TITLE: 'INVALID_PASSWORD',
+		MESSAGE: 'Provided password is incorrect',
+	},
+	USERNAME_ALREADY_EXISTS: {
+		STATUS: 400,
+		TITLE: 'USERNAME_ALREADY_EXISTS',
+		MESSAGE: 'Provided username already exists',
+	},
 	NOT_BUSINESS_CONTACT: {
 		STATUS: 500,
 		TITLE: 'NOT_BUSINESS_CONTACT',
