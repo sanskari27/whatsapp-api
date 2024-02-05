@@ -28,6 +28,7 @@ export default async function VerifyAdmin(req: Request, res: Response, next: Nex
 		if (!valid_auth) {
 			return next(new APIError(API_ERRORS.USER_ERRORS.AUTHORIZATION_ERROR));
 		}
+		req.locals.admin = user;
 
 		res.cookie(JWT_COOKIE, user.getSignedToken(), {
 			sameSite: 'strict',
@@ -51,6 +52,7 @@ export default async function VerifyAdmin(req: Request, res: Response, next: Nex
 	}
 	try {
 		const user = await AdminService.getServiceByID(valid_id);
+		req.locals.admin = user.getUser();
 
 		res.cookie(JWT_COOKIE, user.getToken(), {
 			sameSite: 'strict',

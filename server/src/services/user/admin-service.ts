@@ -1,7 +1,9 @@
 import { Types } from 'mongoose';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
+import { UserDB } from '../../repository/user';
 import AdminDB from '../../repository/user/Admin';
 import IAdmin from '../../types/user/Admin';
+import DateUtils from '../../utils/DateUtils';
 
 export default class AdminService {
 	private admin: IAdmin;
@@ -32,6 +34,10 @@ export default class AdminService {
 
 	getName() {
 		return this.admin.name;
+	}
+
+	getUser() {
+		return this.admin;
 	}
 
 	getToken() {
@@ -84,5 +90,18 @@ export default class AdminService {
 		});
 
 		return [user !== null, user] as [boolean, IAdmin];
+	}
+
+	async allUsers() {
+		const user = await UserDB.find();
+		return user.map((user) => {
+			return {
+				id: user._id as string,
+				name: user.name,
+				phone: user.phone,
+				type: user.userType,
+				subscription_expiry: DateUtils.format(user.subscription_expiry, 'DD/MM/YYYY'),
+			};
+		});
 	}
 }

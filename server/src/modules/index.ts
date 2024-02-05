@@ -1,5 +1,5 @@
 import express from 'express';
-import { VerifyClientID } from '../middleware';
+import { VerifyAdmin, VerifyClientID } from '../middleware';
 import AuthRoute from './auth/auth.route';
 import BotRoute from './bot/bot.route';
 import ContactCardRoute from './contact-card/contact-card.route';
@@ -13,6 +13,7 @@ import ShortnerRoute from './shortner/shortner.route';
 import TemplateRoute from './template/template.route';
 import TokenRoute from './token/token.route';
 import UploadsRoute from './uploads/upload.route';
+import UserRoute from './user/user.route';
 
 import WebhooksRoute from './webhooks/webhooks.route';
 
@@ -28,6 +29,8 @@ router.use('/token', TokenRoute);
 
 router.use('/auth', AuthRoute);
 router.use('/payment', PaymentRoute);
+
+router.use('/user', VerifyAdmin, UserRoute);
 
 // Next routes will be protected by VerifyClientID middleware
 router.use(VerifyClientID);
