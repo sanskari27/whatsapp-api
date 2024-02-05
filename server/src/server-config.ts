@@ -21,7 +21,7 @@ import { WhatsappProvider } from './provider/whatsapp_provider';
 import { MessageSchedulerService } from './services';
 import WhatsappUtils from './utils/WhatsappUtils';
 
-const allowlist = ['http://localhost:5173', 'https://api.whatsleads.in'];
+const allowlist = ['http://localhost:5173', 'https://app.whatsleads.in'];
 
 const corsOptionsDelegate = (req: any, callback: any) => {
 	let corsOptions;
