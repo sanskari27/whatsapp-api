@@ -45,6 +45,7 @@ async function createLink(req: Request, res: Response, next: NextFunction) {
 		status: 200,
 		data: {
 			shorten_link: `${SHORTNER_REDIRECT}${doc.key}`,
+			title: doc.title,
 			link: doc.link,
 			base64: doc.qrString,
 		},
