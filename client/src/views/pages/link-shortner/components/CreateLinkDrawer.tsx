@@ -31,6 +31,7 @@ import {
 	setLink,
 	setMessage,
 	setNumber,
+	setShortingLink,
 	setTitle,
 } from '../../../../store/reducers/LinkShortnerReducers';
 
@@ -83,7 +84,6 @@ const CreateLinkDrawer = forwardRef<CreateLinkDrawerHandle, CreateLinkDrawerProp
 				return;
 			}
 
-			dispatch(setGeneratingLink(true));
 			let data: {
 				shorten_link: string;
 				link: string;
@@ -92,11 +92,14 @@ const CreateLinkDrawer = forwardRef<CreateLinkDrawerHandle, CreateLinkDrawerProp
 				title: string;
 			} | null = null;
 			if (type === 'WHATSAPP') {
+				dispatch(setGeneratingLink(true));
 				data = await ShortenerService.getShortenedURL(number, message, title);
 			} else {
+				dispatch(setShortingLink(true));
 				data = await ShortenerService.createLink(link);
 			}
 			dispatch(setGeneratingLink(false));
+			dispatch(setShortingLink(false));
 			if (data === null) {
 				dispatch(setErrorGeneratingLink("Couldn't generate link."));
 				return;

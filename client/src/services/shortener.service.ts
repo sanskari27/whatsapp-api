@@ -33,13 +33,7 @@ export default class ShortenerService {
 				title: data.title as string,
 			};
 		} catch (err) {
-			return {
-				shorten_link: '',
-				link: '',
-				base64: '',
-				id: '',
-				title: '',
-			};
+			return null;
 		}
 	}
 
