@@ -20,9 +20,10 @@ export default class ShortenerService {
 		}
 	}
 
-	static async createLink(link: string) {
+	static async createLink(title:string,link: string) {
 		try {
 			const { data } = await APIInstance.post(`/shortner/create-link`, {
+				title,
 				link,
 			});
 			return {
