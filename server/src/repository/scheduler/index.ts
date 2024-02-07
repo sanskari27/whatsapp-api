@@ -42,6 +42,6 @@ const schedulerSchema = new mongoose.Schema<IScheduler>({
 	end_at: String,
 });
 
-const SchedulerDB = mongoose.model<IScheduler>('Bot', schedulerSchema);
+const SchedulerDB = mongoose.model<IScheduler>('Scheduler', schedulerSchema);
 
 export default SchedulerDB;
