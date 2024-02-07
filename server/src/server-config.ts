@@ -19,6 +19,7 @@ import {
 import APIError from './errors/api-errors';
 import { WhatsappProvider } from './provider/whatsapp_provider';
 import { MessageSchedulerService } from './services';
+import SchedulerService from './services/scheduler';
 import WhatsappUtils from './utils/WhatsappUtils';
 
 const allowlist = ['http://localhost:5173', 'https://app.whatsleads.in'];
@@ -134,6 +135,10 @@ export default function (app: Express) {
 	WhatsappUtils.resumeSessions();
 
 	//0 0 * * *
+	cron.schedule('0 0 * * *', function () {
+		SchedulerService.scheduleDailyMessages();
+	});
+
 	cron.schedule('0 */3 * * *', function () {
 		WhatsappUtils.removeInactiveSessions();
 		WhatsappUtils.removeUnwantedSessions();
