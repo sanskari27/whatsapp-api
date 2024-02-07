@@ -37,14 +37,6 @@ const base64ToJPG = async (base64: string, path: string) => {
 	fs.writeFileSync(path, base64Data, 'base64');
 };
 
-type DataTypeWithoutDate = {
-	[key: string]: string;
-	number: string;
-}[];
-
-type DataTypeWithDate = DataTypeWithDate & {
-	date: string;
-};
 
 async function readCSV<
 	T extends {
