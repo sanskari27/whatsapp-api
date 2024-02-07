@@ -72,7 +72,7 @@ export default class MessageSchedulerService {
 			: DateUtils.getMomentNow();
 
 		const scheduledTime = opts.startDate
-			? DateUtils.getMoment(opts.startDate, 'DD/MM/YYYY')
+			? DateUtils.getMoment(opts.startDate, 'YYYY-MM-DD')
 			: DateUtils.getMomentNow();
 
 		scheduledTime.date(startDate.date());
