@@ -31,6 +31,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 		batch_size,
 		batch_delay,
 		campaign_name,
+		startDate,
 		numbers: requestedNumberList,
 	} = req.locals.data as ScheduleMessageValidationResult;
 
@@ -188,6 +189,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 			campaign_name,
 			min_delay,
 			max_delay,
+			startDate,
 			batch_size,
 			batch_delay,
 			startsFrom: startsFrom,

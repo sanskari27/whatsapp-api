@@ -38,6 +38,7 @@ type Batch = {
 	max_delay: number;
 	batch_size: number;
 	batch_delay: number;
+	startDate?: string;
 	startsFrom?: string;
 	startTime?: string;
 	endTime?: string;
@@ -70,7 +71,9 @@ export default class MessageSchedulerService {
 			? DateUtils.getMoment(opts.startsFrom, 'YYYY-MM-DD')
 			: DateUtils.getMomentNow();
 
-		const scheduledTime = DateUtils.getMomentNow();
+		const scheduledTime = opts.startDate
+			? DateUtils.getMoment(opts.startDate, 'DD/MM/YYYY')
+			: DateUtils.getMomentNow();
 
 		scheduledTime.date(startDate.date());
 		scheduledTime.month(startDate.month());
