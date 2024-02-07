@@ -51,6 +51,7 @@ import {
 	setRecipients,
 	setRecipientsFrom,
 	setStartTime,
+	setStateDate,
 	setVariables,
 } from '../../../store/reducers/SchedulerReducer';
 import PollInputDialog, { PollInputDialogHandle } from '../../components/polls-input-dialog';
@@ -142,11 +143,9 @@ export default function Scheduler() {
 		schedulingMessages: false,
 	});
 
-	const { details,  recipients } = useSelector(
-		(state: StoreState) => state[StoreNames.SCHEDULER]
-	);
+	const { details, recipients } = useSelector((state: StoreState) => state[StoreNames.SCHEDULER]);
 
-	const { canSendMessage, groups, labels,userType } = useSelector(
+	const { canSendMessage, groups, labels, userType } = useSelector(
 		(state: StoreState) => state[StoreNames.USER]
 	);
 	const { list: csvList } = useSelector((state: StoreState) => state[StoreNames.CSV]);
@@ -277,6 +276,7 @@ export default function Scheduler() {
 			...prev,
 			schedulingMessages: true,
 		}));
+		// console.log(details);
 		MessageService.scheduleMessage(details).then((errorMessage) => {
 			if (errorMessage) {
 				setUIDetails((prev) => ({
@@ -405,7 +405,7 @@ export default function Scheduler() {
 									>
 										Group Individuals
 									</option>
-									{userType==='BUSINESS' ? (
+									{userType === 'BUSINESS' ? (
 										<option
 											className="'text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
 											value='LABEL'
@@ -828,6 +828,25 @@ export default function Scheduler() {
 									Schedule Setting
 								</Text>
 								<Flex gap={2}>
+									<Box flexGrow={1}>
+										<Text fontSize='sm' className='text-gray-700 dark:text-white'>
+											Start Date
+										</Text>
+										<Input
+											type='date'
+											width={'full'}
+											placeholder='00:00'
+											rounded={'md'}
+											border={'none'}
+											className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]'
+											_focus={{
+												border: 'none',
+												outline: 'none',
+											}}
+											value={details.startDate}
+											onChange={(e) => dispatch(setStateDate(e.target.value))}
+										/>
+									</Box>
 									<Box flexGrow={1}>
 										<Text fontSize='sm' className='text-gray-700 dark:text-white'>
 											Start At (in IST)

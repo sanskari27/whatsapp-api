@@ -4,6 +4,7 @@ import { z } from 'zod';
 import APIError from '../../errors/api-errors';
 
 export type CreateSchedulerValidationResult = {
+	csv: Types.ObjectId;
 	message: string;
 	shared_contact_cards: Types.ObjectId[];
 	attachments: Types.ObjectId[];
@@ -19,6 +20,10 @@ export type CreateSchedulerValidationResult = {
 
 export async function CreateSchedulerValidator(req: Request, res: Response, next: NextFunction) {
 	const reqValidator = z.object({
+		csv: z
+			.string()
+			.refine((value) => !Types.ObjectId.isValid(value))
+			.transform((value) => new Types.ObjectId(value)),
 		message: z.string().trim().default(''),
 		title: z.string().trim().default(''),
 		start_from: z.string().trim().default(''),
