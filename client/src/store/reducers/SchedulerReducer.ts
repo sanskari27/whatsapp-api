@@ -22,6 +22,7 @@ const initialState: SchedulerState = {
 		batch_delay: 120,
 		batch_size: 1,
 		polls: [],
+		startDate: new Date().toISOString().slice(0, 10),
 	},
 	isRecipientsLoading: false,
 	isBusinessAccount: true,
@@ -105,6 +106,9 @@ const SchedulerSlice = createSlice({
 		setBatchDelay: (state, action: PayloadAction<typeof initialState.details.batch_delay>) => {
 			state.details.batch_delay = action.payload;
 		},
+		setStateDate: (state, action: PayloadAction<typeof initialState.details.startDate>) => {
+			state.details.startDate = action.payload;
+		},
 		setStartTime: (state, action: PayloadAction<typeof initialState.details.startTime>) => {
 			state.details.startTime = action.payload;
 		},
@@ -151,6 +155,7 @@ export const {
 	setMaxDelay,
 	setBatchSize,
 	setBatchDelay,
+	setStateDate,
 	setStartTime,
 	setEndTime,
 	setPolls,

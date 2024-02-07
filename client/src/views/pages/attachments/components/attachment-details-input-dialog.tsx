@@ -1,9 +1,12 @@
+import { CheckIcon } from '@chakra-ui/icons';
 import {
 	Box,
 	Button,
+	Flex,
 	FormControl,
 	FormLabel,
 	HStack,
+	IconButton,
 	Input,
 	Modal,
 	ModalBody,
@@ -11,6 +14,8 @@ import {
 	ModalFooter,
 	ModalHeader,
 	ModalOverlay,
+	Select,
+	Tag,
 	Text,
 	Textarea,
 } from '@chakra-ui/react';
@@ -39,6 +44,7 @@ export type AttachmentDetailsInputDialogHandle = {
 
 const AttachmentDetailsInputDialog = forwardRef<AttachmentDetailsInputDialogHandle>((_, ref) => {
 	const progressRef = useRef<ProgressBarHandle>(null);
+	const captionRef = useRef<HTMLTextAreaElement>(null);
 	const dispatch = useDispatch();
 	const [isOpen, setOpen] = useState(false);
 
@@ -46,9 +52,17 @@ const AttachmentDetailsInputDialog = forwardRef<AttachmentDetailsInputDialogHand
 		(state: StoreState) => state[StoreNames.ATTACHMENT]
 	);
 
+	const { list } = useSelector((state: StoreState) => state[StoreNames.CSV]);
+
 	const { caption, custom_caption, name } = selectedAttachment;
 
 	const { errorMessage, isSaving, isUpdating } = uiDetails;
+
+	const [selectedCSV, setSelectedCSV] = useState<{
+		id: string;
+		name: string;
+		headers: string[];
+	}>();
 
 	const onClose = () => {
 		dispatch(clearSelectedAttachment());
@@ -57,6 +71,11 @@ const AttachmentDetailsInputDialog = forwardRef<AttachmentDetailsInputDialogHand
 
 	useImperativeHandle(ref, () => ({
 		close: () => {
+			setSelectedCSV({
+				id: '',
+				name: '',
+				headers: [],
+			});
 			dispatch(clearSelectedAttachment());
 			setOpen(false);
 		},
@@ -64,6 +83,30 @@ const AttachmentDetailsInputDialog = forwardRef<AttachmentDetailsInputDialogHand
 			setOpen(true);
 		},
 	}));
+
+	const handleSelectCSV = (e: React.ChangeEvent<HTMLSelectElement>) => {
+		setSelectedCSV({
+			id: '',
+			name: '',
+			headers: [],
+		});
+		const csv = list.find((item) => item.id === e.target.value);
+		if (csv) {
+			setSelectedCSV(csv);
+		}
+	};
+
+	const setVariables = (header: string) => {
+		dispatch(
+			setCaption(
+				caption.substring(0, captionRef.current?.selectionStart) +
+					' {{' +
+					header +
+					'}}' +
+					caption.substring(captionRef.current?.selectionEnd ?? 0, caption.length)
+			)
+		);
+	};
 
 	const handleAttachmentInput = (files: File) => {
 		if (files === null) return;
@@ -114,7 +157,13 @@ const AttachmentDetailsInputDialog = forwardRef<AttachmentDetailsInputDialogHand
 	};
 
 	return (
-		<Modal isOpen={isOpen} onClose={onClose} size={'2xl'} closeOnOverlayClick={!isSaving}>
+		<Modal
+			isOpen={isOpen}
+			onClose={onClose}
+			size={'2xl'}
+			closeOnOverlayClick={!isSaving}
+			scrollBehavior='inside'
+		>
 			<ModalOverlay />
 			<ModalContent>
 				<ModalHeader>Add Attachment</ModalHeader>
@@ -159,34 +208,62 @@ const AttachmentDetailsInputDialog = forwardRef<AttachmentDetailsInputDialogHand
 					<FormControl mt={4}>
 						<HStack alignItems={'center'} justifyContent={'space-between'} pb={'0.5rem'}>
 							<FormLabel>Caption</FormLabel>
-							<Button
-								size={'sm'}
-								onClick={() => {
-									dispatch(setCustomCaption(!custom_caption));
-								}}
-								variant={custom_caption ? 'solid' : 'outline'}
-								colorScheme='telegram'
-							>
-								Custom Caption
-							</Button>
+							<Flex gap={2} alignItems={'center'}>
+								<IconButton
+									isRound={true}
+									variant='solid'
+									aria-label='Done'
+									size='xs'
+									icon={custom_caption ? <CheckIcon color='white' /> : <></>}
+									onClick={() => {
+										dispatch(setCustomCaption(!custom_caption));
+									}}
+									colorScheme={custom_caption ? 'green' : 'gray'}
+								/>
+								<Text className='text-black ' fontSize='sm'>
+									Custom Caption
+								</Text>
+							</Flex>
 						</HStack>
 						<Textarea
+							ref={captionRef}
 							placeholder={`Enter caption here\r\nAdd variable like {{variable name}}`}
 							value={caption ?? ''}
 							onChange={(e) => dispatch(setCaption(e.target.value))}
 						/>
-						<Button
-							mt={'1rem'}
-							size={'sm'}
-							onClick={() => {
-								dispatch(setCaption(`${caption} {{variable name}}`));
-							}}
-							variant={'outline'}
-							colorScheme='blue'
-						>
-							Add a variable
-						</Button>
 					</FormControl>
+					{custom_caption && (
+						<>
+							<FormControl pt={'1rem'}>
+								<FormLabel>Select CSV for Headers</FormLabel>
+								<HStack>
+									<Select value={selectedCSV?.id} onChange={handleSelectCSV}>
+										<option>Select CSV</option>
+										{list.map((item, index) => {
+											return (
+												<option value={item.id} key={index}>
+													{item.name}
+												</option>
+											);
+										})}
+									</Select>
+								</HStack>
+							</FormControl>
+							<Flex gap={2} pt={'1rem'}>
+								{selectedCSV?.headers.map((header, index) => (
+									<Tag
+										key={index}
+										colorScheme='gray'
+										size={'md'}
+										_hover={{ cursor: 'pointer' }}
+										onClick={() => setVariables(header)}
+									>
+										{`{{${header}}}`}
+									</Tag>
+								))}
+							</Flex>
+						</>
+					)}
 				</ModalBody>
 
 				<ModalFooter>
