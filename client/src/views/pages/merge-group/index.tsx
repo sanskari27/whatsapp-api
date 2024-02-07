@@ -34,7 +34,7 @@ import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/c
 import { NavbarDeleteElement, NavbarSearchElement } from '../../components/navbar';
 import GroupMerge from './components/group-merge-dialog';
 
-const GroupAndLabelPage = () => {
+const GroupMergePage = () => {
 	const { isOpen, onOpen, onClose } = useDisclosure();
 	const confirmationDialogRef = useRef<ConfirmationDialogHandle>(null);
 	const theme = useTheme();
@@ -88,12 +88,12 @@ const GroupAndLabelPage = () => {
 				<Table>
 					<Thead>
 						<Tr>
-							<Th width={'5%'}>sl no</Th>
-							<Th width={'75%'}>Group Name</Th>
-							<Th width={'15%'} isNumeric>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>sl no</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'75%'}>Group Name</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'15%'} isNumeric>
 								No of Whatsapp Groups
 							</Th>
-							<Th width={'5%'}>Edit</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>Edit</Th>
 						</Tr>
 					</Thead>
 					<Tbody>
@@ -167,4 +167,4 @@ function LineSkeleton() {
 	return <SkeletonText mt='4' noOfLines={1} spacing='4' skeletonHeight='4' rounded={'md'} />;
 }
 
-export default GroupAndLabelPage;
+export default GroupMergePage;

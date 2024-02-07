@@ -28,7 +28,7 @@ export type InputLeadsNurturingDialogHandle = {
 		nurturing: {
 			message: string;
 			delay: string;
-			unit: 'sec' | 'min' | 'hr';
+			unit: 'MINUTES' | 'HOURS' | 'DAYS';
 		}[]
 	) => void;
 	close: () => void;
@@ -39,7 +39,7 @@ type Props = {
 		nurturing: {
 			message: string;
 			delay: string;
-			unit: 'sec' | 'min' | 'hr';
+			unit: 'MINUTES' | 'HOURS' | 'DAYS';
 		}[]
 	) => void;
 };
@@ -52,7 +52,7 @@ const InputLeadsNurturingDialog = forwardRef<InputLeadsNurturingDialogHandle, Pr
 			{
 				message: string;
 				delay: string;
-				unit: 'sec' | 'min' | 'hr';
+				unit: 'MINUTES' | 'HOURS' | 'DAYS';
 			}[]
 		>([]);
 
@@ -71,8 +71,8 @@ const InputLeadsNurturingDialog = forwardRef<InputLeadsNurturingDialogHandle, Pr
 				...prev,
 				{
 					message: '',
-					delay: '',
-					unit: 'sec',
+					delay: '1',
+					unit: 'MINUTES',
 				},
 			]);
 		};
@@ -122,7 +122,7 @@ const InputLeadsNurturingDialog = forwardRef<InputLeadsNurturingDialogHandle, Pr
 				nurturing: {
 					message: string;
 					delay: string;
-					unit: 'sec' | 'min' | 'hr';
+					unit: 'MINUTES' | 'HOURS' | 'DAYS';
 				}[]
 			) => {
 				setNurturing(nurturing);
@@ -170,9 +170,9 @@ const InputLeadsNurturingDialog = forwardRef<InputLeadsNurturingDialogHandle, Pr
 														value={nurturing.unit ?? 'min'}
 														onChange={(e) => handleChange('unit', e.target.value, index)}
 													>
-														<option value={'sec'}>Sec</option>
-														<option value={'min'}>Min</option>
-														<option value={'hr'}>Hour</option>
+														<option value={'MINUTES'}>Minutes</option>
+														<option value={'HOURS'}>Hours</option>
+														<option value={'DAYS'}>Days</option>
 													</Select>
 												</HStack>
 											</FormControl>

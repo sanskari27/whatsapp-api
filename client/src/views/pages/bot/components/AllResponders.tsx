@@ -60,13 +60,13 @@ export default function AllResponders() {
 				<Table>
 					<Thead>
 						<Tr>
-							<Th width={'35%'}>Trigger</Th>
-							<Th width={'35%'}>Message</Th>
-							<Th width={'5%'}>Recipients</Th>
-							<Th width={'5%'}>Conditions</Th>
-							<Th width={'5%'}>Attachments/Contacts</Th>
-							<Th width={'5%'}>Delay</Th>
-							<Th width={'10%'}>Actions</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'35%'}>Trigger</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'35%'}>Message</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>Recipients</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>Conditions</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>Attachments/Contacts</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>Delay</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'10%'}>Actions</Th>
 						</Tr>
 					</Thead>
 					<Tbody>

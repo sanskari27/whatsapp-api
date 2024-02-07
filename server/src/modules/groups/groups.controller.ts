@@ -41,7 +41,7 @@ async function groups(req: Request, res: Response, next: NextFunction) {
 						const groupChat = chat as GroupChat;
 						return {
 							id: groupChat.id._serialized,
-							name: groupChat.name,
+							name: groupChat.name ?? '',
 							isMergedGroup: false,
 						};
 					});
@@ -65,7 +65,7 @@ async function groups(req: Request, res: Response, next: NextFunction) {
 
 async function exportGroups(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
-	const { group_ids } = req.query;
+	const { group_ids } = req.body as { group_ids: string[] };
 
 	const whatsapp = WhatsappProvider.getInstance(client_id);
 	const whatsappUtils = new WhatsappUtils(whatsapp);
@@ -79,10 +79,10 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 		business_contacts_only: false,
 		vcf: false,
 	};
-	if (req.query.business_contacts_only && req.query.business_contacts_only === 'true') {
+	if (req.body.business_contacts_only) {
 		options.business_contacts_only = true;
 	}
-	if (req.query.vcf && req.query.vcf === 'true') {
+	if (req.body.vcf) {
 		options.vcf = true;
 	}
 
@@ -92,22 +92,17 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 			async () => await whatsappUtils.getMappedContacts(options.business_contacts_only)
 		);
 		const groupMergeService = new GroupMergeService(req.locals.user);
-		const group_ids_array = (group_ids as string).split(',');
-		const merged_group_ids = group_ids_array.filter((id) => idValidator(id)[0]);
+		const merged_group_ids = group_ids.filter((id) => idValidator(id)[0]);
 		const merged_group_whatsapp_ids = await groupMergeService.extractWhatsappGroupIds(
 			merged_group_ids
 		);
 
-		const ids_to_export = [...group_ids_array, ...merged_group_whatsapp_ids].filter(
+		const ids_to_export = [...group_ids, ...merged_group_whatsapp_ids].filter(
 			(id) => !idValidator(id)[0] // check if all ids is valid whatsapp group ids
 		);
 
 		const groups = await Promise.all(
 			ids_to_export.map(async (group_id) => {
-				if (idValidator(group_id)[0]) {
-					// Check if group_id is a merged group_id
-					return null;
-				}
 				const chat = await whatsapp.getClient().getChatById(group_id);
 
 				if (!chat || !chat.isGroup) {

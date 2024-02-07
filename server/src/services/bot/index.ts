@@ -18,6 +18,7 @@ import IUpload from '../../types/uploads';
 import { IUser } from '../../types/user';
 import DateUtils from '../../utils/DateUtils';
 import { Delay } from '../../utils/ExpressUtils';
+import VCardBuilder from '../../utils/VCardBuilder';
 import MessageSchedulerService from '../scheduled-message';
 import UserService from '../user';
 
@@ -300,16 +301,27 @@ export default class BotService {
 			}
 
 			if (bot.forward.number) {
+				const vCardString = new VCardBuilder({})
+					.setFirstName(contact.name ?? contact.pushname)
+					.setContactPhone(`+${contact.id.user}`, contact.id.user)
+					.build();
+
 				whatsapp
 					.getClient()
-					.sendMessage(bot.forward.number + '@c.us', contact)
+					.sendMessage(bot.forward.number + '@c.us', vCardString)
 					.catch((err) => {
 						Logger.error('Error sending message:', err);
 					});
+
 				if (bot.forward.message) {
+					const _variable = '{{whatsapp_name}}';
+					const custom_message = bot.forward.message.replace(
+						_variable,
+						(contact.pushname || contact.name) ?? ''
+					);
 					whatsapp
 						.getClient()
-						.sendMessage(bot.forward.number + '@c.us', bot.forward.message)
+						.sendMessage(bot.forward.number + '@c.us', custom_message)
 						.catch((err) => {
 							Logger.error('Error sending message:', err);
 						});
@@ -322,7 +334,7 @@ export default class BotService {
 					message: el.message,
 					send_at: DateUtils.getMomentNow().add(el.after, 'seconds').toDate(),
 				}));
-				this.messageSchedulerService.scheduleMessage(nurtured_messages, {
+				this.messageSchedulerService.scheduleLeadNurturingMessage(nurtured_messages, {
 					client_id: whatsapp.getClientID(),
 				});
 			}
@@ -430,7 +442,7 @@ export default class BotService {
 				number: string;
 				message: string;
 			};
-			nurturing: {
+			nurturing?: {
 				message: string;
 				after: number;
 			}[];

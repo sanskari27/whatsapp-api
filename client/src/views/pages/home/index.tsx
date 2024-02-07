@@ -1,9 +1,11 @@
-import { Box, Flex, Image, Progress, Text } from '@chakra-ui/react';
+import { Box, Flex, Image, Progress, Text, useBoolean } from '@chakra-ui/react';
+import Lottie from 'lottie-react';
 import { useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Navigate, useNavigate, useOutlet } from 'react-router-dom';
 import { LOGO } from '../../../assets/Images';
-import { NAVIGATION } from '../../../config/const';
+import { LOTTIE_LOADER } from '../../../assets/Lottie';
+import { DATA_LOADED_DELAY, NAVIGATION } from '../../../config/const';
 import { useAuth } from '../../../hooks/useAuth';
 import { useNetwork } from '../../../hooks/useNetwork';
 import '../../../index.css';
@@ -33,6 +35,7 @@ export default function Home() {
 	const dispatch = useDispatch();
 	const { isAuthenticated, isAuthenticating } = useAuth();
 	const { phoneNumber } = useSelector((state: StoreState) => state[StoreNames.USER]);
+	const [dataLoaded, setDataLoaded] = useBoolean(false);
 	useEffect(() => {
 		if (status === 'NO-NETWORK') {
 			navigate(NAVIGATION.NETWORK_ERROR);
@@ -51,6 +54,7 @@ export default function Home() {
 				BotService.listBots(),
 				ShortenerService.listAll(),
 				GroupService.mergedGroups(),
+				addDelay(DATA_LOADED_DELAY),
 			];
 
 			const results = await Promise.all(promises);
@@ -69,18 +73,21 @@ export default function Home() {
 			dispatch(setBots(results[6]));
 			dispatch(setLinksList(results[7]));
 			dispatch(setMergedGroupList(results[8]));
+			setDataLoaded.on();
 		} catch (e) {
 			navigate(NAVIGATION.WELCOME);
 			return;
 		}
-	}, [dispatch, navigate]);
+	}, [dispatch, navigate, setDataLoaded]);
 
 	useEffect(() => {
 		if (phoneNumber) {
+			setDataLoaded.on();
 			return;
 		}
+		setDataLoaded.off();
 		fetchUserDetails();
-	}, [phoneNumber, fetchUserDetails]);
+	}, [phoneNumber, fetchUserDetails, setDataLoaded]);
 
 	if (isAuthenticating) {
 		return (
@@ -112,7 +119,61 @@ export default function Home() {
 			<Navbar />
 			<Box paddingLeft={'70px'} paddingTop={'70px'} overflowX={'hidden'} className='min-h-screen'>
 				{outlet ? outlet : <Navigate to={NAVIGATION.CONTACT} />}
+				<Loading isLoaded={dataLoaded} />
 			</Box>
 		</Box>
 	);
+}
+
+function Loading({ isLoaded }: { isLoaded: boolean }) {
+	if (isLoaded) {
+		return null;
+	}
+	return (
+		<Flex
+			justifyContent={'center'}
+			alignItems={'center'}
+			direction={'column'}
+			position={'fixed'}
+			gap={'3rem'}
+			height={'100vh'}
+			width={'100vw'}
+			left={0}
+			top={0}
+			zIndex={99}
+			userSelect={'none'}
+			className='bg-black/50'
+		>
+			<Flex
+				direction={'column'}
+				justifyContent={'center'}
+				alignItems={'center'}
+				bg={'#f2f2f2'}
+				paddingX={'4rem'}
+				paddingTop={'4rem'}
+				paddingBottom={'2rem'}
+				aspectRatio={'1/1'}
+				rounded={'lg'}
+			>
+				<Lottie animationData={LOTTIE_LOADER} loop={true} />
+				<Text className='text-black ' fontSize={'lg'} fontWeight='bold'>
+					WhatsLeads
+				</Text>
+				<Text mt={'1rem'} className='text-black ' fontSize={'xs'}>
+					Data synchronization in progress.
+				</Text>
+				<Text className='text-black ' fontSize={'xs'}>
+					It may take longer to complete.
+				</Text>
+			</Flex>
+		</Flex>
+	);
+}
+
+function addDelay(delay: number) {
+	return new Promise((resolve: (value?: null) => void) => {
+		setTimeout(() => {
+			resolve();
+		}, delay);
+	});
 }

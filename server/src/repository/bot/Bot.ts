@@ -49,6 +49,12 @@ const botSchema = new mongoose.Schema<IBot>({
 			isMultiSelect: Boolean,
 		},
 	],
+	nurturing: [
+		{
+			message: String,
+			after: Number,
+		},
+	],
 	forward: {
 		number: String,
 		message: String,

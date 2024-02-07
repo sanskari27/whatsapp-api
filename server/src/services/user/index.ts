@@ -22,6 +22,10 @@ export default class UserService {
 		return new UserService(user);
 	}
 
+	getID() {
+		return new Types.ObjectId(this.user._id);
+	}
+
 	getName() {
 		return this.user.name;
 	}
@@ -82,9 +86,13 @@ export default class UserService {
 
 	async addMonthToExpiry(months: number = 1) {
 		if (this.user.subscription_expiry) {
-			this.user.subscription_expiry = DateUtils.getMoment(this.user.subscription_expiry)
-				.add(months, 'months')
-				.toDate();
+			if (DateUtils.getMoment(this.user.subscription_expiry).isAfter(DateUtils.getMomentNow())) {
+				this.user.subscription_expiry = DateUtils.getMoment(this.user.subscription_expiry)
+					.add(months, 'months')
+					.toDate();
+			} else {
+				this.user.subscription_expiry = DateUtils.getMomentNow().add(months, 'months').toDate();
+			}
 		} else {
 			this.user.subscription_expiry = DateUtils.getMomentNow().add(months, 'months').toDate();
 		}

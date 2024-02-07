@@ -21,6 +21,28 @@ import { WhatsappProvider } from './provider/whatsapp_provider';
 import { MessageSchedulerService } from './services';
 import WhatsappUtils from './utils/WhatsappUtils';
 
+const allowlist = ['http://localhost:5173', 'https://app.whatsleads.in'];
+
+const corsOptionsDelegate = (req: any, callback: any) => {
+	let corsOptions;
+	let isDomainAllowed = allowlist.indexOf(req.header('Origin')) !== -1;
+
+	if (isDomainAllowed) {
+		// Enable CORS for this request
+		corsOptions = {
+			origin: true,
+			credentials: true,
+			exposedHeaders: ['Content-Disposition'],
+			methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+			optionsSuccessStatus: 204,
+		};
+	} else {
+		// Disable CORS for this request
+		corsOptions = { origin: false };
+	}
+	callback(null, corsOptions);
+};
+
 export default function (app: Express) {
 	//Defines all global variables and constants
 	let basedir = __dirname;
@@ -31,16 +53,10 @@ export default function (app: Express) {
 	global.__basedir = basedir;
 
 	//Initialize all the middleware
+	app.use(cookieParser());
 	app.use(express.urlencoded({ extended: true, limit: '2048mb' }));
 	app.use(express.json({ limit: '2048mb' }));
-	app.use(
-		cors({
-			origin: '*',
-			credentials: true,
-			exposedHeaders: ['Content-Disposition'],
-		})
-	);
-	app.use(cookieParser());
+	app.use(cors(corsOptionsDelegate));
 	app.use(express.static(__basedir + 'static'));
 	app.route('/open/:id').get(Shortner.open);
 	app.route('/api-status').get((req, res) => {

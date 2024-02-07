@@ -45,6 +45,6 @@ export type Bot = {
 	};
 	nurturing: {
 		message: string;
-		after:number;
+		after: number;
 	}[];
 };

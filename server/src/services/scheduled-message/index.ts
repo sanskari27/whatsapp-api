@@ -38,6 +38,8 @@ type Batch = {
 	max_delay: number;
 	batch_size: number;
 	batch_delay: number;
+	startDate?: string;
+	startsFrom?: string;
 	startTime?: string;
 	endTime?: string;
 	client_id: string;
@@ -65,7 +67,18 @@ export default class MessageSchedulerService {
 
 		const startMoment = DateUtils.getMoment(opts.startTime ?? '00:00', 'HH:mm');
 		const endMoment = DateUtils.getMoment(opts.endTime ?? '23:59', 'HH:mm');
-		const scheduledTime = DateUtils.getMomentNow();
+		const startDate = opts.startsFrom
+			? DateUtils.getMoment(opts.startsFrom, 'YYYY-MM-DD')
+			: DateUtils.getMomentNow();
+
+		const scheduledTime = opts.startDate
+			? DateUtils.getMoment(opts.startDate, 'DD/MM/YYYY')
+			: DateUtils.getMomentNow();
+
+		scheduledTime.date(startDate.date());
+		scheduledTime.month(startDate.month());
+		scheduledTime.year(startDate.year());
+
 		if (startMoment !== undefined && scheduledTime.isBefore(startMoment)) {
 			scheduledTime
 				.hours(startMoment.hours())
@@ -119,6 +132,32 @@ export default class MessageSchedulerService {
 	}
 
 	async scheduleMessage(
+		message: Partial<Message> & { number: string; send_at: Date },
+		opts: {
+			client_id: string;
+		}
+	) {
+		const batch_id = generateBatchID();
+
+		const time_now = DateUtils.getMomentNow();
+
+		ScheduledMessageDB.create({
+			sender: this.user,
+			sender_client_id: opts.client_id,
+			receiver: message.number,
+			message: message.message ?? '',
+			attachments: message.attachments ?? [],
+			shared_contact_cards: message.shared_contact_cards ?? [],
+			polls: message.polls ?? [],
+			sendAt: message.send_at,
+			batch_id: batch_id,
+			campaign_name: 'DAILY_SCHEDULER',
+			campaign_id: 'DAILY_SCHEDULER',
+			campaign_created_at: time_now.toDate(),
+		});
+	}
+
+	async scheduleLeadNurturingMessage(
 		messages: (Partial<Message> & { number: string; send_at: Date })[],
 		opts: {
 			client_id: string;
@@ -149,7 +188,7 @@ export default class MessageSchedulerService {
 					sendAt: message.send_at,
 					batch_id: batch_id,
 					campaign_name: 'LEAD_NURTURING',
-					campaign_id: '',
+					campaign_id: 'LEAD_NURTURING',
 					campaign_created_at: time_now.toDate(),
 				})
 			);
@@ -183,18 +222,14 @@ export default class MessageSchedulerService {
 				whatsapp
 					.getClient()
 					.sendMessage(scheduledMessage.receiver, msg)
-					.catch((err) => {
-						Logger.error('Error sending message:', err);
-					});
+					.catch((err) => Logger.error('Error sending message:', err));
 			}
 
 			scheduledMessage.shared_contact_cards.forEach(async (card) => {
 				whatsapp
 					.getClient()
 					.sendMessage(scheduledMessage.receiver, card.vCardString)
-					.catch((err) => {
-						Logger.error('Error sending message:', err);
-					});
+					.catch((err) => Logger.error('Error sending message:', err));
 			});
 
 			scheduledMessage.attachments.forEach(async (attachment) => {
@@ -213,9 +248,7 @@ export default class MessageSchedulerService {
 					.sendMessage(scheduledMessage.receiver, media, {
 						caption,
 					})
-					.catch((err) => {
-						Logger.error('Error sending message:', err);
-					});
+					.catch((err) => Logger.error('Error sending message:', err));
 			});
 
 			scheduledMessage.polls.forEach(async (poll) => {
@@ -228,9 +261,7 @@ export default class MessageSchedulerService {
 							allowMultipleAnswers: isMultiSelect,
 						})
 					)
-					.catch((err) => {
-						Logger.error('Error sending message:', err);
-					});
+					.catch((err) => Logger.error('Error sending message:', err));
 			});
 
 			if (
@@ -240,16 +271,12 @@ export default class MessageSchedulerService {
 				whatsapp
 					.getClient()
 					.sendMessage(scheduledMessage.receiver, PROMOTIONAL_MESSAGE_2)
-					.catch((err) => {
-						Logger.error('Error sending message:', err);
-					});
+					.catch((err) => Logger.error('Error sending message:', err));
 			} else if (!isSubscribed && isNew) {
 				whatsapp
 					.getClient()
 					.sendMessage(scheduledMessage.receiver, PROMOTIONAL_MESSAGE_1)
-					.catch((err) => {
-						Logger.error('Error sending message:', err);
-					});
+					.catch((err) => Logger.error('Error sending message:', err));
 			}
 
 			scheduledMessage.isSent = true;

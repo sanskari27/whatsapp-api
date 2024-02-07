@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import APIError, { API_ERRORS } from '../../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
-import { WhatsappProvider } from '../../provider/whatsapp_provider';
 import BotService from '../../services/bot';
 import UploadService from '../../services/uploads';
 import CSVParser from '../../utils/CSVParser';
@@ -47,13 +46,6 @@ async function botById(req: Request, res: Response, next: NextFunction) {
 }
 
 async function createBot(req: Request, res: Response, next: NextFunction) {
-	const client_id = req.locals.client_id;
-
-	const whatsapp = WhatsappProvider.getInstance(client_id);
-	if (!whatsapp.isReady()) {
-		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
-	}
-
 	const data = req.locals.data as CreateBotValidationResult;
 
 	const botService = new BotService(req.locals.user);
@@ -79,13 +71,6 @@ async function createBot(req: Request, res: Response, next: NextFunction) {
 }
 
 async function updateBot(req: Request, res: Response, next: NextFunction) {
-	const client_id = req.locals.client_id;
-
-	const whatsapp = WhatsappProvider.getInstance(client_id);
-	if (!whatsapp.isReady()) {
-		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
-	}
-
 	const data = req.locals.data as CreateBotValidationResult;
 	const botService = new BotService(req.locals.user);
 	const [_, media_attachments] = await new UploadService(req.locals.user).listAttachments(

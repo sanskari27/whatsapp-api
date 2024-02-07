@@ -52,19 +52,34 @@ function App() {
 const Loading = () => {
 	return (
 		<Flex
+			direction={'column'}
 			justifyContent={'center'}
 			alignItems={'center'}
-			direction={'column'}
-			gap={'3rem'}
-			width={'full'}
+			flexDirection='column'
+			width={'100vw'}
+			height={'100vh'}
 		>
-			<Flex justifyContent={'center'} alignItems={'center'} width={'full'} gap={'1rem'}>
-				<Image src={LOGO} width={'48px'} className='shadow-lg rounded-full' />
-				<Text className='text-black dark:text-white' fontSize={'lg'} fontWeight='bold'>
-					WhatsLeads
-				</Text>
+			<Flex
+				direction={'column'}
+				justifyContent={'center'}
+				alignItems={'center'}
+				flexDirection='column'
+				padding={'3rem'}
+				rounded={'lg'}
+				width={'500px'}
+				height={'550px'}
+				className='border shadow-xl drop-shadow-xl '
+			>
+				<Flex justifyContent={'center'} alignItems={'center'} direction={'column'} gap={'3rem'}>
+					<Flex justifyContent={'center'} alignItems={'center'} width={'full'} gap={'1rem'}>
+						<Image src={LOGO} width={'48px'} className='shadow-lg rounded-full' />
+						<Text className='text-black dark:text-white' fontSize={'lg'} fontWeight='bold'>
+							WhatsLeads
+						</Text>
+					</Flex>
+					<Progress size='xs' isIndeterminate width={'150%'} rounded={'lg'} />
+				</Flex>
 			</Flex>
-			<Progress size='xs' isIndeterminate width={'30%'} rounded={'lg'} />
 		</Flex>
 	);
 };

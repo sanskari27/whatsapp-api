@@ -7,6 +7,6 @@ const router = express.Router();
 
 router.route('/count').get(ContactsController.countContacts);
 router.route('/validate').all(ValidateNumbersValidator).post(ContactsController.validate);
-router.route('/').all(PaymentValidator.isSubscribed).get(ContactsController.getContacts);
+router.route('/').all(PaymentValidator.isSubscribed).post(ContactsController.getContacts);
 
 export default router;

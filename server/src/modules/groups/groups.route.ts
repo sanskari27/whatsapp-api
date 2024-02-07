@@ -6,7 +6,7 @@ import { CreateGroupValidator, MergeGroupValidator } from './groups.validator';
 
 const router = express.Router();
 
-router.route('/export').all(PaymentValidator.isSubscribed).get(GroupsController.exportGroups);
+router.route('/export').all(PaymentValidator.isSubscribed).post(GroupsController.exportGroups);
 
 router
 	.route('/merge/:id')

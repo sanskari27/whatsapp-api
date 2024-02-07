@@ -119,12 +119,12 @@ const LinkShortner = () => {
 				<Table>
 					<Thead>
 						<Tr>
-							<Th width={'5%'}>Sl. no</Th>
-							<Th width={'15%'}>Qr Code</Th>
-							<Th width={'20%'}>Title</Th>
-							<Th width={'25%'}>link</Th>
-							<Th width={'25%'}>shorten link</Th>
-							<Th width={'5%'}>Action</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>Sl. no</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'15%'}>Qr Code</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'20%'}>Title</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'25%'}>link</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'25%'}>shorten link</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>Action</Th>
 						</Tr>
 					</Thead>
 					<Tbody>

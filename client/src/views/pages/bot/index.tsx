@@ -1,3 +1,4 @@
+import { CheckIcon } from '@chakra-ui/icons';
 import {
 	AbsoluteCenter,
 	Box,
@@ -7,6 +8,7 @@ import {
 	FormControl,
 	FormErrorMessage,
 	HStack,
+	IconButton,
 	Text,
 } from '@chakra-ui/react';
 import { useEffect, useRef } from 'react';
@@ -38,7 +40,6 @@ import {
 	setTriggerGapType,
 	updateBot,
 } from '../../../store/reducers/BotReducers';
-import CheckButton from '../../components/check-button';
 import Info from '../../components/info';
 import PollInputDialog, { PollInputDialogHandle } from '../../components/polls-input-dialog';
 import AttachmentSelectorDialog, {
@@ -218,7 +219,7 @@ export default function Bot() {
 		nurturing: {
 			message: string;
 			delay: string;
-			unit: 'sec' | 'min' | 'hr';
+			unit: 'MINUTES' | 'HOURS' | 'DAYS';
 		}[]
 	) => {
 		dispatch(
@@ -227,11 +228,11 @@ export default function Bot() {
 					return {
 						message: nurturing.message,
 						after:
-							nurturing.unit === 'hr'
+							nurturing.unit === 'DAYS'
+								? Number(nurturing.delay) * 86400
+								: nurturing.unit === 'HOURS'
 								? Number(nurturing.delay) * 3600
-								: nurturing.unit === 'min'
-								? Number(nurturing.delay) * 60
-								: Number(nurturing.delay),
+								: Number(nurturing.delay) * 60,
 					};
 				})
 			)
@@ -257,6 +258,39 @@ export default function Bot() {
 	function handleCancel() {
 		dispatch(reset());
 	}
+	function openLeadNurturing() {
+		if (details.nurturing.length === 0) {
+			leadsNurturingRef.current?.open([
+				{
+					message: '',
+					delay: '1',
+					unit: 'MINUTES',
+				},
+			]);
+		} else {
+			leadsNurturingRef.current?.open(
+				details.nurturing.map((nurturing) => {
+					let unit = 'MINUTES' as 'MINUTES' | 'HOURS' | 'DAYS';
+					let delay = nurturing.after;
+					if (delay >= 86400) {
+						delay = delay / 86400;
+						unit = 'DAYS';
+					} else if (delay >= 3600) {
+						delay = delay / 3600;
+						unit = 'HOURS';
+					} else {
+						delay = delay / 60;
+						unit = 'MINUTES';
+					}
+					return {
+						message: nurturing.message,
+						delay: delay.toString(),
+						unit: unit,
+					};
+				})
+			);
+		}
+	}
 
 	return (
 		<Flex
@@ -278,14 +312,22 @@ export default function Bot() {
 					>
 						<Flex justifyContent={'space-between'} alignItems={'center'}>
 							<Text className='text-gray-700 dark:text-gray-400'>Trigger</Text>
-							<CheckButton
-								gap={2}
-								name={'GROUP'}
-								label='Default Message'
-								value={!trigger}
-								onChange={() => dispatch(setTrigger(''))}
-								backgroundClassName='!bg-[#A6A6A6]'
-							/>
+							<Flex gap={2} alignItems={'center'}>
+								<IconButton
+									isRound={true}
+									variant='solid'
+									aria-label='Done'
+									size='xs'
+									icon={!trigger ? <CheckIcon color='white' /> : <></>}
+									onClick={() => dispatch(setTrigger(''))}
+									className={`${
+										!trigger ? '!bg-[#4CB072]' : '!bg-[#A6A6A6] '
+									} hover:!bg-green-700 `}
+								/>
+								<Text fontSize='sm' color={theme === 'dark' ? 'white' : 'black'}>
+									Default Message
+								</Text>
+							</Flex>
 						</Flex>
 						<TextAreaElement
 							value={trigger ?? ''}
@@ -462,19 +504,19 @@ export default function Bot() {
 								size={'sm'}
 								variant={'outline'}
 								colorScheme='green'
-								onClick={() =>
-									pollInputRef.current?.open(
-										details.polls.length === 0
-											? [
-													{
-														title: '',
-														options: ['', ''],
-														isMultiSelect: false,
-													},
-											  ]
-											: details.polls
-									)
-								}
+								onClick={() => {
+									if (details.polls.length === 0) {
+										pollInputRef.current?.open([
+											{
+												title: '',
+												options: ['', ''],
+												isMultiSelect: false,
+											},
+										]);
+									} else {
+										pollInputRef.current?.open(details.polls);
+									}
+								}}
 							>
 								Add Polls ({details.polls.length}) Added
 							</Button>
@@ -484,36 +526,9 @@ export default function Bot() {
 							<Button
 								width={'full'}
 								size={'sm'}
-								variant={'outline'}
+								variant={'solid'}
 								colorScheme='green'
-								onClick={() =>
-									leadsNurturingRef.current?.open(
-										details.nurturing.length === 0
-											? [
-													{
-														message: '',
-														delay: '1',
-														unit: 'sec',
-													},
-											  ]
-											: details.nurturing.map((nurturing) => {
-													let unit = 'sec' as 'sec' | 'min' | 'hr';
-													let delay = nurturing.after;
-													if (delay >= 3600) {
-														delay = delay / 3600;
-														unit = 'hr';
-													} else if (delay >= 60) {
-														delay = delay / 60;
-														unit = 'min';
-													}
-													return {
-														message: nurturing.message,
-														delay: delay.toString(),
-														unit: unit,
-													};
-											  })
-									)
-								}
+								onClick={openLeadNurturing}
 							>
 								Add Nurturing ({details.nurturing.length}) Added
 							</Button>
