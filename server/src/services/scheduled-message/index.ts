@@ -128,6 +128,32 @@ export default class MessageSchedulerService {
 		return await Promise.all(docPromise);
 	}
 
+	async scheduleMessage(
+		message: Partial<Message> & { number: string; send_at: Date },
+		opts: {
+			client_id: string;
+		}
+	) {
+		const batch_id = generateBatchID();
+
+		const time_now = DateUtils.getMomentNow();
+
+		ScheduledMessageDB.create({
+			sender: this.user,
+			sender_client_id: opts.client_id,
+			receiver: message.number,
+			message: message.message ?? '',
+			attachments: message.attachments ?? [],
+			shared_contact_cards: message.shared_contact_cards ?? [],
+			polls: message.polls ?? [],
+			sendAt: message.send_at,
+			batch_id: batch_id,
+			campaign_name: 'DAILY_SCHEDULER',
+			campaign_id: 'DAILY_SCHEDULER',
+			campaign_created_at: time_now.toDate(),
+		});
+	}
+
 	async scheduleLeadNurturingMessage(
 		messages: (Partial<Message> & { number: string; send_at: Date })[],
 		opts: {

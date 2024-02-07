@@ -36,11 +36,16 @@ export async function saveCSV(req: Request, res: Response, next: NextFunction) {
 
 		const name = req.body.name;
 
-		await new UploadService(req.locals.user).addCSV(name, uploadedFile.filename, headers);
+		const { id } = await new UploadService(req.locals.user).addCSV(
+			name,
+			uploadedFile.filename,
+			headers
+		);
 		return Respond({
 			res,
 			status: 200,
 			data: {
+				id,
 				name: name,
 				filename: uploadedFile.filename,
 				headers,
