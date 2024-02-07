@@ -67,6 +67,23 @@ function isTimeBetween(startTime: string, endTime: string, targetTime: string): 
 	return target.isBetween(start, end, null, '[]'); // '[]' includes both start and end times
 }
 
+function getBetween(start: string, end: string) {
+	const startTime = moment(start, 'HH:mm:ss');
+	const endTime = moment(end, 'HH:mm:ss');
+
+	// Calculate the difference in milliseconds between start and end times
+	const timeDifference = endTime.diff(startTime);
+
+	// Generate a random time within the range
+	const randomTimeInMillis = Math.floor(Math.random() * timeDifference);
+
+	// Add the random time to the start time
+	const randomTime = startTime.clone().add(randomTimeInMillis, 'milliseconds');
+
+	// Format the result as a string (e.g., 'HH:mm:ss')
+	return randomTime;
+}
+
 export default {
 	getDate,
 	getMonth,
@@ -81,4 +98,5 @@ export default {
 	getMomentNow,
 	getLocalTime,
 	isTimeBetween,
+	getBetween,
 };

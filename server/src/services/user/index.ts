@@ -22,6 +22,10 @@ export default class UserService {
 		return new UserService(user);
 	}
 
+	getID() {
+		return new Types.ObjectId(this.user._id);
+	}
+
 	getName() {
 		return this.user.name;
 	}

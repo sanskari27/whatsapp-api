@@ -37,7 +37,21 @@ const base64ToJPG = async (base64: string, path: string) => {
 	fs.writeFileSync(path, base64Data, 'base64');
 };
 
-const readCSV = async (path: string) => {
+type DataTypeWithoutDate = {
+	[key: string]: string;
+	number: string;
+}[];
+
+type DataTypeWithDate = DataTypeWithDate & {
+	date: string;
+};
+
+async function readCSV<
+	T extends {
+		[key: string]: string;
+		number: string;
+	}[]
+>(path: string): Promise<T | null> {
 	const csvFilePath = __basedir + CSV_PATH + path;
 	if (!fs.existsSync(csvFilePath)) {
 		return null;
@@ -47,10 +61,7 @@ const readCSV = async (path: string) => {
 	if (!parsed_csv) {
 		return null;
 	}
-	return parsed_csv as {
-		[key: string]: string;
-		number: string;
-	}[];
-};
+	return parsed_csv as T;
+}
 
 export default { moveFile, deleteFile, exists, base64ToJPG, base64ToPDF, readCSV };
