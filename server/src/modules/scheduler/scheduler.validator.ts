@@ -22,7 +22,7 @@ export async function CreateSchedulerValidator(req: Request, res: Response, next
 	const reqValidator = z.object({
 		csv: z
 			.string()
-			.refine((value) => !Types.ObjectId.isValid(value))
+			.refine((value) => Types.ObjectId.isValid(value))
 			.transform((value) => new Types.ObjectId(value)),
 		message: z.string().trim().default(''),
 		title: z.string().trim().default(''),
