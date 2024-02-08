@@ -27,6 +27,8 @@ import { setMergedGroupList } from '../../../store/reducers/MergeGroupReducer';
 import { setUserDetails } from '../../../store/reducers/UserDetailsReducers';
 import Navbar from '../../components/navbar';
 import NavigationDrawer from '../../components/navigation-drawer';
+import MessageService from '../../../services/message.service';
+import { setAllSchedulers } from '../../../store/reducers/SchedulerReducer';
 
 export default function Home() {
 	const navigate = useNavigate();
@@ -54,6 +56,7 @@ export default function Home() {
 				BotService.listBots(),
 				ShortenerService.listAll(),
 				GroupService.mergedGroups(),
+				MessageService.getScheduledMessages(),
 				addDelay(DATA_LOADED_DELAY),
 			];
 
@@ -73,6 +76,7 @@ export default function Home() {
 			dispatch(setBots(results[6]));
 			dispatch(setLinksList(results[7]));
 			dispatch(setMergedGroupList(results[8]));
+			dispatch(setAllSchedulers(results[9]))
 			setDataLoaded.on();
 		} catch (e) {
 			navigate(NAVIGATION.WELCOME);

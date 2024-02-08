@@ -3,8 +3,10 @@ export type CSVFileState = {
 		id: string;
 		name: string;
 		headers: string[];
+		_id: string;
 	}[];
 	selectedCSV: {
+		_id: string;
 		id: string;
 		name: string;
 		headers: string[];
