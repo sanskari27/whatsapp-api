@@ -25,6 +25,7 @@ const ReplyDialog = ({ onClose, isOpen }: GroupMergeProps) => {
 
 	const handleSave = () => {
 		UserService.setGroupReplyMessage(text);
+		onClose();
 	};
 
 	return (
