@@ -10,13 +10,14 @@ import { useAuth } from '../../../hooks/useAuth';
 import { useNetwork } from '../../../hooks/useNetwork';
 import '../../../index.css';
 import AttachmentService from '../../../services/attachment.service';
-import AuthService from '../../../services/auth.service';
 import BotService from '../../../services/bot.service';
 import ContactCardService from '../../../services/contact-card.service';
 import GroupService from '../../../services/group.service';
 import LabelService from '../../../services/label.service';
+import MessageService from '../../../services/message.service';
 import ShortenerService from '../../../services/shortener.service';
 import UploadsService from '../../../services/uploads.service';
+import UserService from '../../../services/user.service';
 import { StoreNames, StoreState } from '../../../store';
 import { setAttachments } from '../../../store/reducers/AttachmentReducers';
 import { setBots } from '../../../store/reducers/BotReducers';
@@ -24,11 +25,10 @@ import { setCSVFileList } from '../../../store/reducers/CSVFileReducers';
 import { setContactList } from '../../../store/reducers/ContactCardReducers';
 import { setLinksList } from '../../../store/reducers/LinkShortnerReducers';
 import { setMergedGroupList } from '../../../store/reducers/MergeGroupReducer';
+import { setAllSchedulers } from '../../../store/reducers/SchedulerReducer';
 import { setUserDetails } from '../../../store/reducers/UserDetailsReducers';
 import Navbar from '../../components/navbar';
 import NavigationDrawer from '../../components/navigation-drawer';
-import MessageService from '../../../services/message.service';
-import { setAllSchedulers } from '../../../store/reducers/SchedulerReducer';
 
 export default function Home() {
 	const navigate = useNavigate();
@@ -47,7 +47,7 @@ export default function Home() {
 	const fetchUserDetails = useCallback(async () => {
 		try {
 			const promises = [
-				AuthService.getUserDetails(),
+				UserService.getUserDetails(),
 				ContactCardService.ListContactCards(),
 				AttachmentService.getAttachments(),
 				UploadsService.listCSV(),
@@ -76,7 +76,7 @@ export default function Home() {
 			dispatch(setBots(results[6]));
 			dispatch(setLinksList(results[7]));
 			dispatch(setMergedGroupList(results[8]));
-			dispatch(setAllSchedulers(results[9]))
+			dispatch(setAllSchedulers(results[9]));
 			setDataLoaded.on();
 		} catch (e) {
 			navigate(NAVIGATION.WELCOME);

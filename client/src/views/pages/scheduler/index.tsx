@@ -398,7 +398,7 @@ export default function Scheduler() {
 
 	return (
 		<Flex padding={'1rem'} justifyContent={'center'} width={'full'}>
-			<Tabs isFitted variant='enclosed' width={'full'}>
+			<Tabs isFitted variant='enclosed' width={'full'} color={theme === 'dark' ? 'white' : 'black'}>
 				<TabList mb='1em'>
 					<Tab onClick={() => dispatch(reset())}>Schedule Campaign</Tab>
 					<Tab

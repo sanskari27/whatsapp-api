@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { singletonHook } from 'react-singleton-hook';
 import { io } from 'socket.io-client';
 import { SERVER_URL, SOCKET_EVENT } from '../config/const';
-import AuthService from '../services/auth.service';
+import UserService from '../services/user.service';
 import { getClientID, saveClientID } from '../utils/ChromeUtils';
 import { recheckNetwork } from './useNetwork';
 
@@ -34,7 +34,7 @@ export const useAuth = singletonHook(initStatus, () => {
 	useEffect(() => {
 		const checkAuthStatus = async () => {
 			setAuth((prev) => ({ ...prev, isAuthenticating: true }));
-			const { session_active } = await AuthService.isAuthenticated();
+			const { session_active } = await UserService.isAuthenticated();
 			if (session_active) {
 				startAuth();
 			} else {
@@ -129,7 +129,7 @@ export const logout = async () => {
 		qrCode: '',
 	});
 
-	await AuthService.logout();
+	await UserService.logout();
 	setAuth({
 		isAuthenticating: false,
 		qrGenerated: false,

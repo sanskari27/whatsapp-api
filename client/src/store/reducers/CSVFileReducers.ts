@@ -5,6 +5,7 @@ import { CSVFileState } from '../types/CSVFileState';
 const initialState: CSVFileState = {
 	list: [],
 	selectedCSV: {
+		_id: '',
 		id: '',
 		name: '',
 		headers: [],
