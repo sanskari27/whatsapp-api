@@ -135,7 +135,7 @@ export default function (app: Express) {
 	WhatsappUtils.resumeSessions();
 
 	//0 0 * * *
-	cron.schedule('0 0 * * *', function () {
+	cron.schedule('30 0 * * *', function () {
 		SchedulerService.scheduleDailyMessages();
 	});
 
