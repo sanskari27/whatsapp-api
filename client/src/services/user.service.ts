@@ -34,7 +34,6 @@ export default class UserService {
 			canSendMessage: data.canSendMessage as boolean,
 			subscriptionExpiration: data.subscriptionExpiration as string,
 			userType: data.userType as 'BUSINESS' | 'PERSONAL',
-
 			group_reply_message: (data.group_reply_message as string) ?? '',
 		};
 	}
