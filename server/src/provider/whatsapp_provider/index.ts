@@ -149,7 +149,6 @@ export class WhatsappProvider {
 			this.bot_service = new BotService(this.user_service.getUser());
 			this.bot_service.attachWhatsappProvider(this);
 			this.vote_response_service = new VoteResponseService(this.user_service.getUser());
-
 		});
 
 		this.client.on('vote_update', async (vote) => {
@@ -207,6 +206,9 @@ export class WhatsappProvider {
 				isGroup,
 				fromPoll: false,
 			});
+			if (isGroup) {
+				this.bot_service.sendGroupReply(message);
+			}
 		});
 	}
 

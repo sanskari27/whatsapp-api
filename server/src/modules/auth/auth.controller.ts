@@ -52,6 +52,7 @@ async function details(req: Request, res: Response, next: NextFunction) {
 			subscriptionExpiration: isSubscribed ? userService.getExpiration('DD/MM/YYYY') : '',
 			userType: userService.getUserType(),
 			paymentRecords: paymentRecords,
+			group_reply_message: userService.getGroupReplyMessage(),
 		},
 	});
 }
