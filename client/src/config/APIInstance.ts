@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { recheckNetwork } from '../hooks/useNetwork';
-import AuthService from '../services/auth.service';
+import UserService from '../services/user.service';
 import { getClientID } from '../utils/ChromeUtils';
 import { NAVIGATION, SERVER_URL } from './const';
 
@@ -34,9 +34,8 @@ APIInstance.interceptors.response.use(
 		}
 
 		if (error.response?.data?.title === 'SESSION_INVALIDATED' && !originalRequest._retry) {
-
 			originalRequest._retry = true;
-			const { whatsapp_ready } = await AuthService.isAuthenticated();
+			const { whatsapp_ready } = await UserService.isAuthenticated();
 			if (whatsapp_ready) {
 				return APIInstance(originalRequest);
 			} else {

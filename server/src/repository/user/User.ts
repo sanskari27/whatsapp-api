@@ -14,6 +14,7 @@ const userSchema = new Schema<IUser>(
 			type: String,
 		},
 		subscription_expiry: Date,
+		group_reply_message: String,
 	},
 	{ timestamps: true }
 );

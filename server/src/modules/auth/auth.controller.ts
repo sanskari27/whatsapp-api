@@ -56,6 +56,18 @@ async function details(req: Request, res: Response, next: NextFunction) {
 	});
 }
 
+async function updateDetails(req: Request, res: Response, next: NextFunction) {
+	const userService = new UserService(req.locals.user);
+	userService.updateGroupReplyMessage(req.body.group_reply_message);
+	userService.save();
+
+	return Respond({
+		res,
+		status: 200,
+		data: {},
+	});
+}
+
 async function logout(req: Request, res: Response, next: NextFunction) {
 	WhatsappProvider.getInstance(req.locals.client_id).logoutClient();
 
@@ -118,6 +130,7 @@ const AuthController = {
 	validateClientID,
 	details,
 	logout,
+	updateDetails,
 	adminLogin,
 	adminLogout,
 	validateAdmin,

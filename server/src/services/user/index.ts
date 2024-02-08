@@ -84,6 +84,13 @@ export default class UserService {
 		return DateUtils.getMoment(this.user.subscription_expiry);
 	}
 
+	updateGroupReplyMessage(text: string) {
+		this.user.group_reply_message = text;
+	}
+	async save() {
+		this.user.save();
+	}
+
 	async addMonthToExpiry(months: number = 1) {
 		if (this.user.subscription_expiry) {
 			if (DateUtils.getMoment(this.user.subscription_expiry).isAfter(DateUtils.getMomentNow())) {

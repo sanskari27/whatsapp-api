@@ -3,7 +3,7 @@ import APIInstance from '../config/APIInstance';
 import { SERVER_URL } from '../config/const';
 import { getClientID } from '../utils/ChromeUtils';
 
-export default class AuthService {
+export default class UserService {
 	static async isAuthenticated() {
 		try {
 			const { data } = await axios.get(SERVER_URL + 'auth/validate', {
@@ -34,6 +34,8 @@ export default class AuthService {
 			canSendMessage: data.canSendMessage as boolean,
 			subscriptionExpiration: data.subscriptionExpiration as string,
 			userType: data.userType as 'BUSINESS' | 'PERSONAL',
+
+			group_reply_message: (data.group_reply_message as string) ?? '',
 		};
 	}
 
@@ -43,6 +45,16 @@ export default class AuthService {
 			return true;
 		} catch (err) {
 			return false;
+		}
+	}
+
+	static async setGroupReplyMessage(text: string) {
+		try {
+			await APIInstance.patch(`/auth/details`, {
+				group_reply_message: text,
+			});
+		} catch (err) {
+			//ignore
 		}
 	}
 }
