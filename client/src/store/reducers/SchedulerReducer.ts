@@ -4,6 +4,7 @@ import { ScheduledCampaign, SchedulerState } from '../types/SchedulerState';
 
 const initialState: SchedulerState = {
 	all_campaigns: [] as ScheduledCampaign[],
+	all_schedulers: [],
 	details: {
 		type: 'NUMBERS',
 		numbers: [],
@@ -17,8 +18,8 @@ const initialState: SchedulerState = {
 		campaign_name: '',
 		min_delay: 1,
 		max_delay: 60,
-		startTime: '00:00',
-		endTime: '23:59',
+		startTime: '10:00',
+		endTime: '18:00',
 		batch_delay: 120,
 		batch_size: 1,
 		polls: [],
@@ -48,6 +49,40 @@ const SchedulerSlice = createSlice({
 		},
 		setAllCampaigns: (state, action: PayloadAction<typeof initialState.all_campaigns>) => {
 			state.all_campaigns = action.payload;
+		},
+		editSelectedScheduler: (
+			state,
+			action: PayloadAction<(typeof initialState.all_schedulers)[0]>
+		) => {
+			state.all_schedulers = state.all_schedulers.map((scheduler) => {
+				if (scheduler.id === action.payload.id) {
+					return action.payload;
+				}
+				return scheduler;
+			});
+		},
+		setAllSchedulers: (state, action: PayloadAction<typeof initialState.all_schedulers>) => {
+			state.all_schedulers = action.payload;
+		},
+		addScheduler: (state, action: PayloadAction<(typeof initialState.all_schedulers)[0]>) => {
+			state.all_schedulers.push(action.payload);
+		},
+		deleteScheduler: (state, action: PayloadAction<string>) => {
+			console.log(action.payload);
+			state.all_schedulers = state.all_schedulers.filter(
+				(scheduler) => scheduler.id !== action.payload
+			);
+		},
+		setSelectedScheduler: (
+			state,
+			action: PayloadAction<(typeof initialState.all_schedulers)[0]>
+		) => {
+			state.details.message = action.payload.message;
+			state.details.shared_contact_cards = action.payload.shared_contact_cards;
+			state.details.attachments = action.payload.attachments;
+			state.details.polls = action.payload.polls;
+			state.details.startTime = action.payload.start_from;
+			state.details.endTime = action.payload.end_at;
 		},
 		setCampaignName: (state, action: PayloadAction<typeof initialState.details.campaign_name>) => {
 			state.details.campaign_name = action.payload;
@@ -139,6 +174,11 @@ const SchedulerSlice = createSlice({
 export const {
 	reset,
 	setAllCampaigns,
+	editSelectedScheduler,
+	addScheduler,
+	deleteScheduler,
+	setAllSchedulers,
+	setSelectedScheduler,
 	setCampaignName,
 	setRecipientsFrom,
 	setRecipientsLoading,

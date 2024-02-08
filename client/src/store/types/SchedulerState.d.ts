@@ -1,7 +1,20 @@
 export type SchedulerState = {
 	details: SchedulerDetails;
 	all_campaigns: ScheduledCampaign[];
-
+	all_schedulers: {
+		id: string;
+		end_at: string;
+		start_from: string;
+		isActive: boolean;
+		polls: {
+			title: string;
+			options: string[];
+			isMultiSelect: boolean;
+		}[];
+		attachments: string[];
+		shared_contact_cards: string[];
+		message: string;
+	}[];
 	recipients: {
 		id: string;
 		name: string;
