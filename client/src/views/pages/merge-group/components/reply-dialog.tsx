@@ -40,7 +40,7 @@ const ReplyDialog = ({ onClose, isOpen }: GroupMergeProps) => {
 						rounded={'md'}
 						placeholder={'eg. Hello there!'}
 						border={'none'}
-						className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]'
+						className='text-black !bg-[#ECECEC] '
 						_placeholder={{
 							opacity: 0.4,
 							color: 'inherit',
