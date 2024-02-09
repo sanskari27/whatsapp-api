@@ -29,6 +29,7 @@ import {
 	deleteMergedGroup,
 	editSelectedGroup,
 	removeSelectedMergedGroups,
+	setGroupReply,
 	setIsDeleting,
 } from '../../../store/reducers/MergeGroupReducer';
 import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
@@ -150,6 +151,7 @@ const GroupMergePage = () => {
 												onClick={() => {
 													onOpen();
 													dispatch(editSelectedGroup(group.id));
+													dispatch(setGroupReply(group.group_reply));
 												}}
 											/>
 										</Td>
