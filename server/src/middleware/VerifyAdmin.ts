@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { JwtPayload, verify } from 'jsonwebtoken';
-import { JWT_COOKIE, JWT_REFRESH_COOKIE, JWT_SECRET } from '../config/const';
+import { saveRefreshTokens } from '../config/cache';
+import { IS_PRODUCTION, JWT_COOKIE, JWT_REFRESH_COOKIE, JWT_SECRET } from '../config/const';
 import APIError, { API_ERRORS } from '../errors/api-errors';
 import AdminService from '../services/user/admin-service';
 import { idValidator } from '../utils/ExpressUtils';
@@ -24,7 +25,7 @@ export default async function VerifyAdmin(req: Request, res: Response, next: Nex
 			return next(new APIError(API_ERRORS.USER_ERRORS.AUTHORIZATION_ERROR));
 		}
 
-		const [valid_auth, user] = await AdminService.isValidAuth(refreshToken);
+		const { valid: valid_auth, user } = await AdminService.isValidAuth(refreshToken);
 		if (!valid_auth) {
 			return next(new APIError(API_ERRORS.USER_ERRORS.AUTHORIZATION_ERROR));
 		}
@@ -33,21 +34,24 @@ export default async function VerifyAdmin(req: Request, res: Response, next: Nex
 		res.cookie(JWT_COOKIE, user.getSignedToken(), {
 			sameSite: 'strict',
 			expires: new Date(Date.now() + JWT_EXPIRE_TIME),
-			httpOnly: true,
-			secure: process.env.MODE !== 'development',
+			httpOnly: IS_PRODUCTION,
+			secure: IS_PRODUCTION,
 		});
-		res.cookie(JWT_REFRESH_COOKIE, user.getRefreshToken(), {
+		const t = user.getRefreshToken();
+		saveRefreshTokens(t, user._id);
+		res.cookie(JWT_REFRESH_COOKIE, t, {
 			sameSite: 'strict',
 			expires: new Date(Date.now() + REFRESH_EXPIRE_TIME),
-			httpOnly: true,
-			secure: process.env.MODE !== 'development',
+			httpOnly: IS_PRODUCTION,
+			secure: IS_PRODUCTION,
 		});
 
 		next();
 		return;
 	}
 	const [isIDValid, valid_id] = idValidator(id);
-	if (!id || !isIDValid) {
+
+	if (!isIDValid) {
 		return next(new APIError(API_ERRORS.USER_ERRORS.AUTHORIZATION_ERROR));
 	}
 	try {
@@ -62,6 +66,8 @@ export default async function VerifyAdmin(req: Request, res: Response, next: Nex
 		});
 		next();
 	} catch (e) {
+		console.log(e);
+
 		return next(new APIError(API_ERRORS.USER_ERRORS.AUTHORIZATION_ERROR));
 	}
 }

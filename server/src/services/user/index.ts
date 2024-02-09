@@ -14,8 +14,13 @@ export default class UserService {
 		this.user = user;
 	}
 
-	static async getService(phone: string) {
-		const user = await UserDB.findOne({ phone });
+	static async getService(phone: string | Types.ObjectId) {
+		let user: IUser | null = null;
+		if (typeof phone === 'string') {
+			user = await UserDB.findOne({ phone });
+		} else {
+			user = await UserDB.findById(phone);
+		}
 		if (user === null) {
 			throw new InternalError(INTERNAL_ERRORS.USER_ERRORS.NOT_FOUND);
 		}

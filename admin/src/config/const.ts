@@ -9,17 +9,9 @@ export const NAVIGATION = {
 	LOGIN: '/login',
 	WELCOME: '/welcome',
 	HOME: '/',
-	SCHEDULER: '/scheduler',
-	BOT: '/bot',
-	SETTINGS: '/settings',
+	DASHBOARD: '/dashboard',
+	USERS: '/users',
 	NETWORK_ERROR: '/network-error',
-	REPORTS: '/reports',
-	POLL_RESPONSES: '/poll-responses',
-	SHORT: '/short',
-	CONTACT: '/contact',
-	ATTACHMENTS: '/attachments',
-	CSV: '/csv',
-	GROUP_MERGE: '/group-merge',
 };
 
 export enum CHROME_ACTION {

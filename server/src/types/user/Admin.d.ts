@@ -6,8 +6,6 @@ export default interface IAdmin extends Document {
 	client_id?: string;
 	name: string;
 
-	refreshTokens: string[];
-
 	verifyPassword(password: string): Promise<boolean>;
 
 	getSignedToken(): string;
