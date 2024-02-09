@@ -206,12 +206,17 @@ export class WhatsappProvider {
 			if (!this.bot_service) return;
 			const chat = await message.getChat();
 			const isGroup = chat.isGroup;
-			this.bot_service.handleMessage(message.from, message.body, await message.getContact(), {
+			const contact = await message.getContact();
+			this.bot_service.handleMessage(message.from, message.body, contact, {
 				isGroup,
 				fromPoll: false,
 			});
 			if (isGroup) {
-				this.group_service?.sendGroupReply(this.client, chat as GroupChat, message);
+				this.group_service?.sendGroupReply(this.client, {
+					chat: chat as GroupChat,
+					message,
+					contact,
+				});
 			}
 		});
 	}
