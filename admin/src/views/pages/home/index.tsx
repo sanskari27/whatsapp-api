@@ -41,7 +41,7 @@ export default function Home() {
 
 			setDataLoaded.on();
 		} catch (e) {
-			navigate(NAVIGATION.WELCOME);
+			navigate(NAVIGATION.LOGIN);
 			return;
 		}
 	}, [dispatch, navigate, setDataLoaded]);
@@ -76,7 +76,7 @@ export default function Home() {
 	}
 
 	if (!isAuthenticated) {
-		return <Navigate to={NAVIGATION.WELCOME} />;
+		return <Navigate to={NAVIGATION.LOGIN} />;
 	}
 
 	return (

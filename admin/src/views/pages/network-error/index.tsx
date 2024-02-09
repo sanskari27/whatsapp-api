@@ -14,7 +14,7 @@ const NetworkError = () => {
 		if (status === 'NO-NETWORK') {
 			navigate(NAVIGATION.NETWORK_ERROR);
 		} else {
-			navigate(NAVIGATION.WELCOME);
+			navigate(NAVIGATION.LOGIN);
 		}
 	}, [status, navigate]);
 
