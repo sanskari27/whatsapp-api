@@ -243,7 +243,7 @@ async function mergeGroup(req: Request, res: Response, next: NextFunction) {
 
 async function updateMergedGroup(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
-	const { group_ids, group_name } = req.locals.data as MergeGroupValidationResult;
+	const { group_ids, group_name, group_reply } = req.locals.data as MergeGroupValidationResult;
 
 	const whatsapp = WhatsappProvider.getInstance(client_id);
 	const whatsappUtils = new WhatsappUtils(whatsapp);
@@ -264,6 +264,7 @@ async function updateMergedGroup(req: Request, res: Response, next: NextFunction
 	const group = await new GroupMergeService(req.locals.user).updateGroup(req.locals.id, {
 		group_ids: chat_ids,
 		name: group_name,
+		group_reply,
 	});
 
 	return Respond({

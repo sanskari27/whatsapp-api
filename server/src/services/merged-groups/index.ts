@@ -22,6 +22,7 @@ export default class GroupMergeService {
 			name: (group.name as string) ?? '',
 			isMergedGroup: true,
 			groups: group.groups,
+			group_reply: group.group_reply,
 		}));
 	}
 
