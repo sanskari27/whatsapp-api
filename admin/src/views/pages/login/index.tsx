@@ -15,11 +15,13 @@ import { LOGO } from '../../../assets/Images';
 import { NAVIGATION } from '../../../config/const';
 import { startAuth, useAuth } from '../../../hooks/useAuth';
 import { useNetwork } from '../../../hooks/useNetwork';
+import { useTheme } from '../../../hooks/useTheme';
 import { PasswordField } from './components/PasswordField';
 
 export default function Admin() {
 	const status = useNetwork();
 	const navigate = useNavigate();
+	const theme = useTheme();
 	const { isAuthenticated, isAuthenticating, isValidating } = useAuth();
 	const [{ username, password }, setCredentials] = useState({
 		username: '',
@@ -111,12 +113,15 @@ export default function Admin() {
 							<Stack spacing='6' marginTop={'2rem'}>
 								<Stack spacing='5'>
 									<FormControl isInvalid={usernameError}>
-										<FormLabel htmlFor='email'>Username</FormLabel>
+										<FormLabel htmlFor='email' color={theme === 'dark' ? 'gray' : 'black'}>
+											Username
+										</FormLabel>
 										<Input
 											id='email'
 											type='email'
 											name='username'
 											value={username}
+											color={theme === 'dark' ? 'white' : 'black'}
 											onChange={handleChange}
 										/>
 									</FormControl>

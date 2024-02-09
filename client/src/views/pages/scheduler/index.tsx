@@ -159,7 +159,10 @@ export default function Scheduler() {
 	);
 	const { list: csvList } = useSelector((state: StoreState) => state[StoreNames.CSV]);
 	const csvListWithDate = csvList.filter(
-		(item) => item.headers.includes('number') && item.headers.includes('date')
+		(item) =>
+			item.headers.includes('number') &&
+			item.headers.includes('date') &&
+			item.headers.includes('month')
 	);
 
 	const [error, setError] = useState({

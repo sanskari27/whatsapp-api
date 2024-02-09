@@ -1,22 +1,27 @@
-import { Box, Flex, Image, Progress, Text } from '@chakra-ui/react';
+import { Box, Flex, Image, Progress, Text, useBoolean } from '@chakra-ui/react';
 import Lottie from 'lottie-react';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import { Navigate, useNavigate, useOutlet } from 'react-router-dom';
 import { LOGO } from '../../../assets/Images';
 import { LOTTIE_LOADER } from '../../../assets/Lottie';
-import { NAVIGATION } from '../../../config/const';
+import { DATA_LOADED_DELAY, NAVIGATION } from '../../../config/const';
 import { useAuth } from '../../../hooks/useAuth';
 import { useNetwork } from '../../../hooks/useNetwork';
 import '../../../index.css';
+import UsersService from '../../../services/users.service';
+import { setUsersList } from '../../../store/reducers/UsersReducer';
 import Navbar from '../../components/navbar';
 import NavigationDrawer from '../../components/navigation-drawer';
-import Dashboard from './Dashboard';
 
 export default function Home() {
 	const navigate = useNavigate();
 	const status = useNetwork();
 	const outlet = useOutlet();
 	const { isAuthenticated, isValidating } = useAuth();
+	const dispatch = useDispatch();
+
+	const [dataLoaded, setDataLoaded] = useBoolean(false);
 
 	useEffect(() => {
 		if (status === 'NO-NETWORK') {
@@ -24,52 +29,32 @@ export default function Home() {
 		}
 	}, [status, navigate]);
 
-	// const fetchUserDetails = useCallback(async () => {
-	// 	try {
-	// 		const promises = [
-	// 			AuthService.getUserDetails(),
-	// 			ContactCardService.ListContactCards(),
-	// 			AttachmentService.getAttachments(),
-	// 			UploadsService.listCSV(),
-	// 			GroupService.listGroups(),
-	// 			LabelService.listLabels(),
-	// 			BotService.listBots(),
-	// 			ShortenerService.listAll(),
-	// 			GroupService.mergedGroups(),
-	// 			addDelay(DATA_LOADED_DELAY),
-	// 		];
+	const fetchUserDetails = useCallback(async () => {
+		try {
+			const promises = [UsersService.getUsers(), addDelay(DATA_LOADED_DELAY)];
 
-	// 		const results = await Promise.all(promises);
+			const results = await Promise.all(promises);
 
-	// 		dispatch(
-	// 			setUserDetails({
-	// 				...results[0],
-	// 				groups: results[4],
-	// 				labels: results[5],
-	// 				contactsCount: null,
-	// 			})
-	// 		);
-	// 		dispatch(setContactList(results[1]));
-	// 		dispatch(setAttachments(results[2]));
-	// 		dispatch(setCSVFileList(results[3]));
-	// 		dispatch(setBots(results[6]));
-	// 		dispatch(setLinksList(results[7]));
-	// 		dispatch(setMergedGroupList(results[8]));
-	// 		setDataLoaded.on();
-	// 	} catch (e) {
-	// 		navigate(NAVIGATION.WELCOME);
-	// 		return;
-	// 	}
-	// }, [dispatch, navigate, setDataLoaded]);
+			if (results[0]) {
+				dispatch(setUsersList(results[0]));
+			}
 
-	// useEffect(() => {
-	// 	if (phoneNumber) {
-	// 		setDataLoaded.on();
-	// 		return;
-	// 	}
-	// 	setDataLoaded.off();
-	// 	fetchUserDetails();
-	// }, [phoneNumber, fetchUserDetails, setDataLoaded]);
+			setDataLoaded.on();
+		} catch (e) {
+			navigate(NAVIGATION.WELCOME);
+			return;
+		}
+	}, [dispatch, navigate, setDataLoaded]);
+
+	useEffect(() => {
+		if (dataLoaded) {
+			return;
+		}
+
+		setDataLoaded.off();
+		fetchUserDetails();
+	}, [fetchUserDetails, setDataLoaded, dataLoaded]);
+
 	if (isValidating) {
 		return (
 			<Flex
@@ -99,8 +84,8 @@ export default function Home() {
 			<NavigationDrawer />
 			<Navbar />
 			<Box paddingLeft={'70px'} paddingTop={'70px'} overflowX={'hidden'} className='min-h-screen'>
-				{outlet ? outlet : <Dashboard />}
-				<Loading isLoaded={true} />
+				{outlet ? outlet : <Navigate to={NAVIGATION.DASHBOARD} />}
+				<Loading isLoaded={dataLoaded} />
 			</Box>
 		</Box>
 	);
@@ -149,4 +134,12 @@ function Loading({ isLoaded }: { isLoaded: boolean }) {
 			</Flex>
 		</Flex>
 	);
+}
+
+function addDelay(delay: number) {
+	return new Promise((resolve: (value?: null) => void) => {
+		setTimeout(() => {
+			resolve();
+		}, delay);
+	});
 }

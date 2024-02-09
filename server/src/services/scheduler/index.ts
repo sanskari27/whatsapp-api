@@ -35,7 +35,9 @@ export default class SchedulerService {
 	}
 
 	public async schedulerByID(id: Types.ObjectId) {
-		const scheduler = await SchedulerDB.findById(id).populate('csv attachments shared_contact_cards');
+		const scheduler = await SchedulerDB.findById(id).populate(
+			'csv attachments shared_contact_cards'
+		);
 
 		if (!scheduler) {
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
@@ -104,7 +106,9 @@ export default class SchedulerService {
 			}[];
 		}
 	) {
-		const scheduler = await SchedulerDB.findById(id).populate('csv attachments shared_contact_cards');
+		const scheduler = await SchedulerDB.findById(id).populate(
+			'csv attachments shared_contact_cards'
+		);
 		if (!scheduler) {
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
 		}
@@ -177,7 +181,7 @@ export default class SchedulerService {
 			active: true,
 			'csv.headers': ['number', 'date'],
 		}).populate('attachments shared_contact_cards csv');
-		const today = DateUtils.getDate();
+		const today = DateUtils.getMomentNow().format('MM-DD');
 
 		for (const scheduler of schedulers) {
 			const cid = WhatsappProvider.clientByUser(scheduler.user);
@@ -185,6 +189,7 @@ export default class SchedulerService {
 				| {
 						[key: string]: string;
 						date: string;
+						month: string;
 						number: string;
 				  }[]
 				| null = await FileUtils.readCSV(scheduler.csv.filename);
@@ -194,7 +199,7 @@ export default class SchedulerService {
 			const schedulerService = new MessageSchedulerService(scheduler.user);
 
 			for (const row of parsed_csv) {
-				if (DateUtils.getMoment(row.date).format('YYYY-MM-DD') !== today) {
+				if (DateUtils.getMoment(row.month + '-' + row.date).format('MM-DD') !== today) {
 					continue;
 				}
 				const time = DateUtils.getBetween(scheduler.start_from, scheduler.end_at);

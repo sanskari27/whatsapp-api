@@ -1,5 +1,6 @@
 import { Box, Center, Flex, Icon, IconButton, Image, VStack } from '@chakra-ui/react';
 import { IconType } from 'react-icons';
+import { PiUsersFourDuotone } from 'react-icons/pi';
 import { TbLogout2 } from 'react-icons/tb';
 
 import { MdOutlineDashboard } from 'react-icons/md';
@@ -51,8 +52,10 @@ export default function NavigationDrawer() {
 						justifyContent={'center'}
 						paddingY={'1rem'}
 						className='group'
+						gap={'1rem'}
 					>
-						<MenuButton icon={MdOutlineDashboard} route={NAVIGATION.HOME} />
+						<MenuButton icon={MdOutlineDashboard} route={NAVIGATION.DASHBOARD} />
+						<MenuButton icon={PiUsersFourDuotone} route={NAVIGATION.USERS} />
 					</Flex>
 				</Box>
 				<VStack>

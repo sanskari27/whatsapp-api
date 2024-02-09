@@ -1,9 +1,11 @@
 import { Types } from 'mongoose';
+import { getRefreshTokens, removeRefreshTokens } from '../../config/cache';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import { UserDB } from '../../repository/user';
 import AdminDB from '../../repository/user/Admin';
 import IAdmin from '../../types/user/Admin';
 import DateUtils from '../../utils/DateUtils';
+import { idValidator } from '../../utils/ExpressUtils';
 
 export default class AdminService {
 	private admin: IAdmin;
@@ -17,6 +19,7 @@ export default class AdminService {
 		if (user === null) {
 			throw new InternalError(INTERNAL_ERRORS.USER_ERRORS.NOT_FOUND);
 		}
+
 		const password_matched = await user.verifyPassword(password);
 		if (!password_matched) {
 			throw new InternalError(INTERNAL_ERRORS.USER_ERRORS.INVALID_PASSWORD);
@@ -72,24 +75,37 @@ export default class AdminService {
 
 	static async logout(refreshToken: string) {
 		try {
-			const user = await AdminDB.findOne({
-				refreshTokens: refreshToken,
-			}).select('refreshTokens');
-			if (user) {
-				user.refreshTokens = user.refreshTokens.filter((token) => token !== refreshToken);
-				await user.save();
-			}
+			await removeRefreshTokens(refreshToken);
 		} catch (e) {
 			//ignored
 		}
 	}
 
-	static async isValidAuth(refreshToken: string) {
-		const user = await AdminDB.findOne({
-			refreshTokens: refreshToken,
-		});
+	static async isValidAuth(
+		refreshToken: string
+	): Promise<{ valid: true; user: IAdmin } | { valid: false; user: null }> {
+		const refreshTokens = await getRefreshTokens();
 
-		return [user !== null, user] as [boolean, IAdmin];
+		const [isIDValid, id] = idValidator(refreshTokens[refreshToken] ?? '');
+
+		if (!isIDValid) {
+			return {
+				valid: false,
+				user: null,
+			};
+		}
+
+		const user = await AdminDB.findById(id);
+		if (user === null) {
+			return {
+				valid: false,
+				user: null,
+			};
+		}
+		return {
+			valid: true,
+			user: user,
+		};
 	}
 
 	async allUsers() {
