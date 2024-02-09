@@ -93,25 +93,32 @@ export default class GroupMergeService {
 
 	public async sendGroupReply(
 		whatsapp: WAWebJS.Client,
-		chat: WAWebJS.GroupChat,
-		message: WAWebJS.Message
+		{
+			chat,
+			message,
+			contact,
+		}: {
+			chat: WAWebJS.GroupChat;
+			message: WAWebJS.Message;
+			contact: WAWebJS.Contact;
+		}
 	) {
 		try {
 			const group_id = chat.id._serialized;
-			console.log(group_id);
 
-			const merged_group = await MergedGroupDB.findOne({ groups: group_id });
+			const merged_group = await MergedGroupDB.findOne({
+				groups: group_id,
+				group_reply: { $exists: true, $ne: '' },
+			});
 			if (!merged_group) {
 				return;
 			}
-
 			await GroupPrivateReplyDB.create({
 				user: this.user,
-				from: message.from,
+				from: contact.id._serialized,
 			});
-
 			whatsapp
-				.sendMessage(message.from, merged_group.group_reply, {
+				.sendMessage(contact.id._serialized, merged_group.group_reply, {
 					quotedMessageId: message.id._serialized,
 				})
 				.catch((err) => {
