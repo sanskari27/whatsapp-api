@@ -548,7 +548,7 @@ export default function Bot() {
 							</AbsoluteCenter>
 						</Box>
 						<Box flex={1} mt={'0.5rem'}>
-							<Text className='text-gray-700 dark:text-gray-400'>Forward To</Text>
+							<Text className='text-gray-700 dark:text-gray-400'>Forward To (without +)</Text>
 							<TextInput
 								placeholder='ex 9175XXXXXX68'
 								value={forward.number ?? ''}
@@ -589,7 +589,7 @@ export default function Bot() {
 									width={'100%'}
 									onClick={handleEditResponder}
 								>
-									<Text color={'white'}>Edit</Text>
+									<Text color={'white'}>Save</Text>
 								</Button>
 							</>
 						) : (

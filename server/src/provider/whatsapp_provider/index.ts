@@ -1,11 +1,12 @@
 import { Types } from 'mongoose';
 import QRCode from 'qrcode';
 import { Socket } from 'socket.io';
-import WAWebJS, { Client, LocalAuth } from 'whatsapp-web.js';
+import WAWebJS, { Client, GroupChat, LocalAuth } from 'whatsapp-web.js';
 import { CHROMIUM_PATH, SOCKET_RESPONSES } from '../../config/const';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import { UserService } from '../../services';
 import BotService from '../../services/bot';
+import GroupMergeService from '../../services/merged-groups';
 import VoteResponseService from '../../services/vote-response';
 import DateUtils from '../../utils/DateUtils';
 import { Delay } from '../../utils/ExpressUtils';
@@ -46,6 +47,7 @@ export class WhatsappProvider {
 	private user_service: UserService | undefined;
 	private socket: Socket | undefined;
 	private bot_service: BotService | undefined;
+	private group_service: GroupMergeService | undefined;
 	private vote_response_service: VoteResponseService | undefined;
 
 	private status: STATUS;
@@ -147,6 +149,7 @@ export class WhatsappProvider {
 			await this.user_service.login(this.client_id);
 
 			this.bot_service = new BotService(this.user_service.getUser());
+			this.group_service = new GroupMergeService(this.user_service.getUser());
 			this.bot_service.attachWhatsappProvider(this);
 			this.vote_response_service = new VoteResponseService(this.user_service.getUser());
 		});
@@ -201,13 +204,14 @@ export class WhatsappProvider {
 
 		this.client.on('message', async (message) => {
 			if (!this.bot_service) return;
-			const isGroup = (await message.getChat()).isGroup;
+			const chat = await message.getChat();
+			const isGroup = chat.isGroup;
 			this.bot_service.handleMessage(message.from, message.body, await message.getContact(), {
 				isGroup,
 				fromPoll: false,
 			});
 			if (isGroup) {
-				this.bot_service.sendGroupReply(message);
+				this.group_service?.sendGroupReply(this.client, chat as GroupChat, message);
 			}
 		});
 	}

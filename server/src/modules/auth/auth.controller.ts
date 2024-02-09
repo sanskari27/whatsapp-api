@@ -52,20 +52,7 @@ async function details(req: Request, res: Response, next: NextFunction) {
 			subscriptionExpiration: isSubscribed ? userService.getExpiration('DD/MM/YYYY') : '',
 			userType: userService.getUserType(),
 			paymentRecords: paymentRecords,
-			group_reply_message: userService.getGroupReplyMessage(),
 		},
-	});
-}
-
-async function updateDetails(req: Request, res: Response, next: NextFunction) {
-	const userService = new UserService(req.locals.user);
-	userService.updateGroupReplyMessage(req.body.group_reply_message);
-	userService.save();
-
-	return Respond({
-		res,
-		status: 200,
-		data: {},
 	});
 }
 
@@ -131,7 +118,6 @@ const AuthController = {
 	validateClientID,
 	details,
 	logout,
-	updateDetails,
 	adminLogin,
 	adminLogout,
 	validateAdmin,

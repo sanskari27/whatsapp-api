@@ -7,5 +7,4 @@ export default interface IUser extends Document {
 	subscription_expiry: Date;
 	createdAt: Date;
 	updateAt: Date;
-	group_reply_message: string;
 }

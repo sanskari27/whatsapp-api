@@ -14,7 +14,6 @@ import { WhatsappProvider } from '../../provider/whatsapp_provider';
 import { BotResponseDB } from '../../repository/bot';
 import BotDB from '../../repository/bot/Bot';
 import ContactCardDB from '../../repository/contact-cards';
-import GroupPrivateReplyDB from '../../repository/group-private-reply';
 import IUpload from '../../types/uploads';
 import { IUser } from '../../types/user';
 import DateUtils from '../../utils/DateUtils';
@@ -369,30 +368,6 @@ export default class BotService {
 				last_message: DateUtils.getMomentNow().toDate(),
 				triggered_at: [DateUtils.getMomentNow().toDate()],
 			});
-		}
-	}
-
-	public async sendGroupReply(message: WAWebJS.Message) {
-		const whatsapp = this.whatsapp;
-
-		if (!this.user.group_reply_message || !whatsapp) {
-			return;
-		}
-		try {
-			await GroupPrivateReplyDB.create({
-				user: this.user,
-				from: message.from,
-			});
-			whatsapp
-				.getClient()
-				.sendMessage(message.from, this.user.group_reply_message, {
-					quotedMessageId: message.id._serialized,
-				})
-				.catch((err) => {
-					Logger.error('Error sending message:', err);
-				});
-		} catch (err) {
-			//ignore since message already exists
 		}
 	}
 

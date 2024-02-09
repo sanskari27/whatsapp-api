@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { AddIcon, EditIcon } from '@chakra-ui/icons';
+import { AddIcon, EditIcon, InfoOutlineIcon } from '@chakra-ui/icons';
 import {
 	AlertDialog,
 	AlertDialogContent,
@@ -8,6 +8,7 @@ import {
 	AlertDialogOverlay,
 	Box,
 	Button,
+	Center,
 	Divider,
 	Flex,
 	FormControl,
@@ -1337,10 +1338,13 @@ export default function Scheduler() {
 										Add Polls ({details.polls.length}) added
 									</Button>
 								</Box>
-								<Box flex={1}></Box>
 							</HStack>
+							<Center mt={'1rem'} gap={'0.5rem'} alignItems={'center'}>
+								<InfoOutlineIcon color={'gray'} />
+								<Text>Message will be Scheduled at Mid-Night</Text>
+							</Center>
 							<Button
-								mt={'2rem'}
+								mt={'1rem'}
 								colorScheme='green'
 								isLoading={uiDetails.schedulingMessages}
 								onClick={handleScheduleMessage}

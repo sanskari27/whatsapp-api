@@ -19,6 +19,7 @@ import {
 	Tbody,
 	Td,
 	Text,
+	Textarea,
 	Th,
 	Thead,
 	Tr,
@@ -32,6 +33,7 @@ import {
 	addSelectedGroup,
 	clearEditMergeGroup,
 	removeSelectedGroup,
+	setGroupReply,
 	setName,
 	updateMergeGroupsList,
 } from '../../../../store/reducers/MergeGroupReducer';
@@ -56,9 +58,9 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 		if (editSelectedGroup.groups.length === 0) {
 			return;
 		}
-		const { id, name, groups } = editSelectedGroup;
+		const { id, name, groups, group_reply } = editSelectedGroup;
 		if (editSelectedGroup.id) {
-			GroupService.editMergedGroup(id, name, groups).then((response) => {
+			GroupService.editMergedGroup(id, name, groups, group_reply).then((response) => {
 				if (!response) {
 					return;
 				}
@@ -66,7 +68,7 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 				onClose();
 			});
 		} else {
-			GroupService.mergeGroups(name, groups).then((response) => {
+			GroupService.mergeGroups(name, groups, group_reply).then((response) => {
 				if (!response) {
 					return;
 				}
@@ -107,6 +109,26 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 							onChange={(e) => dispatch(setName(e.target.value))}
 						/>
 					</FormControl>
+					<FormControl marginTop={'1rem'}>
+						<FormLabel>Group One Time Reply</FormLabel>
+						<Textarea
+							width={'full'}
+							minHeight={'80px'}
+							size={'sm'}
+							rounded={'md'}
+							placeholder={'eg. Hello there!'}
+							border={'none'}
+							className='text-black !bg-[#ECECEC] '
+							_placeholder={{
+								opacity: 0.4,
+								color: 'inherit',
+							}}
+							_focus={{ border: 'none', outline: 'none' }}
+							value={editSelectedGroup.group_reply ?? ''}
+							onChange={(e) => dispatch(setGroupReply(e.target.value))}
+						/>
+					</FormControl>
+
 					<TableContainer>
 						<Table>
 							<Thead>
