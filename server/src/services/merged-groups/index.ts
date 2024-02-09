@@ -98,6 +98,7 @@ export default class GroupMergeService {
 	) {
 		try {
 			const group_id = chat.id._serialized;
+			console.log(group_id);
 
 			const merged_group = await MergedGroupDB.findOne({ groups: group_id });
 			if (!merged_group) {
