@@ -46,14 +46,4 @@ export default class UserService {
 			return false;
 		}
 	}
-
-	static async setGroupReplyMessage(text: string) {
-		try {
-			await APIInstance.patch(`/auth/details`, {
-				group_reply_message: text,
-			});
-		} catch (err) {
-			//ignore
-		}
-	}
 }

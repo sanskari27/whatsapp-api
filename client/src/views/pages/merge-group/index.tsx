@@ -4,7 +4,6 @@ import {
 	Button,
 	Checkbox,
 	HStack,
-	Icon,
 	IconButton,
 	SkeletonText,
 	Table,
@@ -16,7 +15,6 @@ import {
 	Tr,
 	useDisclosure,
 } from '@chakra-ui/react';
-import { FaReplyAll } from 'react-icons/fa';
 
 import { useEffect, useRef } from 'react';
 import { MdGroupAdd, MdGroups3 } from 'react-icons/md';
@@ -35,16 +33,10 @@ import {
 } from '../../../store/reducers/MergeGroupReducer';
 import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
 import { NavbarDeleteElement, NavbarSearchElement } from '../../components/navbar';
-import { ReplyDialog } from './components';
 import GroupMerge from './components/group-merge-dialog';
 
 const GroupMergePage = () => {
 	const { isOpen, onOpen, onClose } = useDisclosure();
-	const {
-		isOpen: isReplyDialogOpen,
-		onOpen: openReplyDialog,
-		onClose: closeReplyDialog,
-	} = useDisclosure();
 	const confirmationDialogRef = useRef<ConfirmationDialogHandle>(null);
 	const theme = useTheme();
 
@@ -77,13 +69,6 @@ const GroupMergePage = () => {
 					<NavbarDeleteElement
 						isDisabled={selectedGroups.length === 0}
 						onClick={() => confirmationDialogRef.current?.open('')}
-					/>
-					<IconButton
-						aria-label='reply'
-						icon={<Icon as={FaReplyAll} height={4} width={4} color={'white'} />}
-						colorScheme={'cyan'}
-						size={'sm'}
-						onClick={openReplyDialog}
 					/>
 					<Button leftIcon={<MdGroupAdd />} size={'sm'} colorScheme='blue' onClick={onOpen}>
 						MERGE
@@ -175,7 +160,6 @@ const GroupMergePage = () => {
 					</Tbody>
 				</Table>
 			</TableContainer>
-			<ReplyDialog isOpen={isReplyDialogOpen} onClose={closeReplyDialog} />
 			<GroupMerge isOpen={isOpen} onClose={onClose} />
 			<ConfirmationDialog
 				ref={confirmationDialogRef}

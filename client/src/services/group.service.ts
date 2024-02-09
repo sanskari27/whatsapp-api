@@ -52,13 +52,18 @@ export default class GroupService {
 		}
 	}
 
-	static async mergeGroups(group_name: string, group_ids: string[]) {
+	static async mergeGroups(group_name: string, group_ids: string[], group_reply: string) {
 		try {
-			const { data } = await APIInstance.post(`/whatsapp/groups/merge`, { group_name, group_ids });
+			const { data } = await APIInstance.post(`/whatsapp/groups/merge`, {
+				group_name,
+				group_ids,
+				group_reply,
+			});
 			return {
 				id: data.group.id as string,
 				name: data.group.name as string,
 				groups: data.group.groups as string[],
+				group_reply: data.group.group_reply as string,
 			};
 		} catch (err) {
 			return null;
@@ -73,22 +78,25 @@ export default class GroupService {
 				name: string;
 				isMergedGroup: boolean;
 				groups: string[];
+				group_reply: string;
 			}[];
 		} catch (err) {
 			return [];
 		}
 	}
 
-	static async editMergedGroup(id: string, name: string, groups: string[]) {
+	static async editMergedGroup(id: string, name: string, groups: string[], groups_reply: string) {
 		try {
 			const { data } = await APIInstance.patch(`/whatsapp/groups/merge/${id}`, {
 				group_name: name,
 				group_ids: groups,
+				groups_reply: groups_reply,
 			});
 			return {
 				id: data.group.id as string,
 				name: data.group.name as string,
 				groups: data.group.groups as string[],
+				group_reply: data.group.group_reply as string,
 			};
 		} catch (err) {
 			return null;

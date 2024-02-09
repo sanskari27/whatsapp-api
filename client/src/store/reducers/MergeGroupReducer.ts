@@ -9,6 +9,7 @@ const initialState: MergeGroupState = {
 		id: '',
 		name: '',
 		groups: [],
+		group_reply: '',
 	},
 	uiDetails: {
 		isSaving: false,
@@ -70,6 +71,7 @@ const MergeGroupSlice = createSlice({
 						id: action.payload.id,
 						name: action.payload.name,
 						groups: action.payload.groups,
+						group_reply: action.payload.group_reply,
 					};
 				}
 				return group;
@@ -81,6 +83,9 @@ const MergeGroupSlice = createSlice({
 		},
 		setGroups: (state, action: PayloadAction<string>) => {
 			state.editSelectedGroup.groups.push(action.payload);
+		},
+		setGroupReply: (state, action: PayloadAction<string>) => {
+			state.editSelectedGroup.group_reply = action.payload;
 		},
 		clearEditMergeGroup: (state) => {
 			state.editSelectedGroup = initialState.editSelectedGroup;
@@ -130,6 +135,7 @@ export const {
 	setIsCreating,
 	setIsUpdating,
 	setError,
+	setGroupReply,
 } = MergeGroupSlice.actions;
 
 export default MergeGroupSlice.reducer;

@@ -4,4 +4,5 @@ export default interface IMergedGroup extends Document {
 	user: IUser;
 	name: string;
 	groups: string[];
+	group_reply: string;
 }

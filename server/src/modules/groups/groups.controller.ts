@@ -208,7 +208,7 @@ async function createGroup(req: Request, res: Response, next: NextFunction) {
 async function mergeGroup(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
 
-	const { group_ids, group_name } = req.locals.data as MergeGroupValidationResult;
+	const { group_ids, group_name, group_reply } = req.locals.data as MergeGroupValidationResult;
 
 	const whatsapp = WhatsappProvider.getInstance(client_id);
 	const whatsappUtils = new WhatsappUtils(whatsapp);
@@ -226,7 +226,11 @@ async function mergeGroup(req: Request, res: Response, next: NextFunction) {
 		)
 	).filter((chat) => chat !== null) as string[];
 
-	const group = await new GroupMergeService(req.locals.user).mergeGroup(group_name, chat_ids);
+	const group = await new GroupMergeService(req.locals.user).mergeGroup(
+		group_name,
+		chat_ids,
+		group_reply
+	);
 
 	return Respond({
 		res,

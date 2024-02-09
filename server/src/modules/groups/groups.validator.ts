@@ -10,6 +10,7 @@ export type CreateGroupValidationResult = {
 export type MergeGroupValidationResult = {
 	group_name: string;
 	group_ids: string[];
+	group_reply?: string;
 };
 
 export async function CreateGroupValidator(req: Request, res: Response, next: NextFunction) {
@@ -44,6 +45,7 @@ export async function MergeGroupValidator(req: Request, res: Response, next: Nex
 		.object({
 			group_name: z.string(),
 			group_ids: z.string().array().default([]),
+			group_reply: z.string().optional(),
 		})
 		.refine((obj) => obj.group_ids.length !== 0);
 	const validationResult = reqValidator.safeParse(req.body);
