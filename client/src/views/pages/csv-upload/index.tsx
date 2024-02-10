@@ -54,7 +54,7 @@ const CSVUpload = () => {
 				if (!res) {
 					return;
 				}
-				dispatch(deleteSelectedCSVFile({ id: csv }));
+				dispatch(deleteSelectedCSVFile({ _id: csv }));
 			});
 		});
 		setSelectedFiles([]);

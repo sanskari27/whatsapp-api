@@ -42,6 +42,9 @@ const LinkShortenerReducer = createSlice({
 			state.generation_result = initialState.generation_result;
 		},
 		setNumber: (state, action: PayloadAction<typeof initialState.create_details.number>) => {
+			if (isNaN(Number(action.payload))) {
+				return;
+			}
 			state.create_details.number = action.payload;
 		},
 		setMessage: (state, action: PayloadAction<typeof initialState.create_details.message>) => {
