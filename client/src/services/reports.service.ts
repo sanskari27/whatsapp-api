@@ -83,11 +83,36 @@ export default class ReportsService {
 		}
 	}
 
-	static async pollDetails({ title, isMultiSelect, options }: Poll) {
+	static async pollDetails({ title, isMultiSelect, options }: Poll, csv: boolean = false) {
+		if (csv) {
+			try {
+				const response = await APIInstance.get('/reports/polls', {
+					params: { title, isMultiSelect, options: options.join('|$|'), export_csv: csv },
+					responseType: 'blob',
+				});
+
+				const blob = new Blob([response.data], { type: 'text/csv' });
+
+				// Create a temporary link element
+				const downloadLink = document.createElement('a');
+				downloadLink.href = window.URL.createObjectURL(blob);
+				downloadLink.download = `Poll Report.csv`; // Specify the filename
+
+				// Append the link to the body and trigger the download
+				document.body.appendChild(downloadLink);
+				downloadLink.click();
+
+				// Clean up - remove the link
+				document.body.removeChild(downloadLink);
+			} catch (err) {
+				return [];
+			}
+		}
 		try {
 			const { data } = await APIInstance.get('/reports/polls', {
 				params: { title, isMultiSelect, options: options.join('|$|') },
 			});
+
 			return data.polls.map(
 				(poll: {
 					group_name: string;
@@ -103,7 +128,9 @@ export default class ReportsService {
 						group_name: (poll.group_name ?? '') as string,
 						isMultiSelect: (poll.isMultiSelect ?? false) as boolean,
 						options: poll.options?.map((option: string) => option ?? '') as string[],
-						selected_option: poll.selected_option?.map((option: string) => option ?? '') as string[],
+						selected_option: poll.selected_option?.map(
+							(option: string) => option ?? ''
+						) as string[],
 						title: (poll.title ?? '') as string,
 						voted_at: (poll.voted_at ?? '') as string,
 						voter_name: (poll.voter_name ?? '') as string,

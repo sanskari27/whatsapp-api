@@ -174,7 +174,7 @@ const EditLinkDialog = forwardRef<EditLinkDialogHandle, Props>(({ onConfirm }: P
 							Cancel
 						</Button>
 						<Button colorScheme='yellow' onClick={handleEdit} ml={3}>
-							Edit
+							Save
 						</Button>
 					</AlertDialogFooter>
 				</AlertDialogContent>

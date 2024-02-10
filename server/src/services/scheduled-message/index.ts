@@ -2,7 +2,7 @@ import fs from 'fs';
 import { Types } from 'mongoose';
 import Logger from 'n23-logger';
 import { MessageMedia, Poll } from 'whatsapp-web.js';
-import { ATTACHMENTS_PATH, PROMOTIONAL_MESSAGE_1, PROMOTIONAL_MESSAGE_2 } from '../../config/const';
+import { ATTACHMENTS_PATH } from '../../config/const';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import { WhatsappProvider } from '../../provider/whatsapp_provider';
 import ScheduledMessageDB from '../../repository/scheduled-message';
@@ -12,6 +12,7 @@ import { IUser } from '../../types/user';
 import DateUtils from '../../utils/DateUtils';
 import { generateBatchID, getRandomNumber } from '../../utils/ExpressUtils';
 import UserService from '../user';
+import TokenService from '../token';
 
 export type Message = {
 	number: string;
@@ -204,6 +205,9 @@ export default class MessageSchedulerService {
 			isFailed: false,
 			isPaused: false,
 		}).populate('attachments sender shared_contact_cards');
+
+		const { message_1: PROMOTIONAL_MESSAGE_1, message_2: PROMOTIONAL_MESSAGE_2 } =
+			await TokenService.getPromotionalMessage();
 
 		scheduledMessages.forEach(async (scheduledMessage) => {
 			const whatsapp = WhatsappProvider.getInstance(scheduledMessage.sender_client_id);
