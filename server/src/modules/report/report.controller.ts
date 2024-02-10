@@ -70,6 +70,15 @@ async function listPolls(req: Request, res: Response, next: NextFunction) {
 	const { title, options, isMultiSelect, export_csv } = req.query;
 
 	if (!title || !options || !isMultiSelect) {
+		if (export_csv === 'true') {
+			const polls = await service.getPolls();
+			return RespondCSV({
+				res,
+				filename: 'Poll Reports',
+				data: CSVParser.exportPollReport(polls),
+			});
+		}
+
 		const polls = await service.allPolls();
 
 		return Respond({

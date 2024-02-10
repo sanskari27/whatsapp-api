@@ -113,4 +113,21 @@ export default class VoteResponseService {
 			voted_at: DateUtils.getMoment(poll.voted_at).format('DD-MM-YYYY HH:mm:ss'),
 		}));
 	}
+
+	async getPolls() {
+		const polls = await VoteResponseDB.find({
+			user: this.user._id,
+		});
+
+		return polls.map((poll) => ({
+			title: poll.title,
+			options: poll.options,
+			isMultiSelect: poll.isMultiSelect,
+			voter_number: poll.voter_number,
+			voter_name: poll.voter_name,
+			group_name: poll.group_name,
+			selected_option: poll.selected_option,
+			voted_at: DateUtils.getMoment(poll.voted_at).format('DD-MM-YYYY HH:mm:ss'),
+		}));
+	}
 }
