@@ -25,6 +25,13 @@ export function getOrCache<T>(key: string, cb: () => Promise<T>) {
 	});
 }
 
+export function saveToCache(key: string, value: string | string[] | number | object) {
+	return new Promise(async (resolve, reject) => {
+		cache.setEx(key, CACHE_TIMEOUT, JSON.stringify(value));
+		resolve(null);
+	});
+}
+
 export function getRefreshTokens() {
 	return new Promise((resolve: (value: { [key: string]: string }) => void, reject) => {
 		cache
@@ -46,17 +53,15 @@ export function getRefreshTokens() {
 }
 
 export function saveRefreshTokens(token: string, id: string) {
-	return new Promise((resolve: (value: { [key: string]: string }) => void, reject) => {
-		return new Promise(async (resolve, reject) => {
-			const refreshTokens = await getRefreshTokens();
-			refreshTokens[token] = id;
-			cache.setEx(
-				CACHE_TOKEN_GENERATOR.REFRESH_TOKENS(),
-				REFRESH_CACHE_TIMEOUT,
-				JSON.stringify(refreshTokens)
-			);
-			resolve(null);
-		});
+	return new Promise(async (resolve, reject) => {
+		const refreshTokens = await getRefreshTokens();
+		refreshTokens[token] = id;
+		cache.setEx(
+			CACHE_TOKEN_GENERATOR.REFRESH_TOKENS(),
+			REFRESH_CACHE_TIMEOUT,
+			JSON.stringify(refreshTokens)
+		);
+		resolve(null);
 	});
 }
 

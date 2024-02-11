@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { GroupChat } from 'whatsapp-web.js';
-import { getOrCache } from '../../config/cache';
+import { getOrCache, saveToCache } from '../../config/cache';
 import { CACHE_TOKEN_GENERATOR } from '../../config/const';
 import APIError, { API_ERRORS } from '../../errors/api-errors';
 import { WhatsappProvider } from '../../provider/whatsapp_provider';
@@ -49,6 +49,41 @@ async function groups(req: Request, res: Response, next: NextFunction) {
 				return groups;
 			}
 		);
+		const merged_groups = await new GroupMergeService(req.locals.user).listGroups();
+
+		return Respond({
+			res,
+			status: 200,
+			data: {
+				groups: [...groups, ...merged_groups.map((group) => ({ ...group, groups: undefined }))],
+			},
+		});
+	} catch (err) {
+		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+	}
+}
+
+async function refreshGroup(req: Request, res: Response, next: NextFunction) {
+	const client_id = req.locals.client_id;
+
+	const whatsapp = WhatsappProvider.getInstance(client_id);
+	if (!whatsapp.isReady()) {
+		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+	}
+
+	try {
+		const groups = (await whatsapp.getClient().getChats())
+			.filter((chat) => chat.isGroup)
+			.map((chat) => {
+				const groupChat = chat as GroupChat;
+				return {
+					id: groupChat.id._serialized,
+					name: groupChat.name ?? '',
+					isMergedGroup: false,
+				};
+			});
+
+		await saveToCache(CACHE_TOKEN_GENERATOR.GROUPS(req.locals.user._id), groups);
 		const merged_groups = await new GroupMergeService(req.locals.user).listGroups();
 
 		return Respond({
@@ -318,6 +353,7 @@ const GroupsController = {
 	mergeGroup,
 	deleteMergedGroup,
 	mergedGroups,
+	refreshGroup,
 	updateMergedGroup,
 };
 

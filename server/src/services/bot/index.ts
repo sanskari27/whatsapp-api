@@ -232,8 +232,8 @@ export default class BotService {
 
 			let msg = bot.message;
 			if (msg) {
-				if (msg.includes('{{profile_name}}')) {
-					msg = msg.replace('{{profile_name}}', contact.pushname);
+				if (msg.includes('{{public_name}}')) {
+					msg = msg.replace('{{public_name}}', contact.pushname);
 				}
 				whatsapp
 					.getClient()
