@@ -13,6 +13,18 @@ export default class GroupService {
 			return [];
 		}
 	}
+	static async refreshGroups() {
+		try {
+			const { data } = await APIInstance.get(`/whatsapp/groups/refresh`);
+			return data.groups as {
+				id: string;
+				name: string;
+				isMergedGroup: boolean;
+			}[];
+		} catch (err) {
+			return [];
+		}
+	}
 	static async fetchGroup(ids: string[], { vcf_only = false, business_contacts_only = false }) {
 		try {
 			const { data } = await APIInstance.post(

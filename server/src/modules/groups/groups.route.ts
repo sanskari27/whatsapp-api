@@ -21,6 +21,8 @@ router
 	.all(MergeGroupValidator)
 	.post(GroupsController.mergeGroup);
 
+router.route('/refresh').post(GroupsController.refreshGroup);
+
 router
 	.route('/')
 	.get(GroupsController.groups)

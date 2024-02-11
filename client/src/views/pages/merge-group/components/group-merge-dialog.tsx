@@ -5,6 +5,8 @@ import {
 	Flex,
 	FormControl,
 	FormLabel,
+	Icon,
+	IconButton,
 	Input,
 	InputGroup,
 	InputLeftElement,
@@ -23,8 +25,10 @@ import {
 	Th,
 	Thead,
 	Tr,
+	useBoolean,
 } from '@chakra-ui/react';
 import { useState } from 'react';
+import { BiRefresh } from 'react-icons/bi';
 import { useDispatch, useSelector } from 'react-redux';
 import GroupService from '../../../../services/group.service';
 import { StoreNames, StoreState } from '../../../../store';
@@ -37,6 +41,7 @@ import {
 	setName,
 	updateMergeGroupsList,
 } from '../../../../store/reducers/MergeGroupReducer';
+import { setGroups } from '../../../../store/reducers/UserDetailsReducers';
 
 type GroupMergeProps = {
 	onClose: () => void;
@@ -45,6 +50,7 @@ type GroupMergeProps = {
 
 const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 	const dispatch = useDispatch();
+	const [dataRefreshing, groupsLoading] = useBoolean();
 
 	const [searchText, setSearchText] = useState<string>('');
 
@@ -89,6 +95,13 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 	const handleClose = () => {
 		dispatch(clearEditMergeGroup());
 		onClose();
+	};
+
+	const handleRefresh = async () => {
+		groupsLoading.on();
+		const groups = await GroupService.refreshGroups();
+		dispatch(setGroups(groups));
+		groupsLoading.off();
 	};
 
 	const filtered = groups.filter((group) =>
@@ -176,12 +189,24 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 				</ModalBody>
 
 				<ModalFooter>
-					<Button colorScheme='red' mr={3} onClick={handleClose}>
-						Cancel
-					</Button>
-					<Button colorScheme='green' onClick={handleMergeGroup}>
-						{editSelectedGroup.id ? 'Save' : 'Merge'}
-					</Button>
+					<Flex width={'full'} justifyContent={'space-between'} alignItems={'center'}>
+						<IconButton
+							aria-label='delete'
+							icon={<Icon as={BiRefresh} height={6} width={6} />}
+							colorScheme={'blue'}
+							size={'sm'}
+							isLoading={dataRefreshing}
+							onClick={handleRefresh}
+						/>
+						<Flex>
+							<Button colorScheme='red' mr={3} onClick={handleClose}>
+								Cancel
+							</Button>
+							<Button colorScheme='green' onClick={handleMergeGroup}>
+								{editSelectedGroup.id ? 'Save' : 'Merge'}
+							</Button>
+						</Flex>
+					</Flex>
 				</ModalFooter>
 			</ModalContent>
 		</Modal>
