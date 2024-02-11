@@ -26,6 +26,7 @@ import GroupService from '../../../services/group.service';
 import { StoreNames, StoreState } from '../../../store';
 import {
 	addSelectedMergedGroups,
+	clearEditMergeGroup,
 	deleteMergedGroup,
 	editSelectedGroup,
 	removeSelectedMergedGroups,
@@ -71,7 +72,15 @@ const GroupMergePage = () => {
 						isDisabled={selectedGroups.length === 0}
 						onClick={() => confirmationDialogRef.current?.open('')}
 					/>
-					<Button leftIcon={<MdGroupAdd />} size={'sm'} colorScheme='blue' onClick={onOpen}>
+					<Button
+						leftIcon={<MdGroupAdd />}
+						size={'sm'}
+						colorScheme='blue'
+						onClick={() => {
+							dispatch(clearEditMergeGroup());
+							onOpen();
+						}}
+					>
 						MERGE
 					</Button>
 				</HStack>
@@ -80,7 +89,7 @@ const GroupMergePage = () => {
 		return () => {
 			popFromNavbar();
 		};
-	}, [onOpen, selectedGroups.length, isDeleting]);
+	}, [onOpen, selectedGroups.length, isDeleting, dispatch]);
 
 	const filtered = useFilteredList(list, { name: 1 });
 

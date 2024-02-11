@@ -534,7 +534,7 @@ const ContactInputDialog = forwardRef<ContactInputDialogHandle>((_, ref) => {
 							Cancel
 						</Button>
 						<Button isLoading={isSaving} colorScheme='green' onClick={handleSave}>
-							{isUpdating ? 'Edit' : 'Save'}
+							Save
 						</Button>
 					</HStack>
 				</DrawerFooter>

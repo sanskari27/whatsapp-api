@@ -180,7 +180,7 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 						Cancel
 					</Button>
 					<Button colorScheme='green' onClick={handleMergeGroup}>
-						{editSelectedGroup.id ? 'Update' : 'Merge'}
+						{editSelectedGroup.id ? 'Save' : 'Merge'}
 					</Button>
 				</ModalFooter>
 			</ModalContent>

@@ -35,6 +35,7 @@ export default class SocketServerProvider {
 	private attachListeners() {
 		this.io.on('connection', (socket) => {
 			socket.on(SOCKET_EVENTS.INITIALIZE, async (cid: string | undefined) => {
+				socket.
 				let client_id = '';
 				if (cid) {
 					const { valid } = await UserService.isValidAuth(cid);

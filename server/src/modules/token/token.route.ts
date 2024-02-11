@@ -5,6 +5,12 @@ import TokenController from './token.controller';
 const router = express.Router();
 
 router
+	.route('/promotional')
+	.all(VerifyAdmin)
+	.get(TokenController.getPromotionalMessage)
+	.post(TokenController.setPromotionalMessage);
+
+router
 	.route('/')
 	.all(VerifyAdmin)
 	.get(TokenController.getToken)

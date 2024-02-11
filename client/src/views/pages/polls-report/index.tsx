@@ -15,17 +15,17 @@ import { BiPoll } from 'react-icons/bi';
 import { useDispatch, useSelector } from 'react-redux';
 import useFilteredList from '../../../hooks/useFilteredList';
 import { popFromNavbar, pushToNavbar } from '../../../hooks/useNavbar';
+import { useTheme } from '../../../hooks/useTheme';
 import ReportsService from '../../../services/reports.service';
 import { StoreNames, StoreState } from '../../../store';
 import { setPollList, setSelectedPollDetails } from '../../../store/reducers/PollReducers';
 import { Poll } from '../../../store/types/PollState';
 import { NavbarSearchElement } from '../../components/navbar';
 import PollResponseDialog from './components/poll-response';
-import { useTheme } from '../../../hooks/useTheme';
 
 const PollReport = () => {
 	const dispatch = useDispatch();
-	const theme = useTheme()
+	const theme = useTheme();
 
 	const { isOpen, onOpen, onClose } = useDisclosure();
 

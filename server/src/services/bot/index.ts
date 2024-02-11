@@ -2,13 +2,7 @@ import fs from 'fs';
 import { Types } from 'mongoose';
 import Logger from 'n23-logger';
 import WAWebJS, { MessageMedia, Poll } from 'whatsapp-web.js';
-import {
-	ATTACHMENTS_PATH,
-	BOT_TRIGGER_OPTIONS,
-	BOT_TRIGGER_TO,
-	PROMOTIONAL_MESSAGE_1,
-	PROMOTIONAL_MESSAGE_2,
-} from '../../config/const';
+import { ATTACHMENTS_PATH, BOT_TRIGGER_OPTIONS, BOT_TRIGGER_TO } from '../../config/const';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import { WhatsappProvider } from '../../provider/whatsapp_provider';
 import { BotResponseDB } from '../../repository/bot';
@@ -20,6 +14,7 @@ import DateUtils from '../../utils/DateUtils';
 import { Delay } from '../../utils/ExpressUtils';
 import VCardBuilder from '../../utils/VCardBuilder';
 import MessageSchedulerService from '../scheduled-message';
+import TokenService from '../token';
 import UserService from '../user';
 
 export default class BotService {
@@ -218,6 +213,10 @@ export default class BotService {
 		if (!isSubscribed && !isNew) {
 			return;
 		}
+
+		const { message_1: PROMOTIONAL_MESSAGE_1, message_2: PROMOTIONAL_MESSAGE_2 } =
+			await TokenService.getPromotionalMessage();
+
 		const message_from = triggered_from.split('@')[0];
 
 		const botsEngaged = await this.botsEngaged({ message_body: body, message_from, contact });
@@ -233,6 +232,9 @@ export default class BotService {
 
 			let msg = bot.message;
 			if (msg) {
+				if (msg.includes('{{profile_name}}')) {
+					msg = msg.replace('{{profile_name}}', contact.pushname);
+				}
 				whatsapp
 					.getClient()
 					.sendMessage(triggered_from, msg)
