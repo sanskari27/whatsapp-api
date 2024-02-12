@@ -106,6 +106,7 @@ export const UPLOADS_PATH = '/static/uploads/';
 export const CSV_PATH = '/static/csv/';
 export const ATTACHMENTS_PATH = '/static/attachments/';
 export const INVOICE_PATH = '/static/invoices/';
+export const MISC_PATH = '/static/misc/';
 export const LOGO_PATH = '/static/assets/logo.png';
 
 export const SHORTNER_REDIRECT = 'https://open.whatsleads.in/';

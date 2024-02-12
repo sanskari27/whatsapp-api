@@ -44,10 +44,10 @@ const MergeGroupSlice = createSlice({
 			state.list.push(action.payload);
 			state.uiDetails.isSaving = false;
 		},
-		addSelectedMergedGroups: (state, action: PayloadAction<string>) => {
+		addSelectedGroups: (state, action: PayloadAction<string>) => {
 			state.selectedGroups.push(action.payload);
 		},
-		removeSelectedMergedGroups: (state, action: PayloadAction<string>) => {
+		removeSelectedGroups: (state, action: PayloadAction<string>) => {
 			state.selectedGroups = state.selectedGroups.filter((id) => id !== action.payload);
 		},
 		addSelectedGroup: (state, action: PayloadAction<string>) => {
@@ -57,6 +57,9 @@ const MergeGroupSlice = createSlice({
 			state.editSelectedGroup.groups = state.editSelectedGroup.groups.filter(
 				(id) => id !== action.payload
 			);
+		},
+		clearSelectedGroup: (state) => {
+			state.selectedGroups = [];
 		},
 		deleteMergedGroup: (state, action: PayloadAction<string>) => {
 			state.list = state.list.filter((merged_group) => merged_group.id !== action.payload);
@@ -135,8 +138,9 @@ export const {
 	reset,
 	setMergedGroupList,
 	addMergedGroup,
-	addSelectedMergedGroups,
-	removeSelectedMergedGroups,
+	addSelectedGroups,
+	removeSelectedGroups,
+	clearSelectedGroup,
 	addSelectedGroup,
 	removeSelectedGroup,
 	deleteMergedGroup,

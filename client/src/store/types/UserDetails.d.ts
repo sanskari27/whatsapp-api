@@ -12,6 +12,7 @@ export type UserDetailsState = {
 		id: string;
 		name: string;
 		isMergedGroup: boolean;
+		participants: number;
 	}[];
 	labels: {
 		id: string;

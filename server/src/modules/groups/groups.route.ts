@@ -2,7 +2,11 @@ import express from 'express';
 import PaymentValidator from '../../middleware/VerifyPayment';
 import { IDValidator } from '../../middleware/idValidator';
 import GroupsController from './groups.controller';
-import { CreateGroupValidator, MergeGroupValidator } from './groups.validator';
+import {
+	CreateGroupValidator,
+	GroupSettingValidator,
+	MergeGroupValidator,
+} from './groups.validator';
 
 const router = express.Router();
 
@@ -26,7 +30,10 @@ router.route('/refresh').post(GroupsController.refreshGroup);
 router
 	.route('/')
 	.get(GroupsController.groups)
+	.put(GroupsController.updateGroupsPicture)
 	.all(CreateGroupValidator)
-	.post(GroupsController.createGroup);
+	.post(GroupsController.createGroup)
+	.all(GroupSettingValidator)
+	.patch(GroupsController.updateGroupsDetails);
 
 export default router;
