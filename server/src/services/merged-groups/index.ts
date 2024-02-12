@@ -153,6 +153,12 @@ export default class GroupMergeService {
 		if (!group_reply_docs && !private_reply_docs) {
 			return;
 		}
+
+		const admin = chat.participants.find((chatObj) => chatObj.id._serialized === message.from);
+		if (admin && (admin.isAdmin || admin.isSuperAdmin)) {
+			return;
+		}
+
 		const create_docs_data = { user: this.user, from: contact.id._serialized };
 
 		const sendReply = (
