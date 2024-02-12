@@ -429,8 +429,6 @@ async function updateGroupsDetails(req: Request, res: Response, next: NextFuncti
 
 	const {
 		description,
-		add_others,
-		admin_group_settings,
 		edit_group_settings,
 		send_messages,
 		groups: ids_to_update,
