@@ -4,6 +4,7 @@ import WAWebJS from 'whatsapp-web.js';
 import { GroupPrivateReplyDB, GroupReplyDB } from '../../repository/group-reply';
 import MergedGroupDB from '../../repository/merged-groups';
 import { IUser } from '../../types/user';
+import { Delay } from '../../utils/ExpressUtils';
 
 export default class GroupMergeService {
 	private user: IUser;
@@ -153,9 +154,15 @@ export default class GroupMergeService {
 		if (!group_reply_docs && !private_reply_docs) {
 			return;
 		}
+
+		const admin = chat.participants.find((chatObj) => chatObj.id._serialized === message.from);
+		if (admin && (admin.isAdmin || admin.isSuperAdmin)) {
+			return;
+		}
+
 		const create_docs_data = { user: this.user, from: contact.id._serialized };
 
-		const sendReply = (
+		const sendReply = async (
 			model: Model<any, {}, {}, {}, any>,
 			to: string,
 			reply_text: string,
@@ -165,6 +172,7 @@ export default class GroupMergeService {
 			if (!reply_text) {
 				return;
 			}
+			await Delay(Math.random() * 5000 + 2000);
 			model
 				.create(create_docs_data)
 				.then(() => {

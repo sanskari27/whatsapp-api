@@ -11,8 +11,8 @@ import IScheduledMessage from '../../types/scheduled-message';
 import { IUser } from '../../types/user';
 import DateUtils from '../../utils/DateUtils';
 import { generateBatchID, getRandomNumber } from '../../utils/ExpressUtils';
-import UserService from '../user';
 import TokenService from '../token';
+import UserService from '../user';
 
 export type Message = {
 	number: string;
@@ -43,7 +43,6 @@ type Batch = {
 	startsFrom?: string;
 	startTime?: string;
 	endTime?: string;
-	client_id: string;
 };
 
 export default class MessageSchedulerService {
@@ -114,7 +113,6 @@ export default class MessageSchedulerService {
 			docPromise.push(
 				ScheduledMessageDB.create({
 					sender: this.user,
-					sender_client_id: opts.client_id,
 					receiver: message.number,
 					message: message.message ?? '',
 					attachments: message.attachments ?? [],
@@ -144,7 +142,6 @@ export default class MessageSchedulerService {
 
 		ScheduledMessageDB.create({
 			sender: this.user,
-			sender_client_id: opts.client_id,
 			receiver: message.number,
 			message: message.message ?? '',
 			attachments: message.attachments ?? [],
@@ -180,7 +177,6 @@ export default class MessageSchedulerService {
 			docPromise.push(
 				ScheduledMessageDB.create({
 					sender: this.user,
-					sender_client_id: opts.client_id,
 					receiver: message.number,
 					message: message.message ?? '',
 					attachments: message.attachments ?? [],
@@ -210,7 +206,13 @@ export default class MessageSchedulerService {
 			await TokenService.getPromotionalMessage();
 
 		scheduledMessages.forEach(async (scheduledMessage) => {
-			const whatsapp = WhatsappProvider.getInstance(scheduledMessage.sender_client_id);
+			const cid = WhatsappProvider.clientByUser(scheduledMessage.sender);
+			if (!cid) {
+				scheduledMessage.isFailed = true;
+				scheduledMessage.save();
+				return null;
+			}
+			const whatsapp = WhatsappProvider.getInstance(cid);
 
 			const userService = new UserService(scheduledMessage.sender);
 			const { isSubscribed, isNew } = userService.isSubscribed();
