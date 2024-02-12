@@ -23,6 +23,7 @@ export default class GroupMergeService {
 			isMergedGroup: true,
 			groups: group.groups,
 			group_reply: group.group_reply,
+			private_reply: group.private_reply,
 		}));
 	}
 
@@ -198,7 +199,8 @@ export default class GroupMergeService {
 				contact.isMyContact
 					? private_reply_docs.private_reply.saved
 					: private_reply_docs.private_reply.unsaved,
-				message
+				message,
+				true
 			);
 		}
 	}
