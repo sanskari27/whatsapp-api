@@ -7,6 +7,14 @@ export type CreateGroupValidationResult = {
 	name: string;
 };
 
+export type GroupSettingValidationResult = {
+	description?: string | undefined;
+	edit_group_settings?: boolean | undefined;
+	send_messages?: boolean | undefined;
+	add_others?: boolean | undefined;
+	admin_group_settings?: boolean | undefined;
+	groups: string[];
+};
 export type MergeGroupValidationResult = {
 	group_name: string;
 	group_ids: string[];
@@ -21,6 +29,9 @@ export type MergeGroupValidationResult = {
 };
 
 export async function CreateGroupValidator(req: Request, res: Response, next: NextFunction) {
+	if (req.method !== 'POST') {
+		return next();
+	}
 	const reqValidator = z.object({
 		csv_file: z.string().default(''),
 		name: z.string(),
@@ -68,6 +79,36 @@ export async function MergeGroupValidator(req: Request, res: Response, next: Nex
 				.optional(),
 		})
 		.refine((obj) => obj.group_ids.length !== 0);
+	const validationResult = reqValidator.safeParse(req.body);
+	if (validationResult.success) {
+		req.locals.data = validationResult.data;
+		return next();
+	}
+	const message = validationResult.error.issues
+		.map((err) => err.path)
+		.flat()
+		.filter((item, pos, arr) => arr.indexOf(item) == pos)
+		.join(', ');
+
+	return next(
+		new APIError({
+			STATUS: 400,
+			TITLE: 'INVALID_FIELDS',
+			MESSAGE: message,
+		})
+	);
+}
+
+export async function GroupSettingValidator(req: Request, res: Response, next: NextFunction) {
+	const reqValidator = z.object({
+		description: z.string().optional(),
+		edit_group_settings: z.boolean().optional(),
+		send_messages: z.boolean().optional(),
+		add_others: z.boolean().optional(),
+		admin_group_settings: z.boolean().optional(),
+		groups: z.string().array(),
+	});
+
 	const validationResult = reqValidator.safeParse(req.body);
 	if (validationResult.success) {
 		req.locals.data = validationResult.data;

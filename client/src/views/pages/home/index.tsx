@@ -122,7 +122,7 @@ export default function Home() {
 			<NavigationDrawer />
 			<Navbar />
 			<Box paddingLeft={'70px'} paddingTop={'70px'} overflowX={'hidden'} className='min-h-screen'>
-				{outlet ? outlet : <Navigate to={NAVIGATION.CONTACT} />}
+				{outlet ? outlet : <Navigate to={NAVIGATION.GROUP_MERGE} />}
 				<Loading isLoaded={dataLoaded} />
 			</Box>
 		</Box>

@@ -4,23 +4,29 @@ export default class GroupService {
 	static async listGroups() {
 		try {
 			const { data } = await APIInstance.get(`/whatsapp/groups`);
-			return data.groups as {
-				id: string;
-				name: string;
-				isMergedGroup: boolean;
-			}[];
+			return data.groups.map(
+				(group: { id: string; name: string; isMergedGroup: boolean; participants: number }) => ({
+					id: group.id,
+					name: group.name,
+					isMergedGroup: group.isMergedGroup,
+					participants: group.participants ?? 0,
+				})
+			) as { id: string; name: string; isMergedGroup: boolean; participants: number }[];
 		} catch (err) {
 			return [];
 		}
 	}
 	static async refreshGroups() {
 		try {
-			const { data } = await APIInstance.get(`/whatsapp/groups/refresh`);
-			return data.groups as {
-				id: string;
-				name: string;
-				isMergedGroup: boolean;
-			}[];
+			const { data } = await APIInstance.post(`/whatsapp/groups/refresh`);
+			return data.groups.map(
+				(group: { id: string; name: string; isMergedGroup: boolean; participants: number }) => ({
+					id: group.id,
+					name: group.name,
+					isMergedGroup: group.isMergedGroup,
+					participants: group.participants ?? 0,
+				})
+			) as { id: string; name: string; isMergedGroup: boolean; participants: number }[];
 		} catch (err) {
 			return [];
 		}
@@ -178,5 +184,46 @@ export default class GroupService {
 		} catch (err) {
 			return false;
 		}
+	}
+
+	static async addProfilePicture(file: File, selectedGroups: string[]) {
+		const formData = new FormData();
+		formData.append('file', file);
+		for (const group of selectedGroups) {
+			formData.append('groups', group);
+		}
+		await APIInstance.put(`/whatsapp/groups`, formData, {
+			headers: {
+				'Content-Type': 'multipart/form-data',
+			},
+		});
+		return true;
+	}
+
+	static async updateProfileSettings(
+		{
+			description,
+			edit_group_settings,
+			send_messages,
+			add_others,
+			admin_group_settings,
+		}: Partial<{
+			description: string;
+			edit_group_settings: boolean;
+			send_messages: boolean;
+			add_others: boolean;
+			admin_group_settings: boolean;
+		}>,
+		selectedGroups: string[]
+	) {
+		await APIInstance.patch(`/whatsapp/groups`, {
+			description,
+			edit_group_settings,
+			send_messages,
+			add_others,
+			admin_group_settings,
+			groups: selectedGroups,
+		});
+		return true;
 	}
 }
