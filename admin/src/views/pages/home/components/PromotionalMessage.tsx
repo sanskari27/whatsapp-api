@@ -8,6 +8,7 @@ import {
 	HStack,
 	Heading,
 	IconButton,
+	VStack,
 } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
 import { FiSave } from 'react-icons/fi';
@@ -39,52 +40,54 @@ export default function PromotionalMessage() {
 			</CardHeader>
 
 			<CardBody>
-				<HStack justifyContent={'space-between'} px={'1rem'}>
-					<Heading size='xs'>
-						<Editable
-							border={`1px solid ${theme === 'light' ? 'black' : 'white'}`}
-							width={'350px'}
-							rounded={'md'}
-							textAlign={'center'}
-							defaultValue={message_1}
-							value={message_1}
-							color={theme === 'light' ? 'black' : 'white'}
-						>
-							<EditablePreview />
-							<EditableInput
-								textColor={theme === 'light' ? 'black' : 'white'}
+				<VStack gap={'0.5rem'}>
+					<HStack justifyContent={'space-between'} px={'1rem'}>
+						<Heading size='xs'>
+							<Editable
+								border={`1px solid ${theme === 'light' ? 'black' : 'white'}`}
+								width={'350px'}
+								rounded={'md'}
+								textAlign={'center'}
+								defaultValue={message_1}
 								value={message_1}
-								onChange={(e) => setMessage1(e.target.value)}
-							/>
-						</Editable>
-					</Heading>
-					<IconButton aria-label='Edit Activation Code' icon={<FiSave />} onClick={handleClick} />
-				</HStack>
-				<HStack justifyContent={'space-between'} px={'1rem'}>
-					<Heading size='xs'>
-						<Editable
-							border={`1px solid ${theme === 'light' ? 'black' : 'white'}`}
-							width={'350px'}
-							rounded={'md'}
-							textAlign={'center'}
-							defaultValue={message_2}
-							value={message_2}
-							color={theme === 'light' ? 'black' : 'white'}
-						>
-							<EditablePreview />
-							<EditableInput
-								textColor={theme === 'light' ? 'black' : 'white'}
+								color={theme === 'light' ? 'black' : 'white'}
+							>
+								<EditablePreview />
+								<EditableInput
+									textColor={theme === 'light' ? 'black' : 'white'}
+									value={message_1}
+									onChange={(e) => setMessage1(e.target.value)}
+								/>
+							</Editable>
+						</Heading>
+						<IconButton aria-label='Edit Activation Code' icon={<FiSave />} onClick={handleClick} />
+					</HStack>
+					<HStack justifyContent={'space-between'} px={'1rem'}>
+						<Heading size='xs'>
+							<Editable
+								border={`1px solid ${theme === 'light' ? 'black' : 'white'}`}
+								width={'350px'}
+								rounded={'md'}
+								textAlign={'center'}
+								defaultValue={message_2}
 								value={message_2}
-								onChange={(e) => setMessage2(e.target.value)}
-							/>
-						</Editable>
-					</Heading>
-					<IconButton
-						aria-label='Edit Promotional Message'
-						icon={<FiSave />}
-						onClick={handleClick}
-					/>
-				</HStack>
+								color={theme === 'light' ? 'black' : 'white'}
+							>
+								<EditablePreview />
+								<EditableInput
+									textColor={theme === 'light' ? 'black' : 'white'}
+									value={message_2}
+									onChange={(e) => setMessage2(e.target.value)}
+								/>
+							</Editable>
+						</Heading>
+						<IconButton
+							aria-label='Edit Promotional Message'
+							icon={<FiSave />}
+							onClick={handleClick}
+						/>
+					</HStack>
+				</VStack>
 			</CardBody>
 		</Card>
 	);
