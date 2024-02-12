@@ -30,7 +30,7 @@ export default class VoteResponseService {
 
 		voter_name: string;
 		group_name: string;
-		selected_options: string[];
+		selected_option: string[];
 		voted_at: Date;
 	}) {
 		try {
@@ -47,7 +47,7 @@ export default class VoteResponseService {
 				return await VoteResponseDB.create({ user: this.user, ...details });
 			}
 
-			voteResponse.selected_option = details.selected_options;
+			voteResponse.selected_option = details.selected_option;
 			voteResponse.voted_at = details.voted_at;
 			await voteResponse.save();
 			return voteResponse;
