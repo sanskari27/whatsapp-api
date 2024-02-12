@@ -66,8 +66,6 @@ export default async function VerifyAdmin(req: Request, res: Response, next: Nex
 		});
 		next();
 	} catch (e) {
-		console.log(e);
-
 		return next(new APIError(API_ERRORS.USER_ERRORS.AUTHORIZATION_ERROR));
 	}
 }

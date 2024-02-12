@@ -190,7 +190,7 @@ export default class GroupService {
 		const formData = new FormData();
 		formData.append('file', file);
 		for (const group of selectedGroups) {
-			formData.append('groups', group);
+			formData.append('groups[]', group);
 		}
 		await APIInstance.put(`/whatsapp/groups`, formData, {
 			headers: {
