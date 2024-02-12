@@ -55,7 +55,7 @@ const UsersPage = () => {
 		};
 	}, []);
 
-	const filtered = useFilteredList(list, { name: 1 });
+	const filtered = useFilteredList(list, { name: 1, phone: 1 });
 
 	const handleAction = (user_id: string, action: string) => {
 		if (action === 'extend_expiry') {
