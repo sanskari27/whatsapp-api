@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import IGroupPrivateReply from '../../types/group-private-reply';
+import IGroupPrivateReply from '../../types/group-reply';
 
 const schema = new mongoose.Schema<IGroupPrivateReply>(
 	{

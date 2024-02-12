@@ -8,7 +8,7 @@ import store from './store/store.ts';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
 	<React.StrictMode>
-		<ChakraProvider>
+		<ChakraProvider toastOptions={{ defaultOptions: { position: 'top', variant: 'left-accent' } }}>
 			<Provider store={store}>
 				<App />
 			</Provider>

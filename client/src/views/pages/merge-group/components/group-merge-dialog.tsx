@@ -26,6 +26,7 @@ import {
 	Thead,
 	Tr,
 	useBoolean,
+	useToast,
 } from '@chakra-ui/react';
 import { useState } from 'react';
 import { BiRefresh } from 'react-icons/bi';
@@ -37,8 +38,11 @@ import {
 	addSelectedGroup,
 	clearEditMergeGroup,
 	removeSelectedGroup,
-	setGroupReply,
+	setGroupReplySaved,
+	setGroupReplyUnsaved,
 	setName,
+	setPrivateReplySaved,
+	setPrivateReplyUnsaved,
 	updateMergeGroupsList,
 } from '../../../../store/reducers/MergeGroupReducer';
 import { setGroups } from '../../../../store/reducers/UserDetailsReducers';
@@ -50,6 +54,7 @@ type GroupMergeProps = {
 
 const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 	const dispatch = useDispatch();
+	const toast = useToast();
 	const [dataRefreshing, groupsLoading] = useBoolean();
 
 	const [searchText, setSearchText] = useState<string>('');
@@ -64,24 +69,25 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 		if (editSelectedGroup.groups.length === 0) {
 			return;
 		}
-		const { id, name, groups, group_reply } = editSelectedGroup;
-		if (editSelectedGroup.id) {
-			GroupService.editMergedGroup(id, name, groups, group_reply).then((response) => {
-				if (!response) {
-					return;
-				}
-				dispatch(updateMergeGroupsList(response));
+		const { id, name, groups, group_reply, private_reply } = editSelectedGroup;
+
+		const promise = id
+			? GroupService.editMergedGroup(id, name, groups, { group_reply, private_reply })
+			: GroupService.mergeGroups(name, groups, { group_reply, private_reply });
+		toast.promise(promise, {
+			success: (data) => {
+				const acton = id ? updateMergeGroupsList(data) : addMergedGroup(data);
+				dispatch(acton);
 				onClose();
-			});
-		} else {
-			GroupService.mergeGroups(name, groups, group_reply).then((response) => {
-				if (!response) {
-					return;
-				}
-				dispatch(addMergedGroup(response));
-				onClose();
-			});
-		}
+				return {
+					title: 'Data saved successfully',
+				};
+			},
+			error: {
+				title: 'Failed to save data',
+			},
+			loading: { title: 'Saving Data', description: 'Please wait' },
+		});
 	};
 
 	const handleSelectGroup = (id: string) => {
@@ -122,8 +128,9 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 							onChange={(e) => dispatch(setName(e.target.value))}
 						/>
 					</FormControl>
+					<Text fontSize={'large'}>Reply Settings</Text>
 					<FormControl marginTop={'1rem'}>
-						<FormLabel>Group One Time Reply</FormLabel>
+						<FormLabel>Saved In-Chat Reply</FormLabel>
 						<Textarea
 							width={'full'}
 							minHeight={'80px'}
@@ -137,8 +144,65 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 								color: 'inherit',
 							}}
 							_focus={{ border: 'none', outline: 'none' }}
-							value={editSelectedGroup.group_reply ?? ''}
-							onChange={(e) => dispatch(setGroupReply(e.target.value))}
+							value={editSelectedGroup.group_reply.saved ?? ''}
+							onChange={(e) => dispatch(setGroupReplySaved(e.target.value))}
+						/>
+					</FormControl>
+					<FormControl marginTop={'0.5rem'}>
+						<FormLabel>Unsaved In-Chat Reply</FormLabel>
+						<Textarea
+							width={'full'}
+							minHeight={'80px'}
+							size={'sm'}
+							rounded={'md'}
+							placeholder={'eg. Hello there!'}
+							border={'none'}
+							className='text-black !bg-[#ECECEC] '
+							_placeholder={{
+								opacity: 0.4,
+								color: 'inherit',
+							}}
+							_focus={{ border: 'none', outline: 'none' }}
+							value={editSelectedGroup.group_reply.unsaved ?? ''}
+							onChange={(e) => dispatch(setGroupReplyUnsaved(e.target.value))}
+						/>
+					</FormControl>
+					<FormControl marginTop={'0.5rem'}>
+						<FormLabel>Saved Private Reply</FormLabel>
+						<Textarea
+							width={'full'}
+							minHeight={'80px'}
+							size={'sm'}
+							rounded={'md'}
+							placeholder={'eg. Hello there!'}
+							border={'none'}
+							className='text-black !bg-[#ECECEC] '
+							_placeholder={{
+								opacity: 0.4,
+								color: 'inherit',
+							}}
+							_focus={{ border: 'none', outline: 'none' }}
+							value={editSelectedGroup.private_reply.saved ?? ''}
+							onChange={(e) => dispatch(setPrivateReplySaved(e.target.value))}
+						/>
+					</FormControl>
+					<FormControl marginTop={'0.5rem'}>
+						<FormLabel>Unsaved Private Reply</FormLabel>
+						<Textarea
+							width={'full'}
+							minHeight={'80px'}
+							size={'sm'}
+							rounded={'md'}
+							placeholder={'eg. Hello there!'}
+							border={'none'}
+							className='text-black !bg-[#ECECEC] '
+							_placeholder={{
+								opacity: 0.4,
+								color: 'inherit',
+							}}
+							_focus={{ border: 'none', outline: 'none' }}
+							value={editSelectedGroup.private_reply.unsaved ?? ''}
+							onChange={(e) => dispatch(setPrivateReplyUnsaved(e.target.value))}
 						/>
 					</FormControl>
 

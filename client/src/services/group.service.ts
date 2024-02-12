@@ -64,54 +64,110 @@ export default class GroupService {
 		}
 	}
 
-	static async mergeGroups(group_name: string, group_ids: string[], group_reply: string) {
+	static async mergeGroups(
+		group_name: string,
+		group_ids: string[],
+		{
+			group_reply,
+			private_reply,
+		}: {
+			group_reply: {
+				saved: string;
+				unsaved: string;
+			};
+			private_reply: {
+				saved: string;
+				unsaved: string;
+			};
+		}
+	) {
 		try {
 			const { data } = await APIInstance.post(`/whatsapp/groups/merge`, {
 				group_name,
 				group_ids,
-				group_reply,
+				group_reply: group_reply,
+				private_reply: private_reply,
 			});
 			return {
 				id: data.group.id as string,
 				name: data.group.name as string,
 				groups: data.group.groups as string[],
-				group_reply: data.group.group_reply as string,
+				group_reply: (data.group.group_reply ?? { saved: '', unsaved: '' }) as {
+					saved: string;
+					unsaved: string;
+				},
+				private_reply: (data.group.private_reply ?? { saved: '', unsaved: '' }) as {
+					saved: string;
+					unsaved: string;
+				},
 			};
 		} catch (err) {
-			return null;
+			throw new Error('Error Saving group');
 		}
 	}
 
 	static async mergedGroups() {
 		try {
 			const { data } = await APIInstance.get(`/whatsapp/groups/merge`);
-			return data.groups as {
-				id: string;
-				name: string;
-				isMergedGroup: boolean;
-				groups: string[];
-				group_reply: string;
-			}[];
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			return data.groups.map((group: any) => ({
+				id: group.id as string,
+				name: group.name as string,
+				groups: group.groups as string[],
+				group_reply: (group.group_reply ?? { saved: '', unsaved: '' }) as {
+					saved: string;
+					unsaved: string;
+				},
+				private_reply: (group.private_reply ?? { saved: '', unsaved: '' }) as {
+					saved: string;
+					unsaved: string;
+				},
+			}));
 		} catch (err) {
 			return [];
 		}
 	}
 
-	static async editMergedGroup(id: string, name: string, groups: string[], groups_reply: string) {
+	static async editMergedGroup(
+		id: string,
+		name: string,
+		groups: string[],
+		{
+			group_reply,
+			private_reply,
+		}: {
+			group_reply: {
+				saved: string;
+				unsaved: string;
+			};
+			private_reply: {
+				saved: string;
+				unsaved: string;
+			};
+		}
+	) {
 		try {
 			const { data } = await APIInstance.patch(`/whatsapp/groups/merge/${id}`, {
 				group_name: name,
 				group_ids: groups,
-				groups_reply: groups_reply,
+				group_reply: group_reply,
+				private_reply: private_reply,
 			});
 			return {
 				id: data.group.id as string,
 				name: data.group.name as string,
 				groups: data.group.groups as string[],
-				group_reply: data.group.group_reply as string,
+				group_reply: (data.group.group_reply ?? { saved: '', unsaved: '' }) as {
+					saved: string;
+					unsaved: string;
+				},
+				private_reply: (data.group.private_reply ?? { saved: '', unsaved: '' }) as {
+					saved: string;
+					unsaved: string;
+				},
 			};
 		} catch (err) {
-			return null;
+			throw new Error('Error Saving group');
 		}
 	}
 
