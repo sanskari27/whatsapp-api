@@ -30,8 +30,11 @@ import {
 	deleteMergedGroup,
 	editSelectedGroup,
 	removeSelectedMergedGroups,
-	setGroupReply,
+	setGroupReplySaved,
+	setGroupReplyUnsaved,
 	setIsDeleting,
+	setPrivateReplySaved,
+	setPrivateReplyUnsaved,
 } from '../../../store/reducers/MergeGroupReducer';
 import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
 import { NavbarDeleteElement, NavbarSearchElement } from '../../components/navbar';
@@ -158,9 +161,12 @@ const GroupMergePage = () => {
 												icon={<EditIcon />}
 												colorScheme='gray'
 												onClick={() => {
-													onOpen();
 													dispatch(editSelectedGroup(group.id));
-													dispatch(setGroupReply(group.group_reply));
+													dispatch(setGroupReplySaved(group.group_reply.saved));
+													dispatch(setGroupReplyUnsaved(group.group_reply.unsaved));
+													dispatch(setPrivateReplySaved(group.private_reply.saved));
+													dispatch(setPrivateReplyUnsaved(group.private_reply.saved));
+													onOpen();
 												}}
 											/>
 										</Td>

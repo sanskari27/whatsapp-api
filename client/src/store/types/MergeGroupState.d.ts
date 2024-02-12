@@ -16,5 +16,12 @@ type MergedGroup = {
 	id: string;
 	name: string;
 	groups: string[];
-	group_reply: string;
+	group_reply: {
+		saved: string;
+		unsaved: string;
+	};
+	private_reply: {
+		saved: string;
+		unsaved: string;
+	};
 };

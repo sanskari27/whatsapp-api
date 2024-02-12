@@ -10,6 +10,7 @@ const generateQR = async (text: string) => {
 
 		// Load QR code image using Jimp
 		const qrJimp = await Jimp.read(Buffer.from(qrImage.split('base64,')[1], 'base64'));
+		qrJimp.resize(1024, 1024);
 
 		// Load the image to be placed in the center
 		let image = await Jimp.read(__basedir + LOGO_PATH);
