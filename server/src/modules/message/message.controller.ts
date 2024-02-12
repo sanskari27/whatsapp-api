@@ -194,7 +194,6 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 			startsFrom: startDate,
 			startTime: startTime,
 			endTime: endTime,
-			client_id: req.locals.client_id,
 		});
 
 		return Respond({

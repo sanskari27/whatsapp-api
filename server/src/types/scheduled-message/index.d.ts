@@ -4,7 +4,6 @@ import IContactCard from '../contact-cards';
 
 export default interface IScheduledMessage extends Document {
 	sender: IUser;
-	sender_client_id: string;
 
 	receiver: string;
 

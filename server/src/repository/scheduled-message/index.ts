@@ -6,10 +6,6 @@ const scheduledMessageSchema = new mongoose.Schema<IScheduledMessage>({
 		type: Schema.Types.ObjectId,
 		ref: 'User',
 	},
-	sender_client_id: {
-		type: String,
-		required: true,
-	},
 	receiver: {
 		type: String,
 		required: true,
