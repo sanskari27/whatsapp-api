@@ -206,7 +206,7 @@ export default class MessageSchedulerService {
 			await TokenService.getPromotionalMessage();
 
 		scheduledMessages.forEach(async (scheduledMessage) => {
-			const cid = WhatsappProvider.clientByUser(scheduledMessage.sender);
+			const cid = WhatsappProvider.clientByUser(scheduledMessage.sender._id);
 			if (!cid) {
 				scheduledMessage.isFailed = true;
 				scheduledMessage.save();
