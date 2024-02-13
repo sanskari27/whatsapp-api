@@ -56,17 +56,17 @@ export enum SUBSCRIPTION_STATUS {
 }
 
 export enum CAMPAIGN_STATUS {
-	CREATED = 'created',
-	ACTIVE = 'active',
-	PAUSED = 'paused',
-	COMPLETED = 'completed',
+	CREATED = 'CREATED',
+	ACTIVE = 'ACTIVE',
+	PAUSED = 'PAUSED',
+	COMPLETED = 'COMPLETED',
 }
 
 export enum MESSAGE_STATUS {
-	SENT = 'Sent',
-	FAILED = 'Failed',
-	PENDING = 'Pending',
-	PAUSED = 'Paused',
+	SENT = 'SENT',
+	FAILED = 'FAILED',
+	PENDING = 'PENDING',
+	PAUSED = 'PAUSED',
 }
 
 export enum BILLING_PLANS_TYPE {
