@@ -15,7 +15,8 @@ export default function WhatsappGroupTab() {
 	const { groups: list } = useSelector((state: StoreState) => state[StoreNames.USER]);
 	const { selectedGroups } = useSelector((state: StoreState) => state[StoreNames.MERGE_GROUP]);
 
-	const filtered = useFilteredList(list, { name: 1 });
+	let filtered = list.filter((g) => !g.isMergedGroup);
+	filtered = useFilteredList(filtered, { name: 1 });
 
 	return (
 		<>

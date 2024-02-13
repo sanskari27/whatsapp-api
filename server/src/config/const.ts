@@ -55,6 +55,20 @@ export enum SUBSCRIPTION_STATUS {
 	EXPIRED = 'expired',
 }
 
+export enum CAMPAIGN_STATUS {
+	CREATED = 'created',
+	ACTIVE = 'active',
+	PAUSED = 'paused',
+	COMPLETED = 'completed',
+}
+
+export enum MESSAGE_STATUS {
+	SENT = 'Sent',
+	FAILED = 'Failed',
+	PENDING = 'Pending',
+	PAUSED = 'Paused',
+}
+
 export enum BILLING_PLANS_TYPE {
 	SILVER_MONTH = 'SILVER_MONTH',
 	GOLD_MONTH = 'GOLD_MONTH',

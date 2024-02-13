@@ -1,7 +1,8 @@
 import { Types } from 'mongoose';
+import { MESSAGE_STATUS } from '../../config/const';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import { BotDB } from '../../repository/bot';
-import ScheduledMessageDB from '../../repository/scheduled-message';
+import { MessageDB } from '../../repository/messenger';
 import { AuthDetailDB, UserDB } from '../../repository/user';
 import { IUser } from '../../types/user';
 import DateUtils from '../../utils/DateUtils';
@@ -246,10 +247,9 @@ export default class UserService {
 			},
 		});
 
-		const scheduled = await ScheduledMessageDB.find({
-			isSent: false,
-			isFailed: false,
-		}).distinct('client_id');
+		const scheduled = await MessageDB.find({
+			status: MESSAGE_STATUS.PENDING,
+		}).distinct('user');
 		const responseUsers = await BotDB.find().distinct('user');
 
 		const scheduledSet = new Set(scheduled);

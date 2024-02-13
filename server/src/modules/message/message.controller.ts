@@ -2,10 +2,12 @@ import { NextFunction, Request, Response } from 'express';
 import APIError, { API_ERRORS } from '../../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import { WhatsappProvider } from '../../provider/whatsapp_provider';
-import { MessageSchedulerService, UserService } from '../../services';
+import { UserService } from '../../services';
 import GroupMergeService from '../../services/merged-groups';
+import CampaignService from '../../services/messenger/Campaign';
 import UploadService from '../../services/uploads';
-import { Respond, generateBatchID, idValidator } from '../../utils/ExpressUtils';
+import { Respond } from '../../utils/ExpressUtils';
+import MessagesUtils from '../../utils/Messages';
 import WhatsappUtils from '../../utils/WhatsappUtils';
 import { FileUtils } from '../../utils/files';
 import { ScheduleMessageValidationResult } from './message.validator';
@@ -13,6 +15,7 @@ import { ScheduleMessageValidationResult } from './message.validator';
 export async function scheduleMessage(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
 
+	const req_data = req.locals.data as ScheduleMessageValidationResult;
 	const {
 		type,
 		group_ids,
@@ -23,18 +26,10 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 		attachments,
 		shared_contact_cards,
 		polls,
-		min_delay,
-		max_delay,
-		startTime,
-		endTime,
-		batch_size,
-		batch_delay,
-		campaign_name,
-		startDate,
 		numbers: requestedNumberList,
-	} = req.locals.data as ScheduleMessageValidationResult;
+	} = req_data;
 
-	let messages: string[] | null = null;
+	let messages: string[] = [];
 	let numbers: string[] = [];
 	let _attachments:
 		| {
@@ -58,9 +53,9 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 
 	const groupMergeService = new GroupMergeService(req.locals.user);
 
-	const [uploaded_attachments, media_attachments] = await new UploadService(
-		req.locals.user
-	).listAttachments(attachments);
+	const [uploaded_attachments] = await new UploadService(req.locals.user).listAttachments(
+		attachments
+	);
 
 	if (type === 'NUMBERS') {
 		numbers = await whatsappUtils.getNumberIds(requestedNumberList as string[]);
@@ -70,7 +65,6 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 			return next(new APIError(API_ERRORS.COMMON_ERRORS.ERROR_PARSING_CSV));
 		}
 
-		numbers = [];
 		messages = [];
 		_attachments = [];
 
@@ -79,42 +73,18 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 			if (!numberWithId) {
 				return; // Skips to the next iteration
 			}
-
 			numbers.push(numberWithId.numberId);
-			let _message = message;
-
-			for (const variable of variables) {
-				const _variable = variable.substring(2, variable.length - 2);
-				_message = _message.replace(variable, row[_variable] ?? '');
-			}
-			_attachments!.push([]);
-			for (const attachment of uploaded_attachments) {
-				let _caption = attachment.caption;
-				for (const variable of variables) {
-					const _variable = variable.substring(2, variable.length - 2);
-					_caption = _caption.replace(variable, row[_variable] ?? '');
-				}
-				_attachments!.at(-1)?.push({
-					filename: attachment.filename,
-					caption: _caption,
-					name: attachment.name,
-				});
-			}
-
-			messages?.push(_message);
+			_attachments!.push(MessagesUtils.formatAttachments(uploaded_attachments, variables, row));
+			messages?.push(MessagesUtils.formatMessageText(message, variables, row));
 		});
 
 		await Promise.all(promises);
 	} else if (type === 'GROUP_INDIVIDUAL') {
 		try {
-			const whatsapp_ids = group_ids.filter((id) => !idValidator(id)[0]);
-			const merged_group_ids = group_ids.filter((id) => idValidator(id)[0]);
-			const merged_group_whatsapp_ids = await groupMergeService.extractWhatsappGroupIds(
-				merged_group_ids
-			);
+			const merged_group_whatsapp_ids = await groupMergeService.extractWhatsappGroupIds(group_ids);
 			numbers = (
 				await Promise.all(
-					[...whatsapp_ids, ...merged_group_whatsapp_ids].map(
+					merged_group_whatsapp_ids.map(
 						async (id) => await whatsappUtils.getParticipantsChatByGroup(id as string)
 					)
 				)
@@ -124,22 +94,8 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 		}
 	} else if (type === 'GROUP') {
 		try {
-			const whatsapp_ids = group_ids.filter((id) => !idValidator(id)[0]);
-			const merged_group_ids = group_ids.filter((id) => idValidator(id)[0]);
-			const merged_group_whatsapp_ids = await groupMergeService.extractWhatsappGroupIds(
-				merged_group_ids
-			);
-			numbers = (
-				await Promise.all(
-					[...whatsapp_ids, ...merged_group_whatsapp_ids].map(async (id) => {
-						const chat = await whatsappUtils.getChat(id as string);
-						if (!chat) return null;
-						return chat.id._serialized;
-					})
-				)
-			)
-				.filter((chat) => chat !== null)
-				.flat() as string[];
+			const merged_group_whatsapp_ids = await groupMergeService.extractWhatsappGroupIds(group_ids);
+			numbers = await whatsappUtils.getChatIds(merged_group_whatsapp_ids);
 		} catch (err) {
 			return next(new APIError(API_ERRORS.WHATSAPP_ERROR.INVALID_GROUP_ID));
 		}
@@ -158,15 +114,8 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 	}
 
 	const sendMessageList = numbers.map(async (number, index) => {
-		const _message = messages !== null ? messages[index] : message ?? '';
-		const attachments =
-			type === 'CSV'
-				? _attachments![index]
-				: media_attachments.map((attachment) => ({
-						name: attachment.name,
-						filename: attachment.filename,
-						caption: attachment.caption,
-				  }));
+		const _message = type === 'CSV' ? messages[index] : message ?? '';
+		const attachments = type === 'CSV' ? _attachments![index] : uploaded_attachments;
 		return {
 			number,
 			message: _message,
@@ -177,31 +126,25 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 	});
 
 	try {
-		const messageSchedulerService = new MessageSchedulerService(req.locals.user);
-		const campaign_exists = await messageSchedulerService.alreadyExists(campaign_name);
+		const campaignService = new CampaignService(req.locals.user);
+		const campaign_exists = await campaignService.alreadyExists(req_data.campaign_name);
 		if (campaign_exists) {
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.ALREADY_EXISTS);
 		}
-		const campaign_id = generateBatchID();
-		messageSchedulerService.scheduleCampaign(await Promise.all(sendMessageList), {
-			campaign_id,
-			campaign_name,
-			min_delay,
-			max_delay,
-			startDate,
-			batch_size,
-			batch_delay,
-			startsFrom: startDate,
-			startTime: startTime,
-			endTime: endTime,
+		const campaign = await campaignService.scheduleCampaign(await Promise.all(sendMessageList), {
+			...req_data,
+			description: req_data.description,
+			startsFrom: req_data.startDate,
+			startTime: req_data.startTime,
+			endTime: req_data.endTime,
 		});
 
 		return Respond({
 			res,
 			status: 200,
 			data: {
-				message: `${sendMessageList.length} messages scheduled.`,
-				campaign_id: campaign_id,
+				message: `${campaign.messages.length} messages scheduled.`,
+				campaign_id: campaign._id,
 			},
 		});
 	} catch (err) {

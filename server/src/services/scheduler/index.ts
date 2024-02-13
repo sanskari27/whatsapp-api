@@ -1,13 +1,12 @@
 import { Types } from 'mongoose';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
-import { WhatsappProvider } from '../../provider/whatsapp_provider';
 import ContactCardDB from '../../repository/contact-cards';
 import SchedulerDB from '../../repository/scheduler';
 import IUpload from '../../types/uploads';
 import { IUser } from '../../types/user';
 import DateUtils from '../../utils/DateUtils';
 import { FileUtils } from '../../utils/files';
-import MessageSchedulerService from '../scheduled-message';
+import { MessageService } from '../messenger';
 
 export default class SchedulerService {
 	private user: IUser;
@@ -184,7 +183,6 @@ export default class SchedulerService {
 		const today = DateUtils.getMomentNow().format('MM-DD');
 
 		for (const scheduler of schedulers) {
-			const cid = WhatsappProvider.clientByUser(scheduler.user);
 			const parsed_csv:
 				| {
 						[key: string]: string;
@@ -193,10 +191,10 @@ export default class SchedulerService {
 						number: string;
 				  }[]
 				| null = await FileUtils.readCSV(scheduler.csv.filename);
-			if (!parsed_csv || !cid) {
+			if (!parsed_csv) {
 				continue;
 			}
-			const schedulerService = new MessageSchedulerService(scheduler.user);
+			const schedulerService = new MessageService(scheduler.user);
 
 			for (const row of parsed_csv) {
 				if (DateUtils.getMoment(row.month + '-' + row.date).format('MM-DD') !== today) {
@@ -209,25 +207,20 @@ export default class SchedulerService {
 					const _variable = variable.substring(2, variable.length - 2);
 					_message = _message.replace(variable, row[_variable] ?? '');
 				}
-				schedulerService.scheduleMessage(
-					{
-						number: row.number,
-						send_at: time.toDate(),
-						attachments: scheduler.attachments.map((attachment) => ({
-							name: attachment.name,
-							filename: attachment.filename,
-							caption: attachment.caption,
-						})),
-						polls: scheduler.polls,
-						shared_contact_cards: scheduler.shared_contact_cards.map(
-							({ _id }) => new Types.ObjectId(_id)
-						),
-						message: _message,
-					},
-					{
-						client_id: cid,
-					}
-				);
+				schedulerService.scheduleMessage({
+					receiver: row.number,
+					sendAt: time.toDate(),
+					attachments: scheduler.attachments.map((attachment) => ({
+						name: attachment.name,
+						filename: attachment.filename,
+						caption: attachment.caption,
+					})),
+					polls: scheduler.polls,
+					shared_contact_cards: scheduler.shared_contact_cards.map(
+						({ _id }) => new Types.ObjectId(_id)
+					),
+					message: _message,
+				});
 			}
 		}
 	}

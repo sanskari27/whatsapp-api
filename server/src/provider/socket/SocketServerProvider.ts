@@ -1,9 +1,9 @@
 import * as http from 'http';
 import { Socket, Server as SocketServer } from 'socket.io';
-import { SOCKET_EVENTS } from '../config/const';
-import { WhatsappProvider } from '../provider/whatsapp_provider';
-import { UserService } from '../services';
-import { generateClientID } from '../utils/ExpressUtils';
+import { SOCKET_EVENTS } from '../../config/const';
+import { UserService } from '../../services';
+import { generateClientID } from '../../utils/ExpressUtils';
+import { WhatsappProvider } from '../whatsapp_provider';
 
 type WhatsappClientID = string;
 type SocketID = string;

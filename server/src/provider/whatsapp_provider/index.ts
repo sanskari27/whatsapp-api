@@ -328,7 +328,7 @@ export class WhatsappProvider {
 
 	static clientByUser(id: Types.ObjectId) {
 		for (const [cid, client] of WhatsappProvider.clientsMap.entries()) {
-			if (!client.user_service) continue;
+			if (!client.user_service || !client.isReady()) continue;
 			if (client.user_service.getID().toString() === id.toString()) {
 				return cid;
 			}

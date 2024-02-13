@@ -13,20 +13,20 @@ import { IUser } from '../../types/user';
 import DateUtils from '../../utils/DateUtils';
 import { Delay } from '../../utils/ExpressUtils';
 import VCardBuilder from '../../utils/VCardBuilder';
-import MessageSchedulerService from '../scheduled-message';
+import { MessageService } from '../messenger';
 import TokenService from '../token';
 import UserService from '../user';
 
 export default class BotService {
 	private user: IUser;
 	private userService: UserService;
-	private messageSchedulerService: MessageSchedulerService;
+	private messageSchedulerService: MessageService;
 	private whatsapp: WhatsappProvider | undefined;
 
 	public constructor(user: IUser) {
 		this.user = user;
 		this.userService = new UserService(user);
-		this.messageSchedulerService = new MessageSchedulerService(user);
+		this.messageSchedulerService = new MessageService(user);
 	}
 
 	public attachWhatsappProvider(whatsapp_provider: WhatsappProvider) {
@@ -316,7 +316,7 @@ export default class BotService {
 					});
 
 				if (bot.forward.message) {
-					const _variable = '{{whatsapp_name}}';
+					const _variable = '{{public_name}}';
 					const custom_message = bot.forward.message.replace(
 						_variable,
 						(contact.pushname || contact.name) ?? ''
@@ -331,14 +331,19 @@ export default class BotService {
 			}
 
 			if (bot.nurturing.length > 0) {
-				const nurtured_messages = bot.nurturing.map((el) => ({
-					number: triggered_from,
-					message: el.message,
-					send_at: DateUtils.getMomentNow().add(el.after, 'seconds').toDate(),
-				}));
-				this.messageSchedulerService.scheduleLeadNurturingMessage(nurtured_messages, {
-					client_id: whatsapp.getClientID(),
+				const nurtured_messages = bot.nurturing.map((el) => {
+					const _variable = '{{public_name}}';
+					const custom_message = el.message.replace(
+						_variable,
+						(contact.pushname || contact.name) ?? ''
+					);
+					return {
+						receiver: triggered_from,
+						message: custom_message,
+						send_at: DateUtils.getMomentNow().add(el.after, 'seconds').toDate(),
+					};
 				});
+				this.messageSchedulerService.scheduleLeadNurturingMessage(nurtured_messages);
 			}
 		});
 	}

@@ -19,7 +19,7 @@ import {
 } from './config/const';
 import APIError from './errors/api-errors';
 import { WhatsappProvider } from './provider/whatsapp_provider';
-import { MessageSchedulerService } from './services';
+import { MessageService } from './services/messenger';
 import SchedulerService from './services/scheduler';
 import WhatsappUtils from './utils/WhatsappUtils';
 
@@ -149,7 +149,7 @@ export default function (app: Express) {
 		WhatsappUtils.removeUnwantedSessions();
 	});
 	cron.schedule('* * * * * *', function () {
-		MessageSchedulerService.sendScheduledMessage();
+		MessageService.sendScheduledMessage();
 	});
 	cron.schedule('30 3 * * *', function () {
 		exec('pgrep chrome | xargs kill -9', (error, stdout, stderr) => {

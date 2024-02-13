@@ -4,7 +4,7 @@ import WAWebJS from 'whatsapp-web.js';
 import { GroupPrivateReplyDB, GroupReplyDB } from '../../repository/group-reply';
 import MergedGroupDB from '../../repository/merged-groups';
 import { IUser } from '../../types/user';
-import { Delay } from '../../utils/ExpressUtils';
+import { Delay, idValidator } from '../../utils/ExpressUtils';
 
 export default class GroupMergeService {
 	private user: IUser;
@@ -120,12 +120,29 @@ export default class GroupMergeService {
 
 	async extractWhatsappGroupIds(ids: string | string[]) {
 		const searchable_ids = typeof ids === 'string' ? [ids] : ids;
+
+		const { whatsapp_ids, merged_group_ids } = searchable_ids.reduce(
+			(acc, id) => {
+				if (idValidator(id)[0]) {
+					acc.merged_group_ids.push(id);
+				} else {
+					acc.whatsapp_ids.push(id);
+				}
+				return acc;
+			},
+			{
+				whatsapp_ids: [] as string[],
+				merged_group_ids: [] as string[],
+			}
+		);
+
 		const merged_groups = await MergedGroupDB.find({
 			user: this.user,
-			_id: { $in: searchable_ids },
+			_id: { $in: merged_group_ids },
 		});
 
-		return merged_groups.map((group) => group.groups).flat();
+		const whatsapp_extracted_ids = merged_groups.map((group) => group.groups).flat();
+		return [...whatsapp_ids, ...whatsapp_extracted_ids];
 	}
 
 	public async sendGroupReply(

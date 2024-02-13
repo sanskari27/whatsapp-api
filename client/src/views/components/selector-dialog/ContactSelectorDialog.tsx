@@ -153,7 +153,7 @@ const ContactSelectorDialog = forwardRef<ContactDialogHandle, Props>(
 									Cancel
 								</Button>
 								<Button colorScheme='green' onClick={handleAdd}>
-									Confirm
+									Save
 								</Button>
 							</Flex>
 						</Flex>

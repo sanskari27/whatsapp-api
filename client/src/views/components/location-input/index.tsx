@@ -157,7 +157,7 @@ const LocationInputDialog = forwardRef<LocationInputDialogHandle, Props>(
 								Cancel
 							</Button>
 							<Button colorScheme='green' onClick={handleConfirm}>
-								Confirm
+								Save
 							</Button>
 						</Flex>
 					</ModalFooter>

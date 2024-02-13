@@ -310,6 +310,7 @@ export default class CSVParser {
 			message: string;
 			attachments: number;
 			contacts: number;
+			polls: number;
 			status: string;
 		}[]
 	) {
@@ -333,6 +334,10 @@ export default class CSVParser {
 			{
 				field: 'contacts',
 				title: 'Contacts',
+			},
+			{
+				field: 'polls',
+				title: 'Polls',
 			},
 			{
 				field: 'status',
