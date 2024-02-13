@@ -91,8 +91,6 @@ export default class CampaignService {
 			{
 				$group: {
 					_id: '$_id', // Group by the campaign ID
-					campaignName: { $first: '$name' }, // Retrieve the first instance of the name (assuming it's the same for all messages in a campaign)
-					description: { $first: '$description' },
 					status: { $first: '$status' },
 					createdAt: { $first: '$createdAt' },
 					startTime: { $first: '$startTime' },
@@ -118,6 +116,7 @@ export default class CampaignService {
 					_id: 0,
 					name: 1,
 					description: 1,
+					status: 1,
 					sent: 1,
 					failed: 1,
 					pending: 1,
@@ -135,7 +134,9 @@ export default class CampaignService {
 			)
 			.map((message) => ({
 				campaign_id: message.campaign_id as string,
-				campaignName: message.campaignName as string,
+				campaignName: message.name as string,
+				description: message.description as string,
+				status: message.status as string,
 				sent: message.sent as number,
 				failed: message.failed as number,
 				pending: message.pending as number,
