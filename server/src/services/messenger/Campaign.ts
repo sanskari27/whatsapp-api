@@ -125,8 +125,6 @@ export default class CampaignService {
 				},
 			},
 		]);
-		console.log(campaigns);
-
 		return campaigns
 			.sort((a, b) =>
 				DateUtils.getMoment(a.createdAt).isAfter(DateUtils.getMoment(b.createdAt)) ? -1 : 1
@@ -139,7 +137,7 @@ export default class CampaignService {
 				sent: message.sent as number,
 				failed: message.failed as number,
 				pending: message.pending as number,
-				createdAt: DateUtils.format(message.createdAt) as string,
+				createdAt: DateUtils.format(message.createdAt, 'DD-MM-YYYY HH:mm') as string,
 				isPaused: message.isPaused as boolean,
 			}));
 	}
