@@ -47,8 +47,8 @@ async function resumeCampaign(req: Request, res: Response, next: NextFunction) {
 async function generateReport(req: Request, res: Response, next: NextFunction) {
 	try {
 		const scheduler = new CampaignService(req.locals.user);
-		const reports = await scheduler.generateReport(req.params.campaign_id);
-
+		const reports = await scheduler.generateReport(req.locals.id);
+		console.log(reports);
 		return RespondCSV({
 			res,
 			filename: 'Campaign Reports',

@@ -103,7 +103,7 @@ export default class CampaignService {
 					},
 					pending: {
 						$sum: {
-							$cond: [{ $eq: ['$messagesInfo.status', [MESSAGE_STATUS.PENDING]] }, 1, 0],
+							$cond: [{ $in: ['$messagesInfo.status', [MESSAGE_STATUS.PENDING]] }, 1, 0],
 						},
 					},
 				},
@@ -192,7 +192,7 @@ export default class CampaignService {
 		} catch (err) {}
 	}
 
-	async generateReport(campaign_id: string) {
+	async generateReport(campaign_id: Types.ObjectId) {
 		const campaign = await CampaignDB.findById(campaign_id);
 		if (!campaign) {
 			return [];
