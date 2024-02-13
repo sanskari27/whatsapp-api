@@ -53,6 +53,7 @@ async function groups(req: Request, res: Response, next: NextFunction) {
 							id: groupChat.id._serialized,
 							name: groupChat.name ?? '',
 							isMergedGroup: false,
+							participants: groupChat.participants.length,
 						};
 					});
 
