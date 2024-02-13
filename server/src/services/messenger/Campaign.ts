@@ -203,6 +203,7 @@ export default class CampaignService {
 			contacts: message.shared_contact_cards.length,
 			polls: message.polls.length,
 			campaign_name: campaign.name,
+			description: campaign.description,
 			status: message.status,
 			scheduled_at: message.sendAt
 				? DateUtils.getMoment(message.sendAt).format('DD/MM/YYYY HH:mm:ss')

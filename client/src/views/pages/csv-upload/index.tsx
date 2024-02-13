@@ -152,8 +152,8 @@ const CSVUpload = () => {
 										/>
 										{index + 1}.
 									</Td>
-									<Td>{csv.name}</Td>
-									<Td>{csv.headers.join(', ')}</Td>
+									<Td className='whitespace-break-spaces'>{csv.name}</Td>
+									<Td className='whitespace-break-spaces'>{csv.headers.join(', ')}</Td>
 								</Tr>
 							);
 						})}

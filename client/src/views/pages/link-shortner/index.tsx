@@ -174,7 +174,7 @@ const LinkShortner = () => {
 										<ActionButton
 											activeBackgroundColor='gray.100'
 											icon={CopyIcon}
-											onClick={() => navigator.clipboard.writeText(item.link)}
+											onClick={() => navigator.clipboard.writeText(item.shorten_link)}
 											color={theme === 'dark' ? 'white' : 'black'}
 										/>
 										<ActionButton

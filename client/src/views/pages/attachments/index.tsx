@@ -112,11 +112,23 @@ const AttachmentPage = () => {
 				<Table>
 					<Thead>
 						<Tr>
-							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>Sl no</Th>
-							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'20%'}>Name</Th>
-							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'60'}>Caption</Th>
-							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>Custom Caption</Th>
-							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'10%'} textAlign={'center'}>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>
+								Sl no
+							</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'20%'}>
+								Name
+							</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'60%'}>
+								Caption
+							</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>
+								Custom Caption
+							</Th>
+							<Th
+								color={theme === 'dark' ? 'whitesmoke' : 'gray'}
+								width={'10%'}
+								textAlign={'center'}
+							>
 								Actions
 							</Th>
 						</Tr>
@@ -134,11 +146,7 @@ const AttachmentPage = () => {
 									{index + 1}.
 								</Td>
 								<Td>{attachment.name}</Td>
-								<Td textOverflow={'revert-layer'}>
-									{attachment.caption.split('\n').map((caption, index) => (
-										<Box key={index}>{caption}</Box>
-									))}
-								</Td>
+								<Td className='whitespace-break-spaces'>{attachment.caption}</Td>
 								<Td textAlign={'center'}>{attachment.custom_caption ? 'Yes' : 'No'}</Td>
 								<Td>
 									<HStack>

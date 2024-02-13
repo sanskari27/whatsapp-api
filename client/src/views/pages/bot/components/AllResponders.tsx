@@ -60,13 +60,27 @@ export default function AllResponders() {
 				<Table>
 					<Thead>
 						<Tr>
-							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'35%'}>Trigger</Th>
-							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'35%'}>Message</Th>
-							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>Recipients</Th>
-							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>Conditions</Th>
-							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>Attachments/Contacts</Th>
-							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>Delay</Th>
-							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'10%'}>Actions</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'35%'}>
+								Trigger
+							</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'35%'}>
+								Message
+							</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>
+								Recipients
+							</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>
+								Conditions
+							</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>
+								Attachments/Contacts
+							</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>
+								Delay
+							</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'10%'}>
+								Actions
+							</Th>
 						</Tr>
 					</Thead>
 					<Tbody>
@@ -79,15 +93,7 @@ export default function AllResponders() {
 										</Box>
 									))}
 								</Td>
-								<Td>
-									<Box>
-										{bot.message.split('\n').map((message, index) => (
-											<Box key={index}>
-												{message.length > 20 ? message.substring(0, 18) + '...' : message}
-											</Box>
-										))}
-									</Box>
-								</Td>
+								<Td className='whitespace-break-spaces'>{bot.message}</Td>
 								<Td>{bot.respond_to.split('_').join(' ')}</Td>
 								<Td>{bot.options.split('_').join(' ')}</Td>
 								<Td>

@@ -306,6 +306,7 @@ export default class CSVParser {
 	static exportCampaignReport(
 		records: {
 			campaign_name: string;
+			description: string;
 			receiver: string;
 			message: string;
 			attachments: number;
@@ -318,6 +319,10 @@ export default class CSVParser {
 			{
 				field: 'campaign_name',
 				title: 'Campaign Name',
+			},
+			{
+				field: 'description',
+				title: 'Description',
 			},
 			{
 				field: 'receiver',
