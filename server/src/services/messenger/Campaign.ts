@@ -91,21 +91,19 @@ export default class CampaignService {
 			{
 				$group: {
 					_id: '$_id', // Group by the campaign ID
+					name: { $first: '$name' },
+					description: { $first: '$description' },
 					status: { $first: '$status' },
-					createdAt: { $first: '$createdAt' },
 					startTime: { $first: '$startTime' },
 					endTime: { $first: '$endTime' },
+					createdAt: { $first: '$createdAt' },
 					sent: { $sum: { $cond: [{ $eq: ['$messagesInfo.status', MESSAGE_STATUS.SENT] }, 1, 0] } },
 					failed: {
 						$sum: { $cond: [{ $eq: ['$messagesInfo.status', MESSAGE_STATUS.FAILED] }, 1, 0] },
 					},
 					pending: {
 						$sum: {
-							$cond: [
-								{ $eq: ['$messagesInfo.status', [MESSAGE_STATUS.PENDING, MESSAGE_STATUS.PAUSED]] },
-								1,
-								0,
-							],
+							$cond: [{ $eq: ['$messagesInfo.status', [MESSAGE_STATUS.PENDING]] }, 1, 0],
 						},
 					},
 				},
@@ -127,6 +125,7 @@ export default class CampaignService {
 				},
 			},
 		]);
+		console.log(campaigns);
 
 		return campaigns
 			.sort((a, b) =>
