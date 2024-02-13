@@ -17,11 +17,13 @@ import {
 	ModalHeader,
 	ModalOverlay,
 	Select,
+	Tag,
+	TagLabel,
 	Text,
 	Textarea,
 	VStack,
 } from '@chakra-ui/react';
-import { forwardRef, useImperativeHandle, useState } from 'react';
+import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 
 export type InputLeadsNurturingDialogHandle = {
 	open: (
@@ -47,6 +49,7 @@ type Props = {
 const InputLeadsNurturingDialog = forwardRef<InputLeadsNurturingDialogHandle, Props>(
 	({ onConfirm }, ref) => {
 		const [open, setOpen] = useState(false);
+		const messageRef = useRef<HTMLTextAreaElement>(null);
 
 		const [nurturing, setNurturing] = useState<
 			{
@@ -117,6 +120,19 @@ const InputLeadsNurturingDialog = forwardRef<InputLeadsNurturingDialogHandle, Pr
 			handleClose();
 		};
 
+		const insertVariablesToMessage = (variable: string, index: number) => {
+			const text =
+				nurturing[index].message.substring(0, messageRef.current?.selectionStart) +
+				' ' +
+				variable +
+				' ' +
+				nurturing[index].message.substring(
+					messageRef.current?.selectionEnd ?? 0,
+					nurturing[index].message.length
+				);
+			handleChange('message', text, index);
+		};
+
 		useImperativeHandle(ref, () => ({
 			open: (
 				nurturing: {
@@ -178,11 +194,25 @@ const InputLeadsNurturingDialog = forwardRef<InputLeadsNurturingDialogHandle, Pr
 											</FormControl>
 											<FormControl isInvalid={error.type === 'message' && error.index === index}>
 												<Textarea
+													ref={messageRef}
 													placeholder='Enter Message'
 													value={nurturing.message ?? ''}
 													onChange={(e) => handleChange('message', e.target.value, index)}
 												/>
 											</FormControl>
+											<Tag
+												size={'sm'}
+												m={'0.25rem'}
+												p={'0.5rem'}
+												width={'fit-content'}
+												borderRadius='md'
+												variant='solid'
+												colorScheme='gray'
+												_hover={{ cursor: 'pointer' }}
+												onClick={() => insertVariablesToMessage('{{public_name}}', index)}
+											>
+												<TagLabel>{'{{public_name}}'}</TagLabel>
+											</Tag>
 											<Button
 												alignSelf={'flex-end'}
 												onClick={() => deleteNurturing(index)}
@@ -208,7 +238,7 @@ const InputLeadsNurturingDialog = forwardRef<InputLeadsNurturingDialogHandle, Pr
 							Close
 						</Button>
 						<Button colorScheme='green' onClick={handleSave}>
-							Add
+							Save
 						</Button>
 					</ModalFooter>
 				</ModalContent>

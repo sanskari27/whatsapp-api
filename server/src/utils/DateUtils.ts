@@ -59,7 +59,11 @@ const getLocalTime = (date: Date | number, format = 'YYYY-MM-DDTHH:mm:ss.SSSZ') 
 	return moment(date).local().format(format);
 };
 
-function isTimeBetween(startTime: string, endTime: string, targetTime: string): boolean {
+function isTimeBetween(
+	startTime: string | moment.Moment,
+	endTime: string | moment.Moment,
+	targetTime: string | moment.Moment
+): boolean {
 	const start = moment(startTime, 'HH:mm');
 	const end = moment(endTime, 'HH:mm');
 	const target = moment(targetTime, 'HH:mm');

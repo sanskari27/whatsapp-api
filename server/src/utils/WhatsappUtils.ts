@@ -45,18 +45,8 @@ export default class WhatsappUtils {
 	}
 
 	async getNumberWithId(number: string) {
-		try {
-			const numberID = await this.whatsapp.getClient().getNumberId(number);
-			if (!numberID) {
-				return null;
-			}
-			return {
-				number,
-				numberId: numberID._serialized,
-			};
-		} catch (err) {
-			return null;
-		}
+		const number_ids = await this.getNumberWithIds([number]);
+		return number_ids.length > 0 ? number_ids[0] : null;
 	}
 
 	async getNumberWithIds(numbers: string[]) {
@@ -89,6 +79,18 @@ export default class WhatsappUtils {
 		} catch (err) {
 			return null;
 		}
+	}
+
+	async getChatIds(ids: string | string[]) {
+		const searchable_ids = typeof ids === 'string' ? [ids] : ids;
+		return (
+			await Promise.all(
+				searchable_ids.map(async (id) => {
+					const chat = await this.getChat(id);
+					return chat ? chat.id._serialized : null;
+				})
+			)
+		).filter((chat) => chat) as string[];
 	}
 
 	async getParticipantsChatByGroup(group_id: string) {

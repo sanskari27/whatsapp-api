@@ -261,7 +261,7 @@ const PollInputDialog = forwardRef<PollInputDialogHandle, Props>(({ onConfirm }:
 						Cancel
 					</Button>
 					<Button colorScheme={'green'} onClick={handleAdd}>
-						Confirm
+						Save
 					</Button>
 				</ModalFooter>
 			</ModalContent>
