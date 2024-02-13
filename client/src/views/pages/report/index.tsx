@@ -139,7 +139,9 @@ const Reports = () => {
 						<Tr color={theme === 'dark' ? 'white' : 'black'}>
 							<Th width={'5%'}>Select</Th>
 							<Th width={'50%'}>Campaign Name</Th>
-							<Th width={'5%'}>Created At</Th>
+							<Th width={'5%'} textAlign={'center'}>
+								Created At
+							</Th>
 							<Th width={'10%'} textColor={'green'} isNumeric>
 								Messages Sent
 							</Th>
@@ -200,7 +202,7 @@ const Reports = () => {
 											? campaign.campaignName.substring(0, 27) + '...'
 											: campaign.campaignName}
 									</Td>
-									<Td>
+									<Td textAlign={'center'}>
 										{campaign.createdAt.split(' ').map((time, index) => (
 											<Box key={index}>{time}</Box>
 										))}
