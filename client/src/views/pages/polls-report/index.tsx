@@ -1,5 +1,4 @@
 import {
-	Box,
 	HStack,
 	Table,
 	TableContainer,
@@ -87,12 +86,8 @@ const PollReport = () => {
 								color={theme === 'dark' ? 'whitesmoke' : 'black'}
 							>
 								<Td>{index + 1}</Td>
-								<Td>{poll.title}</Td>
-								<Td>
-									{poll.options.map((option, index) => (
-										<Box key={index}>{option}</Box>
-									))}
-								</Td>
+								<Td className='whitespace-break-spaces'>{poll.title}</Td>
+								<Td className='whitespace-break-spaces'>{poll.options.join('\n')}</Td>
 								<Td>{poll.isMultiSelect ? 'Yes' : 'No'}</Td>
 							</Tr>
 						))}

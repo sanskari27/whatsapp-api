@@ -197,11 +197,7 @@ const Reports = () => {
 										/>
 										{index + 1}.
 									</Td>
-									<Td>
-										{campaign.campaignName.length > 28
-											? campaign.campaignName.substring(0, 27) + '...'
-											: campaign.campaignName}
-									</Td>
+									<Td className='whitespace-break-spaces'>{campaign.campaignName}</Td>
 									<Td textAlign={'center'}>
 										{campaign.createdAt.split(' ').map((time, index) => (
 											<Box key={index}>{time}</Box>

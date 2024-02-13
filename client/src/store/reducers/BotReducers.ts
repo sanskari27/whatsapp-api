@@ -79,7 +79,8 @@ const BotSlice = createSlice({
 			state.details.response_delay_seconds = state.all_bots[index].response_delay_seconds;
 			state.details.trigger_gap_seconds = state.all_bots[index].trigger_gap_seconds;
 			state.details.polls = state.all_bots[index].polls;
-			state.details.forward = state.all_bots[index].forward;
+			state.details.forward.number = state.all_bots[index].forward.number ?? '';
+			state.details.forward.message = state.all_bots[index].forward.message ?? '';
 			state.details.nurturing = state.all_bots[index].nurturing;
 
 			state.ui.isEditingBot = true;

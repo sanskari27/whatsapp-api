@@ -109,7 +109,7 @@ export default function MergedGroupTab() {
 													dispatch(setGroupReplySaved(group.group_reply.saved));
 													dispatch(setGroupReplyUnsaved(group.group_reply.unsaved));
 													dispatch(setPrivateReplySaved(group.private_reply.saved));
-													dispatch(setPrivateReplyUnsaved(group.private_reply.saved));
+													dispatch(setPrivateReplyUnsaved(group.private_reply.unsaved));
 													onOpen();
 												}}
 											/>
