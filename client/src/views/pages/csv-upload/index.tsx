@@ -54,7 +54,7 @@ const CSVUpload = () => {
 				if (!res) {
 					return;
 				}
-				dispatch(deleteSelectedCSVFile({ id: csv }));
+				dispatch(deleteSelectedCSVFile({ _id: csv }));
 			});
 		});
 		setSelectedFiles([]);
@@ -122,9 +122,15 @@ const CSVUpload = () => {
 				<Table>
 					<Thead>
 						<Tr>
-							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>sl no</Th>
-							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'40%'}>CSV Name</Th>
-							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'50%'}>Headers</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>
+								sl no
+							</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'40%'}>
+								CSV Name
+							</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'50%'}>
+								Headers
+							</Th>
 						</Tr>
 					</Thead>
 					<Tbody>
@@ -134,12 +140,12 @@ const CSVUpload = () => {
 									<Td>
 										<Checkbox
 											mr={'1rem'}
-											isChecked={selectedFiles.includes(csv.id)}
+											isChecked={selectedFiles.includes(csv._id)}
 											onChange={(e) => {
 												if (e.target.checked) {
-													setSelectedFiles((prev) => [...prev, csv.id]);
+													setSelectedFiles((prev) => [...prev, csv._id]);
 												} else {
-													setSelectedFiles((prev) => prev.filter((file) => file !== csv.id));
+													setSelectedFiles((prev) => prev.filter((file) => file !== csv._id));
 												}
 											}}
 											colorScheme='green'

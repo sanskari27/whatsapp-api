@@ -1,14 +1,5 @@
 import { SettingsIcon } from '@chakra-ui/icons';
-import {
-	Box,
-	Center,
-	Flex,
-	Icon,
-	IconButton,
-	Image,
-	VStack,
-	useDisclosure,
-} from '@chakra-ui/react';
+import { Box, Flex, Icon, IconButton, Image, Text, VStack, useDisclosure } from '@chakra-ui/react';
 import { IconType } from 'react-icons';
 import { FiBarChart2, FiLink2 } from 'react-icons/fi';
 import { SiProbot } from 'react-icons/si';
@@ -41,10 +32,13 @@ export default function NavigationDrawer() {
 		<Box>
 			<Flex
 				direction={'column'}
-				alignItems={'center'}
-				className='!w-[70px] select-none'
+				// alignItems={'center'}
+				width={'70px'}
+				_hover={{
+					width: '200px',
+				}}
+				userSelect={'none'}
 				position={'fixed'}
-				left={0}
 				minHeight={'100vh'}
 				borderRightWidth={'thin'}
 				borderRightColor={theme === 'light' ? 'gray.300' : 'gray.500'}
@@ -52,32 +46,32 @@ export default function NavigationDrawer() {
 				zIndex={99}
 				background={theme === 'light' ? 'white' : '#252525'}
 			>
-				<Center
+				<Box
 					borderBottomWidth={'thin'}
 					borderBottomColor={theme === 'light' ? 'gray.300' : 'gray.500'}
 					paddingBottom={'0.75rem'}
 					width={'100%'}
 					height={'50px'}
+					paddingLeft={'15px'}
 				>
 					<Image src={LOGO} width={'36px'} className='shadow-lg rounded-full' />
-				</Center>
+				</Box>
 				<Box flexGrow={'1'}>
-					<Flex
-						flexDirection={'column'}
-						justifyContent={'center'}
-						paddingY={'1rem'}
-						className='group'
-					>
-						<MenuButton icon={MdOutlineContactPhone} route={NAVIGATION.CONTACT} />
+					<Flex flexDirection={'column'} paddingY={'0.5rem'} paddingX={'0.5rem'}>
+						<MenuButton icon={MdOutlineContactPhone} route={NAVIGATION.CONTACT} name='Contacts' />
 
-						<MenuButton icon={TbMessage2Minus} route={NAVIGATION.SCHEDULER} />
-						<MenuButton icon={SiProbot} route={NAVIGATION.BOT} />
-						<MenuButton icon={MdOutlineAttachment} route={NAVIGATION.ATTACHMENTS} />
-						<MenuButton icon={FiLink2} route={NAVIGATION.SHORT} />
-						<MenuButton icon={BiPoll} route={NAVIGATION.POLL_RESPONSES} />
-						<MenuButton icon={FiBarChart2} route={NAVIGATION.REPORTS} />
-						<MenuButton icon={TbCsv} route={NAVIGATION.CSV} />
-						<MenuButton icon={MdGroups3} route={NAVIGATION.GROUP_MERGE} />
+						<MenuButton icon={TbMessage2Minus} route={NAVIGATION.SCHEDULER} name='Messages' />
+						<MenuButton icon={SiProbot} route={NAVIGATION.BOT} name='Bot' />
+						<MenuButton
+							icon={MdOutlineAttachment}
+							route={NAVIGATION.ATTACHMENTS}
+							name='Attachments'
+						/>
+						<MenuButton icon={FiLink2} route={NAVIGATION.SHORT} name='Links' />
+						<MenuButton icon={BiPoll} route={NAVIGATION.POLL_RESPONSES} name='Poll' />
+						<MenuButton icon={FiBarChart2} route={NAVIGATION.REPORTS} name='Reports' />
+						<MenuButton icon={TbCsv} route={NAVIGATION.CSV} name='CSV ' />
+						<MenuButton icon={MdGroups3} route={NAVIGATION.GROUP_MERGE} name='Groups' />
 					</Flex>
 				</Box>
 				<VStack>
@@ -128,24 +122,29 @@ export default function NavigationDrawer() {
 type MenuButtonProps = {
 	route: string;
 	icon: IconType;
+	name: string;
 };
 
-function MenuButton({ route, icon }: MenuButtonProps) {
+function MenuButton({ route, icon, name }: MenuButtonProps) {
 	const navigate = useNavigate();
 	return (
-		<Center
-			className={`cursor-pointer 
-							hover:!scale-110 hover:!shadow-xl  hover:!drop-shadow-lg hover:!bg-green-100
+		<Flex
+			className={`cursor-pointer overflow-hidden
+							hover:!shadow-xl  hover:!drop-shadow-lg hover:!bg-green-100 hover:!font-medium 
 							${
 								isActiveTab(route, location.pathname) &&
-								'shadow-xl  drop-shadow-lg bg-green-200 group-hover:shadow-none group-hover:drop-shadow-none group-hover:bg-transparent'
+								'shadow-xl  drop-shadow-lg bg-green-200 group-hover:shadow-none group-hover:drop-shadow-none group-hover:bg-transparent text-green-900 font-bold'
 							}`}
 			padding={'1rem'}
 			rounded={'lg'}
+			gap={'1.1rem'}
 			onClick={() => navigate(route)}
 		>
 			<Icon as={icon} color={'green.400'} width={5} height={5} />
-		</Center>
+			<Text transition={'none'} className=' text-green-700'>
+				{name}
+			</Text>
+		</Flex>
 	);
 }
 

@@ -3,7 +3,7 @@ import { NextFunction, Request, Response } from 'express';
 import { ATTACHMENTS_PATH, CSV_PATH } from '../../config/const';
 import APIError, { API_ERRORS } from '../../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
-import { MessageSchedulerService } from '../../services';
+import { MessageService } from '../../services/messenger';
 import UploadService from '../../services/uploads';
 import { Respond, RespondFile, idValidator } from '../../utils/ExpressUtils';
 import { FileUtils, SingleFileUploadOptions } from '../../utils/files';
@@ -221,7 +221,7 @@ export async function deleteAttachment(req: Request, res: Response, next: NextFu
 		return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
 	}
 	try {
-		const scheduler = new MessageSchedulerService(req.locals.user);
+		const scheduler = new MessageService(req.locals.user);
 		const inUse = await scheduler.isAttachmentInUse(id);
 		if (inUse) {
 			return next(new APIError(API_ERRORS.USER_ERRORS.ATTACHMENT_IN_USE));

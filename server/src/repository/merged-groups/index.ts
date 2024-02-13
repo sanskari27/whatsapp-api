@@ -8,7 +8,14 @@ const mergedGroupSchema = new mongoose.Schema<IMergedGroup>({
 	},
 	name: String,
 	groups: [String],
-	group_reply: String,
+	group_reply: {
+		saved: String,
+		unsaved: String,
+	},
+	private_reply: {
+		saved: String,
+		unsaved: String,
+	},
 });
 
 const MergedGroupDB = mongoose.model<IMergedGroup>('MergedGroup', mergedGroupSchema);

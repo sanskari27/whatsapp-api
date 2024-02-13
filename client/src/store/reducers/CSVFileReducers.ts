@@ -37,8 +37,8 @@ const CSVFileSlice = createSlice({
 			state.list.push(action.payload);
 			state.uiDetails.isSaving = false;
 		},
-		deleteSelectedCSVFile: (state, action: PayloadAction<{ id: string }>) => {
-			state.list = state.list.filter((csv) => csv.id !== action.payload.id);
+		deleteSelectedCSVFile: (state, action: PayloadAction<{ _id: string }>) => {
+			state.list = state.list.filter((csv) => csv._id !== action.payload._id);
 			state.selectedCSV = initialState.selectedCSV;
 			state.uiDetails.isDeleting = false;
 		},

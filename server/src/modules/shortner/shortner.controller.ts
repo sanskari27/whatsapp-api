@@ -25,6 +25,7 @@ async function createWhatsappLink(req: Request, res: Response, next: NextFunctio
 		data: {
 			shorten_link: `${SHORTNER_REDIRECT}${doc.key}`,
 			link: doc.link,
+			id: doc._id,
 			title: doc.title,
 			base64: doc.qrString,
 		},

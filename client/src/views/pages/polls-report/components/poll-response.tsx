@@ -23,6 +23,7 @@ import {
 } from '@chakra-ui/react';
 import { useSelector } from 'react-redux';
 import { Cell, Pie, PieChart } from 'recharts';
+import ReportsService from '../../../../services/reports.service';
 import { StoreNames, StoreState } from '../../../../store';
 
 type PollResponseDialogProps = {
@@ -34,6 +35,10 @@ const PollResponseDialog = ({ onClose, isOpen }: PollResponseDialogProps) => {
 	const { selectedPollDetails } = useSelector((store: StoreState) => store[StoreNames.POLL]);
 
 	if (!selectedPollDetails) return null;
+
+	const downloadReport = async () => {
+		ReportsService.pollDetails({ ...selectedPollDetails[0] }, true);
+	};
 
 	const getOptionResponses = (
 		pollDetails: {
@@ -210,9 +215,14 @@ const PollResponseDialog = ({ onClose, isOpen }: PollResponseDialogProps) => {
 				</ModalBody>
 
 				<ModalFooter>
-					<Button colorScheme='green' mr={3} onClick={onClose}>
-						Close
-					</Button>
+					<Flex width={'full'} justifyContent={'space-between'}>
+						<Button colorScheme='blue' mr={3} onClick={downloadReport}>
+							Download Report
+						</Button>
+						<Button colorScheme='green' mr={3} onClick={onClose}>
+							Close
+						</Button>
+					</Flex>
 				</ModalFooter>
 			</ModalContent>
 		</Modal>

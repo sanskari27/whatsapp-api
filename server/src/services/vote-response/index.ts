@@ -30,7 +30,7 @@ export default class VoteResponseService {
 
 		voter_name: string;
 		group_name: string;
-		selected_options: string[];
+		selected_option: string[];
 		voted_at: Date;
 	}) {
 		try {
@@ -47,7 +47,7 @@ export default class VoteResponseService {
 				return await VoteResponseDB.create({ user: this.user, ...details });
 			}
 
-			voteResponse.selected_option = details.selected_options;
+			voteResponse.selected_option = details.selected_option;
 			voteResponse.voted_at = details.voted_at;
 			await voteResponse.save();
 			return voteResponse;
@@ -100,6 +100,23 @@ export default class VoteResponseService {
 			title,
 			options: { $all: options },
 			isMultiSelect,
+		});
+
+		return polls.map((poll) => ({
+			title: poll.title,
+			options: poll.options,
+			isMultiSelect: poll.isMultiSelect,
+			voter_number: poll.voter_number,
+			voter_name: poll.voter_name,
+			group_name: poll.group_name,
+			selected_option: poll.selected_option,
+			voted_at: DateUtils.getMoment(poll.voted_at).format('DD-MM-YYYY HH:mm:ss'),
+		}));
+	}
+
+	async getPolls() {
+		const polls = await VoteResponseDB.find({
+			user: this.user._id,
 		});
 
 		return polls.map((poll) => ({

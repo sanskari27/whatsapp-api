@@ -9,7 +9,14 @@ const initialState: MergeGroupState = {
 		id: '',
 		name: '',
 		groups: [],
-		group_reply: '',
+		group_reply: {
+			saved: '',
+			unsaved: '',
+		},
+		private_reply: {
+			saved: '',
+			unsaved: '',
+		},
 	},
 	uiDetails: {
 		isSaving: false,
@@ -37,10 +44,10 @@ const MergeGroupSlice = createSlice({
 			state.list.push(action.payload);
 			state.uiDetails.isSaving = false;
 		},
-		addSelectedMergedGroups: (state, action: PayloadAction<string>) => {
+		addSelectedGroups: (state, action: PayloadAction<string>) => {
 			state.selectedGroups.push(action.payload);
 		},
-		removeSelectedMergedGroups: (state, action: PayloadAction<string>) => {
+		removeSelectedGroups: (state, action: PayloadAction<string>) => {
 			state.selectedGroups = state.selectedGroups.filter((id) => id !== action.payload);
 		},
 		addSelectedGroup: (state, action: PayloadAction<string>) => {
@@ -50,6 +57,9 @@ const MergeGroupSlice = createSlice({
 			state.editSelectedGroup.groups = state.editSelectedGroup.groups.filter(
 				(id) => id !== action.payload
 			);
+		},
+		clearSelectedGroup: (state) => {
+			state.selectedGroups = [];
 		},
 		deleteMergedGroup: (state, action: PayloadAction<string>) => {
 			state.list = state.list.filter((merged_group) => merged_group.id !== action.payload);
@@ -71,7 +81,8 @@ const MergeGroupSlice = createSlice({
 						id: action.payload.id,
 						name: action.payload.name,
 						groups: action.payload.groups,
-						group_reply: action.payload.group_reply,
+						group_reply: action.payload.group_reply ?? { saved: '', unsaved: '' },
+						private_reply: action.payload.private_reply ?? { saved: '', unsaved: '' },
 					};
 				}
 				return group;
@@ -84,8 +95,17 @@ const MergeGroupSlice = createSlice({
 		setGroups: (state, action: PayloadAction<string>) => {
 			state.editSelectedGroup.groups.push(action.payload);
 		},
-		setGroupReply: (state, action: PayloadAction<string>) => {
-			state.editSelectedGroup.group_reply = action.payload;
+		setGroupReplySaved: (state, action: PayloadAction<string>) => {
+			state.editSelectedGroup.group_reply.saved = action.payload;
+		},
+		setGroupReplyUnsaved: (state, action: PayloadAction<string>) => {
+			state.editSelectedGroup.group_reply.unsaved = action.payload;
+		},
+		setPrivateReplySaved: (state, action: PayloadAction<string>) => {
+			state.editSelectedGroup.private_reply.saved = action.payload;
+		},
+		setPrivateReplyUnsaved: (state, action: PayloadAction<string>) => {
+			state.editSelectedGroup.private_reply.unsaved = action.payload;
 		},
 		clearEditMergeGroup: (state) => {
 			state.editSelectedGroup = initialState.editSelectedGroup;
@@ -118,8 +138,9 @@ export const {
 	reset,
 	setMergedGroupList,
 	addMergedGroup,
-	addSelectedMergedGroups,
-	removeSelectedMergedGroups,
+	addSelectedGroups,
+	removeSelectedGroups,
+	clearSelectedGroup,
 	addSelectedGroup,
 	removeSelectedGroup,
 	deleteMergedGroup,
@@ -135,7 +156,10 @@ export const {
 	setIsCreating,
 	setIsUpdating,
 	setError,
-	setGroupReply,
+	setGroupReplySaved,
+	setGroupReplyUnsaved,
+	setPrivateReplySaved,
+	setPrivateReplyUnsaved,
 } = MergeGroupSlice.actions;
 
 export default MergeGroupSlice.reducer;

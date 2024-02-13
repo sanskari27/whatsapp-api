@@ -17,7 +17,6 @@ const adminSchema = new Schema<IAdmin>({
 		select: false,
 	},
 	client_id: String,
-	refreshTokens: [{ type: String, select: false, index: true }],
 });
 
 adminSchema.pre('save', async function (next) {
@@ -45,10 +44,6 @@ adminSchema.methods.getRefreshToken = function () {
 	const token = jwt.sign({ id: this._id }, REFRESH_SECRET, {
 		expiresIn: REFRESH_EXPIRE,
 	});
-	if (!this.refreshTokens) this.refreshTokens = [];
-
-	this.refreshTokens.push(token);
-	this.save();
 	return token;
 };
 

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
-import { GroupChat } from 'whatsapp-web.js';
-import { getOrCache } from '../../config/cache';
+import { GroupChat, MessageMedia } from 'whatsapp-web.js';
+import { getOrCache, saveToCache } from '../../config/cache';
 import { CACHE_TOKEN_GENERATOR } from '../../config/const';
 import APIError, { API_ERRORS } from '../../errors/api-errors';
 import { WhatsappProvider } from '../../provider/whatsapp_provider';
@@ -15,8 +15,18 @@ import CSVParser from '../../utils/CSVParser';
 import { Respond, RespondCSV, RespondVCF, idValidator } from '../../utils/ExpressUtils';
 import VCFParser from '../../utils/VCFParser';
 import WhatsappUtils from '../../utils/WhatsappUtils';
-import { FileUtils } from '../../utils/files';
-import { CreateGroupValidationResult, MergeGroupValidationResult } from './groups.validator';
+import {
+	FileUpload,
+	FileUtils,
+	ONLY_JPG_IMAGES_ALLOWED,
+	ResolvedFile,
+	SingleFileUploadOptions,
+} from '../../utils/files';
+import {
+	CreateGroupValidationResult,
+	GroupSettingValidationResult,
+	MergeGroupValidationResult,
+} from './groups.validator';
 
 type GroupDetail = {
 	id: string;
@@ -43,12 +53,49 @@ async function groups(req: Request, res: Response, next: NextFunction) {
 							id: groupChat.id._serialized,
 							name: groupChat.name ?? '',
 							isMergedGroup: false,
+							participants: groupChat.participants.length,
 						};
 					});
 
 				return groups;
 			}
 		);
+		const merged_groups = await new GroupMergeService(req.locals.user).listGroups();
+
+		return Respond({
+			res,
+			status: 200,
+			data: {
+				groups: [...groups, ...merged_groups.map((group) => ({ ...group, groups: undefined }))],
+			},
+		});
+	} catch (err) {
+		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+	}
+}
+
+async function refreshGroup(req: Request, res: Response, next: NextFunction) {
+	const client_id = req.locals.client_id;
+
+	const whatsapp = WhatsappProvider.getInstance(client_id);
+	if (!whatsapp.isReady()) {
+		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+	}
+
+	try {
+		const groups = (await whatsapp.getClient().getChats())
+			.filter((chat) => chat.isGroup)
+			.map((chat) => {
+				const groupChat = chat as GroupChat;
+				return {
+					id: groupChat.id._serialized,
+					name: groupChat.name ?? '',
+					isMergedGroup: false,
+					participants: groupChat.participants.length,
+				};
+			});
+
+		await saveToCache(CACHE_TOKEN_GENERATOR.GROUPS(req.locals.user._id), groups);
 		const merged_groups = await new GroupMergeService(req.locals.user).listGroups();
 
 		return Respond({
@@ -208,7 +255,8 @@ async function createGroup(req: Request, res: Response, next: NextFunction) {
 async function mergeGroup(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
 
-	const { group_ids, group_name, group_reply } = req.locals.data as MergeGroupValidationResult;
+	const { group_ids, group_name, group_reply, private_reply } = req.locals
+		.data as MergeGroupValidationResult;
 
 	const whatsapp = WhatsappProvider.getInstance(client_id);
 	const whatsappUtils = new WhatsappUtils(whatsapp);
@@ -226,11 +274,10 @@ async function mergeGroup(req: Request, res: Response, next: NextFunction) {
 		)
 	).filter((chat) => chat !== null) as string[];
 
-	const group = await new GroupMergeService(req.locals.user).mergeGroup(
-		group_name,
-		chat_ids,
-		group_reply
-	);
+	const group = await new GroupMergeService(req.locals.user).mergeGroup(group_name, chat_ids, {
+		group_reply,
+		private_reply,
+	});
 
 	return Respond({
 		res,
@@ -243,7 +290,8 @@ async function mergeGroup(req: Request, res: Response, next: NextFunction) {
 
 async function updateMergedGroup(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
-	const { group_ids, group_name, group_reply } = req.locals.data as MergeGroupValidationResult;
+	const { group_ids, group_name, group_reply, private_reply } = req.locals
+		.data as MergeGroupValidationResult;
 
 	const whatsapp = WhatsappProvider.getInstance(client_id);
 	const whatsappUtils = new WhatsappUtils(whatsapp);
@@ -261,11 +309,17 @@ async function updateMergedGroup(req: Request, res: Response, next: NextFunction
 		)
 	).filter((chat) => chat !== null) as string[];
 
-	const group = await new GroupMergeService(req.locals.user).updateGroup(req.locals.id, {
-		group_ids: chat_ids,
-		name: group_name,
-		group_reply,
-	});
+	const group = await new GroupMergeService(req.locals.user).updateGroup(
+		req.locals.id,
+		{
+			group_ids: chat_ids,
+			name: group_name,
+		},
+		{
+			group_reply,
+			private_reply,
+		}
+	);
 
 	return Respond({
 		res,
@@ -311,6 +365,116 @@ async function deleteMergedGroup(req: Request, res: Response, next: NextFunction
 	});
 }
 
+async function updateGroupsPicture(req: Request, res: Response, next: NextFunction) {
+	const client_id = req.locals.client_id;
+
+	const whatsapp = WhatsappProvider.getInstance(client_id);
+	if (!whatsapp.isReady()) {
+		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+	}
+
+	const fileUploadOptions: SingleFileUploadOptions = {
+		field_name: 'file',
+		options: {
+			fileFilter: ONLY_JPG_IMAGES_ALLOWED,
+		},
+	};
+
+	let uploadedFile: ResolvedFile | null = null;
+
+	try {
+		uploadedFile = await FileUpload.SingleFileUpload(req, res, fileUploadOptions);
+	} catch (err: unknown) {
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.FILE_UPLOAD_ERROR, err));
+	}
+
+	const ids_to_export = req.body.groups as string[];
+	if (!ids_to_export) {
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
+	}
+	const groups = (await Promise.all(
+		ids_to_export
+			.map(async (group_id) => {
+				const chat = await whatsapp.getClient().getChatById(group_id);
+
+				if (!chat || !chat.isGroup) {
+					return null;
+				}
+				const groupChat = chat as GroupChat;
+				return groupChat;
+			})
+			.filter((groupChat) => groupChat !== null)
+	)) as GroupChat[];
+	const media = MessageMedia.fromFilePath(uploadedFile.path);
+	if (!media) {
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR));
+	}
+	groups.forEach((groupChat) => {
+		groupChat.setPicture(media);
+	});
+
+	return Respond({
+		res,
+		status: 200,
+		data: {},
+	});
+}
+
+async function updateGroupsDetails(req: Request, res: Response, next: NextFunction) {
+	const client_id = req.locals.client_id;
+
+	const whatsapp = WhatsappProvider.getInstance(client_id);
+	if (!whatsapp.isReady()) {
+		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+	}
+
+	const {
+		description,
+		edit_group_settings,
+		send_messages,
+		groups: ids_to_update,
+	} = req.body as GroupSettingValidationResult;
+
+	const authorId = whatsapp.getClient().info.wid._serialized;
+
+	const groups = (await Promise.all(
+		ids_to_update
+			.map(async (group_id) => {
+				const chat = await whatsapp.getClient().getChatById(group_id);
+
+				if (!chat || !chat.isGroup) {
+					return null;
+				}
+				const groupChat = chat as GroupChat;
+				for (let participant of groupChat.participants) {
+					if (participant.id._serialized === authorId) {
+						return participant.isAdmin ? chat : null;
+					}
+				}
+				return null;
+			})
+			.filter((groupChat) => groupChat !== null)
+	)) as GroupChat[];
+
+	groups.forEach((groupChat) => {
+		if (description !== undefined) {
+			groupChat.setDescription(description);
+		}
+		if (edit_group_settings !== undefined) {
+			groupChat.setInfoAdminsOnly(!edit_group_settings);
+		}
+		if (send_messages !== undefined) {
+			groupChat.setMessagesAdminsOnly(!send_messages);
+		}
+	});
+
+	return Respond({
+		res,
+		status: 200,
+		data: {},
+	});
+}
+
 const GroupsController = {
 	groups,
 	exportGroups,
@@ -318,7 +482,10 @@ const GroupsController = {
 	mergeGroup,
 	deleteMergedGroup,
 	mergedGroups,
+	refreshGroup,
 	updateMergedGroup,
+	updateGroupsPicture,
+	updateGroupsDetails,
 };
 
 export default GroupsController;

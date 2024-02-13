@@ -168,7 +168,7 @@ export class WhatsappProvider {
 				voter_number: '',
 				voter_name: '',
 				group_name: '',
-				selected_options: vote.selectedOptions.map((opt) => opt.name),
+				selected_option: vote.selectedOptions.map((opt) => opt.name),
 				voted_at: DateUtils.getMoment(vote.interractedAtTs).toDate(),
 			};
 
@@ -182,7 +182,7 @@ export class WhatsappProvider {
 
 			await this.vote_response_service.saveVote(details);
 
-			details.selected_options.map((opt) => {
+			details.selected_option.map((opt) => {
 				if (!this.bot_service) return;
 				this.bot_service.handleMessage(chat.id._serialized, opt, contact, {
 					fromPoll: true,
@@ -206,12 +206,17 @@ export class WhatsappProvider {
 			if (!this.bot_service) return;
 			const chat = await message.getChat();
 			const isGroup = chat.isGroup;
-			this.bot_service.handleMessage(message.from, message.body, await message.getContact(), {
+			const contact = await message.getContact();
+			this.bot_service.handleMessage(message.from, message.body, contact, {
 				isGroup,
 				fromPoll: false,
 			});
 			if (isGroup) {
-				this.group_service?.sendGroupReply(this.client, chat as GroupChat, message);
+				this.group_service?.sendGroupReply(this.client, {
+					chat: chat as GroupChat,
+					message,
+					contact,
+				});
 			}
 		});
 	}
@@ -323,7 +328,7 @@ export class WhatsappProvider {
 
 	static clientByUser(id: Types.ObjectId) {
 		for (const [cid, client] of WhatsappProvider.clientsMap.entries()) {
-			if (!client.user_service) continue;
+			if (!client.user_service || !client.isReady()) continue;
 			if (client.user_service.getID().toString() === id.toString()) {
 				return cid;
 			}

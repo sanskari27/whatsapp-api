@@ -2,13 +2,7 @@ import fs from 'fs';
 import { Types } from 'mongoose';
 import Logger from 'n23-logger';
 import WAWebJS, { MessageMedia, Poll } from 'whatsapp-web.js';
-import {
-	ATTACHMENTS_PATH,
-	BOT_TRIGGER_OPTIONS,
-	BOT_TRIGGER_TO,
-	PROMOTIONAL_MESSAGE_1,
-	PROMOTIONAL_MESSAGE_2,
-} from '../../config/const';
+import { ATTACHMENTS_PATH, BOT_TRIGGER_OPTIONS, BOT_TRIGGER_TO } from '../../config/const';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import { WhatsappProvider } from '../../provider/whatsapp_provider';
 import { BotResponseDB } from '../../repository/bot';
@@ -19,19 +13,20 @@ import { IUser } from '../../types/user';
 import DateUtils from '../../utils/DateUtils';
 import { Delay } from '../../utils/ExpressUtils';
 import VCardBuilder from '../../utils/VCardBuilder';
-import MessageSchedulerService from '../scheduled-message';
+import { MessageService } from '../messenger';
+import TokenService from '../token';
 import UserService from '../user';
 
 export default class BotService {
 	private user: IUser;
 	private userService: UserService;
-	private messageSchedulerService: MessageSchedulerService;
+	private messageSchedulerService: MessageService;
 	private whatsapp: WhatsappProvider | undefined;
 
 	public constructor(user: IUser) {
 		this.user = user;
 		this.userService = new UserService(user);
-		this.messageSchedulerService = new MessageSchedulerService(user);
+		this.messageSchedulerService = new MessageService(user);
 	}
 
 	public attachWhatsappProvider(whatsapp_provider: WhatsappProvider) {
@@ -218,6 +213,10 @@ export default class BotService {
 		if (!isSubscribed && !isNew) {
 			return;
 		}
+
+		const { message_1: PROMOTIONAL_MESSAGE_1, message_2: PROMOTIONAL_MESSAGE_2 } =
+			await TokenService.getPromotionalMessage();
+
 		const message_from = triggered_from.split('@')[0];
 
 		const botsEngaged = await this.botsEngaged({ message_body: body, message_from, contact });
@@ -233,6 +232,9 @@ export default class BotService {
 
 			let msg = bot.message;
 			if (msg) {
+				if (msg.includes('{{public_name}}')) {
+					msg = msg.replace('{{public_name}}', contact.pushname);
+				}
 				whatsapp
 					.getClient()
 					.sendMessage(triggered_from, msg)
@@ -314,7 +316,7 @@ export default class BotService {
 					});
 
 				if (bot.forward.message) {
-					const _variable = '{{whatsapp_name}}';
+					const _variable = '{{public_name}}';
 					const custom_message = bot.forward.message.replace(
 						_variable,
 						(contact.pushname || contact.name) ?? ''
@@ -329,14 +331,19 @@ export default class BotService {
 			}
 
 			if (bot.nurturing.length > 0) {
-				const nurtured_messages = bot.nurturing.map((el) => ({
-					number: triggered_from,
-					message: el.message,
-					send_at: DateUtils.getMomentNow().add(el.after, 'seconds').toDate(),
-				}));
-				this.messageSchedulerService.scheduleLeadNurturingMessage(nurtured_messages, {
-					client_id: whatsapp.getClientID(),
+				const nurtured_messages = bot.nurturing.map((el) => {
+					const _variable = '{{public_name}}';
+					const custom_message = el.message.replace(
+						_variable,
+						(contact.pushname || contact.name) ?? ''
+					);
+					return {
+						receiver: triggered_from,
+						message: custom_message,
+						send_at: DateUtils.getMomentNow().add(el.after, 'seconds').toDate(),
+					};
 				});
+				this.messageSchedulerService.scheduleLeadNurturingMessage(nurtured_messages);
 			}
 		});
 	}

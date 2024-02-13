@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+import { saveRefreshTokens } from '../../config/cache';
 import { IS_PRODUCTION, JWT_COOKIE, JWT_REFRESH_COOKIE } from '../../config/const';
 import APIError, { API_ERRORS } from '../../errors/api-errors';
 import { WhatsappProvider } from '../../provider/whatsapp_provider';
@@ -77,7 +78,9 @@ async function adminLogin(req: Request, res: Response, next: NextFunction) {
 			httpOnly: IS_PRODUCTION,
 			secure: IS_PRODUCTION,
 		});
-		res.cookie(JWT_REFRESH_COOKIE, adminService.getRefreshToken(), {
+		const t = adminService.getRefreshToken();
+		saveRefreshTokens(t, adminService.getUser()._id);
+		res.cookie(JWT_REFRESH_COOKIE, t, {
 			sameSite: 'strict',
 			expires: new Date(Date.now() + REFRESH_EXPIRE_TIME),
 			httpOnly: IS_PRODUCTION,

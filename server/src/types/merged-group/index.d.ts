@@ -4,5 +4,12 @@ export default interface IMergedGroup extends Document {
 	user: IUser;
 	name: string;
 	groups: string[];
-	group_reply: string;
+	group_reply: {
+		saved: string;
+		unsaved: string;
+	} | null;
+	private_reply: {
+		saved: string;
+		unsaved: string;
+	} | null;
 }

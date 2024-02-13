@@ -9,7 +9,10 @@ import {
 	FormErrorMessage,
 	HStack,
 	IconButton,
+	Tag,
+	TagLabel,
 	Text,
+	Textarea,
 } from '@chakra-ui/react';
 import { useEffect, useRef } from 'react';
 import { RiRobot2Line } from 'react-icons/ri';
@@ -62,6 +65,7 @@ export default function Bot() {
 	const pollInputRef = useRef<PollInputDialogHandle>(null);
 	const leadsNurturingRef = useRef<InputLeadsNurturingDialogHandle>(null);
 	const theme = useTheme();
+	const messageRef = useRef<HTMLTextAreaElement>(null);
 
 	const { details, trigger_gap, response_delay, ui, all_bots } = useSelector(
 		(state: StoreState) => state[StoreNames.CHATBOT]
@@ -190,6 +194,17 @@ export default function Bot() {
 		}
 		return notHasError;
 	}
+	const insertVariablesToMessage = (variable: string) => {
+		dispatch(
+			setMessage(
+				details.message.substring(0, messageRef.current?.selectionStart) +
+					' ' +
+					variable +
+					' ' +
+					details.message.substring(messageRef.current?.selectionEnd ?? 0, details.message.length)
+			)
+		);
+	};
 
 	async function handleSave() {
 		if (!validate()) {
@@ -394,15 +409,35 @@ export default function Bot() {
 					{/*--------------------------------- MESSAGE SECTION--------------------------- */}
 
 					<FormControl isInvalid={!!ui.messageError}>
-						<TextAreaElement
+						<Textarea
+							ref={messageRef}
 							value={message ?? ''}
 							minHeight={'80px'}
 							onChange={(e) => dispatch(setMessage(e.target.value))}
 							isInvalid={!!ui.messageError}
 							placeholder={'Type your message here. \nex. You are invited to join fanfest'}
+							width={'full'}
+							border={'none'}
+							className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]'
+							_placeholder={{ opacity: 0.4, color: 'inherit' }}
+							_focus={{ border: 'none', outline: 'none' }}
 						/>
 						{ui.messageError && <FormErrorMessage>{ui.messageError}</FormErrorMessage>}
 					</FormControl>
+					<Tag
+						size={'sm'}
+						m={'0.25rem'}
+						p={'0.5rem'}
+						width={'fit-content'}
+						borderRadius='md'
+						variant='solid'
+						colorScheme='gray'
+						_hover={{ cursor: 'pointer' }}
+						onClick={() => insertVariablesToMessage('{{public_name}}')}
+					>
+						<TagLabel>{'{{public_name}}'}</TagLabel>
+					</Tag>
+
 					<HStack alignItems={'start'}>
 						{/*--------------------------------- GAP & DELAY SECTION--------------------------- */}
 

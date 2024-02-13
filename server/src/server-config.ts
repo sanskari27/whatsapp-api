@@ -14,15 +14,20 @@ import {
 	INVOICE_PATH,
 	IS_PRODUCTION,
 	IS_WINDOWS,
+	MISC_PATH,
 	UPLOADS_PATH,
 } from './config/const';
 import APIError from './errors/api-errors';
 import { WhatsappProvider } from './provider/whatsapp_provider';
-import { MessageSchedulerService } from './services';
+import { MessageService } from './services/messenger';
 import SchedulerService from './services/scheduler';
 import WhatsappUtils from './utils/WhatsappUtils';
 
-const allowlist = ['http://localhost:5173', 'https://app.whatsleads.in'];
+const allowlist = [
+	'http://localhost:5173',
+	'https://app.whatsleads.in',
+	'https://admin.whatsleads.in',
+];
 
 const corsOptionsDelegate = (req: any, callback: any) => {
 	let corsOptions;
@@ -144,7 +149,7 @@ export default function (app: Express) {
 		WhatsappUtils.removeUnwantedSessions();
 	});
 	cron.schedule('* * * * * *', function () {
-		MessageSchedulerService.sendScheduledMessage();
+		MessageService.sendScheduledMessage();
 	});
 	cron.schedule('30 3 * * *', function () {
 		exec('pgrep chrome | xargs kill -9', (error, stdout, stderr) => {
@@ -163,4 +168,5 @@ function createDir() {
 	fs.mkdirSync(__basedir + CSV_PATH, { recursive: true });
 	fs.mkdirSync(__basedir + UPLOADS_PATH, { recursive: true });
 	fs.mkdirSync(__basedir + INVOICE_PATH, { recursive: true });
+	fs.mkdirSync(__basedir + MISC_PATH, { recursive: true });
 }

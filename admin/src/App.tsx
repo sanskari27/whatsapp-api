@@ -7,7 +7,10 @@ import { Flex, Image, Progress, Text } from '@chakra-ui/react';
 import { LOGO } from './assets/Images';
 import { useNavbar } from './hooks/useNavbar';
 import { useTheme } from './hooks/useTheme';
+
 const Login = lazy(() => import('./views/pages/login'));
+const Dashboard = lazy(() => import('./views/pages/home/Dashboard'));
+const UsersPage = lazy(() => import('./views/pages/users'));
 const Home = lazy(() => import('./views/pages/home'));
 const NetworkError = lazy(() => import('./views/pages/network-error'));
 
@@ -21,15 +24,8 @@ function App() {
 					<Routes>
 						<Route path={NAVIGATION.LOGIN} element={<Login />} />
 						<Route path={NAVIGATION.HOME} element={<Home />}>
-							{/* <Route path={NAVIGATION.CONTACT} element={<Contact />} />
-							<Route path={NAVIGATION.SCHEDULER} element={<Scheduler />} />
-							<Route path={NAVIGATION.BOT} element={<Bot />} />
-							<Route path={NAVIGATION.REPORTS} element={<Report />} />
-							<Route path={NAVIGATION.SHORT} element={<LinkShortner />} />
-							<Route path={NAVIGATION.ATTACHMENTS} element={<Attachments />} />
-							<Route path={NAVIGATION.CSV} element={<CSVUpload />} />
-							<Route path={NAVIGATION.POLL_RESPONSES} element={<PollReport />} />
-							<Route path={NAVIGATION.GROUP_MERGE} element={<GroupMergePage />} /> */}
+							<Route path={NAVIGATION.DASHBOARD} element={<Dashboard />} />
+							<Route path={NAVIGATION.USERS} element={<UsersPage />} />
 						</Route>
 						<Route path={NAVIGATION.NETWORK_ERROR} element={<NetworkError />} />
 						<Route path='*' element={<Navigate to={NAVIGATION.LOGIN} />} />

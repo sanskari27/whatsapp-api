@@ -1,7 +1,8 @@
 import { Types } from 'mongoose';
+import { MESSAGE_STATUS } from '../../config/const';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import { BotDB } from '../../repository/bot';
-import ScheduledMessageDB from '../../repository/scheduled-message';
+import { MessageDB } from '../../repository/messenger';
 import { AuthDetailDB, UserDB } from '../../repository/user';
 import { IUser } from '../../types/user';
 import DateUtils from '../../utils/DateUtils';
@@ -14,8 +15,13 @@ export default class UserService {
 		this.user = user;
 	}
 
-	static async getService(phone: string) {
-		const user = await UserDB.findOne({ phone });
+	static async getService(phone: string | Types.ObjectId) {
+		let user: IUser | null = null;
+		if (typeof phone === 'string') {
+			user = await UserDB.findOne({ phone });
+		} else {
+			user = await UserDB.findById(phone);
+		}
 		if (user === null) {
 			throw new InternalError(INTERNAL_ERRORS.USER_ERRORS.NOT_FOUND);
 		}
@@ -241,10 +247,9 @@ export default class UserService {
 			},
 		});
 
-		const scheduled = await ScheduledMessageDB.find({
-			isSent: false,
-			isFailed: false,
-		}).distinct('client_id');
+		const scheduled = await MessageDB.find({
+			status: MESSAGE_STATUS.PENDING,
+		}).distinct('user');
 		const responseUsers = await BotDB.find().distinct('user');
 
 		const scheduledSet = new Set(scheduled);
