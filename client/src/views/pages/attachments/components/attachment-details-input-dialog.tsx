@@ -15,7 +15,6 @@ import {
 	ModalHeader,
 	ModalOverlay,
 	Select,
-	Tag,
 	Text,
 	Textarea,
 } from '@chakra-ui/react';
@@ -36,6 +35,7 @@ import {
 	updateAttachment,
 } from '../../../../store/reducers/AttachmentReducers';
 import ProgressBar, { ProgressBarHandle } from '../../../components/progress-bar';
+import Variables from '../../../components/variables';
 
 export type AttachmentDetailsInputDialogHandle = {
 	close: () => void;
@@ -100,9 +100,7 @@ const AttachmentDetailsInputDialog = forwardRef<AttachmentDetailsInputDialogHand
 		dispatch(
 			setCaption(
 				caption.substring(0, captionRef.current?.selectionStart) +
-					' {{' +
 					header +
-					'}}' +
 					caption.substring(captionRef.current?.selectionEnd ?? 0, caption.length)
 			)
 		);
@@ -249,19 +247,11 @@ const AttachmentDetailsInputDialog = forwardRef<AttachmentDetailsInputDialogHand
 									</Select>
 								</HStack>
 							</FormControl>
-							<Flex gap={2} pt={'1rem'}>
-								{selectedCSV?.headers.map((header, index) => (
-									<Tag
-										key={index}
-										colorScheme='gray'
-										size={'md'}
-										_hover={{ cursor: 'pointer' }}
-										onClick={() => setVariables(header)}
-									>
-										{`{{${header}}}`}
-									</Tag>
-								))}
-							</Flex>
+							<Variables
+								data={selectedCSV?.headers ?? []}
+								onVariableSelect={setVariables}
+								marginTop={'1rem'}
+							/>
 						</>
 					)}
 				</ModalBody>

@@ -24,8 +24,6 @@ import {
 	TabPanel,
 	TabPanels,
 	Tabs,
-	Tag,
-	TagLabel,
 	Text,
 	Textarea,
 	VStack,
@@ -71,6 +69,7 @@ import ContactSelectorDialog, {
 	ContactDialogHandle,
 } from '../../components/selector-dialog/ContactSelectorDialog';
 import SubscriptionAlert, { SubscriptionPopup } from '../../components/subscription-alert';
+import Variables from '../../components/variables';
 import { MessageSchedulerList, TemplateNameInputDialog } from './components';
 import NumberInputDialog from './components/numbers-input-dialog';
 
@@ -369,18 +368,14 @@ export default function Scheduler() {
 				}));
 				dispatch(addScheduler(res));
 			})
-			.catch((err) => {
-				console.log(err);
-			});
+			.catch(() => {});
 	};
 
 	const insertVariablesToMessage = (variable: string) => {
 		dispatch(
 			setMessage(
 				details.message.substring(0, messageRef.current?.selectionStart) +
-					' ' +
 					variable +
-					' ' +
 					details.message.substring(messageRef.current?.selectionEnd ?? 0, details.message.length)
 			)
 		);
@@ -541,8 +536,7 @@ export default function Scheduler() {
 																(recipient) => recipient.id === e.target.value
 															);
 															if (!recipient || !recipient.headers) return;
-															const headers = recipient.headers.map((item) => `{{${item}}}`);
-															if (recipient) dispatch(setVariables(headers));
+															if (recipient) dispatch(setVariables(recipient.headers));
 														}}
 													>
 														<option
@@ -741,21 +735,10 @@ export default function Scheduler() {
 												Variables
 											</Text>
 											<Box>
-												{details.variables.map((variable: string, index) => (
-													<Tag
-														size={'sm'}
-														m={'0.25rem'}
-														p={'0.5rem'}
-														key={index}
-														borderRadius='md'
-														variant='solid'
-														colorScheme='gray'
-														_hover={{ cursor: 'pointer' }}
-														onClick={() => insertVariablesToMessage(variable)}
-													>
-														<TagLabel>{variable}</TagLabel>
-													</Tag>
-												))}
+												<Variables
+													data={details.variables}
+													onVariableSelect={insertVariablesToMessage}
+												/>
 											</Box>
 										</Box>
 										{/* --------------------------------ATTACHMENT, CONTACT & POLL INPUT SECTION--------------- */}
@@ -1231,21 +1214,10 @@ export default function Scheduler() {
 											Variables
 										</Text>
 										<Box>
-											{details.variables.map((variable: string, index) => (
-												<Tag
-													size={'sm'}
-													m={'0.25rem'}
-													p={'0.5rem'}
-													key={index}
-													borderRadius='md'
-													variant='solid'
-													colorScheme='gray'
-													_hover={{ cursor: 'pointer' }}
-													onClick={() => insertVariablesToMessage(variable)}
-												>
-													<TagLabel>{variable}</TagLabel>
-												</Tag>
-											))}
+											<Variables
+												data={details.variables}
+												onVariableSelect={insertVariablesToMessage}
+											/>
 										</Box>
 									</Box>
 								</FormControl>

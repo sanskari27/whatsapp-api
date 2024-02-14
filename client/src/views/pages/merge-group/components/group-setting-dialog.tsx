@@ -64,7 +64,6 @@ function ProfilePhotoUpdate() {
 		// Assuming only one file is dropped, you may adjust accordingly
 		const file = acceptedFiles[0];
 		setFile(file);
-		console.log(file);
 
 		const reader = new FileReader();
 		reader.onload = () => {

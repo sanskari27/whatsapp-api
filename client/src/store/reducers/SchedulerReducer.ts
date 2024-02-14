@@ -68,7 +68,6 @@ const SchedulerSlice = createSlice({
 			state.all_schedulers.push(action.payload);
 		},
 		deleteScheduler: (state, action: PayloadAction<string>) => {
-			console.log(action.payload);
 			state.all_schedulers = state.all_schedulers.filter(
 				(scheduler) => scheduler.id !== action.payload
 			);

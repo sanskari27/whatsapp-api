@@ -340,7 +340,7 @@ export default class BotService {
 					return {
 						receiver: triggered_from,
 						message: custom_message,
-						send_at: DateUtils.getMomentNow().add(el.after, 'seconds').toDate(),
+						sendAt: DateUtils.getMomentNow().add(el.after, 'seconds').toDate(),
 					};
 				});
 				this.messageSchedulerService.scheduleLeadNurturingMessage(nurtured_messages);
