@@ -65,7 +65,7 @@ export default function Bot() {
 	const pollInputRef = useRef<PollInputDialogHandle>(null);
 	const leadsNurturingRef = useRef<InputLeadsNurturingDialogHandle>(null);
 	const theme = useTheme();
-	const messageRef = useRef<HTMLTextAreaElement>(null);
+	const messageRef = useRef(0);
 
 	const { details, trigger_gap, response_delay, ui, all_bots } = useSelector(
 		(state: StoreState) => state[StoreNames.CHATBOT]
@@ -197,11 +197,11 @@ export default function Bot() {
 	const insertVariablesToMessage = (variable: string) => {
 		dispatch(
 			setMessage(
-				details.message.substring(0, messageRef.current?.selectionStart) +
+				details.message.substring(0, messageRef.current) +
 					' ' +
 					variable +
 					' ' +
-					details.message.substring(messageRef.current?.selectionEnd ?? 0, details.message.length)
+					details.message.substring(messageRef.current ?? 0, details.message.length)
 			)
 		);
 	};
@@ -410,10 +410,17 @@ export default function Bot() {
 
 					<FormControl isInvalid={!!ui.messageError}>
 						<Textarea
-							ref={messageRef}
 							value={message ?? ''}
 							minHeight={'80px'}
-							onChange={(e) => dispatch(setMessage(e.target.value))}
+							onMouseUp={(e: React.MouseEvent<HTMLTextAreaElement, MouseEvent>) => {
+								if (e.target instanceof HTMLTextAreaElement) {
+									messageRef.current = e.target.selectionStart;
+								}
+							}}
+							onChange={(e) => {
+								messageRef.current = e.target.selectionStart;
+								dispatch(setMessage(e.target.value));
+							}}
 							isInvalid={!!ui.messageError}
 							placeholder={'Type your message here. \nex. You are invited to join fanfest'}
 							width={'full'}
