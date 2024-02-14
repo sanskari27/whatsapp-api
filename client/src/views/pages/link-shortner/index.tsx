@@ -19,6 +19,7 @@ import {
 	Thead,
 	Tr,
 	useDisclosure,
+	useToast,
 } from '@chakra-ui/react';
 import { useEffect, useRef } from 'react';
 // import TextToQR from '../../../helpers/qr-generator/textToQR';
@@ -46,6 +47,7 @@ import GeneratedResultDialog from './components/generatedResultDialog';
 const LinkShortner = () => {
 	const dispatch = useDispatch();
 	const theme = useTheme();
+	const toast = useToast();
 	const confirmationDialogRef = useRef<ConfirmationDialogHandle>(null);
 	const editLinkDialogRef = useRef<EditLinkDialogHandle>(null);
 	const drawerRef = useRef<CreateLinkDrawerHandle>(null);
@@ -97,8 +99,22 @@ const LinkShortner = () => {
 	const editLink = async (id: string, newLink: string, newTitle: string) => {
 		const data = await ShortenerService.updateLink(id, newLink, newTitle);
 		if (!data) {
+			toast({
+				title: 'Error',
+				description: 'Error updating link',
+				status: 'error',
+				duration: 3000,
+				isClosable: true,
+			});
 			return;
 		}
+		toast({
+			title: 'Success',
+			description: 'Link updated successfully',
+			status: 'success',
+			duration: 3000,
+			isClosable: true,
+		});
 		dispatch(updateShortenLink({ id, data }));
 		editLinkDialogRef.current?.close();
 	};
@@ -119,12 +135,24 @@ const LinkShortner = () => {
 				<Table>
 					<Thead>
 						<Tr>
-							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>Sl. no</Th>
-							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'15%'}>Qr Code</Th>
-							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'20%'}>Title</Th>
-							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'25%'}>link</Th>
-							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'25%'}>shorten link</Th>
-							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>Action</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>
+								Sl. no
+							</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'15%'}>
+								Qr Code
+							</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'20%'}>
+								Title
+							</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'25%'}>
+								link
+							</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'25%'}>
+								shorten link
+							</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>
+								Action
+							</Th>
 						</Tr>
 					</Thead>
 					<Tbody>

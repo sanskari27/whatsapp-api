@@ -44,7 +44,7 @@ export default class BotService {
 				nurturing: res.nurturing ?? [],
 			};
 		} catch (err) {
-			return null;
+			throw new Error('Error Saving Bot');
 		}
 	}
 
@@ -148,7 +148,7 @@ export default class BotService {
 				nurturing: response.bot.nurturing ?? [],
 			} as Bot;
 		} catch (err) {
-			return null;
+			throw new Error('Error Saving group');
 		}
 	}
 

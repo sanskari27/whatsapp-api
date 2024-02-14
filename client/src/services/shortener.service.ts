@@ -20,7 +20,7 @@ export default class ShortenerService {
 		}
 	}
 
-	static async createLink(title:string,link: string) {
+	static async createLink(title: string, link: string) {
 		try {
 			const { data } = await APIInstance.post(`/shortner/create-link`, {
 				title,
@@ -34,7 +34,8 @@ export default class ShortenerService {
 				title: data.title as string,
 			};
 		} catch (err) {
-			return null;
+						return null;
+
 		}
 	}
 

@@ -151,7 +151,9 @@ export default function Scheduler() {
 		schedulingMessages: false,
 	});
 
-	const { details, recipients } = useSelector((state: StoreState) => state[StoreNames.SCHEDULER]);
+	const { details, recipients, all_schedulers } = useSelector(
+		(state: StoreState) => state[StoreNames.SCHEDULER]
+	);
 
 	const { canSendMessage, groups, labels, userType } = useSelector(
 		(state: StoreState) => state[StoreNames.USER]
@@ -1337,14 +1339,18 @@ export default function Scheduler() {
 								Schedule Message
 							</Button>
 							<Divider width={'full'} my={'2rem'} />
-							<Heading
-								color={theme === 'dark' ? 'white' : 'GrayText'}
-								fontSize={'large'}
-								fontWeight={'medium'}
-							>
-								All Schedulers
-							</Heading>
-							<MessageSchedulerList />
+							{all_schedulers.length < 1 ? null : (
+								<>
+									<Heading
+										color={theme === 'dark' ? 'white' : 'GrayText'}
+										fontSize={'large'}
+										fontWeight={'medium'}
+									>
+										All Schedulers
+									</Heading>
+									<MessageSchedulerList />
+								</>
+							)}
 						</Flex>
 					</TabPanel>
 				</TabPanels>
