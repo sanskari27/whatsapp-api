@@ -1,3 +1,4 @@
+import axios from 'axios';
 import APIInstance from '../config/APIInstance';
 
 export default class MessageService {
@@ -22,8 +23,10 @@ export default class MessageService {
 		try {
 			await APIInstance.post(`/whatsapp/schedule-message`, data);
 			return null;
-		} catch (err: any) {
-			if (err.response.data.title === 'ALREADY_EXISTS') return 'Campaign name already exists';
+		} catch (err: unknown) {
+			if (axios.isAxiosError(err)) {
+				if (err.response?.data.title === 'ALREADY_EXISTS') return 'Campaign name already exists';
+			}
 			return 'Unable to schedule message';
 		}
 	}
@@ -43,7 +46,6 @@ export default class MessageService {
 	}) {
 		try {
 			const response = await APIInstance.post(`/scheduler`, data);
-			console.log(response);
 			return {
 				id: response.data.scheduler.id ?? '',
 				message: response.data.scheduler.message ?? '',
@@ -67,7 +69,7 @@ export default class MessageService {
 				start_from: string;
 				end_at: string;
 			};
-		} catch (err: any) {
+		} catch (err: unknown) {
 			return {
 				id: '',
 				message: '',
@@ -84,7 +86,7 @@ export default class MessageService {
 	static async getScheduledMessages() {
 		try {
 			const { data } = await APIInstance.get('/scheduler');
-			return data.schedulers.map((scheduler: any) => ({
+			return data.schedulers.map((scheduler:any) => ({
 				id: scheduler.id ?? '',
 				message: scheduler.message ?? '',
 				attachments: scheduler.attachments ?? [],
@@ -94,7 +96,7 @@ export default class MessageService {
 				start_from: scheduler.start_from ?? '',
 				end_at: scheduler.end_at ?? '',
 			}));
-		} catch (err: any) {
+		} catch (err: unknown) {
 			return [];
 		}
 	}
@@ -125,7 +127,7 @@ export default class MessageService {
 				start_from: string;
 				end_at: string;
 			};
-		} catch (err) {
+		} catch (err: unknown) {
 			return {
 				id: '',
 				message: '',
