@@ -38,6 +38,7 @@ export type ScheduledCampaign = {
 	pending: number;
 	isPaused: boolean;
 	createdAt: string;
+	description: string;
 };
 
 export type SchedulerDetails = {
@@ -63,6 +64,7 @@ export type SchedulerDetails = {
 		options: string[];
 		isMultiSelect: boolean;
 	}[];
+	description: string;
 };
 
 export default UserState;

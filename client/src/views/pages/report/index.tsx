@@ -138,7 +138,8 @@ const Reports = () => {
 					<Thead>
 						<Tr color={theme === 'dark' ? 'white' : 'black'}>
 							<Th width={'5%'}>Select</Th>
-							<Th width={'50%'}>Campaign Name</Th>
+							<Th width={'30%'}>Campaign Name</Th>
+							<Th width={'20%'}> Description</Th>
 							<Th width={'5%'} textAlign={'center'}>
 								Created At
 							</Th>
@@ -198,6 +199,7 @@ const Reports = () => {
 										{index + 1}.
 									</Td>
 									<Td className='whitespace-break-spaces'>{campaign.campaignName}</Td>
+									<Td className='whitespace-break-spaces'>{campaign.description}</Td>
 									<Td textAlign={'center'}>
 										{campaign.createdAt.split(' ').map((time, index) => (
 											<Box key={index}>{time}</Box>
