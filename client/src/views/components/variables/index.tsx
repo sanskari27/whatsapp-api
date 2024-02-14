@@ -2,7 +2,7 @@ import { Tag, Wrap, WrapItem, WrapProps } from '@chakra-ui/react';
 
 interface VariablesProps extends WrapProps {
 	data: string[];
-	onVariableSelect?: (text: string) => void;
+	onVariableSelect: (text: string) => void;
 }
 
 export default function Variables({ data, onVariableSelect, ...props }: VariablesProps) {
@@ -14,7 +14,7 @@ export default function Variables({ data, onVariableSelect, ...props }: Variable
 						colorScheme='gray'
 						size={'md'}
 						_hover={{ cursor: 'pointer', bgColor: 'gray.300' }}
-						onClick={() => onVariableSelect && onVariableSelect(`{{${header}}}`)}
+						onClick={() => onVariableSelect(`{{${header}}}`)}
 					>
 						{`{{${header}}}`}
 					</Tag>

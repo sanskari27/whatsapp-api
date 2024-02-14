@@ -103,7 +103,7 @@ const DEFAULT_POLL = [
 export default function Scheduler() {
 	const attachmentRef = useRef<AttachmentDialogHandle>(null);
 	const contactRef = useRef<ContactDialogHandle>(null);
-	const messageRef = useRef<HTMLTextAreaElement>(null);
+	const messageRef = useRef(0);
 	const pollInputRef = useRef<PollInputDialogHandle>(null);
 	const dispatch = useDispatch();
 	const theme = useTheme();
@@ -374,9 +374,9 @@ export default function Scheduler() {
 	const insertVariablesToMessage = (variable: string) => {
 		dispatch(
 			setMessage(
-				details.message.substring(0, messageRef.current?.selectionStart) +
+				details.message.substring(0, messageRef.current) +
 					variable +
-					details.message.substring(messageRef.current?.selectionEnd ?? 0, details.message.length)
+					details.message.substring(messageRef.current ?? 0, details.message.length)
 			)
 		);
 	};
@@ -698,7 +698,6 @@ export default function Scheduler() {
 										</Box>
 										<FormControl isInvalid={!!error.message}>
 											<Textarea
-												ref={messageRef}
 												width={'full'}
 												minHeight={'80px'}
 												size={'sm'}
@@ -716,7 +715,13 @@ export default function Scheduler() {
 												}}
 												_focus={{ border: 'none', outline: 'none' }}
 												value={details.message ?? ''}
+												onMouseUp={(e: React.MouseEvent<HTMLTextAreaElement, MouseEvent>) => {
+													if (e.target instanceof HTMLTextAreaElement) {
+														messageRef.current = e.target.selectionStart;
+													}
+												}}
 												onChange={(e) => {
+													messageRef.current = e.target.selectionStart;
 													setError((prev) => ({
 														...prev,
 														message: '',
@@ -1177,7 +1182,6 @@ export default function Scheduler() {
 									</Box>
 									<FormControl isInvalid={!!error.message}>
 										<Textarea
-											ref={messageRef}
 											width={'full'}
 											minHeight={'80px'}
 											size={'sm'}
@@ -1195,7 +1199,13 @@ export default function Scheduler() {
 											}}
 											_focus={{ border: 'none', outline: 'none' }}
 											value={details.message ?? ''}
+											onMouseUp={(e: React.MouseEvent<HTMLTextAreaElement, MouseEvent>) => {
+												if (e.target instanceof HTMLTextAreaElement) {
+													messageRef.current = e.target.selectionStart;
+												}
+											}}
 											onChange={(e) => {
+												messageRef.current = e.target.selectionStart;
 												setError((prev) => ({
 													...prev,
 													message: '',
