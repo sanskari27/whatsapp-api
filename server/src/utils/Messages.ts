@@ -7,8 +7,8 @@ function formatMessageText(
 ) {
 	let _message = message;
 	for (const variable of variables) {
-		const _variable = variable.substring(2, variable.length - 2);
-		_message = _message.replace(variable, extract_from[_variable] ?? '');
+		const _variable = `{{${variable}}}`;
+		_message = _message.replace(_variable, extract_from[variable] ?? '');
 	}
 	return _message;
 }
@@ -25,8 +25,8 @@ function formatAttachments(
 	return attachments.map((attachment) => {
 		let _caption = attachment.caption;
 		for (const variable of variables) {
-			const _variable = variable.substring(2, variable.length - 2);
-			_caption = _caption.replace(variable, extract_from[_variable] ?? '');
+			const _variable = `{{${variable}}}`;
+			_caption = _caption.replace(_variable, extract_from[variable] ?? '');
 		}
 		return {
 			filename: attachment.filename,
