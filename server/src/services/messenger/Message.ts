@@ -96,7 +96,9 @@ export default class MessageService {
 
 			startOfDay = startOfDay.hours(10).minutes(0).seconds(0);
 			endOfDay = endOfDay.hours(18).minutes(0).seconds(0);
-			if (date.isBefore(startOfDay) || date.isAfter(endOfDay)) {
+			if (date.isBefore(startOfDay)) {
+				date = date.hours(10).minutes(0).seconds(0);
+			} else if (date.isAfter(endOfDay)) {
 				date = date.add(1, 'day').hours(10).minutes(0).seconds(0);
 			}
 			await MessageDB.create({
