@@ -71,7 +71,7 @@ function isTimeBetween(
 	return target.isBetween(start, end, null, '[]'); // '[]' includes both start and end times
 }
 
-function getBetween(start: string, end: string) {
+function getBetween(start: string | moment.Moment, end: string | moment.Moment) {
 	const startTime = moment(start, 'HH:mm:ss');
 	const endTime = moment(end, 'HH:mm:ss');
 
