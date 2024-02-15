@@ -31,6 +31,8 @@ export default interface IBot extends Document {
 	nurturing: {
 		message: string;
 		after: number;
+		start_from: string;
+		end_at: string;
 	}[];
 	active: boolean;
 }

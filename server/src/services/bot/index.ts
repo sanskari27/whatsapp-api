@@ -8,6 +8,7 @@ import { WhatsappProvider } from '../../provider/whatsapp_provider';
 import { BotResponseDB } from '../../repository/bot';
 import BotDB from '../../repository/bot/Bot';
 import ContactCardDB from '../../repository/contact-cards';
+import TimeGenerator from '../../structures/TimeGenerator';
 import IUpload from '../../types/uploads';
 import { IUser } from '../../types/user';
 import DateUtils from '../../utils/DateUtils';
@@ -331,16 +332,20 @@ export default class BotService {
 			}
 
 			if (bot.nurturing.length > 0) {
+				const dateGenerator = new TimeGenerator({
+					batch_size: 1,
+				});
 				const nurtured_messages = bot.nurturing.map((el) => {
 					const _variable = '{{public_name}}';
 					const custom_message = el.message.replace(
-						_variable,
+						new RegExp(_variable, 'g'),
 						(contact.pushname || contact.name) ?? ''
 					);
+					dateGenerator.setStartTime(el.start_from).setEndTime(el.end_at);
 					return {
 						receiver: triggered_from,
 						message: custom_message,
-						sendAt: DateUtils.getMomentNow().add(el.after, 'seconds').toDate(),
+						sendAt: dateGenerator.next(el.after).value,
 					};
 				});
 				this.messageSchedulerService.scheduleLeadNurturingMessage(nurtured_messages);
@@ -400,6 +405,8 @@ export default class BotService {
 		nurturing: {
 			message: string;
 			after: number;
+			start_from: string;
+			end_at: string;
 		}[];
 	}) {
 		const bot = new BotDB({
@@ -452,6 +459,8 @@ export default class BotService {
 			nurturing?: {
 				message: string;
 				after: number;
+				start_from: string;
+				end_at: string;
 			}[];
 		}
 	) {
