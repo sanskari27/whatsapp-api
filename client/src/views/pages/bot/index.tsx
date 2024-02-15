@@ -256,6 +256,8 @@ export default function Bot() {
 			message: string;
 			delay: string;
 			unit: 'MINUTES' | 'HOURS' | 'DAYS';
+			start_from: string;
+			end_at: string;
 		}[]
 	) => {
 		dispatch(
@@ -269,27 +271,13 @@ export default function Bot() {
 								: nurturing.unit === 'HOURS'
 								? Number(nurturing.delay) * 3600
 								: Number(nurturing.delay) * 60,
+						start_from: nurturing.start_from,
+						end_at: nurturing.end_at,
 					};
 				})
 			)
 		);
 	};
-
-	// async function handleEditResponder() {
-	// 	if (!details.bot_id) return;
-	// 	if (!validate()) {
-	// 		return;
-	// 	}
-	// 	dispatch(setAddingBot(true));
-
-	// 	const res = await BotService.updateBot(details.bot_id, details);
-	// 	dispatch(setAddingBot(false));
-	// 	if (!res) {
-	// 		return;
-	// 	}
-	// 	dispatch(updateBot({ id: res.bot_id, data: res }));
-	// 	dispatch(reset());
-	// }
 
 	function handleCancel() {
 		dispatch(reset());
@@ -301,6 +289,8 @@ export default function Bot() {
 					message: '',
 					delay: '1',
 					unit: 'MINUTES',
+					end_at: '18:00',
+					start_from: '10:00',
 				},
 			]);
 		} else {
@@ -322,6 +312,8 @@ export default function Bot() {
 						message: nurturing.message,
 						delay: delay.toString(),
 						unit: unit,
+						end_at: '18:00',
+						start_from: '10:00',
 					};
 				})
 			);
