@@ -13,6 +13,7 @@ import {
 	TagLabel,
 	Text,
 	Textarea,
+	useToast,
 } from '@chakra-ui/react';
 import { useEffect, useRef } from 'react';
 import { RiRobot2Line } from 'react-icons/ri';
@@ -60,11 +61,12 @@ import { NumberInput, SelectElement, TextAreaElement, TextInput } from './compon
 
 export default function Bot() {
 	const dispatch = useDispatch();
+	const theme = useTheme();
+	const toast = useToast();
 	const attachmentSelectorRef = useRef<AttachmentDialogHandle>(null);
 	const contactSelectorRef = useRef<ContactDialogHandle>(null);
 	const pollInputRef = useRef<PollInputDialogHandle>(null);
 	const leadsNurturingRef = useRef<InputLeadsNurturingDialogHandle>(null);
-	const theme = useTheme();
 	const messageRef = useRef(0);
 
 	const { details, trigger_gap, response_delay, ui, all_bots } = useSelector(
@@ -210,13 +212,32 @@ export default function Bot() {
 		if (!validate()) {
 			return;
 		}
+		if (isEditingBot && !details.bot_id) return;
 		dispatch(setAddingBot(true));
-		const data = await BotService.createBot(details);
-		dispatch(setAddingBot(true));
-		if (!data) {
-			return;
-		}
-		dispatch(addBot(data));
+		const promise = isEditingBot
+			? BotService.updateBot(details.bot_id, details)
+			: BotService.createBot(details);
+
+		toast.promise(promise, {
+			success: (data) => {
+				const acton = isEditingBot ? updateBot({ id: data.bot_id, data }) : addBot(data);
+				dispatch(acton);
+				dispatch(reset());
+				return {
+					title: 'Data saved successfully',
+				};
+			},
+			error: {
+				title: 'Error Saving Bot',
+			},
+			loading: { title: 'Saving Data', description: 'Please wait' },
+		});
+		// const data = await BotService.createBot(details);
+		// dispatch(setAddingBot(true));
+		// if (!data) {
+		// 	return;
+		// }
+		// dispatch(addBot(data));
 		dispatch(reset());
 	}
 
@@ -235,6 +256,8 @@ export default function Bot() {
 			message: string;
 			delay: string;
 			unit: 'MINUTES' | 'HOURS' | 'DAYS';
+			start_from: string;
+			end_at: string;
 		}[]
 	) => {
 		dispatch(
@@ -248,27 +271,13 @@ export default function Bot() {
 								: nurturing.unit === 'HOURS'
 								? Number(nurturing.delay) * 3600
 								: Number(nurturing.delay) * 60,
+						start_from: nurturing.start_from,
+						end_at: nurturing.end_at,
 					};
 				})
 			)
 		);
 	};
-
-	async function handleEditResponder() {
-		if (!details.bot_id) return;
-		if (!validate()) {
-			return;
-		}
-		dispatch(setAddingBot(true));
-
-		const res = await BotService.updateBot(details.bot_id, details);
-		dispatch(setAddingBot(false));
-		if (!res) {
-			return;
-		}
-		dispatch(updateBot({ id: res.bot_id, data: res }));
-		dispatch(reset());
-	}
 
 	function handleCancel() {
 		dispatch(reset());
@@ -280,6 +289,8 @@ export default function Bot() {
 					message: '',
 					delay: '1',
 					unit: 'MINUTES',
+					end_at: '18:00',
+					start_from: '10:00',
 				},
 			]);
 		} else {
@@ -301,6 +312,8 @@ export default function Bot() {
 						message: nurturing.message,
 						delay: delay.toString(),
 						unit: unit,
+						end_at: '18:00',
+						start_from: '10:00',
 					};
 				})
 			);
@@ -629,7 +642,7 @@ export default function Bot() {
 										bgColor: 'green.400',
 									}}
 									width={'100%'}
-									onClick={handleEditResponder}
+									onClick={handleSave}
 								>
 									<Text color={'white'}>Save</Text>
 								</Button>

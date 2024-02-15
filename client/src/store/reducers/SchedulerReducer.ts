@@ -24,6 +24,7 @@ const initialState: SchedulerState = {
 		batch_size: 1,
 		polls: [],
 		startDate: new Date().toISOString().slice(0, 10),
+		description: '',
 	},
 	isRecipientsLoading: false,
 	isBusinessAccount: true,
@@ -152,6 +153,9 @@ const SchedulerSlice = createSlice({
 		setPolls: (state, action: PayloadAction<typeof initialState.details.polls>) => {
 			state.details.polls = action.payload;
 		},
+		setDescription: (state, action: PayloadAction<typeof initialState.details.description>) => {
+			state.details.description = action.payload;
+		},
 		setCampaignLoading: (state, action: PayloadAction<typeof initialState.ui.campaignLoading>) => {
 			state.ui.campaignLoading = action.payload;
 		},
@@ -198,6 +202,7 @@ export const {
 	setStartTime,
 	setEndTime,
 	setPolls,
+	setDescription,
 	setCampaignLoading,
 	setDeletingCampaign,
 	setExportingCampaign,

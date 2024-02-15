@@ -48,6 +48,7 @@ import {
 	setCSVFile,
 	setCampaignName,
 	setContactCards,
+	setDescription,
 	setEndTime,
 	setGroupRecipients,
 	setLabelRecipients,
@@ -151,7 +152,9 @@ export default function Scheduler() {
 		schedulingMessages: false,
 	});
 
-	const { details, recipients } = useSelector((state: StoreState) => state[StoreNames.SCHEDULER]);
+	const { details, recipients, all_schedulers } = useSelector(
+		(state: StoreState) => state[StoreNames.SCHEDULER]
+	);
 
 	const { canSendMessage, groups, labels, userType } = useSelector(
 		(state: StoreState) => state[StoreNames.USER]
@@ -423,26 +426,38 @@ export default function Scheduler() {
 							</Heading>
 							<Box marginTop={'1rem'}>
 								<Flex direction={'column'}>
-									<FormControl isInvalid={!!error.campaignName}>
-										<FormLabel color={theme === 'dark' ? 'white' : 'zinc.500'}>
-											Campaign Name
-										</FormLabel>
-										<Input
-											color={theme === 'dark' ? 'white' : 'gray.800'}
-											type='text'
-											value={details.campaign_name}
-											onChange={(e) => {
-												setError((prev) => ({
-													...prev,
-													campaignName: '',
-												}));
-												dispatch(setCampaignName(e.target.value));
-											}}
-										/>
-										{error.campaignName && (
-											<FormErrorMessage>{error.campaignName}</FormErrorMessage>
-										)}
-									</FormControl>
+									<HStack>
+										<FormControl flex={2} isInvalid={!!error.campaignName}>
+											<FormLabel color={theme === 'dark' ? 'white' : 'zinc.500'}>
+												Campaign Name
+											</FormLabel>
+											<Input
+												color={theme === 'dark' ? 'white' : 'gray.800'}
+												type='text'
+												value={details.campaign_name}
+												onChange={(e) => {
+													setError((prev) => ({
+														...prev,
+														campaignName: '',
+													}));
+													dispatch(setCampaignName(e.target.value));
+												}}
+											/>
+											{error.campaignName && (
+												<FormErrorMessage>{error.campaignName}</FormErrorMessage>
+											)}
+										</FormControl>
+										<FormControl flex={1}>
+											<FormLabel color={theme === 'dark' ? 'white' : 'GrayText'}>
+												Description
+											</FormLabel>
+											<Input
+												value={details.description}
+												onChange={(e) => dispatch(setDescription(e.target.value))}
+												placeholder={'Enter Campaign Description'}
+											/>
+										</FormControl>
+									</HStack>
 									{/* --------------------------RECIPIENTS INPUT------------------------ */}
 									<HStack alignItems={'start'} pt={4}>
 										<FormControl>
@@ -1337,14 +1352,18 @@ export default function Scheduler() {
 								Schedule Message
 							</Button>
 							<Divider width={'full'} my={'2rem'} />
-							<Heading
-								color={theme === 'dark' ? 'white' : 'GrayText'}
-								fontSize={'large'}
-								fontWeight={'medium'}
-							>
-								All Schedulers
-							</Heading>
-							<MessageSchedulerList />
+							{all_schedulers.length < 1 ? null : (
+								<>
+									<Heading
+										color={theme === 'dark' ? 'white' : 'GrayText'}
+										fontSize={'large'}
+										fontWeight={'medium'}
+									>
+										All Schedulers
+									</Heading>
+									<MessageSchedulerList />
+								</>
+							)}
 						</Flex>
 					</TabPanel>
 				</TabPanels>

@@ -19,6 +19,7 @@ export default class MessageService {
 		endTime?: string;
 		batch_delay?: number;
 		batch_size?: number;
+		description?:string;
 	}) {
 		try {
 			await APIInstance.post(`/whatsapp/schedule-message`, data);

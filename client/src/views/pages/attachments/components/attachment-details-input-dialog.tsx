@@ -17,6 +17,7 @@ import {
 	Select,
 	Text,
 	Textarea,
+	useToast,
 } from '@chakra-ui/react';
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import Dropzone from 'react-dropzone';
@@ -43,9 +44,10 @@ export type AttachmentDetailsInputDialogHandle = {
 };
 
 const AttachmentDetailsInputDialog = forwardRef<AttachmentDetailsInputDialogHandle>((_, ref) => {
+	const dispatch = useDispatch();
+	const toast = useToast();
 	const progressRef = useRef<ProgressBarHandle>(null);
 	const captionRef = useRef<HTMLTextAreaElement>(null);
-	const dispatch = useDispatch();
 	const [isOpen, setOpen] = useState(false);
 
 	const { selectedAttachment, file, uiDetails } = useSelector(
@@ -125,14 +127,47 @@ const AttachmentDetailsInputDialog = forwardRef<AttachmentDetailsInputDialogHand
 		if (isUpdating) {
 			dispatch(startAttachmentSaving());
 			if (file) {
-				await AttachmentService.updateAttachmentFile(selectedAttachment.id, file).then((res) => {
-					if (!res) return;
+				AttachmentService.updateAttachmentFile(selectedAttachment.id, file).then((res) => {
+					if (!res) {
+						toast({
+							title: 'Error',
+							description: 'Error while updating attachment',
+							status: 'error',
+							duration: 5000,
+							isClosable: true,
+						});
+						return;
+					}
+					setOpen(false);
+					toast({
+						title: 'Updated',
+						description: 'Attachment updated successfully',
+						status: 'success',
+						duration: 5000,
+						isClosable: true,
+					});
 				});
 			}
-			await AttachmentService.updateAttachmentDetails(selectedAttachment).then((res) => {
-				if (!res) return;
+			AttachmentService.updateAttachmentDetails(selectedAttachment).then((res) => {
+				if (!res) {
+					toast({
+						title: 'Error',
+						description: 'Error while updating attachment',
+						status: 'error',
+						duration: 5000,
+						isClosable: true,
+					});
+					return;
+				}
 				dispatch(updateAttachment(res));
 				setOpen(false);
+				toast({
+					title: 'Updated',
+					description: 'Attachment updated successfully',
+					status: 'success',
+					duration: 5000,
+					isClosable: true,
+				});
 			});
 		} else {
 			if (!file) {
@@ -147,9 +182,25 @@ const AttachmentDetailsInputDialog = forwardRef<AttachmentDetailsInputDialogHand
 				custom_caption,
 				onUploadProgress
 			).then((res) => {
-				if (!res) return;
+				if (!res) {
+					toast({
+						title: 'Error',
+						description: 'Error while uploading attachment',
+						status: 'error',
+						duration: 5000,
+						isClosable: true,
+					});
+					return;
+				}
 				dispatch(addAttachment(res.data.attachment));
 				setOpen(false);
+				toast({
+					title: 'Uploaded',
+					description: 'Attachment uploaded successfully',
+					status: 'success',
+					duration: 5000,
+					isClosable: true,
+				});
 			});
 		}
 	};

@@ -18,6 +18,7 @@ export default class ReportsService {
 				pending: number;
 				isPaused: boolean;
 				createdAt: string;
+				description: string;
 			}[];
 		} catch (err) {
 			return [];

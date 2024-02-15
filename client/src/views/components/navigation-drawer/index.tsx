@@ -74,7 +74,7 @@ export default function NavigationDrawer() {
 						<MenuButton icon={MdGroups3} route={NAVIGATION.GROUP_MERGE} name='Groups' />
 					</Flex>
 				</Box>
-				<VStack>
+				<VStack alignItems={'flex-start'} pl={4}>
 					<IconButton
 						aria-label='Settings'
 						icon={<SettingsIcon color={theme === 'light' ? 'black' : 'white'} />}

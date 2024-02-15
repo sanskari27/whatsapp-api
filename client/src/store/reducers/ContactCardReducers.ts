@@ -64,7 +64,9 @@ const ContactCardReducers = createSlice({
 			state.uiDetails = initialState.uiDetails;
 		},
 		deleteContactCard: (state, action: PayloadAction<string>) => {
-			state.list = state.list.filter((card) => card.id === action.payload);
+			state.list = state.list.filter((card) => card.id !== action.payload);
+			state.selectedCard = initialState.selectedCard;
+			state.uiDetails = initialState.uiDetails;
 		},
 		clearContactCard: (state) => {
 			state.selectedCard = initialState.selectedCard;

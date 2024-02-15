@@ -31,6 +31,8 @@ export type InputLeadsNurturingDialogHandle = {
 			message: string;
 			delay: string;
 			unit: 'MINUTES' | 'HOURS' | 'DAYS';
+			start_from: string;
+			end_at: string;
 		}[]
 	) => void;
 	close: () => void;
@@ -42,6 +44,8 @@ type Props = {
 			message: string;
 			delay: string;
 			unit: 'MINUTES' | 'HOURS' | 'DAYS';
+			start_from: string;
+			end_at: string;
 		}[]
 	) => void;
 };
@@ -56,6 +60,8 @@ const InputLeadsNurturingDialog = forwardRef<InputLeadsNurturingDialogHandle, Pr
 				message: string;
 				delay: string;
 				unit: 'MINUTES' | 'HOURS' | 'DAYS';
+				start_from: string;
+				end_at: string;
 			}[]
 		>([]);
 
@@ -76,6 +82,8 @@ const InputLeadsNurturingDialog = forwardRef<InputLeadsNurturingDialogHandle, Pr
 					message: '',
 					delay: '1',
 					unit: 'MINUTES',
+					start_from: '10:00',
+					end_at: '18:00',
 				},
 			]);
 		};
@@ -139,6 +147,8 @@ const InputLeadsNurturingDialog = forwardRef<InputLeadsNurturingDialogHandle, Pr
 					message: string;
 					delay: string;
 					unit: 'MINUTES' | 'HOURS' | 'DAYS';
+					start_from: string;
+					end_at: string;
 				}[]
 			) => {
 				setNurturing(nurturing);
@@ -175,21 +185,43 @@ const InputLeadsNurturingDialog = forwardRef<InputLeadsNurturingDialogHandle, Pr
 									<AccordionPanel>
 										<VStack>
 											<FormControl isInvalid={error.type === 'delay' && error.index === index}>
-												<HStack width={'full'} alignItems={'flex-end'}>
+												<HStack width={'max-content'} alignItems={'center'}>
+													<Text fontSize={'lg'} flex={1}>
+														Send this message after{' '}
+													</Text>
+													<HStack flex={1}>
+														<Input
+															type='number'
+															placeholder='Delay'
+															value={nurturing.delay ?? ''}
+															onChange={(e) => handleChange('delay', e.target.value, index)}
+														/>
+														<Select
+															value={nurturing.unit ?? 'min'}
+															onChange={(e) => handleChange('unit', e.target.value, index)}
+														>
+															<option value={'MINUTES'}>Minutes</option>
+															<option value={'HOURS'}>Hours</option>
+															<option value={'DAYS'}>Days</option>
+														</Select>
+													</HStack>
+													<Text fontSize={'lg'} flex={1}>
+														from the previous message
+													</Text>
+												</HStack>
+												<HStack pt={'1rem'} width={'min-content'}>
+													<Text fontSize={'lg'}>between</Text>
 													<Input
-														type='number'
-														placeholder='Delay'
-														value={nurturing.delay ?? ''}
-														onChange={(e) => handleChange('delay', e.target.value, index)}
+														type='time'
+														value={nurturing.start_from}
+														onChange={(e) => handleChange('start_from', e.target.value, index)}
 													/>
-													<Select
-														value={nurturing.unit ?? 'min'}
-														onChange={(e) => handleChange('unit', e.target.value, index)}
-													>
-														<option value={'MINUTES'}>Minutes</option>
-														<option value={'HOURS'}>Hours</option>
-														<option value={'DAYS'}>Days</option>
-													</Select>
+													<Text fontSize={'lg'}>to</Text>
+													<Input
+														type='time'
+														value={nurturing.end_at}
+														onChange={(e) => handleChange('end_at', e.target.value, index)}
+													/>
 												</HStack>
 											</FormControl>
 											<FormControl isInvalid={error.type === 'message' && error.index === index}>

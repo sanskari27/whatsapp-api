@@ -17,6 +17,7 @@ import {
 	Text,
 	Textarea,
 	useDisclosure,
+	useToast,
 } from '@chakra-ui/react';
 import { useTheme } from '@emotion/react';
 import { forwardRef, useImperativeHandle } from 'react';
@@ -49,6 +50,7 @@ const CreateLinkDrawer = forwardRef<CreateLinkDrawerHandle, CreateLinkDrawerProp
 		const { isOpen, onOpen, onClose } = useDisclosure();
 		const theme = useTheme();
 		const dispatch = useDispatch();
+		const toast = useToast();
 
 		useImperativeHandle(ref, () => ({
 			open: () => {
@@ -95,14 +97,28 @@ const CreateLinkDrawer = forwardRef<CreateLinkDrawerHandle, CreateLinkDrawerProp
 				dispatch(setGeneratingLink(true));
 				data = await ShortenerService.getShortenedURL(number, message, title);
 			} else {
-				data = await ShortenerService.createLink(title,link);
+				data = await ShortenerService.createLink(title, link);
 			}
 			dispatch(setGeneratingLink(false));
 			dispatch(setShortingLink(false));
 			if (data === null) {
 				dispatch(setErrorGeneratingLink("Couldn't generate link."));
+				toast({
+					title: 'Error',
+					description: "Couldn't generate link.",
+					status: 'error',
+					duration: 3000,
+					isClosable: true,
+				});
 				return;
 			}
+			toast({
+				title: 'Success',
+				description: 'Link generated successfully',
+				status: 'success',
+				duration: 3000,
+				isClosable: true,
+			});
 			dispatch(addShortenLink(data));
 			dispatch(
 				setGenerated({
