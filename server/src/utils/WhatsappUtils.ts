@@ -398,8 +398,11 @@ export default class WhatsappUtils {
 		const sessions = await UserService.getRevokedSessions();
 		for (const session of sessions) {
 			WhatsappProvider.getInstance(session.client_id).logoutClient();
-			WhatsappUtils.deleteSession(session.client_id);
-			session.remove();
+			const session_deleted = WhatsappUtils.deleteSession(session.client_id);
+			if (session_deleted) {
+				session.session_cleared = true;
+				session.save();
+			}
 		}
 		Logger.info('WHATSAPP-HELPER', `Removed ${sessions.length} unwanted sessions`);
 	}
@@ -420,7 +423,9 @@ export default class WhatsappUtils {
 			fs.rmSync(path, {
 				recursive: true,
 			});
+			return true;
 		}
+		return false;
 	}
 
 	static async resumeSessions() {
