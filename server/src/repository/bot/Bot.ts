@@ -53,6 +53,8 @@ const botSchema = new mongoose.Schema<IBot>({
 		{
 			message: String,
 			after: Number,
+			start_from: String,
+			end_at: String,
 		},
 	],
 	forward: {

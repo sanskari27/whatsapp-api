@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 import { CAMPAIGN_STATUS, MESSAGE_STATUS } from '../../config/const';
 import { CampaignDB, MessageDB } from '../../repository/messenger';
-import { MessageTimeGenerator } from '../../structures/MessageTimeGenerator';
+import TimeGenerator from '../../structures/TimeGenerator';
 import { IUser } from '../../types/user';
 import DateUtils from '../../utils/DateUtils';
 import MessageService from './Message';
@@ -52,7 +52,7 @@ export default class CampaignService {
 
 	async scheduleCampaign(messages: Message[], opts: Batch) {
 		const _messages: Types.ObjectId[] = [];
-		const dateGenerator = new MessageTimeGenerator(opts);
+		const dateGenerator = new TimeGenerator(opts);
 		for (const message of messages) {
 			const msg = this.messageService.scheduleMessage({
 				receiver: message.number,

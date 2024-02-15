@@ -67,7 +67,16 @@ function isTimeBetween(
 	const start = moment(startTime, 'HH:mm');
 	const end = moment(endTime, 'HH:mm');
 	const target = moment(targetTime, 'HH:mm');
-
+	start.set({
+		year: target.year(),
+		month: target.month(),
+		date: target.date(),
+	});
+	end.set({
+		year: target.year(),
+		month: target.month(),
+		date: target.date(),
+	});
 	return target.isBetween(start, end, null, '[]'); // '[]' includes both start and end times
 }
 

@@ -101,7 +101,7 @@ export default class ContactCardService {
 				),
 			};
 		} catch (err) {
-			return null;
+			throw new Error('Error Saving Contact Card');
 		}
 	}
 
@@ -173,7 +173,7 @@ export default class ContactCardService {
 				),
 			};
 		} catch (err) {
-			return null;
+			throw new Error('Error Updating Contact Card');
 		}
 	}
 }

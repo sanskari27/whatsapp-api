@@ -1,7 +1,7 @@
 import DateUtils from '../utils/DateUtils';
 import { getRandomNumber } from '../utils/ExpressUtils';
 
-export class MessageTimeGenerator implements IterableIterator<Date> {
+export default class TimeGenerator implements IterableIterator<Date> {
 	private currentDate: moment.Moment;
 	private startTime: moment.Moment;
 	private endTime: moment.Moment;
@@ -28,7 +28,7 @@ export class MessageTimeGenerator implements IterableIterator<Date> {
 		this.min_delay = details.min_delay ?? 2;
 		this.max_delay = details.max_delay ?? 2;
 		this.batch_size = details.batch_size ?? 5;
-		this.batch_delay = details.batch_delay ?? 7;
+		this.batch_delay = details.batch_delay ?? 120;
 		this.count = 0;
 
 		const calculated_date = startDate
@@ -44,20 +44,35 @@ export class MessageTimeGenerator implements IterableIterator<Date> {
 		}
 	}
 
-	public next(): IteratorResult<Date, Date> {
+	public setStartTime(startTime: string) {
+		this.startTime = DateUtils.getMoment(startTime, 'HH:mm');
+		return this;
+	}
+
+	public setEndTime(endTime: string) {
+		this.endTime = DateUtils.getMoment(endTime, 'HH:mm');
+		return this;
+	}
+
+	public next(custom_delay?: number): IteratorResult<Date, Date> {
+		let delay = 0;
+		if (custom_delay !== undefined) {
+			delay = custom_delay;
+		} else {
+			delay = getRandomNumber(this.min_delay, this.max_delay);
+		}
+		this.currentDate.add(delay, 'seconds');
+
+		if (this.count++ % this.batch_size === 0) {
+			this.currentDate.add(this.batch_delay, 'seconds');
+		}
+
 		if (!DateUtils.isTimeBetween(this.startTime, this.endTime, this.currentDate)) {
 			this.currentDate
 				.add(1, 'day')
 				.hours(this.startTime.hours())
 				.minutes(this.startTime.minutes())
-				.seconds(this.startTime.seconds());
-		}
-
-		const delay = getRandomNumber(this.min_delay, this.max_delay);
-		this.currentDate.add(delay, 'seconds');
-
-		if (this.count++ % this.batch_size === 0) {
-			this.currentDate.add(this.batch_delay, 'seconds');
+				.seconds(this.startTime.seconds() + 1);
 		}
 		return { value: this.currentDate.toDate(), done: false };
 	}

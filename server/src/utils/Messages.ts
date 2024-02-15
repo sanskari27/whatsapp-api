@@ -8,7 +8,7 @@ function formatMessageText(
 	let _message = message;
 	for (const variable of variables) {
 		const _variable = `{{${variable}}}`;
-		_message = _message.replace(_variable, extract_from[variable] ?? '');
+		_message = _message.replace(new RegExp(_variable, 'g'), extract_from[variable] ?? '');
 	}
 	return _message;
 }
@@ -26,7 +26,7 @@ function formatAttachments(
 		let _caption = attachment.caption;
 		for (const variable of variables) {
 			const _variable = `{{${variable}}}`;
-			_caption = _caption.replace(_variable, extract_from[variable] ?? '');
+			_caption = _caption.replace(new RegExp(_variable, 'g'), extract_from[variable] ?? '');
 		}
 		return {
 			filename: attachment.filename,

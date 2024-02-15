@@ -17,6 +17,7 @@ import {
 	Text,
 	VStack,
 	useDisclosure,
+	useToast,
 } from '@chakra-ui/react';
 import { forwardRef, useImperativeHandle, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -61,6 +62,7 @@ export type ContactInputDialogHandle = {
 const ContactInputDialog = forwardRef<ContactInputDialogHandle>((_, ref) => {
 	const dispatch = useDispatch();
 	const theme = useTheme();
+	const toast = useToast()
 
 	const { isOpen, onOpen, onClose } = useDisclosure();
 	const locationInputDialog = useRef<LocationInputDialogHandle>(null);
@@ -131,31 +133,30 @@ const ContactInputDialog = forwardRef<ContactInputDialogHandle>((_, ref) => {
 			);
 		}
 
-		if (isUpdating) {
-			ContactCardService.UpdateContactCard({
-				...selectedCard,
-				...details,
-			}).then((res) => {
-				if (!res) {
-					dispatch(setError('Something went wrong'));
-					return;
-				}
-				dispatch(updateContactCard(res));
-				handleClose();
+		const promise = isUpdating
+			? ContactCardService.UpdateContactCard({
+					...selectedCard,
+					...details,
+			})
+			: ContactCardService.CreateContactCard({
+					...selectedCard,
+					...details,
 			});
-		} else {
-			ContactCardService.CreateContactCard({
-				...selectedCard,
-				...details,
-			}).then((res) => {
-				if (!res) {
-					dispatch(setError('Something went wrong'));
-					return;
-				}
-				dispatch(addContactCard(res));
-				handleClose();
+
+			toast.promise(promise, {
+				success: (data) => {
+					const acton = isUpdating ? updateContactCard(data) : addContactCard(data);
+					dispatch(acton);
+					handleClose();
+					return {
+						title: 'Contact Card saved successfully',
+					};
+				},
+				error: {
+					title: isUpdating ? 'Failed to update Contact Card' : 'Failed to save Contact Card',
+				},
+				loading: { title: isUpdating? 'Updating Contact Card' : 'Saving Data', description: 'Please wait' },
 			});
-		}
 	};
 
 	const updateContactNumber = (
