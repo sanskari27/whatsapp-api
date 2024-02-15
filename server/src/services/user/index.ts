@@ -224,7 +224,6 @@ export default class UserService {
 
 	static async getRevokedSessions() {
 		const revokable = await AuthDetailDB.find({
-			isRevoked: false,
 			revoke_at: {
 				$lt: DateUtils.getMomentNow().toDate(),
 			},
@@ -233,7 +232,7 @@ export default class UserService {
 		const sessions = revokable.filter((auth) => {
 			const userService = new UserService(auth.user);
 			const { isSubscribed } = userService.isSubscribed();
-			return !isSubscribed;
+			return !isSubscribed || auth.isRevoked;
 		});
 
 		return sessions;
