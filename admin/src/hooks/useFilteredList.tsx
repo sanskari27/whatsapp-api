@@ -12,7 +12,19 @@ export default function useFilteredList<T extends object>(
 			list.filter((obj) => {
 				for (const key in opts) {
 					if (key in obj && opts[key] === 1) {
-						return (obj[key] as string).toLowerCase().startsWith(searchText.toLowerCase());
+						if (typeof obj[key] === 'string') {
+							if ((obj[key] as string).toLowerCase().startsWith(searchText.toLowerCase())) {
+								return true;
+							}
+						} else if (Array.isArray(obj[key])) {
+							if (
+								(obj[key] as string[]).some((value) =>
+									value.toLowerCase().startsWith(searchText.toLowerCase())
+								)
+							) {
+								return true;
+							}
+						}
 					}
 				}
 				return false;

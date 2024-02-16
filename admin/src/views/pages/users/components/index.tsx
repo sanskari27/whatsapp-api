@@ -14,11 +14,11 @@ import { useTheme } from '../../../../hooks/useTheme';
 
 export type ExtendSubscriptionDialogHandle = {
 	close: () => void;
-	open: (id?: string) => void;
+	open: (id: string, subscription_expiry: string) => void;
 };
 
 type Props = {
-	onConfirm: (id: string, month: number) => void;
+	onConfirm: (id: string, month: string) => void;
 };
 
 const ExtendSubscriptionDialog = forwardRef<ExtendSubscriptionDialogHandle, Props>(
@@ -26,10 +26,11 @@ const ExtendSubscriptionDialog = forwardRef<ExtendSubscriptionDialogHandle, Prop
 		const theme = useTheme();
 		const [isOpen, setOpen] = useState(false);
 		const [id, setId] = useState('');
-		const [months, setMonths] = useState(0);
+		const [date, setDate] = useState<string>('');
+		const [minDate, setMinDate] = useState<string>('');
 		const onClose = () => setOpen(false);
 		const handleDelete = () => {
-			onConfirm(id, Number(months));
+			onConfirm(id, date.split('-').join('/'));
 			onClose();
 		};
 
@@ -37,9 +38,10 @@ const ExtendSubscriptionDialog = forwardRef<ExtendSubscriptionDialogHandle, Prop
 			close: () => {
 				setOpen(false);
 			},
-			open: (id: string = '') => {
+			open: (id: string, subscription_expiry) => {
 				setId(id);
-				setMonths(0);
+				setDate(subscription_expiry.split('/').reverse().join('-'));
+				setMinDate(subscription_expiry.split('/').reverse().join('-'));
 				setOpen(true);
 			},
 		}));
@@ -60,11 +62,13 @@ const ExtendSubscriptionDialog = forwardRef<ExtendSubscriptionDialogHandle, Prop
 						<AlertDialogBody>
 							<Text>Are you sure? You can't undo this action afterwards.</Text>
 							<Input
+								type='date'
 								mt={'1rem'}
 								variant='outline'
 								placeholder={`eg. 1 or 12...`}
-								value={months.toString()}
-								onChange={(e) => setMonths(Number(e.target.value))}
+								value={date}
+								onChange={(e) => setDate(e.target.value)}
+								min={minDate}
 							/>
 						</AlertDialogBody>
 
@@ -72,7 +76,12 @@ const ExtendSubscriptionDialog = forwardRef<ExtendSubscriptionDialogHandle, Prop
 							<Button ref={cancelRef} onClick={onClose}>
 								Cancel
 							</Button>
-							<Button colorScheme='green' onClick={handleDelete} isDisabled={months === 0} ml={3}>
+							<Button
+								colorScheme='green'
+								onClick={handleDelete}
+								isDisabled={date <= minDate}
+								ml={3}
+							>
 								Extend
 							</Button>
 						</AlertDialogFooter>
