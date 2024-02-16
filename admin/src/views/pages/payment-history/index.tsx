@@ -13,9 +13,10 @@ import {
 import { useEffect, useRef } from 'react';
 import { MdPayment } from 'react-icons/md';
 import { useSelector } from 'react-redux';
+import { useSearchParams } from 'react-router-dom';
 import { StoreNames } from '../../../../../client/src/store';
 import useFilteredList from '../../../hooks/useFilteredList';
-import { popFromNavbar, pushToNavbar } from '../../../hooks/useNavbar';
+import { popFromNavbar, pushToNavbar, setNavbarSearchText } from '../../../hooks/useNavbar';
 import { useTheme } from '../../../hooks/useTheme';
 import { StoreState } from '../../../store';
 import { NavbarSearchElement } from '../../components/navbar';
@@ -23,7 +24,7 @@ import PaymentDetails, { PaymentDetailsDrawerHandle } from './components/payment
 
 const PaymentHistory = () => {
 	const theme = useTheme();
-
+	const [searchParams] = useSearchParams();
 	const PaymentDetailsRef = useRef<PaymentDetailsDrawerHandle>(null);
 
 	const {
@@ -31,7 +32,7 @@ const PaymentHistory = () => {
 		uiDetails: { isFetching },
 	} = useSelector((state: StoreState) => state[StoreNames.PAYMENTS]);
 
-	const filtered = useFilteredList(list, { name: 1, phone_number: 1 });
+	const filtered = useFilteredList(list, { name: 1, phone_number: 1, whatsapp_numbers: 1 });
 
 	useEffect(() => {
 		pushToNavbar({
@@ -47,6 +48,9 @@ const PaymentHistory = () => {
 			popFromNavbar();
 		};
 	}, []);
+	useEffect(() => {
+		setNavbarSearchText(searchParams.get('phone') ?? '');
+	}, [searchParams]);
 
 	return (
 		<>

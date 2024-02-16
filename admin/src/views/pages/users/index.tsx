@@ -16,7 +16,7 @@ import {
 import { useEffect, useRef } from 'react';
 import { MdGroups3 } from 'react-icons/md';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { createSearchParams, useNavigate } from 'react-router-dom';
 import { NAVIGATION } from '../../../config/const';
 import useFilteredList from '../../../hooks/useFilteredList';
 import { popFromNavbar, pushToNavbar, setNavbarSearchText } from '../../../hooks/useNavbar';
@@ -60,16 +60,16 @@ const UsersPage = () => {
 
 	const filtered = useFilteredList(list, { name: 1, phone: 1 });
 
-	const handleAction = (
-		{ id, phone, subscription_expiry }: { id: string; phone: string; subscription_expiry: string },
-		action: string
-	) => {
+	const handleAction = ({ id, phone }: { id: string; phone: string }, action: string) => {
 		if (action === 'extend_expiry') {
-			return extendSubscriptionDialogRef.current?.open(subscription_expiry, id);
+			return extendSubscriptionDialogRef.current?.open(id);
 		}
 		if (action === 'payment_history') {
 			setNavbarSearchText(phone);
-			return navigate(NAVIGATION.PAYMENT_HISTORY);
+			return navigate({
+				pathname: NAVIGATION.PAYMENT_HISTORY,
+				search: createSearchParams({ phone }).toString(),
+			});
 		}
 	};
 	const extendSubscription = (user_id: string, months: string) => {
