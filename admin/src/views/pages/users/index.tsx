@@ -28,6 +28,7 @@ import {
 	removeSelectedUsers,
 	setUsersList,
 } from '../../../store/reducers/UsersReducer';
+import { User } from '../../../store/types/UsersState';
 import { NavbarSearchElement } from '../../components/navbar';
 import ExtendSubscriptionDialog, { ExtendSubscriptionDialogHandle } from './components';
 
@@ -60,9 +61,9 @@ const UsersPage = () => {
 
 	const filtered = useFilteredList(list, { name: 1, phone: 1 });
 
-	const handleAction = ({ id, phone }: { id: string; phone: string }, action: string) => {
+	const handleAction = ({ id, phone, subscription_expiry }: User, action: string) => {
 		if (action === 'extend_expiry') {
-			return extendSubscriptionDialogRef.current?.open(id);
+			return extendSubscriptionDialogRef.current?.open(id, subscription_expiry);
 		}
 		if (action === 'payment_history') {
 			setNavbarSearchText(phone);
@@ -73,7 +74,6 @@ const UsersPage = () => {
 		}
 	};
 	const extendSubscription = (user_id: string, months: string) => {
-		console.log('user_id', user_id, 'months', months);
 		UsersService.extendExpiry(user_id, months ?? 0).then(async () => {
 			const users = await UsersService.getUsers();
 			dispatch(setUsersList(users));

@@ -14,7 +14,7 @@ import { useTheme } from '../../../../hooks/useTheme';
 
 export type ExtendSubscriptionDialogHandle = {
 	close: () => void;
-	open: (subscription_expiry: string, id?: string) => void;
+	open: (id: string, subscription_expiry: string) => void;
 };
 
 type Props = {
@@ -38,15 +38,13 @@ const ExtendSubscriptionDialog = forwardRef<ExtendSubscriptionDialogHandle, Prop
 			close: () => {
 				setOpen(false);
 			},
-			open: (subscription_expiry, id: string = '') => {
+			open: (id: string, subscription_expiry) => {
 				setId(id);
 				setDate(subscription_expiry.split('/').reverse().join('-'));
 				setMinDate(subscription_expiry.split('/').reverse().join('-'));
 				setOpen(true);
 			},
 		}));
-
-		console.log(minDate, date);
 
 		const cancelRef = React.useRef() as RefObject<HTMLButtonElement>;
 
@@ -70,7 +68,7 @@ const ExtendSubscriptionDialog = forwardRef<ExtendSubscriptionDialogHandle, Prop
 								placeholder={`eg. 1 or 12...`}
 								value={date}
 								onChange={(e) => setDate(e.target.value)}
-								min={'1-1-2025'}
+								min={minDate}
 							/>
 						</AlertDialogBody>
 

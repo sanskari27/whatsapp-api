@@ -12,8 +12,6 @@ export default function useFilteredList<T extends object>(
 			list.filter((obj) => {
 				for (const key in opts) {
 					if (key in obj && opts[key] === 1) {
-						console.log(key, obj[key], typeof obj[key]);
-
 						if (typeof obj[key] === 'string') {
 							if ((obj[key] as string).toLowerCase().startsWith(searchText.toLowerCase())) {
 								return true;
