@@ -9,7 +9,9 @@ import { DATA_LOADED_DELAY, NAVIGATION } from '../../../config/const';
 import { useAuth } from '../../../hooks/useAuth';
 import { useNetwork } from '../../../hooks/useNetwork';
 import '../../../index.css';
+import PaymentService from '../../../services/payment.service';
 import UsersService from '../../../services/users.service';
+import { setRecordsList } from '../../../store/reducers/PaymentReducers';
 import { setUsersList } from '../../../store/reducers/UsersReducer';
 import Navbar from '../../components/navbar';
 import NavigationDrawer from '../../components/navigation-drawer';
@@ -29,14 +31,22 @@ export default function Home() {
 		}
 	}, [status, navigate]);
 
-	const fetchUserDetails = useCallback(async () => {
+	const fetchAllDetails = useCallback(async () => {
 		try {
-			const promises = [UsersService.getUsers(), addDelay(DATA_LOADED_DELAY)];
+			const promises = [
+				UsersService.getUsers(),
+				PaymentService.getPaymentRecords(),
+				addDelay(DATA_LOADED_DELAY),
+			];
 
 			const results = await Promise.all(promises);
 
 			if (results[0]) {
 				dispatch(setUsersList(results[0]));
+			}
+
+			if (results[1]) {
+				dispatch(setRecordsList(results[1]));
 			}
 
 			setDataLoaded.on();
@@ -52,8 +62,8 @@ export default function Home() {
 		}
 
 		setDataLoaded.off();
-		fetchUserDetails();
-	}, [fetchUserDetails, setDataLoaded, dataLoaded]);
+		fetchAllDetails();
+	}, [fetchAllDetails, setDataLoaded, dataLoaded]);
 
 	if (isValidating) {
 		return (

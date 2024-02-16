@@ -16,8 +16,10 @@ import {
 import { useEffect, useRef } from 'react';
 import { MdGroups3 } from 'react-icons/md';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { NAVIGATION } from '../../../config/const';
 import useFilteredList from '../../../hooks/useFilteredList';
-import { popFromNavbar, pushToNavbar } from '../../../hooks/useNavbar';
+import { popFromNavbar, pushToNavbar, setNavbarSearchText } from '../../../hooks/useNavbar';
 import { useTheme } from '../../../hooks/useTheme';
 import UsersService from '../../../services/users.service';
 import { StoreNames, StoreState } from '../../../store';
@@ -31,6 +33,7 @@ import ExtendSubscriptionDialog, { ExtendSubscriptionDialogHandle } from './comp
 
 const UsersPage = () => {
 	const theme = useTheme();
+	const navigate = useNavigate();
 
 	const dispatch = useDispatch();
 	const {
@@ -57,9 +60,13 @@ const UsersPage = () => {
 
 	const filtered = useFilteredList(list, { name: 1, phone: 1 });
 
-	const handleAction = (user_id: string, action: string) => {
+	const handleAction = ({ id, phone }: { id: string; phone: string }, action: string) => {
 		if (action === 'extend_expiry') {
-			return extendSubscriptionDialogRef.current?.open(user_id);
+			return extendSubscriptionDialogRef.current?.open(id);
+		}
+		if (action === 'payment_history') {
+			setNavbarSearchText(phone);
+			return navigate(NAVIGATION.PAYMENT_HISTORY);
 		}
 	};
 	const extendSubscription = (user_id: string, months: number) => {
@@ -140,12 +147,31 @@ const UsersPage = () => {
 										<Td>{user.type}</Td>
 										<Td>{user.subscription_expiry}</Td>
 										<Td>
-											<Select
-												placeholder='Select Action'
-												value={''}
-												onChange={(e) => handleAction(user.id, e.target.value)}
-											>
-												<option value='extend_expiry'>Extend Subscription</option>
+											<Select value={''} onChange={(e) => handleAction(user, e.target.value)}>
+												<option
+													className='bg-white text-black dark:bg-gray-700 dark:text-white'
+													value='select'
+												>
+													Select Action
+												</option>
+												<option
+													className='bg-white text-black dark:bg-gray-700 dark:text-white'
+													value='extend_expiry'
+												>
+													Extend Subscription
+												</option>
+												<option
+													className='bg-white text-black dark:bg-gray-700 dark:text-white'
+													value='payment_history'
+												>
+													Payment History
+												</option>
+												<option
+													className='bg-white text-black dark:bg-gray-700 dark:text-white'
+													value='logout'
+												>
+													Logout User
+												</option>
 											</Select>
 										</Td>
 									</Tr>

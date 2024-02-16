@@ -8,4 +8,5 @@ export enum StoreNames {
 	CSV = 'csv',
 	POLL = 'poll',
 	MERGE_GROUP = 'merge_group',
+	PAYMENTS = 'payments',
 }

@@ -12,6 +12,7 @@ export const NAVIGATION = {
 	DASHBOARD: '/dashboard',
 	USERS: '/users',
 	NETWORK_ERROR: '/network-error',
+	PAYMENT_HISTORY: '/payment-history',
 };
 
 export enum CHROME_ACTION {
