@@ -1,3 +1,4 @@
+import moment from 'moment';
 import { Types } from 'mongoose';
 import { MESSAGE_STATUS } from '../../config/const';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
@@ -120,6 +121,18 @@ export default class UserService {
 		}
 
 		await this.user.save();
+	}
+
+	async setExpiry(date: moment.Moment) {
+		if (this.user.subscription_expiry) {
+			if (DateUtils.getMoment(this.user.subscription_expiry).isBefore(date)) {
+				this.user.subscription_expiry = date.toDate();
+				await this.user.save();
+			}
+		} else {
+			this.user.subscription_expiry = date.toDate();
+			await this.user.save();
+		}
 	}
 
 	getPaymentRecords() {
