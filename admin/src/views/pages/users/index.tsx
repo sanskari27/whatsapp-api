@@ -60,16 +60,20 @@ const UsersPage = () => {
 
 	const filtered = useFilteredList(list, { name: 1, phone: 1 });
 
-	const handleAction = ({ id, phone }: { id: string; phone: string }, action: string) => {
+	const handleAction = (
+		{ id, phone, subscription_expiry }: { id: string; phone: string; subscription_expiry: string },
+		action: string
+	) => {
 		if (action === 'extend_expiry') {
-			return extendSubscriptionDialogRef.current?.open(id);
+			return extendSubscriptionDialogRef.current?.open(subscription_expiry, id);
 		}
 		if (action === 'payment_history') {
 			setNavbarSearchText(phone);
 			return navigate(NAVIGATION.PAYMENT_HISTORY);
 		}
 	};
-	const extendSubscription = (user_id: string, months: number) => {
+	const extendSubscription = (user_id: string, months: string) => {
+		console.log('user_id', user_id, 'months', months);
 		UsersService.extendExpiry(user_id, months ?? 0).then(async () => {
 			const users = await UsersService.getUsers();
 			dispatch(setUsersList(users));

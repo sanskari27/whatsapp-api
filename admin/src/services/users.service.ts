@@ -17,7 +17,7 @@ export default class UsersService {
 		}
 	}
 
-	static async extendExpiry(user_id: string, months: number) {
+	static async extendExpiry(user_id: string, months: string) {
 		try {
 			await APIInstance.post(`/users/${user_id}/extend-expiry`, {
 				months: months,
