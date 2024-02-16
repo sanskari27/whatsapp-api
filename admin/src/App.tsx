@@ -13,6 +13,7 @@ const Dashboard = lazy(() => import('./views/pages/home/Dashboard'));
 const UsersPage = lazy(() => import('./views/pages/users'));
 const Home = lazy(() => import('./views/pages/home'));
 const NetworkError = lazy(() => import('./views/pages/network-error'));
+const PaymentHistory = lazy(() => import('./views/pages/payment-history'));
 
 function App() {
 	useTheme();
@@ -26,6 +27,7 @@ function App() {
 						<Route path={NAVIGATION.HOME} element={<Home />}>
 							<Route path={NAVIGATION.DASHBOARD} element={<Dashboard />} />
 							<Route path={NAVIGATION.USERS} element={<UsersPage />} />
+							<Route path={NAVIGATION.PAYMENT_HISTORY} element={<PaymentHistory />} />
 						</Route>
 						<Route path={NAVIGATION.NETWORK_ERROR} element={<NetworkError />} />
 						<Route path='*' element={<Navigate to={NAVIGATION.LOGIN} />} />

@@ -3,7 +3,7 @@ import { IconType } from 'react-icons';
 import { PiUsersFourDuotone } from 'react-icons/pi';
 import { TbLogout2 } from 'react-icons/tb';
 
-import { MdOutlineDashboard } from 'react-icons/md';
+import { MdOutlineDashboard, MdOutlinePayments } from 'react-icons/md';
 import { useNavigate } from 'react-router-dom';
 import { LOGO } from '../../../assets/Images';
 import { NAVIGATION } from '../../../config/const';
@@ -56,6 +56,7 @@ export default function NavigationDrawer() {
 					>
 						<MenuButton icon={MdOutlineDashboard} route={NAVIGATION.DASHBOARD} />
 						<MenuButton icon={PiUsersFourDuotone} route={NAVIGATION.USERS} />
+						<MenuButton icon={MdOutlinePayments} route={NAVIGATION.PAYMENT_HISTORY} />
 					</Flex>
 				</Box>
 				<VStack>
