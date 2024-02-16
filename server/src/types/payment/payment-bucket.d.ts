@@ -38,6 +38,34 @@ export type PaymentRecord = {
 	amount: number;
 };
 
+export type AdminPaymentRecord = {
+	plan: string;
+	whatsapp_numbers: string[];
+	name: string;
+	phone_number: string;
+	email: string;
+	admin_number: string;
+	billing_address: {
+		street: string;
+		city: string;
+		district: string;
+		state: string;
+		country: string;
+		pincode: string;
+		gstin: string;
+	};
+	gross_amount: number;
+	discount: number;
+	discount_coupon: string;
+	total_amount: number;
+	tax: number;
+	transaction_status: string;
+	transaction_date: string;
+	order_id: string;
+	payment_id: string;
+	invoice_id: string;
+};
+
 export type SubscriptionRecord = {
 	type: 'subscription';
 	id: string;

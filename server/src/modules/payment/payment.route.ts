@@ -6,6 +6,8 @@ import { CouponValidator, CreateBucketValidator } from './payment.validator';
 
 const router = express.Router();
 
+router.route('/admin/all-payments').get(PaymentController.fetchAllTransactions);
+
 router.route('/initiate').all(CreateBucketValidator).post(PaymentController.createPaymentBucket);
 
 router.route('/:id/details').all(IDValidator).get(PaymentController.fetchTransactionDetail);
@@ -36,6 +38,6 @@ router
 
 router.route('/:id/invoice').all(VerifyClientID).get(PaymentController.downloadInvoice);
 
-router.route('/').all(VerifyClientID).get(PaymentController.fetchTransactions);
+router.route('/').all(VerifyClientID).get(PaymentController.fetchUserTransactions);
 
 export default router;

@@ -1,5 +1,9 @@
 import { json2csv } from 'json-2-csv';
-import { PaymentRecord, SubscriptionRecord } from '../types/payment/payment-bucket';
+import {
+	AdminPaymentRecord,
+	PaymentRecord,
+	SubscriptionRecord,
+} from '../types/payment/payment-bucket';
 import {
 	TBusinessContact,
 	TContact,
@@ -387,11 +391,11 @@ export default class CSVParser {
 			},
 			{
 				field: 'voter_number',
-				title: 'Voter Number',
+				title: 'Number',
 			},
 			{
 				field: 'voter_name',
-				title: 'Voter Name',
+				title: 'Name',
 			},
 			{
 				field: 'group_name',
@@ -403,7 +407,7 @@ export default class CSVParser {
 			},
 			{
 				field: 'voted_at',
-				title: 'Voted At',
+				title: 'Responded At',
 			},
 		];
 
@@ -438,6 +442,108 @@ export default class CSVParser {
 			{
 				field: 'isPaused',
 				title: 'Is Paused',
+			},
+		];
+
+		return json2csv(records, {
+			keys: keys,
+			emptyFieldValue: '',
+		});
+	}
+
+	static exportPaymentsAdmin(records: AdminPaymentRecord[]) {
+		const keys = [
+			{
+				field: 'transaction_date',
+				title: 'Transaction Date',
+			},
+			{
+				field: 'transaction_status',
+				title: 'Transaction Status',
+			},
+			{
+				field: 'name',
+				title: 'Name',
+			},
+			{
+				field: 'email',
+				title: 'Email',
+			},
+			{
+				field: 'phone_number',
+				title: 'Phone Number',
+			},
+			{
+				field: 'admin_number',
+				title: 'Admin Number',
+			},
+			{
+				field: 'whatsapp_numbers',
+				title: 'Activated Numbers',
+			},
+			{
+				field: 'plan',
+				title: 'Plan',
+			},
+			{
+				field: 'discount_coupon',
+				title: 'Discount Coupon',
+			},
+			{
+				field: 'gross_amount',
+				title: 'Gross Amount',
+			},
+			{
+				field: 'discount',
+				title: 'Discount Amount',
+			},
+			{
+				field: 'tax',
+				title: 'Tax',
+			},
+			{
+				field: 'total_amount',
+				title: 'Total Amount',
+			},
+			{
+				field: 'order_id',
+				title: 'Order ID',
+			},
+			{
+				field: 'payment_id',
+				title: 'Payment ID',
+			},
+			{
+				field: 'invoice_id',
+				title: 'Invoice ID',
+			},
+			{
+				field: 'billing_address.gstin',
+				title: 'GSTIN',
+			},
+			{
+				field: 'billing_address.street',
+				title: 'Street',
+			},
+			{
+				field: 'billing_address.city',
+				title: 'City',
+			},
+			{
+				field: 'billing_address.district',
+				title: 'District',
+			},
+			{
+				field: 'billing_address.state',
+				title: 'State',
+			},
+			{
+				field: 'billing_address.country',
+				title: 'Country',
+			},
+			{
+				field: 'billing_address.pincode',
+				title: 'Pincode',
 			},
 		];
 

@@ -225,4 +225,110 @@ export default class PaymentBucketService {
 		records.push(..._paymentRecords);
 		return records;
 	}
+
+	static async getAllPaymentRecords() {
+		const paymentRecords = await PaymentDB.aggregate([
+			{
+				$lookup: {
+					from: PaymentBucketDB.collection.name, // Name of the OtherModel collection
+					localField: 'bucket',
+					foreignField: '_id',
+					as: 'payment_bucket',
+				},
+			},
+			{ $addFields: { bucket: { $arrayElemAt: ['$payment_bucket', 0] } } },
+			{
+				$match: {
+					bucket: { $exists: true },
+				},
+			},
+			{
+				$lookup: {
+					from: PlanDB.collection.name, // Name of the OtherModel collection
+					localField: 'bucket.plan',
+					foreignField: '_id',
+					as: 'plan',
+				},
+			},
+			{
+				$lookup: {
+					from: CouponDB.collection.name, // Name of the OtherModel collection
+					localField: 'bucket.discount_coupon',
+					foreignField: '_id',
+					as: 'discount_coupon',
+				},
+			},
+			{ $addFields: { plan: { $arrayElemAt: ['$plan', 0] } } },
+			{ $addFields: { discount_coupon: { $arrayElemAt: ['$discount_coupon', 0] } } },
+			{ $addFields: { whatsapp_numbers: '$bucket.whatsapp_numbers' } },
+			{ $addFields: { name: '$bucket.name' } },
+			{ $addFields: { phone_number: '$bucket.phone_number' } },
+			{ $addFields: { email: '$bucket.email' } },
+			{ $addFields: { admin_number: '$bucket.admin_number' } },
+			{ $addFields: { billing_address: '$bucket.billing_address' } },
+			{ $addFields: { gross_amount: '$bucket.gross_amount' } },
+			{ $addFields: { discount: '$bucket.discount' } },
+			{ $addFields: { total_discount: '$bucket.total_discount' } },
+			{ $addFields: { tax: '$bucket.tax' } },
+			{ $addFields: { transaction_status: '$bucket.transaction_status' } },
+			{ $addFields: { plan: '$plan.code' } },
+			{ $addFields: { discount_coupon: '$discount_coupon.code' } },
+			{
+				$sort: {
+					transaction_status: 1,
+					transaction_date: 1,
+				},
+			},
+			{
+				$project: {
+					_id: 0,
+					whatsapp_numbers: 1,
+					name: 1,
+					phone_number: 1,
+					email: 1,
+					admin_number: 1,
+					billing_address: 1,
+					gross_amount: 1,
+					discount: 1,
+					total_discount: 1,
+					tax: 1,
+					total_amount: '$amount',
+					transaction_status: 1,
+					transaction_date: 1,
+					order_id: 1,
+					payment_id: 1,
+					invoice_id: 1,
+					plan: 1,
+					discount_coupon: 1,
+				},
+			},
+		]);
+		return paymentRecords as {
+			plan: string;
+			whatsapp_numbers: string[];
+			name: string;
+			phone_number: string;
+			email: string;
+			admin_number: string;
+			billing_address: {
+				street: string;
+				city: string;
+				district: string;
+				state: string;
+				country: string;
+				pincode: string;
+				gstin: string;
+			};
+			gross_amount: number;
+			discount: number;
+			discount_coupon: string;
+			tax: number;
+			total_amount: number;
+			transaction_status: string;
+			transaction_date: string;
+			order_id: string;
+			payment_id: string;
+			invoice_id: string;
+		}[];
+	}
 }
