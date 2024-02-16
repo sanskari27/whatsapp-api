@@ -109,6 +109,21 @@ async function adminLogout(req: Request, res: Response, next: NextFunction) {
 	});
 }
 
+async function logoutUsers(req: Request, res: Response, next: NextFunction) {
+	const phone = req.body.phone;
+	if (!phone) {
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
+	}
+	const userService = await UserService.getService(phone);
+	const client_ids = await userService.logout();
+	client_ids.forEach((id) => WhatsappProvider.getInstance(id).logoutClient());
+	return Respond({
+		res,
+		status: 200,
+		data: {},
+	});
+}
+
 async function validateAdmin(req: Request, res: Response, next: NextFunction) {
 	return Respond({
 		res,
@@ -124,6 +139,7 @@ const AuthController = {
 	adminLogin,
 	adminLogout,
 	validateAdmin,
+	logoutUsers,
 };
 
 export default AuthController;

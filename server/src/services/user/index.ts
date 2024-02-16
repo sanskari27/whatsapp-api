@@ -62,8 +62,20 @@ export default class UserService {
 			//ignored
 		}
 	}
-	async logout(client_id: string) {
-		UserService.logout(client_id);
+	async logout(client_id?: string) {
+		if (client_id) {
+			UserService.logout(client_id);
+			return [client_id];
+		}
+
+		const auths = await AuthDetailDB.find({
+			user: this.user._id,
+			isRevoked: false,
+		});
+
+		auths.forEach((auth) => auth.remove());
+
+		return auths.map((auth) => auth.client_id);
 	}
 
 	getUser() {

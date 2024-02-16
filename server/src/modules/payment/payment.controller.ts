@@ -38,11 +38,11 @@ async function fetchTransactionDetail(req: Request, res: Response, next: NextFun
 	}
 }
 
-async function fetchTransactions(req: Request, res: Response, next: NextFunction) {
+async function fetchUserTransactions(req: Request, res: Response, next: NextFunction) {
 	const options = {
 		csv: false,
 	};
-	if (req.query.csv && req.query.csv === 'true') {
+	if (req.query.csv === 'true') {
 		options.csv = true;
 	}
 	try {
@@ -53,6 +53,41 @@ async function fetchTransactions(req: Request, res: Response, next: NextFunction
 				res,
 				filename: 'Exported Contacts',
 				data: CSVParser.exportPayments(payments),
+			});
+		} else {
+			return Respond({
+				res,
+				status: 200,
+				data: {
+					payments,
+				},
+			});
+		}
+	} catch (err) {
+		if (err instanceof InternalError) {
+			if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND)) {
+				return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_NOT_FOUND));
+			}
+		}
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
+	}
+}
+
+async function fetchAllTransactions(req: Request, res: Response, next: NextFunction) {
+	const options = {
+		csv: false,
+	};
+	if (req.query.csv === 'true') {
+		options.csv = true;
+	}
+	try {
+		const payments = await PaymentBucketService.getAllPaymentRecords();
+
+		if (options.csv) {
+			return RespondCSV({
+				res,
+				filename: 'Exported Contacts',
+				data: CSVParser.exportPaymentsAdmin(payments),
 			});
 		} else {
 			return Respond({
@@ -295,7 +330,8 @@ async function resumeSubscription(req: Request, res: Response, next: NextFunctio
 
 const TokenController = {
 	fetchTransactionDetail,
-	fetchTransactions,
+	fetchUserTransactions,
+	fetchAllTransactions,
 	createPaymentBucket,
 	applyCoupon,
 	removeCoupon,
