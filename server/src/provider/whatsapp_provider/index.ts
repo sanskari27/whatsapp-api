@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 import QRCode from 'qrcode';
 import { Socket } from 'socket.io';
-import WAWebJS, { Client, GroupChat, LocalAuth } from 'whatsapp-web.js';
+import WAWebJS, { BusinessContact, Client, GroupChat, LocalAuth } from 'whatsapp-web.js';
 import { CHROMIUM_PATH, SOCKET_RESPONSES } from '../../config/const';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import { UserService } from '../../services';
@@ -10,6 +10,7 @@ import GroupMergeService from '../../services/merged-groups';
 import VoteResponseService from '../../services/vote-response';
 import DateUtils from '../../utils/DateUtils';
 import { Delay } from '../../utils/ExpressUtils';
+import WhatsappUtils from '../../utils/WhatsappUtils';
 
 type ClientID = string;
 
@@ -135,10 +136,22 @@ export class WhatsappProvider {
 			this.number = this.client.info.wid.user;
 			this.contact = await this.client.getContactById(this.client.info.wid._serialized);
 
+			const business_details = this.contact.isBusiness
+				? WhatsappUtils.getBusinessDetails(this.contact as BusinessContact)
+				: {
+						description: '',
+						email: '',
+						websites: [] as string[],
+						latitude: 0,
+						longitude: 0,
+						address: '',
+				  };
+
 			this.user_service = await UserService.createUser({
 				name: this.client.info.pushname,
 				phone: this.number,
 				isBusiness: this.contact.isBusiness,
+				business_details,
 			});
 
 			this.sendToClient({
