@@ -27,6 +27,16 @@ export default class UsersService {
 		}
 	}
 
+	static async sendPaymentReminder(user_id: string, message: string) {
+		try {
+			await APIInstance.post(`/users/${user_id}/send-payment-reminder`, {
+				message,
+			});
+		} catch (err) {
+			//ignore
+		}
+	}
+
 	static async logoutUser(user_id: string) {
 		try {
 			await APIInstance.post(`/users/${user_id}/logout`);

@@ -9,22 +9,28 @@ import {
 	Heading,
 	IconButton,
 } from '@chakra-ui/react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { FiSave } from 'react-icons/fi';
+import { useDispatch, useSelector } from 'react-redux';
 import { useTheme } from '../../../../hooks/useTheme';
 import ClientIdService from '../../../../services/clientId.service';
+import { StoreNames, StoreState } from '../../../../store';
+import { setClientId } from '../../../../store/reducers/AdminReducers';
 
 export default function Token() {
 	const theme = useTheme();
-	const [client_id, setClientID] = useState('');
+	const dispatch = useDispatch();
+
+	const { clientId } = useSelector((state: StoreState) => state[StoreNames.ADMIN]);
+
 	useEffect(() => {
 		ClientIdService.getClientID().then((res) => {
-			console.log(res);
+			dispatch(setClientId(res));
 		});
-	}, []);
+	}, [dispatch]);
 
 	const handleClick = () => {
-		if (client_id !== '') ClientIdService.setClientID(client_id);
+		if (clientId !== '') ClientIdService.setClientID(clientId);
 	};
 
 	return (
@@ -43,16 +49,16 @@ export default function Token() {
 							width={'150px'}
 							rounded={'md'}
 							textAlign={'center'}
-							defaultValue={client_id}
-							value={client_id === '' ? 'No client id' : client_id}
+							defaultValue={clientId}
+							value={clientId === '' ? 'No client id' : clientId}
 							color={theme === 'light' ? 'black' : 'white'}
 						>
 							<EditablePreview />
 							<EditableInput
 								textColor={theme === 'light' ? 'black' : 'white'}
-								value={client_id}
+								value={clientId}
 								textTransform={'uppercase'}
-								onChange={(e) => setClientID(e.target.value)}
+								onChange={(e) => dispatch(setClientId(e.target.value))}
 							/>
 						</Editable>
 					</Heading>
