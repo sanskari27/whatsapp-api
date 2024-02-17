@@ -26,4 +26,12 @@ export default class UsersService {
 			//ignore
 		}
 	}
+
+	static async logoutUser(user_id: string) {
+		try {
+			await APIInstance.post(`/users/${user_id}/logout`);
+		} catch (err) {
+			//ignore
+		}
+	}
 }

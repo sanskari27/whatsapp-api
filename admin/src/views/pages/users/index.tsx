@@ -24,19 +24,22 @@ import UsersService from '../../../services/users.service';
 import { StoreNames, StoreState } from '../../../store';
 import { setUsersList } from '../../../store/reducers/UsersReducer';
 import { User } from '../../../store/types/UsersState';
+import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
 import { NavbarSearchElement } from '../../components/navbar';
 import ExtendSubscriptionDialog, { ExtendSubscriptionDialogHandle } from './components';
 
 const UsersPage = () => {
 	const theme = useTheme();
 	const navigate = useNavigate();
-
 	const dispatch = useDispatch();
+	// const toast = useToast();
 	const {
 		list,
 		uiDetails: { isFetching },
 	} = useSelector((state: StoreState) => state[StoreNames.USERS]);
+	// const { client_id } = useSelector((state: StoreState) => state[StoreNames.ADMIN]);
 	const extendSubscriptionDialogRef = useRef<ExtendSubscriptionDialogHandle>(null);
+	const confirmationAlertDialogRef = useRef<ConfirmationDialogHandle>(null);
 
 	useEffect(() => {
 		pushToNavbar({
@@ -66,9 +69,19 @@ const UsersPage = () => {
 				search: createSearchParams({ phone }).toString(),
 			});
 		}
+		if (action === 'logout') {
+			return confirmationAlertDialogRef.current?.open(id);
+		}
 	};
 	const extendSubscription = (user_id: string, months: string) => {
 		UsersService.extendExpiry(user_id, months ?? 0).then(async () => {
+			const users = await UsersService.getUsers();
+			dispatch(setUsersList(users));
+		});
+	};
+
+	const handleUserLogout = (id: string) => {
+		UsersService.logoutUser(id).then(async () => {
 			const users = await UsersService.getUsers();
 			dispatch(setUsersList(users));
 		});
@@ -152,6 +165,12 @@ const UsersPage = () => {
 												</option>
 												<option
 													className='bg-white text-black dark:bg-gray-700 dark:text-white'
+													value='payment_reminder'
+												>
+													Payment Reminder
+												</option>
+												<option
+													className='bg-white text-black dark:bg-gray-700 dark:text-white'
 													value='logout'
 												>
 													Logout User
@@ -166,6 +185,11 @@ const UsersPage = () => {
 				</Table>
 			</TableContainer>
 			<ExtendSubscriptionDialog ref={extendSubscriptionDialogRef} onConfirm={extendSubscription} />
+			<ConfirmationDialog
+				ref={confirmationAlertDialogRef}
+				onConfirm={handleUserLogout}
+				type='Logout User'
+			/>
 		</Box>
 	);
 };
