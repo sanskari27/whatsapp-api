@@ -16,6 +16,11 @@ const USER_ERRORS = {
 		TITLE: 'SESSION_INVALIDATED',
 		MESSAGE: 'The session was invalidated. Please login again.',
 	},
+	WHATSAPP_NOT_READY: {
+		STATUS: 400,
+		TITLE: 'WHATSAPP_NOT_READY',
+		MESSAGE: 'The whatsapp session was invalidated. Please login again.',
+	},
 	ATTACHMENT_IN_USE: {
 		STATUS: 400,
 		TITLE: 'ATTACHMENT_IN_USE',
