@@ -44,6 +44,7 @@ import {
 	setTriggerGapType,
 	updateBot,
 } from '../../../store/reducers/BotReducers';
+import { Poll } from '../../../store/types/PollState';
 import Info from '../../components/info';
 import PollInputDialog, { PollInputDialogHandle } from '../../components/polls-input-dialog';
 import AttachmentSelectorDialog, {
@@ -196,6 +197,7 @@ export default function Bot() {
 		}
 		return notHasError;
 	}
+
 	const insertVariablesToMessage = (variable: string) => {
 		dispatch(
 			setMessage(
@@ -232,12 +234,6 @@ export default function Bot() {
 			},
 			loading: { title: 'Saving Data', description: 'Please wait' },
 		});
-		// const data = await BotService.createBot(details);
-		// dispatch(setAddingBot(true));
-		// if (!data) {
-		// 	return;
-		// }
-		// dispatch(addBot(data));
 		dispatch(reset());
 	}
 
@@ -254,71 +250,18 @@ export default function Bot() {
 	const handleAddLeadsNurturing = (
 		nurturing: {
 			message: string;
-			delay: string;
-			unit: 'MINUTES' | 'HOURS' | 'DAYS';
+			after: number;
 			start_from: string;
 			end_at: string;
+			shared_contact_cards: string[];
+			attachments: string[];
+			polls: Poll[];
 		}[]
 	) => {
-		dispatch(
-			setNurturing(
-				nurturing.map((nurturing) => {
-					return {
-						message: nurturing.message,
-						after:
-							nurturing.unit === 'DAYS'
-								? Number(nurturing.delay) * 86400
-								: nurturing.unit === 'HOURS'
-								? Number(nurturing.delay) * 3600
-								: Number(nurturing.delay) * 60,
-						start_from: nurturing.start_from,
-						end_at: nurturing.end_at,
-					};
-				})
-			)
-		);
+		dispatch(setNurturing(nurturing));
 	};
 
-	function handleCancel() {
-		dispatch(reset());
-	}
-	function openLeadNurturing() {
-		if (details.nurturing.length === 0) {
-			leadsNurturingRef.current?.open([
-				{
-					message: '',
-					delay: '1',
-					unit: 'MINUTES',
-					end_at: '18:00',
-					start_from: '10:00',
-				},
-			]);
-		} else {
-			leadsNurturingRef.current?.open(
-				details.nurturing.map((nurturing) => {
-					let unit = 'MINUTES' as 'MINUTES' | 'HOURS' | 'DAYS';
-					let delay = nurturing.after;
-					if (delay >= 86400) {
-						delay = delay / 86400;
-						unit = 'DAYS';
-					} else if (delay >= 3600) {
-						delay = delay / 3600;
-						unit = 'HOURS';
-					} else {
-						delay = delay / 60;
-						unit = 'MINUTES';
-					}
-					return {
-						message: nurturing.message,
-						delay: delay.toString(),
-						unit: unit,
-						end_at: '18:00',
-						start_from: '10:00',
-					};
-				})
-			);
-		}
-	}
+	const openLeadNurturing = () => leadsNurturingRef.current?.open(details.nurturing || undefined);
 
 	return (
 		<Flex
@@ -630,7 +573,7 @@ export default function Bot() {
 								<Button
 									bgColor={'red.300'}
 									width={'100%'}
-									onClick={handleCancel}
+									onClick={() => dispatch(reset())}
 									isLoading={isAddingBot}
 								>
 									<Text color={'white'}>Cancel</Text>
