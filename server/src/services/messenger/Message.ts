@@ -75,30 +75,6 @@ export default class MessageService {
 
 	async scheduleLeadNurturingMessage(messages: Message[]) {
 		for (const message of messages) {
-			let date = DateUtils.getMoment(message.sendAt);
-			let startOfDay = date.clone().hours(0).minutes(0).seconds(0);
-			let endOfDay = date.clone().hours(23).minutes(59).seconds(59);
-
-			const exists = await MessageDB.exists({
-				sender: this.user,
-				receiver: message.receiver,
-				message: message.message,
-				sendAt: {
-					$gte: startOfDay.toDate(),
-					$lte: endOfDay.toDate(),
-				},
-			});
-			if (exists) {
-				continue;
-			}
-
-			startOfDay = startOfDay.hours(10).minutes(0).seconds(0);
-			endOfDay = endOfDay.hours(18).minutes(0).seconds(0);
-			if (date.isBefore(startOfDay)) {
-				date = date.hours(10).minutes(0).seconds(0);
-			} else if (date.isAfter(endOfDay)) {
-				date = date.add(1, 'day').hours(10).minutes(0).seconds(0);
-			}
 			await MessageDB.create({
 				sender: this.user,
 				receiver: message.receiver,
@@ -106,7 +82,7 @@ export default class MessageService {
 				attachments: message.attachments ?? [],
 				shared_contact_cards: message.shared_contact_cards ?? [],
 				polls: message.polls ?? [],
-				sendAt: date.toDate(),
+				sendAt: message.sendAt,
 			});
 		}
 	}
