@@ -121,13 +121,13 @@ export default class UploadService {
 		if (!attachment) {
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
 		}
-		if (data.name) {
+		if (data.name !== undefined) {
 			attachment.name = data.name;
 		}
-		if (data.caption) {
+		if (data.caption !== undefined) {
 			attachment.caption = data.caption;
 		}
-		if (data.custom_caption) {
+		if (data.custom_caption !== undefined) {
 			attachment.custom_caption = data.custom_caption;
 		}
 

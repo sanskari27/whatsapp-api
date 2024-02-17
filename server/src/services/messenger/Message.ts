@@ -73,9 +73,7 @@ export default class MessageService {
 		return messages.length > 0;
 	}
 
-	async scheduleLeadNurturingMessage(
-		messages: Omit<Message, 'polls' | 'shared_contact_cards' | 'attachments'>[]
-	) {
+	async scheduleLeadNurturingMessage(messages: Message[]) {
 		for (const message of messages) {
 			let date = DateUtils.getMoment(message.sendAt);
 			let startOfDay = date.clone().hours(0).minutes(0).seconds(0);
@@ -105,6 +103,9 @@ export default class MessageService {
 				sender: this.user,
 				receiver: message.receiver,
 				message: message.message,
+				attachments: message.attachments ?? [],
+				shared_contact_cards: message.shared_contact_cards ?? [],
+				polls: message.polls ?? [],
 				sendAt: date.toDate(),
 			});
 		}

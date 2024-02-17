@@ -26,6 +26,10 @@ const botSchema = new mongoose.Schema<IBot>({
 		enum: Object.values(BOT_TRIGGER_OPTIONS),
 	},
 	message: String,
+	group_respond: {
+		type: Boolean,
+		default: false,
+	},
 	attachments: [
 		{
 			type: Schema.Types.ObjectId,
@@ -38,10 +42,6 @@ const botSchema = new mongoose.Schema<IBot>({
 			ref: 'ContactCard',
 		},
 	],
-	group_respond: {
-		type: Boolean,
-		default: false,
-	},
 	polls: [
 		{
 			title: String,
@@ -55,6 +55,25 @@ const botSchema = new mongoose.Schema<IBot>({
 			after: Number,
 			start_from: String,
 			end_at: String,
+			attachments: [
+				{
+					type: Schema.Types.ObjectId,
+					ref: 'Upload',
+				},
+			],
+			shared_contact_cards: [
+				{
+					type: Schema.Types.ObjectId,
+					ref: 'ContactCard',
+				},
+			],
+			polls: [
+				{
+					title: String,
+					options: [String],
+					isMultiSelect: Boolean,
+				},
+			],
 		},
 	],
 	forward: {
