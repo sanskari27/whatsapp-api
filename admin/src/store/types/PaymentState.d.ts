@@ -31,8 +31,9 @@ export type PaymentRecord = {
 	};
 	gross_amount: number;
 	discount: number;
+	total_amount: number;
 	tax: number;
 	transaction_status: string;
 	invoice_id: string;
-    coupon: string;
+	coupon: string;
 };
