@@ -1,5 +1,5 @@
 export enum StoreNames {
-	USER = 'user',
 	USERS = 'users',
 	PAYMENTS = 'payments',
+	ADMIN = 'admin',
 }

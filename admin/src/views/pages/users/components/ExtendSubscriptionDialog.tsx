@@ -10,27 +10,27 @@ import {
 	Text,
 } from '@chakra-ui/react';
 import React, { RefObject, forwardRef, useImperativeHandle, useState } from 'react';
-import { useTheme } from '../../../hooks/useTheme';
+import { useTheme } from '../../../../hooks/useTheme';
 
-export type ConfirmationDialogHandle = {
+export type ExtendSubscriptionDialogHandle = {
 	close: () => void;
-	open: (id?: string) => void;
+	open: (id: string, subscription_expiry: string) => void;
 };
 
 type Props = {
-	onConfirm: (id: string) => void;
-	type: string;
+	onConfirm: (id: string, month: string) => void;
 };
 
-const ConfirmationDialog = forwardRef<ConfirmationDialogHandle, Props>(
-	({ onConfirm, type }: Props, ref) => {
+const ExtendSubscriptionDialog = forwardRef<ExtendSubscriptionDialogHandle, Props>(
+	({ onConfirm }: Props, ref) => {
 		const theme = useTheme();
 		const [isOpen, setOpen] = useState(false);
-		const [id, setId] = useState('' as string);
-		const [confirm, setConfirm] = useState('' as string);
+		const [id, setId] = useState('');
+		const [date, setDate] = useState<string>('');
+		const [minDate, setMinDate] = useState<string>('');
 		const onClose = () => setOpen(false);
 		const handleDelete = () => {
-			onConfirm(id);
+			onConfirm(id, date.split('-').join('/'));
 			onClose();
 		};
 
@@ -38,10 +38,11 @@ const ConfirmationDialog = forwardRef<ConfirmationDialogHandle, Props>(
 			close: () => {
 				setOpen(false);
 			},
-			open: (id: string = '') => {
+			open: (id: string, subscription_expiry) => {
 				setId(id);
+				setDate(subscription_expiry.split('/').reverse().join('-'));
+				setMinDate(subscription_expiry.split('/').reverse().join('-'));
 				setOpen(true);
-				setConfirm('');
 			},
 		}));
 
@@ -55,17 +56,19 @@ const ConfirmationDialog = forwardRef<ConfirmationDialogHandle, Props>(
 						textColor={theme === 'dark' ? 'white' : 'black'}
 					>
 						<AlertDialogHeader fontSize='lg' fontWeight='bold'>
-							Delete {type}
+							Extend Subscription
 						</AlertDialogHeader>
 
 						<AlertDialogBody>
 							<Text>Are you sure? You can't undo this action afterwards.</Text>
 							<Input
+								type='date'
 								mt={'1rem'}
 								variant='outline'
-								placeholder={`Delete ${type}`}
-								value={confirm}
-								onChange={(e) => setConfirm(e.target.value)}
+								placeholder={`eg. 1 or 12...`}
+								value={date}
+								onChange={(e) => setDate(e.target.value)}
+								min={minDate}
 							/>
 						</AlertDialogBody>
 
@@ -74,14 +77,12 @@ const ConfirmationDialog = forwardRef<ConfirmationDialogHandle, Props>(
 								Cancel
 							</Button>
 							<Button
-								colorScheme='red'
+								colorScheme='green'
 								onClick={handleDelete}
-								isDisabled={
-									type.includes('Logout') ? confirm !== type : confirm !== `Delete ${type}`
-								}
+								isDisabled={date <= minDate}
 								ml={3}
 							>
-								{type.includes('Logout') ? 'Logout User' : `Delete ${type}`}
+								Extend
 							</Button>
 						</AlertDialogFooter>
 					</AlertDialogContent>
@@ -91,4 +92,4 @@ const ConfirmationDialog = forwardRef<ConfirmationDialogHandle, Props>(
 	}
 );
 
-export default ConfirmationDialog;
+export default ExtendSubscriptionDialog;

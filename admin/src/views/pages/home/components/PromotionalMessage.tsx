@@ -10,25 +10,36 @@ import {
 	IconButton,
 	VStack,
 } from '@chakra-ui/react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { FiSave } from 'react-icons/fi';
+import { useDispatch, useSelector } from 'react-redux';
 import { useTheme } from '../../../../hooks/useTheme';
 import TokenService from '../../../../services/token.service';
+import { StoreNames, StoreState } from '../../../../store';
+import {
+	changePromotionalMessage,
+	setPromotionalMessage,
+} from '../../../../store/reducers/AdminReducers';
 
 export default function PromotionalMessage() {
 	const theme = useTheme();
-	const [message_1, setMessage1] = useState('');
-	const [message_2, setMessage2] = useState('');
+	const dispatch = useDispatch();
+
+	const {
+		promotionalMessage: { message_1, message_2 },
+	} = useSelector((state: StoreState) => state[StoreNames.ADMIN]);
 
 	useEffect(() => {
 		TokenService.getPromotionalMessage().then(({ message_1, message_2 }) => {
-			setMessage1(message_1);
-			setMessage2(message_2);
+			dispatch(setPromotionalMessage({ message_1, message_2 }));
 		});
-	}, []);
+	}, [dispatch]);
 
 	const handleClick = () => {
-		TokenService.setPromotionalMessage({ message_1, message_2 });
+		TokenService.setPromotionalMessage({
+			message_1,
+			message_2,
+		});
 	};
 
 	return (
@@ -56,7 +67,9 @@ export default function PromotionalMessage() {
 								<EditableInput
 									textColor={theme === 'light' ? 'black' : 'white'}
 									value={message_1}
-									onChange={(e) => setMessage1(e.target.value)}
+									onChange={(e) =>
+										dispatch(changePromotionalMessage({ message_1: e.target.value, message_2 }))
+									}
 								/>
 							</Editable>
 						</Heading>
@@ -77,7 +90,9 @@ export default function PromotionalMessage() {
 								<EditableInput
 									textColor={theme === 'light' ? 'black' : 'white'}
 									value={message_2}
-									onChange={(e) => setMessage2(e.target.value)}
+									onChange={(e) =>
+										dispatch(changePromotionalMessage({ message_1, message_2: e.target.value }))
+									}
 								/>
 							</Editable>
 						</Heading>
