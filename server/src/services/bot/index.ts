@@ -16,6 +16,7 @@ import { Delay } from '../../utils/ExpressUtils';
 import VCardBuilder from '../../utils/VCardBuilder';
 import { MessageService } from '../messenger';
 import TokenService from '../token';
+import UploadService from '../uploads';
 import UserService from '../user';
 
 export default class BotService {
@@ -57,8 +58,17 @@ export default class BotService {
 				options: poll.options,
 				isMultiSelect: poll.isMultiSelect,
 			})),
-			nurturing: bot.nurturing ?? [],
 			shared_contact_cards: bot.shared_contact_cards ?? [],
+			nurturing: (bot.nurturing ?? []).map((el) => ({
+				...el,
+				shared_contact_cards: el.shared_contact_cards ?? [],
+				attachments: el.attachments ?? [],
+				polls: (el.polls ?? []).map((poll) => ({
+					title: poll.title,
+					options: poll.options,
+					isMultiSelect: poll.isMultiSelect,
+				})),
+			})),
 			forward: bot.forward ?? { number: '', message: '' },
 			group_respond: bot.group_respond,
 			isActive: bot.active,
@@ -91,7 +101,16 @@ export default class BotService {
 				options: poll.options,
 				isMultiSelect: poll.isMultiSelect,
 			})),
-			nurturing: bot.nurturing ?? [],
+			nurturing: (bot.nurturing ?? []).map((el) => ({
+				...el,
+				shared_contact_cards: el.shared_contact_cards ?? [],
+				attachments: el.attachments ?? [],
+				polls: (el.polls ?? []).map((poll) => ({
+					title: poll.title,
+					options: poll.options,
+					isMultiSelect: poll.isMultiSelect,
+				})),
+			})),
 			shared_contact_cards: bot.shared_contact_cards ?? [],
 			isActive: bot.active,
 		};
@@ -346,6 +365,13 @@ export default class BotService {
 						receiver: triggered_from,
 						message: custom_message,
 						sendAt: dateGenerator.next(el.after).value,
+						shared_contact_cards: el.shared_contact_cards as unknown as Types.ObjectId[],
+						polls: el.polls,
+						attachments: el.attachments.map((el) => ({
+							name: el.name,
+							filename: el.filename,
+							caption: el.caption,
+						})),
 					};
 				});
 				this.messageSchedulerService.scheduleLeadNurturingMessage(nurtured_messages);
@@ -407,6 +433,13 @@ export default class BotService {
 			after: number;
 			start_from: string;
 			end_at: string;
+			shared_contact_cards?: Types.ObjectId[];
+			attachments?: Types.ObjectId[];
+			polls?: {
+				title: string;
+				options: string[];
+				isMultiSelect: boolean;
+			}[];
 		}[];
 	}) {
 		const bot = new BotDB({
@@ -461,10 +494,18 @@ export default class BotService {
 				after: number;
 				start_from: string;
 				end_at: string;
+				shared_contact_cards?: Types.ObjectId[];
+				attachments?: Types.ObjectId[];
+				polls?: {
+					title: string;
+					options: string[];
+					isMultiSelect: boolean;
+				}[];
 			}[];
 		}
 	) {
 		const bot = await BotDB.findById(id).populate('attachments shared_contact_cards');
+		const uploadService = new UploadService(this.user);
 		if (!bot) {
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
 		}
@@ -499,7 +540,19 @@ export default class BotService {
 			bot.polls = data.polls;
 		}
 		if (data.nurturing) {
-			bot.nurturing = data.nurturing;
+			bot.nurturing = await Promise.all(
+				data.nurturing.map(async (el) => {
+					const [_, attachments] = await uploadService.listAttachments(el.attachments);
+					const contacts = await ContactCardDB.find({
+						_id: { $in: el.shared_contact_cards },
+					});
+					return {
+						...el,
+						shared_contact_cards: contacts,
+						attachments,
+					};
+				})
+			);
 		}
 		bot.shared_contact_cards = await ContactCardDB.find({
 			_id: { $in: data.shared_contact_cards },
