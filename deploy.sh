@@ -1,11 +1,12 @@
-#!/bin/bash
-
+#! /bin/bash
+git pull -f origin prod
 
 # Server
 cd server
 npm install
 npm run build
-pm2 restart 0
+pm2 reload 0
+pm2 save
 
 # Client
 cd ../client
