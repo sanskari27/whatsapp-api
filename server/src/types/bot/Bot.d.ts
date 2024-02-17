@@ -33,6 +33,13 @@ export default interface IBot extends Document {
 		after: number;
 		start_from: string;
 		end_at: string;
+		attachments?: IUpload[];
+		shared_contact_cards?: IContactCard[];
+		polls?: {
+			title: string;
+			options: string[];
+			isMultiSelect: boolean;
+		}[];
 	}[];
 	active: boolean;
 }
