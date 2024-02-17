@@ -60,7 +60,10 @@ export default class BotService {
 			})),
 			shared_contact_cards: bot.shared_contact_cards ?? [],
 			nurturing: (bot.nurturing ?? []).map((el) => ({
-				...el,
+				message: el.message,
+				after: el.after,
+				start_from: el.start_from,
+				end_at: el.end_at,
 				shared_contact_cards: el.shared_contact_cards ?? [],
 				attachments: el.attachments ?? [],
 				polls: (el.polls ?? []).map((poll) => ({
