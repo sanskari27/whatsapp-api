@@ -54,6 +54,7 @@ const PaymentDetails = forwardRef<PaymentDetailsDrawerHandle>((_, ref) => {
 				transaction_status: record.transaction_status,
 				invoice_id: record.invoice_id,
 				coupon: record.coupon,
+				total_amount: record.gross_amount + record.tax - record.discount,
 			});
 			setIsOpen(true);
 		},
@@ -225,7 +226,7 @@ const PaymentDetails = forwardRef<PaymentDetailsDrawerHandle>((_, ref) => {
 									fontSize={'lg'}
 									color={theme === 'dark' ? 'whitesmoke' : 'black'}
 								>
-									{(record?.gross_amount ?? 0) + (record?.tax ?? 0) - (record?.discount ?? 0)}
+									{record?.total_amount}
 								</Text>
 							</HStack>
 						</HStack>
