@@ -1,3 +1,5 @@
+import { Poll } from "./PollState";
+
 export type BotState = {
 	all_bots: Bot[];
 	details: Bot;
@@ -48,5 +50,8 @@ export type Bot = {
 		after: number;
 		start_from: string;
 		end_at: string;
+		shared_contact_cards: string[];
+		attachments: string[];
+		polls: Poll[];
 	}[];
 };
