@@ -109,18 +109,30 @@ async function adminLogout(req: Request, res: Response, next: NextFunction) {
 	});
 }
 
-async function logoutUsers(req: Request, res: Response, next: NextFunction) {
-	const phone = req.body.phone;
-	if (!phone) {
+async function setAdminClientID(req: Request, res: Response, next: NextFunction) {
+	const { client_id } = req.body;
+	if (!client_id) {
 		return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
 	}
-	const userService = await UserService.getService(phone);
-	const client_ids = await userService.logout();
-	client_ids.forEach((id) => WhatsappProvider.getInstance(id).logoutClient());
+	const adminService = new AdminService(req.locals.admin);
+	await adminService.setClientID(client_id);
 	return Respond({
 		res,
 		status: 200,
-		data: {},
+		data: {
+			client_id,
+		},
+	});
+}
+
+async function getAdminClientID(req: Request, res: Response, next: NextFunction) {
+	const adminService = new AdminService(req.locals.admin);
+	return Respond({
+		res,
+		status: 200,
+		data: {
+			client_id: adminService.getClientID(),
+		},
 	});
 }
 
@@ -139,7 +151,8 @@ const AuthController = {
 	adminLogin,
 	adminLogout,
 	validateAdmin,
-	logoutUsers,
+	getAdminClientID,
+	setAdminClientID,
 };
 
 export default AuthController;

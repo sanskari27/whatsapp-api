@@ -62,6 +62,7 @@ const PaymentHistory = () => {
 							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'}>Name</Th>
 							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'}>Phone No</Th>
 							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'}>WhatsApp Numbers</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'}>Status</Th>
 							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'}>Amount</Th>
 						</Tr>
 					</Thead>
@@ -77,6 +78,9 @@ const PaymentHistory = () => {
 									<LineSkeleton />
 								</Td>
 
+								<Td>
+									<LineSkeleton />
+								</Td>
 								<Td>
 									<LineSkeleton />
 								</Td>
@@ -106,7 +110,8 @@ const PaymentHistory = () => {
 											<Box key={waIndex}>{number}</Box>
 										))}
 									</Td>
-									<Td>{user.gross_amount}</Td>
+									<Td>{user.transaction_status?.toUpperCase()}</Td>
+									<Td>{user.total_amount}</Td>
 								</Tr>
 							))
 						)}

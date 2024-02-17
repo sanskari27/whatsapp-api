@@ -1,6 +1,5 @@
 import {
 	Box,
-	Checkbox,
 	HStack,
 	Select,
 	SkeletonText,
@@ -23,11 +22,7 @@ import { popFromNavbar, pushToNavbar, setNavbarSearchText } from '../../../hooks
 import { useTheme } from '../../../hooks/useTheme';
 import UsersService from '../../../services/users.service';
 import { StoreNames, StoreState } from '../../../store';
-import {
-	addSelectedUsers,
-	removeSelectedUsers,
-	setUsersList,
-} from '../../../store/reducers/UsersReducer';
+import { setUsersList } from '../../../store/reducers/UsersReducer';
 import { User } from '../../../store/types/UsersState';
 import { NavbarSearchElement } from '../../components/navbar';
 import ExtendSubscriptionDialog, { ExtendSubscriptionDialogHandle } from './components';
@@ -39,7 +34,6 @@ const UsersPage = () => {
 	const dispatch = useDispatch();
 	const {
 		list,
-		selectedUsers,
 		uiDetails: { isFetching },
 	} = useSelector((state: StoreState) => state[StoreNames.USERS]);
 	const extendSubscriptionDialogRef = useRef<ExtendSubscriptionDialogHandle>(null);
@@ -131,21 +125,7 @@ const UsersPage = () => {
 							filtered.map((user, index) => {
 								return (
 									<Tr key={index} color={theme === 'dark' ? 'white' : 'black'}>
-										<Td>
-											<Checkbox
-												mr={'1rem'}
-												isChecked={selectedUsers.includes(user.id)}
-												onChange={(e) => {
-													if (e.target.checked) {
-														dispatch(addSelectedUsers(user.id));
-													} else {
-														dispatch(removeSelectedUsers(user.id));
-													}
-												}}
-												colorScheme='green'
-											/>
-											{index + 1}.
-										</Td>
+										<Td>{index + 1}.</Td>
 										<Td>{user.name}</Td>
 										<Td isNumeric>{user.phone}</Td>
 										<Td>{user.type}</Td>

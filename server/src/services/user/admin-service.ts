@@ -51,6 +51,14 @@ export default class AdminService {
 		return this.admin.getRefreshToken();
 	}
 
+	getClientID() {
+		return this.admin.client_id ?? '';
+	}
+	async setClientID(client_id: string) {
+		this.admin.client_id = client_id;
+		this.admin.save();
+	}
+
 	static async createUser({
 		name,
 		username,

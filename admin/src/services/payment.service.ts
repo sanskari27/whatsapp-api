@@ -26,6 +26,7 @@ export default class PaymentService {
 					},
 					gross_amount: payment.gross_amount ?? 0,
 					discount: payment.discount ?? 0,
+					total_amount: payment.total_amount ?? 0,
 					tax: payment.tax ?? 0,
 					transaction_status: payment.transaction_status ?? '',
 					invoice_id: payment.invoice_id ?? null,
