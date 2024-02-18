@@ -47,6 +47,8 @@ export default class BotService {
 			response_delay_seconds: bot.response_delay_seconds,
 			options: bot.options,
 			message: bot.message,
+			startAt: bot.startAt,
+			endAt: bot.endAt,
 			attachments: bot.attachments.map((attachment) => ({
 				id: attachment._id,
 				name: attachment.name,
@@ -93,6 +95,8 @@ export default class BotService {
 			response_delay_seconds: bot.response_delay_seconds,
 			options: bot.options,
 			message: bot.message,
+			startAt: bot.startAt,
+			endAt: bot.endAt,
 			attachments: bot.attachments.map((attachment) => ({
 				id: attachment._id,
 				name: attachment.name,
@@ -169,6 +173,11 @@ export default class BotService {
 			if (!is_recipient) {
 				return false;
 			}
+
+			if (!DateUtils.isTimeBetween(bot.startAt, bot.endAt, DateUtils.getMomentNow())) {
+				return false;
+			}
+
 			if (bot.trigger_gap_seconds > 0) {
 				const last_message_time = last_messages[bot.bot_id.toString()];
 				if (!isNaN(last_message_time) && last_message_time <= bot.trigger_gap_seconds) {
@@ -422,6 +431,8 @@ export default class BotService {
 		options: BOT_TRIGGER_OPTIONS;
 		trigger: string;
 		message: string;
+		startAt: string;
+		endAt: string;
 		shared_contact_cards: Types.ObjectId[];
 		attachments: IUpload[];
 		group_respond: boolean;
@@ -461,6 +472,8 @@ export default class BotService {
 			trigger_gap_seconds: bot.trigger_gap_seconds,
 			response_delay_seconds: bot.response_delay_seconds,
 			options: bot.options,
+			startAt: bot.startAt,
+			endAt: bot.endAt,
 			message: bot.message,
 			attachments: data.attachments.map((attachment) => ({
 				id: attachment._id,
@@ -483,6 +496,8 @@ export default class BotService {
 			response_delay_seconds?: number;
 			options?: BOT_TRIGGER_OPTIONS;
 			trigger?: string;
+			startAt?: string;
+			endAt?: string;
 			message?: string;
 			shared_contact_cards?: Types.ObjectId[];
 			attachments?: IUpload[];
@@ -533,6 +548,12 @@ export default class BotService {
 		if (data.options) {
 			bot.options = data.options;
 		}
+		if (data.startAt) {
+			bot.startAt = data.startAt;
+		}
+		if (data.endAt) {
+			bot.endAt = data.endAt;
+		}
 		if (data.message) {
 			bot.message = data.message;
 		}
@@ -573,6 +594,8 @@ export default class BotService {
 			trigger_gap_seconds: bot.trigger_gap_seconds,
 			response_delay_seconds: bot.response_delay_seconds,
 			options: bot.options,
+			startAt: bot.startAt,
+			endAt: bot.endAt,
 			message: bot.message,
 			attachments: bot.attachments.map((attachment) => ({
 				id: attachment._id,
@@ -602,6 +625,8 @@ export default class BotService {
 			trigger_gap_seconds: bot.trigger_gap_seconds,
 			response_delay_seconds: bot.response_delay_seconds,
 			options: bot.options,
+			startAt: bot.startAt,
+			endAt: bot.endAt,
 			message: bot.message,
 			attachments: bot.attachments.map((attachment) => ({
 				id: attachment._id,

@@ -10,6 +10,8 @@ const initialState: BotState = {
 		message: '',
 		respond_to: 'ALL',
 		options: 'INCLUDES_IGNORE_CASE',
+		startAt: '00:01',
+		endAt: '23:59',
 		attachments: [],
 		shared_contact_cards: [],
 		isActive: false,
@@ -135,6 +137,12 @@ const BotSlice = createSlice({
 			state.details.options = action.payload;
 			state.ui.optionsError = '';
 		},
+		setStartAt: (state, action: PayloadAction<typeof initialState.details.startAt>) => {
+			state.details.startAt = action.payload;
+		},
+		setEndAt: (state, action: PayloadAction<typeof initialState.details.endAt>) => {
+			state.details.endAt = action.payload;
+		},
 		setAttachments: (state, action: PayloadAction<typeof initialState.details.attachments>) => {
 			state.details.attachments = action.payload;
 			state.ui.attachmentError = '';
@@ -246,6 +254,8 @@ export const {
 	setEditingBot,
 	setForwardMessage,
 	setForwardTo,
+	setEndAt,
+	setStartAt,
 } = BotSlice.actions;
 
 export default BotSlice.reducer;

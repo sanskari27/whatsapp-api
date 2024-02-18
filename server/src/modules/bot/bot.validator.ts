@@ -11,6 +11,8 @@ export type CreateBotValidationResult = {
 	options: BOT_TRIGGER_OPTIONS;
 	trigger: string;
 	message: string;
+	startAt: string;
+	endAt: string;
 	shared_contact_cards: Types.ObjectId[];
 	attachments: Types.ObjectId[];
 	group_respond: boolean;
@@ -68,6 +70,8 @@ export async function CreateBotValidator(req: Request, res: Response, next: Next
 			.refine((attachments) => !attachments.some((value) => !Types.ObjectId.isValid(value)))
 			.transform((attachments) => attachments.map((value) => new Types.ObjectId(value))),
 		group_respond: z.boolean().default(false),
+		startAt: z.string().default("00:01"),
+		endAt: z.string().default("23:59"),
 		polls: z
 			.object({
 				title: z.string(),
