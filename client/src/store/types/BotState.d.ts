@@ -1,4 +1,4 @@
-import { Poll } from "./PollState";
+import { Poll } from './PollState';
 
 export type BotState = {
 	all_bots: Bot[];
@@ -32,6 +32,8 @@ export type Bot = {
 	trigger_gap_seconds: number;
 	response_delay_seconds: number;
 	options: string;
+	startAt: string;
+	endAt: string;
 	message: string;
 	attachments: string[];
 	shared_contact_cards: string[];

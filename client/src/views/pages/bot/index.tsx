@@ -9,6 +9,7 @@ import {
 	FormErrorMessage,
 	HStack,
 	IconButton,
+	Input,
 	Tag,
 	TagLabel,
 	Text,
@@ -29,6 +30,7 @@ import {
 	setAddingBot,
 	setAttachments,
 	setContactCards,
+	setEndAt,
 	setError,
 	setForwardMessage,
 	setForwardTo,
@@ -39,6 +41,7 @@ import {
 	setRespondTo,
 	setResponseDelayTime,
 	setResponseDelayType,
+	setStartAt,
 	setTrigger,
 	setTriggerGapTime,
 	setTriggerGapType,
@@ -467,6 +470,41 @@ export default function Bot() {
 							</HStack>
 							{ui.responseGapError && <FormErrorMessage>{ui.responseGapError}</FormErrorMessage>}
 						</FormControl>
+						<Flex flex={1} gap={'0.5rem'}>
+							<FormControl flex={1}>
+								<Text className='text-gray-700 dark:text-gray-400'>Start At (in IST)</Text>
+								<Input
+									type='time'
+									placeholder='00:00'
+									rounded={'md'}
+									border={'none'}
+									className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]'
+									_focus={{
+										border: 'none',
+										outline: 'none',
+									}}
+									value={details.startAt}
+									onChange={(e) => dispatch(setStartAt(e.target.value))}
+								/>
+							</FormControl>
+							<FormControl flex={1}>
+								<Text className='text-gray-700 dark:text-gray-400'>End At (in IST)</Text>
+								<Input
+									type='time'
+									width={'full'}
+									placeholder='23:59'
+									rounded={'md'}
+									border={'none'}
+									className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]'
+									_focus={{
+										border: 'none',
+										outline: 'none',
+									}}
+									value={details.endAt}
+									onChange={(e) => dispatch(setEndAt(e.target.value))}
+								/>
+							</FormControl>
+						</Flex>
 					</HStack>
 
 					{/*--------------------------------- ATTACHMENTS, CONTACTS & POLLS SECTION--------------------------- */}

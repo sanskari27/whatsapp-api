@@ -217,7 +217,18 @@ export default class UserService {
 		}
 	}
 
-	static async isValidAuth(client_id: string) {
+	static async isValidAuth(client_id: string): Promise<
+		| {
+				valid: false;
+				revoke_at: undefined;
+				user: undefined;
+		  }
+		| {
+				valid: true;
+				revoke_at: Date;
+				user: IUser;
+		  }
+	> {
 		const auth = await AuthDetailDB.findOne({
 			client_id,
 		}).populate('user');
@@ -225,6 +236,8 @@ export default class UserService {
 		if (!auth) {
 			return {
 				valid: false,
+				revoke_at: undefined,
+				user: undefined,
 			};
 		}
 
@@ -243,6 +256,8 @@ export default class UserService {
 		if (auth.isRevoked) {
 			return {
 				valid: false,
+				revoke_at: undefined,
+				user: undefined,
 			};
 		}
 		if (DateUtils.getMoment(auth.revoke_at).isBefore(DateUtils.getMomentNow())) {
@@ -253,6 +268,8 @@ export default class UserService {
 			}
 			return {
 				valid: false,
+				revoke_at: undefined,
+				user: undefined,
 			};
 		}
 
