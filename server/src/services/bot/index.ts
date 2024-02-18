@@ -407,7 +407,10 @@ export default class BotService {
 				recipient: message_from,
 				bot: bot_id,
 				last_message: DateUtils.getMomentNow().toDate(),
-				triggered_at: [DateUtils.getMomentNow().toDate()],
+				triggered_at: {
+					[opts.fromPoll ? 'POLL' : 'BOT']: [DateUtils.getMomentNow().toDate()],
+					[opts.fromPoll ? 'BOT' : 'POLL']: [],
+				},
 			});
 		}
 	}
