@@ -62,50 +62,54 @@ export const setAuth = (data: Partial<typeof initStatus>) =>
 
 socket.on(SOCKET_EVENT.INITIALIZED, (...args) => {
 	saveClientID(args[0]);
-});
 
-socket.on(SOCKET_EVENT.WHATSAPP_READY, () => {
-	setAuth({
-		isAuthenticated: true,
-		isAuthenticating: false,
-		qrCode: '',
-		qrGenerated: false,
-		isSocketInitialized: true,
+	socket.on(SOCKET_EVENT.QR_GENERATED, (...args) => {
+		setAuth({
+			qrCode: args[0],
+			isAuthenticating: true,
+			qrGenerated: true,
+			isSocketInitialized: false,
+			isAuthenticated: false,
+		});
 	});
-});
 
-socket.on(SOCKET_EVENT.WHATSAPP_AUTHENTICATED, () => {
-	setAuth({
-		isAuthenticated: true,
-		isAuthenticating: false,
-		qrCode: '',
-		qrGenerated: false,
-		isSocketInitialized: false,
+	socket.once(SOCKET_EVENT.WHATSAPP_READY, () => {
+		setAuth({
+			isAuthenticated: true,
+			isAuthenticating: false,
+			qrCode: '',
+			qrGenerated: false,
+			isSocketInitialized: true,
+		});
+		socket.off(SOCKET_EVENT.QR_GENERATED);
 	});
-});
 
-socket.on(SOCKET_EVENT.WHATSAPP_CLOSED, () => {
-	setAuth({
-		isAuthenticated: false,
-		isAuthenticating: false,
-		qrCode: '',
-		qrGenerated: false,
+	socket.once(SOCKET_EVENT.WHATSAPP_AUTHENTICATED, () => {
+		setAuth({
+			isAuthenticated: true,
+			isAuthenticating: false,
+			qrCode: '',
+			qrGenerated: false,
+			isSocketInitialized: false,
+		});
+		socket.off(SOCKET_EVENT.QR_GENERATED);
 	});
-	saveClientID('');
+
+	socket.once(SOCKET_EVENT.WHATSAPP_CLOSED, () => {
+		setAuth({
+			isAuthenticated: false,
+			isAuthenticating: false,
+			qrCode: '',
+			qrGenerated: false,
+		});
+		saveClientID('');
+	});
+
+	socket.on(SOCKET_EVENT.RE_INITIALIZE, (...args) => saveClientID(args[0]));
 });
 socket.on('disconnect', async () => {
 	await recheckNetwork();
 	// setAuth(initStatus);
-});
-
-socket.on(SOCKET_EVENT.QR_GENERATED, (...args) => {
-	setAuth({
-		qrCode: args[0],
-		isAuthenticating: true,
-		qrGenerated: true,
-		isSocketInitialized: false,
-		isAuthenticated: false,
-	});
 });
 
 export const startAuth = async () => {
