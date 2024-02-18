@@ -13,6 +13,14 @@ const userSchema = new Schema<IUser>(
 		userType: {
 			type: String,
 		},
+		business_details: {
+			description: String,
+			email: String,
+			websites: [String],
+			latitude: Number,
+			longitude: Number,
+			address: String,
+		},
 		subscription_expiry: Date,
 	},
 	{ timestamps: true }

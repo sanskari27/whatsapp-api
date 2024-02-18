@@ -151,26 +151,34 @@ export default class UserService {
 		name,
 		phone,
 		isBusiness,
+		business_details,
 	}: {
 		name?: string;
 		phone: string;
 		isBusiness?: boolean;
+		business_details?: {
+			description: string;
+			email: string;
+			websites: string[];
+			latitude: number;
+			longitude: number;
+			address: string;
+		};
 	}) {
 		const user = await UserDB.findOne({ phone });
 
 		if (user) {
-			let isUpdated = false;
-			if (isBusiness !== undefined && user.userType !== (isBusiness ? 'BUSINESS' : 'PERSONAL')) {
-				user.userType = isBusiness ? 'BUSINESS' : 'PERSONAL';
-				isUpdated = true;
-			}
-			if (name !== undefined && user.name !== name) {
-				user.name = name;
-				isUpdated = true;
-			}
-			if (isUpdated) {
-				await user.save();
-			}
+			user.userType = isBusiness ? 'BUSINESS' : 'PERSONAL';
+			user.name = name ?? '';
+			user.business_details = business_details ?? {
+				description: '',
+				email: '',
+				websites: [] as string[],
+				latitude: 0,
+				longitude: 0,
+				address: '',
+			};
+			await user.save();
 
 			return new UserService(user);
 		}
@@ -179,6 +187,14 @@ export default class UserService {
 			name,
 			phone,
 			userType: isBusiness ? 'BUSINESS' : 'PERSONAL',
+			business_details: business_details ?? {
+				description: '',
+				email: '',
+				websites: [] as string[],
+				latitude: 0,
+				longitude: 0,
+				address: '',
+			},
 		});
 
 		return new UserService(createdUser);
