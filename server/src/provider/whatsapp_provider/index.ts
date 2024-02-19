@@ -106,10 +106,7 @@ export class WhatsappProvider {
 		if (this.status !== STATUS.UNINITIALIZED) return;
 		this.client.initialize();
 		this.status = STATUS.INITIALIZED;
-		this.sendToClient({
-			event: SOCKET_RESPONSES.INITIALIZED,
-			data: this.client_id,
-		});
+		this.sendToClient(SOCKET_RESPONSES.INITIALIZED, this.client_id);
 	}
 
 	private async attachListeners() {
@@ -118,18 +115,13 @@ export class WhatsappProvider {
 				this.qrCode = await QRCode.toDataURL(qrCode);
 				this.status = STATUS.QR_READY;
 
-				this.sendToClient({
-					event: SOCKET_RESPONSES.QR_GENERATED,
-					data: this.qrCode,
-				});
+				this.sendToClient(SOCKET_RESPONSES.QR_GENERATED, this.qrCode);
 			} catch (err) {}
 		});
 
 		this.client.on('authenticated', async () => {
 			this.status = STATUS.AUTHENTICATED;
-			this.sendToClient({
-				event: SOCKET_RESPONSES.WHATSAPP_AUTHENTICATED,
-			});
+			this.sendToClient(SOCKET_RESPONSES.WHATSAPP_AUTHENTICATED);
 		});
 
 		this.client.on('ready', async () => {
@@ -154,9 +146,7 @@ export class WhatsappProvider {
 				business_details,
 			});
 
-			this.sendToClient({
-				event: SOCKET_RESPONSES.WHATSAPP_READY,
-			});
+			this.sendToClient(SOCKET_RESPONSES.WHATSAPP_READY);
 			this.status = STATUS.READY;
 
 			await this.user_service.login(this.client_id);
@@ -210,9 +200,7 @@ export class WhatsappProvider {
 			this.user_service?.logout(this.client_id);
 			this.logoutClient();
 
-			this.sendToClient({
-				event: SOCKET_RESPONSES.WHATSAPP_CLOSED,
-			});
+			this.sendToClient(SOCKET_RESPONSES.WHATSAPP_CLOSED);
 		});
 
 		this.client.on('message', async (message) => {
@@ -234,7 +222,7 @@ export class WhatsappProvider {
 		});
 	}
 
-	private async sendToClient({ event, data = null }: { event: SOCKET_RESPONSES; data?: any }) {
+	private async sendToClient(event: SOCKET_RESPONSES, data: string | null = null) {
 		if (!this.socket) return;
 		this.socket.emit(event, data);
 	}
@@ -245,27 +233,15 @@ export class WhatsappProvider {
 		if (this.status === STATUS.UNINITIALIZED) {
 			return;
 		} else if (this.status === STATUS.INITIALIZED) {
-			this.sendToClient({
-				event: SOCKET_RESPONSES.INITIALIZED,
-				data: this.client_id,
-			});
+			this.sendToClient(SOCKET_RESPONSES.INITIALIZED, this.client_id);
 		} else if (this.status === STATUS.QR_READY) {
-			this.sendToClient({
-				event: SOCKET_RESPONSES.QR_GENERATED,
-				data: this.qrCode,
-			});
+			this.sendToClient(SOCKET_RESPONSES.QR_GENERATED, this.qrCode);
 		} else if (this.status === STATUS.AUTHENTICATED) {
-			this.sendToClient({
-				event: SOCKET_RESPONSES.WHATSAPP_AUTHENTICATED,
-			});
+			this.sendToClient(SOCKET_RESPONSES.WHATSAPP_AUTHENTICATED);
 		} else if (this.status === STATUS.READY) {
-			this.sendToClient({
-				event: SOCKET_RESPONSES.WHATSAPP_READY,
-			});
+			this.sendToClient(SOCKET_RESPONSES.WHATSAPP_READY);
 		} else if (this.status === STATUS.DISCONNECTED) {
-			this.sendToClient({
-				event: SOCKET_RESPONSES.WHATSAPP_CLOSED,
-			});
+			this.sendToClient(SOCKET_RESPONSES.WHATSAPP_CLOSED);
 		}
 	}
 

@@ -15,6 +15,9 @@ export default interface IBot extends Document {
 
 	options: BOT_TRIGGER_OPTIONS;
 
+	startAt: string;
+	endAt: string;
+
 	message: string;
 	attachments: IUpload[];
 	shared_contact_cards: IContactCard[];
