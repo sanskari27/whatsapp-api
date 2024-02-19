@@ -27,7 +27,6 @@ export enum SOCKET_RESPONSES {
 	QR_GENERATED = 'qr-generated',
 	WHATSAPP_AUTHENTICATED = 'whatsapp-authenticated',
 	WHATSAPP_READY = 'whatsapp-ready',
-	RE_INITIALIZE = 're-initialize',
 	WHATSAPP_CLOSED = 'whatsapp-closed',
 }
 

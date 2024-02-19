@@ -37,13 +37,12 @@ export default class SocketServerProvider {
 			socket.on(SOCKET_EVENTS.INITIALIZE, async (cid: string | undefined) => {
 				let client_id = '';
 				if (cid) {
-					const { valid, user } = await UserService.isValidAuth(cid);
+					const { valid } = await UserService.isValidAuth(cid);
 					if (!valid) {
 						WhatsappProvider.deleteSession(cid);
 						client_id = generateClientID();
 					} else {
-						const existing_client_id = WhatsappProvider.clientByUser(user._id);
-						client_id = existing_client_id || cid;
+						client_id = cid;
 					}
 				} else {
 					client_id = generateClientID();
