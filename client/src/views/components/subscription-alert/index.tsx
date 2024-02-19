@@ -69,7 +69,7 @@ const SubscriptionAlert = () => {
 
 export function SubscriptionPopup({ isVisible }: { isVisible: boolean }) {
 	return (
-		<Alert hidden={!isVisible} status='warning'>
+		<Alert hidden={!isVisible} status='warning' rounded={'md'} my={2}>
 			<AlertIcon />
 			Seems this feature needs a subscription
 			<Link

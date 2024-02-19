@@ -38,7 +38,7 @@ export default class BotService {
 	public async allBots() {
 		const bots = await BotDB.find({
 			user: this.user,
-		}).populate('attachments shared_contact_cards');
+		}).populate('attachments shared_contact_cards ');
 		return bots.map((bot) => ({
 			bot_id: bot._id as Types.ObjectId,
 			respond_to: bot.respond_to,
@@ -252,6 +252,7 @@ export default class BotService {
 		const message_from = triggered_from.split('@')[0];
 
 		const botsEngaged = await this.botsEngaged({ message_body: body, message_from, contact });
+		const uploadService = new UploadService(this.user);
 
 		const whatsapp = this.whatsapp;
 
@@ -366,26 +367,31 @@ export default class BotService {
 				const dateGenerator = new TimeGenerator({
 					batch_size: 1,
 				});
-				const nurtured_messages = bot.nurturing.map((el) => {
-					const _variable = '{{public_name}}';
-					const custom_message = el.message.replace(
-						new RegExp(_variable, 'g'),
-						(contact.pushname || contact.name) ?? ''
-					);
-					dateGenerator.setStartTime(el.start_from).setEndTime(el.end_at);
-					return {
-						receiver: triggered_from,
-						message: custom_message,
-						sendAt: dateGenerator.next(el.after).value,
-						shared_contact_cards: el.shared_contact_cards as unknown as Types.ObjectId[],
-						polls: el.polls,
-						attachments: el.attachments.map((el) => ({
-							name: el.name,
-							filename: el.filename,
-							caption: el.caption,
-						})),
-					};
-				});
+				const nurtured_messages = await Promise.all(
+					bot.nurturing.map(async (el) => {
+						const _variable = '{{public_name}}';
+						const custom_message = el.message.replace(
+							new RegExp(_variable, 'g'),
+							(contact.pushname || contact.name) ?? ''
+						);
+						dateGenerator.setStartTime(el.start_from).setEndTime(el.end_at);
+						const [_attachments] = await uploadService.listAttachments(
+							el.attachments as unknown as Types.ObjectId[]
+						);
+						return {
+							receiver: triggered_from,
+							message: custom_message,
+							sendAt: dateGenerator.next(el.after).value,
+							shared_contact_cards: el.shared_contact_cards as unknown as Types.ObjectId[],
+							polls: el.polls,
+							attachments: _attachments.map((el) => ({
+								name: el.name,
+								filename: el.filename,
+								caption: el.caption,
+							})),
+						};
+					})
+				);
 				this.messageSchedulerService.scheduleLeadNurturingMessage(nurtured_messages);
 			}
 		});
