@@ -146,14 +146,6 @@ export class WhatsappProvider {
 				business_details,
 			});
 
-			const existing_client_id = WhatsappProvider.clientByUser(this.user_service.getID());
-			if (existing_client_id) {
-				this.sendToClient(SOCKET_RESPONSES.RE_INITIALIZE, existing_client_id);
-				this.sendToClient(SOCKET_RESPONSES.WHATSAPP_READY);
-				this.logoutClient();
-				return;
-			}
-
 			this.sendToClient(SOCKET_RESPONSES.WHATSAPP_READY);
 			this.status = STATUS.READY;
 
