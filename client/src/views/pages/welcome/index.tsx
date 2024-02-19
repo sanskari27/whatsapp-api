@@ -6,7 +6,7 @@ import { GREEN_SHADOW, LOGO, WELCOME_TYPING } from '../../../assets/Images';
 import { NAVIGATION } from '../../../config/const';
 import { startAuth, useAuth } from '../../../hooks/useAuth';
 import { useNetwork } from '../../../hooks/useNetwork';
-import QRLogo from '../../components/qr-logo';
+import QRLogo from '../../components/qr-image';
 
 export default function Welcome() {
 	const status = useNetwork();

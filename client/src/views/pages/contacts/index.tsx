@@ -35,7 +35,7 @@ import {
 import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
 import ExporterModal, { ExportsModalHandler } from '../../components/exporter';
 import { NavbarDeleteElement, NavbarSearchElement } from '../../components/navbar';
-import QrImage from '../../components/qr-image';
+import QRImage from '../../components/qr-image/QRImage';
 import ContactInputDialog, { ContactInputDialogHandle } from './components/contact-input-dialog';
 
 const ContactsPage = () => {
@@ -135,7 +135,7 @@ const ContactsPage = () => {
 									{index + 1}.
 								</Td>
 								<Td>
-									<QrImage base64={contact.base64} />
+									<QRImage base64={contact.base64} />
 								</Td>
 								<Td>
 									<Box>

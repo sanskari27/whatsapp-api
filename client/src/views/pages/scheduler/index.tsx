@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { AddIcon, EditIcon, InfoOutlineIcon } from '@chakra-ui/icons';
+import { InfoOutlineIcon } from '@chakra-ui/icons';
 import {
 	AlertDialog,
 	AlertDialogContent,
@@ -12,11 +11,9 @@ import {
 	Divider,
 	Flex,
 	FormControl,
-	FormErrorMessage,
 	FormLabel,
 	HStack,
 	Heading,
-	IconButton,
 	Input,
 	Select,
 	Tab,
@@ -25,54 +22,43 @@ import {
 	TabPanels,
 	Tabs,
 	Text,
-	Textarea,
 	VStack,
 	useDisclosure,
 } from '@chakra-ui/react';
-import Multiselect from 'multiselect-react-dropdown';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { MdCampaign, MdDelete } from 'react-icons/md';
+import { MdCampaign } from 'react-icons/md';
 import { useDispatch, useSelector } from 'react-redux';
 import { NAVIGATION } from '../../../config/const';
 import { popFromNavbar, pushToNavbar } from '../../../hooks/useNavbar';
-import useTemplate from '../../../hooks/useTemplate';
 import { useTheme } from '../../../hooks/useTheme';
 import MessageService from '../../../services/message.service';
 import { StoreNames, StoreState } from '../../../store';
 import {
 	addScheduler,
 	reset,
+	setAPIError,
 	setAttachments,
 	setBatchDelay,
 	setBatchSize,
 	setCSVFile,
 	setCampaignName,
+	setCampaignNameError,
 	setContactCards,
-	setDescription,
 	setEndTime,
-	setGroupRecipients,
-	setLabelRecipients,
-	setMaxDelay,
-	setMessage,
+	setMessageError,
 	setMinDelay,
 	setPolls,
 	setRecipients,
+	setRecipientsError,
 	setRecipientsFrom,
 	setStartTime,
 	setStateDate,
 	setVariables,
 } from '../../../store/reducers/SchedulerReducer';
-import PollInputDialog, { PollInputDialogHandle } from '../../components/polls-input-dialog';
-import AttachmentSelectorDialog, {
-	AttachmentDialogHandle,
-} from '../../components/selector-dialog/AttachmentSelectorDialog';
-import ContactSelectorDialog, {
-	ContactDialogHandle,
-} from '../../components/selector-dialog/ContactSelectorDialog';
+import AddOns from '../../components/add-ons';
 import SubscriptionAlert, { SubscriptionPopup } from '../../components/subscription-alert';
-import Variables from '../../components/variables';
-import { MessageSchedulerList, TemplateNameInputDialog } from './components';
-import NumberInputDialog from './components/numbers-input-dialog';
+import { MessageInputSection, MessageSchedulerList } from './components';
+import CampaignDetailsSection from './components/campaign-details-section';
 
 export type SchedulerDetails = {
 	type: 'NUMBERS' | 'CSV' | 'GROUP' | 'LABEL' | 'GROUP_INDIVIDUAL';
@@ -93,42 +79,9 @@ export type SchedulerDetails = {
 	batch_size: number;
 };
 
-const DEFAULT_POLL = [
-	{
-		title: '',
-		options: ['', ''],
-		isMultiSelect: false,
-	},
-];
-
 export default function Scheduler() {
-	const attachmentRef = useRef<AttachmentDialogHandle>(null);
-	const contactRef = useRef<ContactDialogHandle>(null);
-	const messageRef = useRef(0);
-	const pollInputRef = useRef<PollInputDialogHandle>(null);
 	const dispatch = useDispatch();
 	const theme = useTheme();
-	const {
-		templates,
-		add: addToTemplate,
-		addingTemplate,
-		update: updateTemplate,
-		remove: removeTemplate,
-	} = useTemplate();
-	const [selectedTemplate, setSelectedTemplate] = useState({
-		id: '',
-		name: '',
-	});
-	const {
-		isOpen: isNameInputOpen,
-		onOpen: openNameInput,
-		onClose: closeNameInput,
-	} = useDisclosure();
-	const {
-		isOpen: isNumberInputOpen,
-		onOpen: openNumberInput,
-		onClose: closeNumberInput,
-	} = useDisclosure();
 
 	const {
 		isOpen: successCampaignCreation,
@@ -140,23 +93,24 @@ export default function Scheduler() {
 		uploadingCSV: boolean;
 		deletingCSV: boolean;
 		recipientsLoading: boolean;
-		messageError: string;
 		loadingVerifiedContacts: boolean;
 		schedulingMessages: boolean;
 	}>({
 		uploadingCSV: false,
 		deletingCSV: false,
 		recipientsLoading: false,
-		messageError: '',
 		loadingVerifiedContacts: false,
 		schedulingMessages: false,
 	});
 
-	const { details, recipients, all_schedulers } = useSelector(
-		(state: StoreState) => state[StoreNames.SCHEDULER]
-	);
+	const {
+		details,
+		recipients,
+		all_schedulers,
+		ui: { apiError, campaignNameError, recipientsError },
+	} = useSelector((state: StoreState) => state[StoreNames.SCHEDULER]);
 
-	const { canSendMessage, groups, labels, userType } = useSelector(
+	const { canSendMessage, groups, labels } = useSelector(
 		(state: StoreState) => state[StoreNames.USER]
 	);
 	const { list: csvList } = useSelector((state: StoreState) => state[StoreNames.CSV]);
@@ -167,18 +121,17 @@ export default function Scheduler() {
 			item.headers.includes('month')
 	);
 
-	const [error, setError] = useState({
-		campaignName: '',
-		message: '',
-		minDelay: '',
-		maxDelay: '',
-		startTime: '',
-		endTime: '',
-		batchDelay: '',
-		batchSize: '',
-		recipients: '',
-		apiError: '',
-	});
+	// const [error, setError] = useState({
+	// 	campaignName: '',
+	// 	minDelay: '',
+	// 	maxDelay: '',
+	// 	startTime: '',
+	// 	endTime: '',
+	// 	batchDelay: '',
+	// 	batchSize: '',
+	// 	recipients: '',
+	// 	apiError: '',
+	// });
 
 	useEffect(() => {
 		pushToNavbar({
@@ -204,50 +157,28 @@ export default function Scheduler() {
 		[dispatch, groups, labels, csvList]
 	);
 
-	const setSelectedRecipients = (ids: string[]) => {
-		if (details.type === 'GROUP' || details.type === 'GROUP_INDIVIDUAL') {
-			dispatch(setGroupRecipients(ids));
-		} else if (details.type === 'LABEL') {
-			dispatch(setLabelRecipients(ids));
-		}
-	};
-
-	const scheduleMessage = () => {
+	const validate = () => {
+		let hasError = false;
 		if (!details.campaign_name) {
-			setError((prev) => ({
-				...prev,
-				campaignName: 'Campaign Name is required',
-			}));
-			return;
+			dispatch(setCampaignNameError(true));
+			hasError = true;
 		}
 
 		if (details.type === 'CSV' && details.csv_file === '') {
-			setError((prev) => ({
-				...prev,
-				recipients: 'Recipients are required',
-			}));
-			return;
+			dispatch(setRecipientsError(true));
+			hasError = true;
 		}
 		if (details.type === 'GROUP' && details.group_ids.length === 0) {
-			setError((prev) => ({
-				...prev,
-				recipients: 'Recipients are required',
-			}));
-			return;
+			dispatch(setRecipientsError(true));
+			hasError = true;
 		}
 		if (details.type === 'GROUP_INDIVIDUAL' && details.group_ids.length === 0) {
-			setError((prev) => ({
-				...prev,
-				recipients: 'Recipients are required',
-			}));
-			return;
+			dispatch(setRecipientsError(true));
+			hasError = true;
 		}
 		if (details.type === 'LABEL' && details.label_ids.length === 0) {
-			setError((prev) => ({
-				...prev,
-				recipients: 'Recipients are required',
-			}));
-			return;
+			dispatch(setRecipientsError(true));
+			hasError = true;
 		}
 		if (
 			!details.message &&
@@ -255,38 +186,14 @@ export default function Scheduler() {
 			details.shared_contact_cards.length === 0 &&
 			details.polls.length === 0
 		) {
-			setError((prev) => ({
-				...prev,
-				message: 'Message, attachment, contact card or poll is required ',
-			}));
-			return;
+			dispatch(setMessageError(true));
+			hasError = true;
 		}
-		if (details.min_delay < 1) {
-			setError((prev) => ({
-				...prev,
-				minDelay: 'Minimum Delay is required',
-			}));
-			return;
-		}
-		if (details.max_delay < 1) {
-			setError((prev) => ({
-				...prev,
-				maxDelay: 'Maximum Delay is required',
-			}));
-			return;
-		}
-		if (details.batch_size < 1) {
-			setError((prev) => ({
-				...prev,
-				batchSize: 'Batch Size is required',
-			}));
-			return;
-		}
-		if (details.batch_delay < 1) {
-			setError((prev) => ({
-				...prev,
-				batchDelay: 'Batch Delay is required',
-			}));
+		return !hasError;
+	};
+
+	const scheduleMessage = () => {
+		if (!validate()) {
 			return;
 		}
 		setUIDetails((prev) => ({
@@ -299,15 +206,9 @@ export default function Scheduler() {
 					...prev,
 					schedulingMessages: false,
 				}));
-				setError((prev) => ({
-					...prev,
-					apiError: errorMessage,
-				}));
+				dispatch(setAPIError(errorMessage));
 				setTimeout(() => {
-					setError((prev) => ({
-						...prev,
-						apiError: '',
-					}));
+					dispatch(setAPIError(''));
 				}, 5000);
 				return;
 			}
@@ -321,31 +222,7 @@ export default function Scheduler() {
 	};
 
 	const handleScheduleMessage = () => {
-		if (!details.campaign_name) {
-			setError((prev) => ({
-				...prev,
-				campaignName: 'Campaign Name is required',
-			}));
-			return;
-		}
-
-		if (details.type === 'CSV' && details.csv_file === '') {
-			setError((prev) => ({
-				...prev,
-				recipients: 'Recipients are required',
-			}));
-			return;
-		}
-		if (
-			!details.message &&
-			details.attachments.length === 0 &&
-			details.shared_contact_cards.length === 0 &&
-			details.polls.length === 0
-		) {
-			setError((prev) => ({
-				...prev,
-				message: 'Message, attachment, contact card or poll is required ',
-			}));
+		if (!validate()) {
 			return;
 		}
 
@@ -372,16 +249,6 @@ export default function Scheduler() {
 				dispatch(addScheduler(res));
 			})
 			.catch(() => {});
-	};
-
-	const insertVariablesToMessage = (variable: string) => {
-		dispatch(
-			setMessage(
-				details.message.substring(0, messageRef.current) +
-					variable +
-					details.message.substring(messageRef.current ?? 0, details.message.length)
-			)
-		);
 	};
 
 	useEffect(() => {
@@ -425,597 +292,88 @@ export default function Scheduler() {
 								Campaign Details
 							</Heading>
 							<Box marginTop={'1rem'}>
-								<Flex direction={'column'}>
-									<HStack>
-										<FormControl flex={2} isInvalid={!!error.campaignName}>
-											<FormLabel color={theme === 'dark' ? 'white' : 'zinc.500'}>
-												Campaign Name
-											</FormLabel>
-											<Input
-												color={theme === 'dark' ? 'white' : 'gray.800'}
-												type='text'
-												value={details.campaign_name}
-												onChange={(e) => {
-													setError((prev) => ({
-														...prev,
-														campaignName: '',
-													}));
-													dispatch(setCampaignName(e.target.value));
-												}}
-											/>
-											{error.campaignName && (
-												<FormErrorMessage>{error.campaignName}</FormErrorMessage>
-											)}
-										</FormControl>
-										<FormControl flex={1}>
-											<FormLabel color={theme === 'dark' ? 'white' : 'GrayText'}>
-												Description
-											</FormLabel>
-											<Input
-												value={details.description}
-												onChange={(e) => dispatch(setDescription(e.target.value))}
-												placeholder={'Enter Campaign Description'}
-											/>
-										</FormControl>
-									</HStack>
-									{/* --------------------------RECIPIENTS INPUT------------------------ */}
-									<HStack alignItems={'start'} pt={4}>
-										<FormControl>
-											<FormLabel color={theme === 'dark' ? 'white' : 'GrayText'}>
-												Recipients From
-											</FormLabel>
-											<Select
-												className={`!bg-[#ECECEC] dark:!bg-[#535353] rounded-md w-full ${
-													details.type
-														? ' text-black dark:text-white'
-														: ' text-gray-700 dark:text-gray-400'
-												}`}
-												border={'none'}
-												value={details.type}
-												onChange={(e) => {
-													setError((prev) => ({
-														...prev,
-														recipients: '',
-													}));
-													dispatch(
-														setRecipientsFrom(
-															e.target.value as
-																| 'NUMBERS'
-																| 'CSV'
-																| 'GROUP'
-																| 'LABEL'
-																| 'GROUP_INDIVIDUAL'
-														)
-													);
-													fetchRecipients(e.target.value);
-												}}
-											>
-												<option
-													className="'text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
-													value='NUMBERS'
-												>
-													Numbers
-												</option>
-												<option
-													className="'text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
-													value='CSV'
-												>
-													CSV
-												</option>
-												<option
-													className="'text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
-													value='GROUP'
-												>
-													Groups
-												</option>
-												<option
-													className="'text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
-													value='GROUP_INDIVIDUAL'
-												>
-													Group Individuals
-												</option>
-												{userType === 'BUSINESS' ? (
-													<option
-														className="'text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] "
-														value='LABEL'
-													>
-														Labels
-													</option>
-												) : null}
-											</Select>
-										</FormControl>
-										<FormControl
-											alignItems='flex-end'
-											justifyContent={'space-between'}
-											width={'full'}
-											isInvalid={!!error.recipients}
-										>
-											<FormLabel color={theme === 'dark' ? 'white' : 'GrayText'}>
-												{details.type === 'NUMBERS'
-													? 'Selected Numbers'
-													: 'Choose Existing Database'}
-											</FormLabel>
-											{details.type === 'CSV' ? (
-												<Flex direction={'column'} gap={2}>
-													<Select
-														className='!bg-[#ECECEC] dark:!bg-[#535353] rounded-md w-full text-black dark:text-white '
-														border={'none'}
-														value={details.csv_file}
-														onChange={(e) => {
-															setError((prev) => ({
-																...prev,
-																recipients: '',
-															}));
-															dispatch(setCSVFile(e.target.value));
-															const recipient = recipients.find(
-																(recipient) => recipient.id === e.target.value
-															);
-															if (!recipient || !recipient.headers) return;
-															if (recipient) dispatch(setVariables(recipient.headers));
-														}}
-													>
-														<option
-															value={'select'}
-															className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] '
-														>
-															Select one!
-														</option>
-														{recipients.map(({ id, name }) => (
-															<option
-																className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] '
-																value={id}
-																key={id}
-															>
-																{name}
-															</option>
-														))}
-													</Select>
-												</Flex>
-											) : details.type === 'NUMBERS' ? (
-												<Flex direction={'column'} gap={2} justifyContent={'center'}>
-													<Button
-														className='!bg-[#ECECEC] dark:!bg-[#535353] rounded-md w-full text-black dark:text-white '
-														onClick={openNumberInput}
-													>
-														<Text>Selected Numbers ({details.numbers?.length ?? 0})</Text>
-													</Button>
-												</Flex>
-											) : (
-												<Multiselect
-													disable={uiDetails.recipientsLoading}
-													displayValue='displayValue'
-													placeholder={
-														details.type === 'GROUP'
-															? 'Select Groups'
-															: details.type === 'GROUP_INDIVIDUAL'
-															? 'Select Groups'
-															: details.type === 'LABEL'
-															? 'Select Labels'
-															: 'Select One!'
-													}
-													onRemove={(selectedList) =>
-														setSelectedRecipients(selectedList.map((label: any) => label.id))
-													}
-													onSelect={(selectedList) => {
-														setError((prev) => ({
-															...prev,
-															recipients: '',
-														}));
-														setSelectedRecipients(selectedList.map((label: any) => label.id));
-													}}
-													showCheckbox={true}
-													hideSelectedList={true}
-													options={recipients.map((item, index) => ({
-														...item,
-														displayValue: `${index + 1}. ${item.name}`,
-													}))}
-													style={{
-														searchBox: {
-															border: 'none',
-														},
-														inputField: {
-															width: '100%',
-														},
-													}}
-													className='  bg-[#ECECEC] dark:bg-[#535353] rounded-md border-none '
-												/>
-											)}
-											{error.recipients && <FormErrorMessage>{error.recipients}</FormErrorMessage>}
-										</FormControl>
-									</HStack>
-								</Flex>
+								<CampaignDetailsSection fetchRecipients={fetchRecipients} />
 
 								<HStack gap={8} alignItems={'start'}>
-									<Flex flex={1} direction={'column'} gap={2}>
-										{/* ----------------------------MESSAGE INPUT SECTION------------------- */}
-										<Box justifyContent={'space-between'}>
-											<Text className='text-gray-700 dark:text-white' py={4} fontWeight={'medium'}>
-												Message Section
-											</Text>
-											<Text className='text-gray-700 dark:text-white' size={'m'}>
-												Write a message or select from a template
-											</Text>
-											<Flex gap={3} alignItems={'center'}>
-												<Select
-													className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] '
-													border={'none'}
-													rounded={'md'}
-													onChange={(e) => {
-														setError((prev) => ({
-															...prev,
-															message: '',
-														}));
-														dispatch(setMessage(e.target.value));
-														setSelectedTemplate({
-															id: e.target[e.target.selectedIndex].getAttribute('data-id') ?? '',
-															name:
-																e.target[e.target.selectedIndex].getAttribute('data-name') ?? '',
-														});
-													}}
-												>
-													<option
-														className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] '
-														value={''}
-													>
-														Select template!
-													</option>
-													{(templates ?? []).map(({ name, message, id }, index) => (
-														<option
-															className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] '
-															value={message}
-															key={index}
-															data-id={id}
-															data-name={name}
-														>
-															{name}
-														</option>
-													))}
-												</Select>
-												<HStack>
-													<Button
-														width={'200px'}
-														colorScheme='green'
-														aria-label='Add Template'
-														rounded={'md'}
-														isLoading={addingTemplate}
-														leftIcon={<AddIcon />}
-														onClick={() => {
-															if (!details.message) return;
-															openNameInput();
-														}}
-														fontSize={'sm'}
-														px={4}
-													>
-														Add Template
-													</Button>
-													<IconButton
-														aria-label='Edit'
-														icon={<EditIcon />}
-														color={'yellow.600'}
-														isDisabled={!selectedTemplate.id}
-														onClick={() =>
-															updateTemplate(
-																selectedTemplate.id,
-																selectedTemplate.name,
-																details.message
-															)
-														}
-													/>
-													<IconButton
-														aria-label='Delete'
-														icon={<MdDelete />}
-														color={'red.400'}
-														isDisabled={!selectedTemplate.id}
-														onClick={() => removeTemplate(selectedTemplate.id)}
-													/>
-												</HStack>
-											</Flex>
-										</Box>
-										<FormControl isInvalid={!!error.message}>
-											<Textarea
-												width={'full'}
-												minHeight={'80px'}
-												size={'sm'}
-												rounded={'md'}
-												placeholder={
-													details.type === 'CSV'
-														? 'Type your message here. \nex. Hello {{name}}, you are invited to join fanfest on {{date}}'
-														: 'Type your message here. \nex. You are invited to join fanfest'
-												}
-												border={'none'}
-												className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]'
-												_placeholder={{
-													opacity: 0.4,
-													color: 'inherit',
-												}}
-												_focus={{ border: 'none', outline: 'none' }}
-												value={details.message ?? ''}
-												onMouseUp={(e: React.MouseEvent<HTMLTextAreaElement, MouseEvent>) => {
-													if (e.target instanceof HTMLTextAreaElement) {
-														messageRef.current = e.target.selectionStart;
-													}
-												}}
-												onChange={(e) => {
-													messageRef.current = e.target.selectionStart;
-													setError((prev) => ({
-														...prev,
-														message: '',
-													}));
-													dispatch(setMessage(e.target.value));
-												}}
-											/>
-											{error.message && <FormErrorMessage>{error.message}</FormErrorMessage>}
-										</FormControl>
-
-										<Box hidden={details.type !== 'CSV'}>
-											<Text
-												className='text-gray-700 dark:text-white'
-												hidden={details.variables.length === 0}
-											>
-												Variables
-											</Text>
-											<Box>
-												<Variables
-													data={details.variables}
-													onVariableSelect={insertVariablesToMessage}
-												/>
-											</Box>
-										</Box>
-										{/* --------------------------------ATTACHMENT, CONTACT & POLL INPUT SECTION--------------- */}
-										<HStack>
-											<Box flex={1}>
-												<Text className='text-gray-700 dark:text-gray-400'>Attachments</Text>
-												<Button
-													width={'full'}
-													variant={'outline'}
-													colorScheme='green'
-													onClick={() => {
-														attachmentRef.current?.open(details.attachments);
-													}}
-												>
-													Select Attachment ({details.attachments.length})
-												</Button>
-											</Box>
-											<Box flex={1}>
-												<Text className='text-gray-700 dark:text-gray-400'>Share Contact</Text>
-												<Button
-													width={'full'}
-													variant={'outline'}
-													colorScheme='green'
-													onClick={() => {
-														contactRef.current?.open(details.shared_contact_cards);
-													}}
-												>
-													Select Contact ({details.shared_contact_cards.length})
-												</Button>
-											</Box>
-										</HStack>
-										<Box flex={1}>
-											<Text className='text-gray-700 dark:text-gray-400'>Create Polls</Text>
-											<Button
-												width={'full'}
-												variant={'outline'}
-												colorScheme='green'
-												onClick={() => {
-													pollInputRef.current?.open(
-														details.polls.length === 0 ? DEFAULT_POLL : details.polls
-													);
-												}}
-											>
-												Add Polls ({details.polls.length}) added
-											</Button>
-										</Box>
-									</Flex>
+									<Box marginTop={'0.5rem'} paddingTop={2} flex={1}>
+										<MessageInputSection />
+									</Box>
 									{/* ----------------------MESSAGE DELAY INPUT SECTION---------------- */}
-									<FormControl flex={1} display={'flex'} flexDirection={'column'} gap={2}>
-										<Box justifyContent={'space-between'}>
-											<Text className='text-gray-700 dark:text-white' fontWeight={'medium'} py={4}>
-												Message Delay
-											</Text>
-											<Flex gap={2}>
-												<FormControl isInvalid={!!error.minDelay} flexGrow={1}>
-													<Text fontSize='sm' className='text-gray-700 dark:text-white'>
-														Minimum Delay (in sec)
-													</Text>
-													<Input
-														width={'full'}
-														placeholder='5'
-														rounded={'md'}
-														border={'none'}
-														className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]'
-														_focus={{
-															border: 'none',
-															outline: 'none',
-														}}
-														type='number'
-														min={1}
-														value={details.min_delay.toString()}
-														onChange={(e) => {
-															setError((prev) => ({
-																...prev,
-																minDelay: '',
-															}));
-															dispatch(setMinDelay(Number(e.target.value)));
-														}}
-													/>
-													{error.minDelay && <FormErrorMessage>{error.minDelay}</FormErrorMessage>}
-												</FormControl>
-												<FormControl isInvalid={!!error.maxDelay} flexGrow={1}>
-													<Text fontSize='sm' className='text-gray-700 dark:text-white'>
-														Maximum Delay (in sec)
-													</Text>
-													<Input
-														width={'full'}
-														placeholder='55'
-														rounded={'md'}
-														border={'none'}
-														className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]'
-														_focus={{
-															border: 'none',
-															outline: 'none',
-														}}
-														type='number'
-														min={1}
-														value={details.max_delay.toString()}
-														onChange={(e) => {
-															setError((prev) => ({
-																...prev,
-																maxDelay: '',
-															}));
-															dispatch(setMaxDelay(Number(e.target.value)));
-														}}
-													/>
-													{error.maxDelay && <FormErrorMessage>{error.maxDelay}</FormErrorMessage>}
-												</FormControl>
-											</Flex>
-										</Box>
+									<Flex flex={1} flexDirection={'column'} gap={3}>
+										<Text
+											className='text-gray-700 dark:text-white'
+											fontWeight={'medium'}
+											marginTop={'1rem'}
+										>
+											Message Delay
+										</Text>
+										<Flex gap={4}>
+											<DelayInput
+												placeholder='Min Delay (in sec)'
+												value={details.min_delay}
+												onChange={(num) => dispatch(setMinDelay(num))}
+											/>
+											<DelayInput
+												placeholder='Min Delay (in sec)'
+												value={details.min_delay}
+												onChange={(num) => dispatch(setMinDelay(num))}
+											/>
+											<DelayInput
+												placeholder='Batch Size'
+												value={details.batch_size}
+												onChange={(num) => dispatch(setBatchSize(num))}
+											/>
+											<DelayInput
+												placeholder='Batch Delay'
+												value={details.batch_delay}
+												onChange={(num) => dispatch(setBatchDelay(num))}
+											/>
+										</Flex>
 
-										<Box justifyContent={'space-between'}>
-											<Text
-												className='text-gray-700 dark:text-white'
-												fontWeight={'medium'}
-												pt={4}
-												pb={2}
-											>
-												Batch Setting
-											</Text>
-											<Flex gap={2}>
-												<FormControl isInvalid={!!error.batchSize} flexGrow={1}>
-													<Text fontSize='sm' className='text-gray-700 dark:text-white'>
-														Batch Size
-													</Text>
-													<Input
-														width={'full'}
-														placeholder='5'
-														rounded={'md'}
-														border={'none'}
-														className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]'
-														_focus={{
-															border: 'none',
-															outline: 'none',
-														}}
-														type='number'
-														min={1}
-														value={details.batch_size.toString()}
-														onChange={(e) => {
-															setError((prev) => ({
-																...prev,
-																batchSize: '',
-															}));
-															dispatch(setBatchSize(Number(e.target.value)));
-														}}
-													/>
-													{error.batchSize && (
-														<FormErrorMessage>{error.batchSize}</FormErrorMessage>
-													)}
-												</FormControl>
-												<FormControl isInvalid={!!error.batchDelay} flexGrow={1}>
-													<Text fontSize='sm' className='text-gray-700 dark:text-white'>
-														Batch Delay (in sec)
-													</Text>
-													<Input
-														width={'full'}
-														placeholder='55'
-														rounded={'md'}
-														border={'none'}
-														className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]'
-														_focus={{
-															border: 'none',
-															outline: 'none',
-														}}
-														type='number'
-														min={1}
-														value={details.batch_delay.toString()}
-														onChange={(e) => {
-															setError((prev) => ({
-																...prev,
-																batchDelay: '',
-															}));
-															dispatch(setBatchDelay(Number(e.target.value)));
-														}}
-													/>
-													{error.batchDelay && (
-														<FormErrorMessage>{error.batchDelay}</FormErrorMessage>
-													)}
-												</FormControl>
-											</Flex>
-										</Box>
-
-										<Box justifyContent={'space-between'}>
-											<Text
-												className='text-gray-700 dark:text-white'
-												fontWeight={'medium'}
-												pt={4}
-												pb={2}
-											>
-												Schedule Setting
-											</Text>
-											<Flex gap={2}>
-												<Box flexGrow={1}>
-													<Text fontSize='sm' className='text-gray-700 dark:text-white'>
-														Start Date
-													</Text>
-													<Input
-														type='date'
-														width={'full'}
-														placeholder='00:00'
-														rounded={'md'}
-														border={'none'}
-														className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]'
-														_focus={{
-															border: 'none',
-															outline: 'none',
-														}}
-														value={details.startDate}
-														onChange={(e) => dispatch(setStateDate(e.target.value))}
-													/>
-												</Box>
-												<Box flexGrow={1}>
-													<Text fontSize='sm' className='text-gray-700 dark:text-white'>
-														Start At (in IST)
-													</Text>
-													<Input
-														type='time'
-														width={'full'}
-														placeholder='00:00'
-														rounded={'md'}
-														border={'none'}
-														className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]'
-														_focus={{
-															border: 'none',
-															outline: 'none',
-														}}
-														value={details.startTime}
-														onChange={(e) => dispatch(setStartTime(e.target.value))}
-													/>
-												</Box>
-												<Box flexGrow={1}>
-													<Text fontSize='sm' className='text-gray-700 dark:text-white'>
-														End At (in IST)
-													</Text>
-													<Input
-														type='time'
-														width={'full'}
-														placeholder='23:59'
-														rounded={'md'}
-														border={'none'}
-														className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]'
-														_focus={{
-															border: 'none',
-															outline: 'none',
-														}}
-														value={details.endTime}
-														onChange={(e) => dispatch(setEndTime(e.target.value))}
-													/>
-												</Box>
-											</Flex>
-										</Box>
-									</FormControl>
+										<Flex gap={2}>
+											<FormControl flexGrow={1}>
+												<Text fontSize='sm' className='text-gray-700 dark:text-white'>
+													Start Date
+												</Text>
+												<Input
+													type='date'
+													width={'full'}
+													placeholder='00:00'
+													rounded={'md'}
+													border={'none'}
+													className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]'
+													_focus={{
+														border: 'none',
+														outline: 'none',
+													}}
+													value={details.startDate}
+													onChange={(e) => dispatch(setStateDate(e.target.value))}
+												/>
+											</FormControl>
+											<TimeInput
+												placeholder='Start At (in IST)'
+												onChange={(text) => dispatch(setStartTime(text))}
+												value={details.startTime}
+											/>
+											<TimeInput
+												placeholder='End At (in IST)'
+												onChange={(text) => dispatch(setEndTime(text))}
+												value={details.endTime}
+											/>
+										</Flex>
+										<AddOns
+											marginTop={'0.5rem'}
+											{...details}
+											onAttachmentsSelected={(ids) => dispatch(setAttachments(ids))}
+											onContactsSelected={(ids) => dispatch(setContactCards(ids))}
+											onPollsSelected={(polls) => dispatch(setPolls(polls))}
+										/>
+									</Flex>
 								</HStack>
 								{/* ---------------------------SCHEDULE BUTTON SECTION---------------------- */}
-								{error.apiError && (
+								{!!apiError && (
 									<Text pt={4} color={'tomato'}>
-										{error.apiError}
+										{apiError}
 									</Text>
 								)}
 								<Button
@@ -1032,25 +390,6 @@ export default function Scheduler() {
 							</Box>
 						</Flex>
 						<SubscriptionAlert />
-						<AttachmentSelectorDialog
-							ref={attachmentRef}
-							onConfirm={(ids) => dispatch(setAttachments(ids))}
-						/>
-						<ContactSelectorDialog
-							ref={contactRef}
-							onConfirm={(ids) => dispatch(setContactCards(ids))}
-						/>
-						<PollInputDialog ref={pollInputRef} onConfirm={(polls) => dispatch(setPolls(polls))} />
-						<TemplateNameInputDialog
-							isOpen={isNameInputOpen}
-							onClose={closeNameInput}
-							onConfirm={(name) => {
-								if (!details.message) return;
-								addToTemplate(name, details.message);
-								closeNameInput();
-							}}
-						/>
-						<NumberInputDialog isOpen={isNumberInputOpen} onClose={closeNumberInput} />
 					</TabPanel>
 					{/* ---------------------------Message Section------------------------------ */}
 					<TabPanel>
@@ -1062,302 +401,108 @@ export default function Scheduler() {
 							>
 								Message Details
 							</Heading>
-							<HStack alignItems={'flex-start'}>
-								<FormControl mt={'1rem'} isInvalid={!!error.campaignName}>
-									<FormLabel>Title</FormLabel>
-									<Input
-										placeholder='Message Name'
-										type='text'
-										value={details.campaign_name}
-										onChange={(e) => dispatch(setCampaignName(e.target.value))}
-									/>
-									<FormErrorMessage>{error.campaignName}</FormErrorMessage>
-								</FormControl>
-								<FormControl mt={'1rem'} isInvalid={!!error.recipients}>
-									<FormLabel>Select CSV</FormLabel>
-									<Select
-										className='!bg-[#ECECEC] dark:!bg-[#535353] rounded-md w-full text-black dark:text-white '
-										border={'none'}
-										value={details.csv_file}
-										onChange={(e) => {
-											setError((prev) => ({
-												...prev,
-												recipients: '',
-											}));
-											dispatch(setCSVFile(e.target.value));
-											const recipient = recipients.find(
-												(recipient) => recipient.id === e.target.value
-											);
-											if (!recipient || !recipient.headers) return;
-											const headers = recipient.headers.map((item) => `{{${item}}}`);
-											if (recipient) dispatch(setVariables(headers));
-										}}
-									>
-										<option
-											value={'select'}
-											className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] '
+							<Flex gap='2rem' marginTop={'1rem'}>
+								<VStack alignItems={'flex-start'} flex={1} gap={'0.5rem'}>
+									<FormControl isInvalid={campaignNameError}>
+										<FormLabel>Title</FormLabel>
+										<Input
+											placeholder='Message Name'
+											type='text'
+											value={details.campaign_name}
+											onChange={(e) => dispatch(setCampaignName(e.target.value))}
+										/>
+									</FormControl>
+									<FormControl isInvalid={recipientsError}>
+										<FormLabel>Select CSV</FormLabel>
+										<Select
+											className='!bg-[#ECECEC] dark:!bg-[#535353] rounded-md w-full text-black dark:text-white '
+											border={'none'}
+											value={details.csv_file}
+											onChange={(e) => {
+												dispatch(setRecipientsError(false));
+												dispatch(setCSVFile(e.target.value));
+												const recipient = recipients.find(
+													(recipient) => recipient.id === e.target.value
+												);
+												if (!recipient || !recipient.headers) return;
+												const headers = recipient.headers.map((item) => `{{${item}}}`);
+												if (recipient) dispatch(setVariables(headers));
+											}}
 										>
-											Select one!
-										</option>
-										{csvListWithDate.map(({ id, name }) => (
 											<option
+												value={'select'}
 												className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] '
-												value={id}
-												key={id}
 											>
-												{name}
+												Select one!
 											</option>
-										))}
-									</Select>
-								</FormControl>
-							</HStack>
-							<HStack alignItems={'flex-start'}>
-								<FormControl flex={1}>
-									<Box justifyContent={'space-between'}>
-										<Text className='text-gray-700 dark:text-white' py={2} fontWeight={'medium'}>
-											Message Section
-										</Text>
-										<Text className='text-gray-700 dark:text-white' size={'m'}>
-											Write a message or select from a template
-										</Text>
-										<Flex gap={3} alignItems={'center'} pb={4}>
-											<Select
-												className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] '
-												border={'none'}
-												rounded={'md'}
-												onChange={(e) => {
-													setError((prev) => ({
-														...prev,
-														message: '',
-													}));
-													dispatch(setMessage(e.target.value));
-													setSelectedTemplate({
-														id: e.target[e.target.selectedIndex].getAttribute('data-id') ?? '',
-														name: e.target[e.target.selectedIndex].getAttribute('data-name') ?? '',
-													});
-												}}
-											>
+											{csvListWithDate.map(({ id, name }) => (
 												<option
 													className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] '
-													value={''}
+													value={id}
+													key={id}
 												>
-													Select template!
+													{name}
 												</option>
-												{(templates ?? []).map(({ name, message, id }, index) => (
-													<option
-														className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] '
-														value={message}
-														key={index}
-														data-id={id}
-														data-name={name}
-													>
-														{name}
-													</option>
-												))}
-											</Select>
-											<HStack>
-												<Button
-													width={'200px'}
-													colorScheme='green'
-													aria-label='Add Template'
-													rounded={'md'}
-													isLoading={addingTemplate}
-													leftIcon={<AddIcon />}
-													onClick={() => {
-														if (!details.message) return;
-														openNameInput();
-													}}
-													fontSize={'sm'}
-													px={4}
-												>
-													Add Template
-												</Button>
-												<IconButton
-													aria-label='Edit'
-													icon={<EditIcon />}
-													color={'yellow.600'}
-													isDisabled={!selectedTemplate.id}
-													onClick={() =>
-														updateTemplate(
-															selectedTemplate.id,
-															selectedTemplate.name,
-															details.message
-														)
-													}
-												/>
-												<IconButton
-													aria-label='Delete'
-													icon={<MdDelete />}
-													color={'red.400'}
-													isDisabled={!selectedTemplate.id}
-													onClick={() => removeTemplate(selectedTemplate.id)}
-												/>
-											</HStack>
-										</Flex>
-									</Box>
-									<FormControl isInvalid={!!error.message}>
-										<Textarea
-											width={'full'}
-											minHeight={'80px'}
-											size={'sm'}
-											rounded={'md'}
-											placeholder={
-												details.type === 'CSV'
-													? 'Type your message here. \nex. Hello {{name}}, you are invited to join fanfest on {{date}}'
-													: 'Type your message here. \nex. You are invited to join fanfest'
-											}
-											border={'none'}
-											className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]'
-											_placeholder={{
-												opacity: 0.4,
-												color: 'inherit',
-											}}
-											_focus={{ border: 'none', outline: 'none' }}
-											value={details.message ?? ''}
-											onMouseUp={(e: React.MouseEvent<HTMLTextAreaElement, MouseEvent>) => {
-												if (e.target instanceof HTMLTextAreaElement) {
-													messageRef.current = e.target.selectionStart;
-												}
-											}}
-											onChange={(e) => {
-												messageRef.current = e.target.selectionStart;
-												setError((prev) => ({
-													...prev,
-													message: '',
-												}));
-												dispatch(setMessage(e.target.value));
-											}}
-										/>
-										{error.message && <FormErrorMessage>{error.message}</FormErrorMessage>}
+											))}
+										</Select>
 									</FormControl>
 
-									<Box hidden={details.type !== 'CSV'}>
-										<Text
-											className='text-gray-700 dark:text-white'
-											hidden={details.variables.length === 0}
-										>
-											Variables
-										</Text>
-										<Box>
-											<Variables
-												data={details.variables}
-												onVariableSelect={insertVariablesToMessage}
-											/>
-										</Box>
-									</Box>
-								</FormControl>
-								<VStack flex={1}>
 									<Text
 										width={'full'}
 										className='text-gray-700 dark:text-white'
-										py={2}
 										fontWeight={'medium'}
 										textAlign={'left'}
 									>
 										Timing Section
 									</Text>
-									<Box width={'full'} mt={2}>
-										<Text fontSize='sm' className='text-gray-700 dark:text-white'>
-											Start At (in IST)
-										</Text>
-										<Input
-											type='time'
-											width={'full'}
-											placeholder='00:00'
-											rounded={'md'}
-											border={'none'}
-											className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]'
-											_focus={{
-												border: 'none',
-												outline: 'none',
-											}}
+									<Flex gap={2} width={'full'}>
+										<TimeInput
+											placeholder='Start At (in IST)'
+											onChange={(text) => dispatch(setStartTime(text))}
 											value={details.startTime}
-											onChange={(e) => dispatch(setStartTime(e.target.value))}
 										/>
-									</Box>
-									<Box width={'full'} mt={2}>
-										<Text fontSize='sm' className='text-gray-700 dark:text-white'>
-											End At (in IST)
-										</Text>
-										<Input
-											type='time'
-											width={'full'}
-											placeholder='00:00'
-											rounded={'md'}
-											border={'none'}
-											className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]'
-											_focus={{
-												border: 'none',
-												outline: 'none',
-											}}
+										<TimeInput
+											placeholder='End At (in IST)'
+											onChange={(text) => dispatch(setEndTime(text))}
 											value={details.endTime}
-											onChange={(e) => dispatch(setEndTime(e.target.value))}
 										/>
-									</Box>
+									</Flex>
+									<AddOns
+										width={'full'}
+										{...details}
+										onAttachmentsSelected={(ids) => dispatch(setAttachments(ids))}
+										onContactsSelected={(ids) => dispatch(setContactCards(ids))}
+										onPollsSelected={(polls) => dispatch(setPolls(polls))}
+									/>
+									<Button
+										width={'full'}
+										colorScheme='green'
+										isLoading={uiDetails.schedulingMessages}
+										onClick={handleScheduleMessage}
+									>
+										Schedule Message
+									</Button>
 								</VStack>
-							</HStack>
-							<HStack mt={'1rem'} width={'full'} alignItems={'stretch'}>
-								<Box flex={1}>
-									<Text className='text-gray-700 dark:text-gray-400'>Attachments</Text>
-									<Button
-										width={'full'}
-										variant={'outline'}
-										colorScheme='green'
-										onClick={() => {
-											attachmentRef.current?.open(details.attachments);
-										}}
-									>
-										Select Attachment ({details.attachments.length})
-									</Button>
-								</Box>
-								<Box flex={1}>
-									<Text className='text-gray-700 dark:text-gray-400'>Share Contact</Text>
-									<Button
-										width={'full'}
-										variant={'outline'}
-										colorScheme='green'
-										onClick={() => {
-											contactRef.current?.open(details.shared_contact_cards);
-										}}
-									>
-										Select Contact ({details.shared_contact_cards.length})
-									</Button>
-								</Box>
-								<Box flex={1}>
-									<Text className='text-gray-700 dark:text-gray-400'>Create Polls</Text>
-									<Button
-										width={'full'}
-										variant={'outline'}
-										colorScheme='green'
-										onClick={() => {
-											pollInputRef.current?.open(
-												details.polls.length === 0 ? DEFAULT_POLL : details.polls
-											);
-										}}
-									>
-										Add Polls ({details.polls.length}) added
-									</Button>
-								</Box>
-							</HStack>
+								<MessageInputSection
+									textAreaProps={{
+										minHeight: '245px',
+									}}
+								/>
+							</Flex>
+
 							<Center mt={'1rem'} gap={'0.5rem'} alignItems={'center'}>
 								<InfoOutlineIcon color={'gray'} />
 								<Text>Message will be Scheduled at Mid-Night</Text>
 							</Center>
-							<Button
-								mt={'1rem'}
-								colorScheme='green'
-								isLoading={uiDetails.schedulingMessages}
-								onClick={handleScheduleMessage}
-							>
-								Schedule Message
-							</Button>
-							<Divider width={'full'} my={'2rem'} />
+
+							<Divider width={'full'} my={'1rem'} />
 							{all_schedulers.length < 1 ? null : (
 								<>
 									<Heading
 										color={theme === 'dark' ? 'white' : 'GrayText'}
 										fontSize={'large'}
 										fontWeight={'medium'}
+										textAlign={'center'}
 									>
 										All Schedulers
 									</Heading>
@@ -1373,7 +518,7 @@ export default function Scheduler() {
 }
 
 const SuccessDialog = ({ isOpen, onClose }: { onClose: () => void; isOpen: boolean }) => {
-	const cancelRef = useRef<any>();
+	const cancelRef = useRef(null);
 	return (
 		<AlertDialog
 			motionPreset='slideInBottom'
@@ -1407,3 +552,68 @@ const SuccessDialog = ({ isOpen, onClose }: { onClose: () => void; isOpen: boole
 		</AlertDialog>
 	);
 };
+
+function DelayInput({
+	onChange,
+	placeholder,
+	value,
+}: {
+	placeholder: string;
+	value: number;
+	onChange: (num: number) => void;
+}) {
+	return (
+		<FormControl flexGrow={1}>
+			<Text fontSize='sm' className='text-gray-700 dark:text-white'>
+				{placeholder}
+			</Text>
+			<Input
+				width={'full'}
+				placeholder='5'
+				rounded={'md'}
+				border={'none'}
+				className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]'
+				_focus={{
+					border: 'none',
+					outline: 'none',
+				}}
+				type='number'
+				min={1}
+				value={value.toString()}
+				onChange={(e) => onChange(Number(e.target.value))}
+			/>
+		</FormControl>
+	);
+}
+
+function TimeInput({
+	onChange,
+	placeholder,
+	value,
+}: {
+	placeholder: string;
+	value: string;
+	onChange: (text: string) => void;
+}) {
+	return (
+		<FormControl flexGrow={1}>
+			<Text fontSize='sm' className='text-gray-700 dark:text-white'>
+				{placeholder}
+			</Text>
+			<Input
+				type='time'
+				width={'full'}
+				placeholder='00:00'
+				rounded={'md'}
+				border={'none'}
+				className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]'
+				_focus={{
+					border: 'none',
+					outline: 'none',
+				}}
+				value={value}
+				onChange={(e) => onChange(e.target.value)}
+			/>
+		</FormControl>
+	);
+}

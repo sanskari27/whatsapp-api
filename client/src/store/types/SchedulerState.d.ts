@@ -27,6 +27,10 @@ export type SchedulerState = {
 		campaignLoading: boolean;
 		exportingCampaign: boolean;
 		deletingCampaign: boolean;
+		messageError: boolean;
+		campaignNameError: boolean;
+		recipientsError: boolean;
+		apiError: string;
 	};
 };
 

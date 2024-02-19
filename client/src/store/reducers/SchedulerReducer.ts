@@ -33,6 +33,10 @@ const initialState: SchedulerState = {
 		campaignLoading: false,
 		exportingCampaign: false,
 		deletingCampaign: false,
+		messageError: false,
+		campaignNameError: false,
+		recipientsError: false,
+		apiError: '',
 	},
 };
 
@@ -156,20 +160,26 @@ const SchedulerSlice = createSlice({
 		setDescription: (state, action: PayloadAction<typeof initialState.details.description>) => {
 			state.details.description = action.payload;
 		},
-		setCampaignLoading: (state, action: PayloadAction<typeof initialState.ui.campaignLoading>) => {
+		setCampaignLoading: (state, action: PayloadAction<boolean>) => {
 			state.ui.campaignLoading = action.payload;
 		},
-		setExportingCampaign: (
-			state,
-			action: PayloadAction<typeof initialState.ui.exportingCampaign>
-		) => {
+		setExportingCampaign: (state, action: PayloadAction<boolean>) => {
 			state.ui.exportingCampaign = action.payload;
 		},
-		setDeletingCampaign: (
-			state,
-			action: PayloadAction<typeof initialState.ui.deletingCampaign>
-		) => {
+		setDeletingCampaign: (state, action: PayloadAction<boolean>) => {
 			state.ui.deletingCampaign = action.payload;
+		},
+		setMessageError: (state, action: PayloadAction<boolean>) => {
+			state.ui.messageError = action.payload;
+		},
+		setCampaignNameError: (state, action: PayloadAction<boolean>) => {
+			state.ui.campaignNameError = action.payload;
+		},
+		setRecipientsError: (state, action: PayloadAction<boolean>) => {
+			state.ui.recipientsError = action.payload;
+		},
+		setAPIError: (state, action: PayloadAction<string>) => {
+			state.ui.apiError = action.payload;
 		},
 	},
 });
@@ -184,7 +194,6 @@ export const {
 	setSelectedScheduler,
 	setCampaignName,
 	setRecipientsFrom,
-	setRecipientsLoading,
 	setBusinessAccount,
 	setRecipients,
 	setCSVFile,
@@ -207,6 +216,11 @@ export const {
 	setDeletingCampaign,
 	setExportingCampaign,
 	setNumbers,
+	setMessageError,
+	setCampaignNameError,
+	setRecipientsError,
+	setRecipientsLoading,
+	setAPIError,
 } = SchedulerSlice.actions;
 
 export default SchedulerSlice.reducer;

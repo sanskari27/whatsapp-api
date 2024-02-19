@@ -10,8 +10,8 @@ export default class TemplateService {
 		this.user = user;
 	}
 
-	async listTemplates() {
-		const templates = await TemplateDB.find({ user: this.user });
+	async listMessageTemplates() {
+		const templates = await TemplateDB.find({ user: this.user, type: 'MESSAGE' });
 		return templates.map((template) => ({
 			id: template._id as string,
 			name: template.name,
@@ -19,8 +19,8 @@ export default class TemplateService {
 		}));
 	}
 
-	addTemplate(name: string, message: string) {
-		const template = new TemplateDB({ user: this.user, name, message });
+	addMessageTemplate(name: string, message: string) {
+		const template = new TemplateDB({ user: this.user, name, message, type: 'MESSAGE' });
 		template.save();
 		return {
 			id: template._id as string,
@@ -37,8 +37,8 @@ export default class TemplateService {
 		template.remove();
 	}
 
-	async updateTemplate(id: Types.ObjectId, name: string, message: string) {
-		const template = await TemplateDB.findOne({ user: this.user, _id: id });
+	async updateMessageTemplate(id: Types.ObjectId, name: string, message: string) {
+		const template = await TemplateDB.findOne({ user: this.user, _id: id, type: 'MESSAGE' });
 		if (!template) {
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
 		}
@@ -53,6 +53,57 @@ export default class TemplateService {
 			id: template._id,
 			name: template.name,
 			message: template.message,
+		};
+	}
+
+	async listPollTemplates() {
+		const templates = await TemplateDB.find({ user: this.user, type: 'POLL' });
+		return templates.map((template) => ({
+			id: template._id as string,
+			name: template.name,
+			poll: template.poll,
+		}));
+	}
+
+	addPollTemplate(
+		name: string,
+		poll: {
+			title: string;
+			options: string[];
+			isMultiSelect: boolean;
+		}
+	) {
+		const template = new TemplateDB({ user: this.user, name, poll, type: 'POLL' });
+		template.save();
+		return {
+			id: template._id as string,
+			name: template.name,
+			poll: template.poll,
+		};
+	}
+
+	async updatePollTemplate(
+		id: Types.ObjectId,
+		name: string,
+		poll: {
+			title: string;
+			options: string[];
+			isMultiSelect: boolean;
+		}
+	) {
+		const template = await TemplateDB.findOne({ user: this.user, _id: id, type: 'POLL' });
+		if (!template) {
+			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
+		}
+		if (name) {
+			template.name = name;
+		}
+		template.poll = poll;
+		template.save();
+		return {
+			id: template._id,
+			name: template.name,
+			poll: template.poll,
 		};
 	}
 }
