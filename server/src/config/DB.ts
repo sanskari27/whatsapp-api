@@ -4,6 +4,7 @@ import { DATABASE_URL } from './const';
 export default function () {
 	return new Promise((resolve, reject) => {
 		mongoose.set('strictQuery', false);
+		mongoose.set('strictPopulate', false);
 		mongoose
 			.connect(DATABASE_URL)
 
