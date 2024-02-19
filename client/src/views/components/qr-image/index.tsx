@@ -1,42 +1,44 @@
-import { Box, Center, Icon, IconButton, Image } from '@chakra-ui/react';
-import { FiDownload } from 'react-icons/fi';
+import { useEffect, useRef } from 'react';
 
-type QrImageProps = {
-	base64?: string;
+type Props = {
+	base64Data: string;
+	logoUrl: string;
 };
 
-const QrImage = ({ base64 }: QrImageProps) => {
-	const handleDownloadQr = () => {
-		if (!base64) return;
-		const link = document.createElement('a');
-		link.href = base64;
-		link.download = 'qr.png';
-		link.click();
-		document.body.removeChild(link);
+const QRLogo = ({ base64Data, logoUrl }: Props) => {
+	const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+	useEffect(() => {
+		const canvas = canvasRef.current;
+		if (!canvas) return;
+		const ctx = canvas.getContext('2d');
+		const loadImages = async () => {
+			if (!ctx) return;
+			const qrCodeImage = await loadImage(base64Data);
+			const logoImage = await loadImage(logoUrl);
+
+			ctx.drawImage(qrCodeImage as CanvasImageSource, 0, 0, canvas.width, canvas.height);
+
+			const logoSize = canvas.width * 0.2; // Adjust the logo size as needed
+			const xPos = (canvas.width - logoSize) / 2;
+			const yPos = (canvas.height - logoSize) / 2;
+
+			ctx.drawImage(logoImage as CanvasImageSource, xPos, yPos, logoSize, logoSize);
+		};
+
+		loadImages();
+	}, [base64Data, logoUrl]);
+
+	const loadImage = (src: string) => {
+		return new Promise((resolve, reject) => {
+			const image = new Image();
+			image.onload = () => resolve(image);
+			image.onerror = (err) => reject(err);
+			image.src = src;
+		});
 	};
 
-	return (
-		<Box position={'relative'} width={'150px'} height={'150px'} className='group rounded-md'>
-			<Image src={base64} width={'150px'} className='rounded-md' />
-			<Center
-				height={'150px'}
-				width={'150px'}
-				position={'absolute'}
-				left={0}
-				top={0}
-				backgroundColor={'#00000070'}
-				zIndex={10}
-				className='!opacity-0 group-hover:!opacity-100 !transition-all rounded-md !duration-500'
-			>
-				<IconButton
-					aria-label=''
-					icon={<Icon as={FiDownload} />}
-					color={'black'}
-					onClick={handleDownloadQr}
-				/>
-			</Center>
-		</Box>
-	);
+	return <canvas ref={(ref) => (canvasRef.current = ref)} height={'350px'} width={'350px'} />;
 };
 
-export default QrImage;
+export default QRLogo;

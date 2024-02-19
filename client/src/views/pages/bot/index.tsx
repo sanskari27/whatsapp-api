@@ -47,30 +47,16 @@ import {
 	setTriggerGapType,
 	updateBot,
 } from '../../../store/reducers/BotReducers';
-import { Poll } from '../../../store/types/PollState';
+import AddOns from '../../components/add-ons';
 import Info from '../../components/info';
-import PollInputDialog, { PollInputDialogHandle } from '../../components/polls-input-dialog';
-import AttachmentSelectorDialog, {
-	AttachmentDialogHandle,
-} from '../../components/selector-dialog/AttachmentSelectorDialog';
-import ContactSelectorDialog, {
-	ContactDialogHandle,
-} from '../../components/selector-dialog/ContactSelectorDialog';
-import SubscriptionAlert, { SubscriptionPopup } from '../../components/subscription-alert';
+import { SubscriptionPopup } from '../../components/subscription-alert';
 import AllResponders from './components/AllResponders';
-import InputLeadsNurturingDialog, {
-	InputLeadsNurturingDialogHandle,
-} from './components/InputLeadsNurturingDialog';
 import { NumberInput, SelectElement, TextAreaElement, TextInput } from './components/Inputs';
 
 export default function Bot() {
 	const dispatch = useDispatch();
 	const theme = useTheme();
 	const toast = useToast();
-	const attachmentSelectorRef = useRef<AttachmentDialogHandle>(null);
-	const contactSelectorRef = useRef<ContactDialogHandle>(null);
-	const pollInputRef = useRef<PollInputDialogHandle>(null);
-	const leadsNurturingRef = useRef<InputLeadsNurturingDialogHandle>(null);
 	const messageRef = useRef(0);
 
 	const { details, trigger_gap, response_delay, ui, all_bots } = useSelector(
@@ -239,32 +225,6 @@ export default function Bot() {
 		});
 		dispatch(reset());
 	}
-
-	const handleAddPolls = (
-		polls: {
-			title: string;
-			options: string[];
-			isMultiSelect: boolean;
-		}[]
-	) => {
-		dispatch(setPolls(polls));
-	};
-
-	const handleAddLeadsNurturing = (
-		nurturing: {
-			message: string;
-			after: number;
-			start_from: string;
-			end_at: string;
-			shared_contact_cards: string[];
-			attachments: string[];
-			polls: Poll[];
-		}[]
-	) => {
-		dispatch(setNurturing(nurturing));
-	};
-
-	const openLeadNurturing = () => leadsNurturingRef.current?.open(details.nurturing || undefined);
 
 	return (
 		<Flex
@@ -508,68 +468,16 @@ export default function Bot() {
 					</HStack>
 
 					{/*--------------------------------- ATTACHMENTS, CONTACTS & POLLS SECTION--------------------------- */}
-					<HStack>
-						<Box flex={1}>
-							<Text className='text-gray-700 dark:text-gray-400'>Attachments</Text>
-							<Button
-								width={'full'}
-								size={'sm'}
-								variant={'outline'}
-								colorScheme='green'
-								onClick={() => attachmentSelectorRef.current?.open(details.attachments)}
-							>
-								Select Attachments ({attachments.length}) Selected
-							</Button>
-						</Box>
-						<Box flex={1}>
-							<Text className='text-gray-700 dark:text-gray-400'>Contact Card</Text>
-							<Button
-								width={'full'}
-								size={'sm'}
-								variant={'outline'}
-								colorScheme='green'
-								onClick={() => contactSelectorRef.current?.open(details.shared_contact_cards)}
-							>
-								Select Contacts ({shared_contact_cards.length}) Selected
-							</Button>
-						</Box>
-						<Box flex={1}>
-							<Text className='text-gray-700 dark:text-gray-400'>Polls</Text>
-							<Button
-								width={'full'}
-								size={'sm'}
-								variant={'outline'}
-								colorScheme='green'
-								onClick={() => {
-									if (details.polls.length === 0) {
-										pollInputRef.current?.open([
-											{
-												title: '',
-												options: ['', ''],
-												isMultiSelect: false,
-											},
-										]);
-									} else {
-										pollInputRef.current?.open(details.polls);
-									}
-								}}
-							>
-								Add Polls ({details.polls.length}) Added
-							</Button>
-						</Box>
-						<Box flex={1}>
-							<Text className='text-gray-700 dark:text-gray-400'>Leads Nurturing</Text>
-							<Button
-								width={'full'}
-								size={'sm'}
-								variant={'solid'}
-								colorScheme='green'
-								onClick={openLeadNurturing}
-							>
-								Add Nurturing ({details.nurturing.length}) Added
-							</Button>
-						</Box>
-					</HStack>
+					<AddOns
+						attachments={details.attachments}
+						shared_contact_cards={shared_contact_cards}
+						polls={details.polls}
+						nurturing={details.nurturing}
+						onAttachmentsSelected={(ids) => dispatch(setAttachments(ids))}
+						onContactsSelected={(ids) => dispatch(setContactCards(ids))}
+						onPollsSelected={(ids) => dispatch(setPolls(ids))}
+						onLeadNurturingSelected={(nurturing) => dispatch(setNurturing(nurturing))}
+					/>
 
 					{/*--------------------------------- FORWARD SECTION--------------------------- */}
 					<Flex direction={'column'} gap={2} mt={'1rem'}>
@@ -645,17 +553,6 @@ export default function Bot() {
 				</Flex>
 				<AllResponders />
 			</Flex>
-			<AttachmentSelectorDialog
-				ref={attachmentSelectorRef}
-				onConfirm={(ids) => dispatch(setAttachments(ids))}
-			/>
-			<ContactSelectorDialog
-				ref={contactSelectorRef}
-				onConfirm={(ids) => dispatch(setContactCards(ids))}
-			/>
-			<PollInputDialog ref={pollInputRef} onConfirm={handleAddPolls} />
-			<InputLeadsNurturingDialog ref={leadsNurturingRef} onConfirm={handleAddLeadsNurturing} />
-			<SubscriptionAlert />
 		</Flex>
 	);
 }

@@ -12,6 +12,16 @@ const TemplateSchema = new mongoose.Schema<ITemplate>({
 	message: {
 		type: String,
 	},
+	poll: {
+		title: String,
+		options: [String],
+		isMultiSelect: Boolean,
+	},
+	type: {
+		type: String,
+		enum: ['MESSAGE', 'POLL'],
+		default: 'MESSAGE',
+	},
 });
 
 const TemplateDB = mongoose.model<ITemplate>('Template', TemplateSchema);

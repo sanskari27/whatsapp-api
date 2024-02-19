@@ -48,7 +48,7 @@ const MessageSchedulerList = () => {
 	};
 
 	return (
-		<TableContainer mt={'2rem'}>
+		<TableContainer mt={'1rem'}>
 			<Table>
 				<Thead>
 					<Tr>
