@@ -9,7 +9,7 @@ type PollItem = {
 export default class TemplateService {
 	static async createMessageTemplate(data: { message: string; name: string }) {
 		try {
-			const { data: response } = await APIInstance.post(`/message/template`, data);
+			const { data: response } = await APIInstance.post(`/template/message`, data);
 			return response.template as { id: string; name: string; message: string };
 		} catch (err) {
 			return null;
@@ -18,7 +18,7 @@ export default class TemplateService {
 
 	static async updateMessageTemplate(id: string, data: { message: string; name: string }) {
 		try {
-			const { data: response } = await APIInstance.put(`/message/template/${id}`, {
+			const { data: response } = await APIInstance.put(`/template/message/${id}`, {
 				name: data.name,
 				message: data.message,
 			});
@@ -30,7 +30,7 @@ export default class TemplateService {
 
 	static async listMessageTemplate() {
 		try {
-			const { data: response } = await APIInstance.get(`/message/template`);
+			const { data: response } = await APIInstance.get(`/template/message`);
 			return response.templates as { id: string; name: string; message: string }[];
 		} catch (err) {
 			return [];
@@ -38,7 +38,7 @@ export default class TemplateService {
 	}
 	static async createPollTemplate(data: { poll: PollItem; name: string }) {
 		try {
-			const { data: response } = await APIInstance.post(`/poll/template`, data);
+			const { data: response } = await APIInstance.post(`/template/poll`, data);
 			return response.template as { id: string; name: string; poll: PollItem };
 		} catch (err) {
 			return null;
@@ -47,7 +47,7 @@ export default class TemplateService {
 
 	static async updatePollTemplate(id: string, data: { poll: PollItem; name: string }) {
 		try {
-			const { data: response } = await APIInstance.put(`/poll/template/${id}`, {
+			const { data: response } = await APIInstance.put(`/template/poll/${id}`, {
 				name: data.name,
 				poll: data.poll,
 			});
@@ -59,7 +59,7 @@ export default class TemplateService {
 
 	static async listPollTemplate() {
 		try {
-			const { data: response } = await APIInstance.get(`/poll/template`);
+			const { data: response } = await APIInstance.get(`/template/poll`);
 			return response.templates as { id: string; name: string; poll: PollItem }[];
 		} catch (err) {
 			return [];
@@ -67,7 +67,7 @@ export default class TemplateService {
 	}
 	static async deleteTemplate(id: string, type: 'message' | 'poll') {
 		try {
-			await APIInstance.delete(`/${type}/template/${id}`);
+			await APIInstance.delete(`/template/${type}/${id}`);
 			return true;
 		} catch (err) {
 			return false;
