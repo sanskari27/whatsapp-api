@@ -49,10 +49,6 @@ export default function useTemplate<T extends TemplateName>(type: T) {
 				setTemplates((prev) => [...prev, res as TemplateType<T>]);
 			})
 			.finally(() => {
-				setTemplates((prev) => [
-					...prev,
-					{ id: (Math.random() * 1000).toString(), ...data } as TemplateType<T>,
-				]);
 				setAddingTemplate(false);
 			});
 	}
