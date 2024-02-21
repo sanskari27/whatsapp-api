@@ -6,28 +6,6 @@ import routes from './modules';
 import Logger from 'n23-logger';
 import { IS_PRODUCTION } from './config/const';
 
-const allowlist = ['https://api.whatsleads.in'];
-
-const corsOptionsDelegate = (req: any, callback: any) => {
-	let corsOptions;
-	let isDomainAllowed = allowlist.indexOf(req.header('Origin')) !== -1;
-
-	if (isDomainAllowed) {
-		// Enable CORS for this request
-		corsOptions = {
-			origin: true,
-			credentials: true,
-			exposedHeaders: ['Content-Disposition'],
-			methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-			optionsSuccessStatus: 204,
-		};
-	} else {
-		// Disable CORS for this request
-		corsOptions = { origin: false };
-	}
-	callback(null, corsOptions);
-};
-
 export default function (app: Express) {
 	//Defines all global variables and constants
 	let basedir = __dirname;
@@ -39,7 +17,7 @@ export default function (app: Express) {
 
 	//Initialize all the middleware
 	app.use(express.json());
-	app.use(cors(corsOptionsDelegate));
+	app.use(cors());
 
 	app.route('/clear-cached-ram').get((req, res) => {
 		exec('pgrep chrome | xargs kill -9', (error, stdout, stderr) => {

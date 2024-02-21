@@ -6,7 +6,6 @@ const campaignSchema = new mongoose.Schema<ICampaign>(
 	{
 		name: {
 			type: String,
-			unique: true,
 			required: true,
 		},
 		description: {

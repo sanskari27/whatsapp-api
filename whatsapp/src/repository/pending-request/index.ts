@@ -6,6 +6,8 @@ export enum PENDING_REQUEST {
 	NON_SAVED_CONTACTS = 'NON_SAVED_CONTACTS',
 }
 
+export const PendingRequestDB_NAME = 'whatsapp-PendingRequest';
+
 const schema = new mongoose.Schema<IPendingRequest>({
 	key: {
 		type: String,
@@ -33,6 +35,6 @@ const schema = new mongoose.Schema<IPendingRequest>({
 	reason: String,
 });
 
-const PendingRequestDB = mongoose.model<IPendingRequest>('WHATSAPP-PendingRequest', schema);
+const PendingRequestDB = mongoose.model<IPendingRequest>(PendingRequestDB_NAME, schema);
 
 export default PendingRequestDB;
