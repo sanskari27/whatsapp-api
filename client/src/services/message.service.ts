@@ -19,10 +19,14 @@ export default class MessageService {
 		endTime?: string;
 		batch_delay?: number;
 		batch_size?: number;
-		description?:string;
+		description?: string;
 	}) {
+		const { csv_file, ...details } = data;
 		try {
-			await APIInstance.post(`/whatsapp/schedule-message`, data);
+			await APIInstance.post(`/whatsapp/schedule-message`, {
+				...details,
+				...(csv_file ? { csv_file } : {}),
+			});
 			return null;
 		} catch (err: unknown) {
 			if (axios.isAxiosError(err)) {
@@ -31,7 +35,7 @@ export default class MessageService {
 			return 'Unable to schedule message';
 		}
 	}
-	static async scheduleMessage(data: {
+	static async scheduleMessage(details: {
 		csv: string;
 		message: string;
 		shared_contact_cards: string[];
@@ -46,7 +50,7 @@ export default class MessageService {
 		end_at: string;
 	}) {
 		try {
-			const response = await APIInstance.post(`/scheduler`, data);
+			const response = await APIInstance.post(`/scheduler`, details);
 			return {
 				id: response.data.scheduler.id ?? '',
 				message: response.data.scheduler.message ?? '',
@@ -87,7 +91,7 @@ export default class MessageService {
 	static async getScheduledMessages() {
 		try {
 			const { data } = await APIInstance.get('/scheduler');
-			return data.schedulers.map((scheduler:any) => ({
+			return data.schedulers.map((scheduler: any) => ({
 				id: scheduler.id ?? '',
 				message: scheduler.message ?? '',
 				attachments: scheduler.attachments ?? [],

@@ -5,8 +5,8 @@ import { CSVFileState } from '../types/CSVFileState';
 const initialState: CSVFileState = {
 	list: [],
 	selectedCSV: {
-		_id: '',
 		id: '',
+		fileName: '',
 		name: '',
 		headers: [],
 	},
@@ -38,13 +38,13 @@ const CSVFileSlice = createSlice({
 			state.uiDetails.isSaving = false;
 		},
 		deleteSelectedCSVFile: (state, action: PayloadAction<{ _id: string }>) => {
-			state.list = state.list.filter((csv) => csv._id !== action.payload._id);
+			state.list = state.list.filter((csv) => csv.id !== action.payload._id);
 			state.selectedCSV = initialState.selectedCSV;
 			state.uiDetails.isDeleting = false;
 		},
 		findSelectedCSVFile: (state, action: PayloadAction<{ id: string }>) => {
 			state.selectedCSV =
-				state.list.find((csv) => csv.id === action.payload.id) || initialState.selectedCSV;
+				state.list.find((csv) => csv.fileName === action.payload.id) || initialState.selectedCSV;
 		},
 		clearSelectedCSVFile: (state) => {
 			state.selectedCSV = initialState.selectedCSV;

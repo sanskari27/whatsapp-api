@@ -7,7 +7,7 @@ export type ScheduleMessageValidationResult = {
 	type: 'CSV' | 'GROUP' | 'NUMBERS' | 'GROUP_INDIVIDUAL' | 'LABEL';
 	message: string;
 	numbers: string[];
-	csv_file: string;
+	csv_file: Types.ObjectId;
 	group_ids: string[];
 	label_ids: string[];
 	variables: string[];
@@ -35,7 +35,11 @@ export async function ScheduleMessageValidator(req: Request, res: Response, next
 		.object({
 			type: z.enum(['NUMBERS', 'CSV', 'GROUP_INDIVIDUAL', 'GROUP', 'LABEL']),
 			numbers: z.string().array().default([]),
-			csv_file: z.string().default(''),
+			csv_file: z
+				.string()
+				.refine((txt) => Types.ObjectId.isValid(txt))
+				.transform((txt) => new Types.ObjectId(txt))
+				.optional(),
 			group_ids: z.string().array().default([]),
 			label_ids: z.string().array().default([]),
 			message: z.string().default(''),
@@ -73,7 +77,7 @@ export async function ScheduleMessageValidator(req: Request, res: Response, next
 		.refine((obj) => {
 			if (obj.type === 'NUMBERS' && obj.numbers.length === 0) {
 				return false;
-			} else if (obj.type === 'CSV' && obj.csv_file.length === 0) {
+			} else if (obj.type === 'CSV' && !obj.csv_file) {
 				return false;
 			} else if (obj.type === 'GROUP' && obj.group_ids.length === 0) {
 				return false;

@@ -166,7 +166,7 @@ const AssignLabelDialog = forwardRef<AssignLabelDialogHandler>((_, ref) => {
 						>
 							<option>Select CSV</option>
 							{list.map((item) => (
-								<option key={item.id} value={item.id}>
+								<option key={item.fileName} value={item.fileName}>
 									{item.name}
 								</option>
 							))}

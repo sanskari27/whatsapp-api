@@ -16,10 +16,10 @@ export type SchedulerState = {
 		message: string;
 	}[];
 	recipients: {
-		id: string;
+		fileName?: string;
 		name: string;
 		headers?: string[];
-		_id?: string;
+		id: string;
 	}[];
 	isRecipientsLoading: boolean;
 	isBusinessAccount: boolean;

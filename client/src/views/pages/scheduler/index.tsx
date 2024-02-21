@@ -232,10 +232,12 @@ export default function Scheduler() {
 			schedulingMessages: true,
 		}));
 
+		
+
 		MessageService.scheduleMessage({
 			title: details.campaign_name,
 			message: details.message,
-			csv: csvList.find((item) => item.id === details.csv_file)?._id ?? '',
+			csv: details.csv_file,
 			attachments: details.attachments,
 			shared_contact_cards: details.shared_contact_cards,
 			polls: details.polls,
@@ -426,8 +428,7 @@ export default function Scheduler() {
 													(recipient) => recipient.id === e.target.value
 												);
 												if (!recipient || !recipient.headers) return;
-												const headers = recipient.headers.map((item) => `{{${item}}}`);
-												if (recipient) dispatch(setVariables(headers));
+												if (recipient) dispatch(setVariables(recipient.headers));
 											}}
 										>
 											<option
