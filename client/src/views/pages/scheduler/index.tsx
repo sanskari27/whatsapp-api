@@ -45,6 +45,7 @@ import {
 	setCampaignNameError,
 	setContactCards,
 	setEndTime,
+	setMaxDelay,
 	setMessageError,
 	setMinDelay,
 	setPolls,
@@ -314,9 +315,9 @@ export default function Scheduler() {
 												onChange={(num) => dispatch(setMinDelay(num))}
 											/>
 											<DelayInput
-												placeholder='Min Delay (in sec)'
-												value={details.min_delay}
-												onChange={(num) => dispatch(setMinDelay(num))}
+												placeholder='Max Delay (in sec)'
+												value={details.max_delay}
+												onChange={(num) => dispatch(setMaxDelay(num))}
 											/>
 											<DelayInput
 												placeholder='Batch Size'
