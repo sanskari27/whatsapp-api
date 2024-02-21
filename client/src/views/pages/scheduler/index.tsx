@@ -45,6 +45,7 @@ import {
 	setCampaignNameError,
 	setContactCards,
 	setEndTime,
+	setMaxDelay,
 	setMessageError,
 	setMinDelay,
 	setPolls,
@@ -231,10 +232,12 @@ export default function Scheduler() {
 			schedulingMessages: true,
 		}));
 
+		
+
 		MessageService.scheduleMessage({
 			title: details.campaign_name,
 			message: details.message,
-			csv: csvList.find((item) => item.id === details.csv_file)?._id ?? '',
+			csv: details.csv_file,
 			attachments: details.attachments,
 			shared_contact_cards: details.shared_contact_cards,
 			polls: details.polls,
@@ -314,9 +317,9 @@ export default function Scheduler() {
 												onChange={(num) => dispatch(setMinDelay(num))}
 											/>
 											<DelayInput
-												placeholder='Min Delay (in sec)'
-												value={details.min_delay}
-												onChange={(num) => dispatch(setMinDelay(num))}
+												placeholder='Max Delay (in sec)'
+												value={details.max_delay}
+												onChange={(num) => dispatch(setMaxDelay(num))}
 											/>
 											<DelayInput
 												placeholder='Batch Size'
@@ -425,8 +428,7 @@ export default function Scheduler() {
 													(recipient) => recipient.id === e.target.value
 												);
 												if (!recipient || !recipient.headers) return;
-												const headers = recipient.headers.map((item) => `{{${item}}}`);
-												if (recipient) dispatch(setVariables(headers));
+												if (recipient) dispatch(setVariables(recipient.headers));
 											}}
 										>
 											<option

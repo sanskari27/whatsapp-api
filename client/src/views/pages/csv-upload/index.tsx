@@ -140,12 +140,12 @@ const CSVUpload = () => {
 									<Td>
 										<Checkbox
 											mr={'1rem'}
-											isChecked={selectedFiles.includes(csv._id)}
+											isChecked={selectedFiles.includes(csv.id)}
 											onChange={(e) => {
 												if (e.target.checked) {
-													setSelectedFiles((prev) => [...prev, csv._id]);
+													setSelectedFiles((prev) => [...prev, csv.id]);
 												} else {
-													setSelectedFiles((prev) => prev.filter((file) => file !== csv._id));
+													setSelectedFiles((prev) => prev.filter((file) => file !== csv.id));
 												}
 											}}
 											colorScheme='green'
