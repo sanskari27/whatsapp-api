@@ -138,6 +138,16 @@ const PollInputDialog = forwardRef<PollInputDialogHandle, Props>(({ onConfirm }:
 					return false;
 				}
 			}
+			const nonDistinctOptions = polls[i].options.some((e, i, arr) => arr.indexOf(e) !== i);
+			if (nonDistinctOptions) {
+				dispatch(
+					setError({
+						pollIndex: i,
+						message: 'Please Remove duplicate options',
+					})
+				);
+				return false;
+			}
 		}
 		return true;
 	};
@@ -302,6 +312,7 @@ const PollInputDialog = forwardRef<PollInputDialogHandle, Props>(({ onConfirm }:
 											icon={<AddIcon />}
 											size={'sm'}
 											colorScheme='green'
+											isDisabled={poll.options.length >= 12}
 											onClick={() => dispatch(addBlankPollOption(pollIndex))}
 										/>
 									</HStack>
