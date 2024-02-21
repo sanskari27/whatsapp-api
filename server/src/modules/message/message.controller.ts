@@ -53,14 +53,18 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 
 	const groupMergeService = new GroupMergeService(req.locals.user);
 
-	const [uploaded_attachments] = await new UploadService(req.locals.user).listAttachments(
-		attachments
-	);
+	const uploadService = new UploadService(req.locals.user);
+	const [uploaded_attachments] = await uploadService.listAttachments(attachments);
 
 	if (type === 'NUMBERS') {
 		numbers = await whatsappUtils.getNumberIds(requestedNumberList as string[]);
 	} else if (type === 'CSV') {
-		const parsed_csv = await FileUtils.readCSV(csv_file);
+		const csv = await uploadService.getCSVFile(csv_file);
+		if (!csv) {
+			return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
+		}
+		const parsed_csv = await FileUtils.readCSV(csv);
+		console.log(parsed_csv)
 		if (!parsed_csv) {
 			return next(new APIError(API_ERRORS.COMMON_ERRORS.ERROR_PARSING_CSV));
 		}

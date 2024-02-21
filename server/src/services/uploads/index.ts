@@ -21,6 +21,11 @@ export default class UploadService {
 		}));
 	}
 
+	async getCSVFile(id: Types.ObjectId) {
+		const csv_docs = await UploadDB.findById(id);
+		return csv_docs?.filename || null;
+	}
+	
 	async addCSV(name: string, filename: string, headers: string[]) {
 		const exists = await UploadDB.exists({ name, user: this.user, type: 'NUMBERS' });
 		if (exists) {
