@@ -92,7 +92,7 @@ const AttachmentDetailsInputDialog = forwardRef<AttachmentDetailsInputDialogHand
 			name: '',
 			headers: [],
 		});
-		const csv = list.find((item) => item.id === e.target.value);
+		const csv = list.find((item) => item.fileName === e.target.value);
 		if (csv) {
 			setSelectedCSV(csv);
 		}
@@ -290,7 +290,7 @@ const AttachmentDetailsInputDialog = forwardRef<AttachmentDetailsInputDialogHand
 										<option>Select CSV</option>
 										{list.map((item, index) => {
 											return (
-												<option value={item.id} key={index}>
+												<option value={item.fileName} key={index}>
 													{item.name}
 												</option>
 											);

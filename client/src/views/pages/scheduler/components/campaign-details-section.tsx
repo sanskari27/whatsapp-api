@@ -191,7 +191,9 @@ function RecipientToSelector() {
 						onChange={(e) => {
 							dispatch(setRecipientsError(false));
 							dispatch(setCSVFile(e.target.value));
-							const recipient = recipients.find((recipient) => recipient.id === e.target.value);
+							const recipient = recipients.find(
+								(recipient) => recipient.id === e.target.value
+							);
 							if (!recipient || !recipient.headers) return;
 							if (recipient) dispatch(setVariables(recipient.headers));
 						}}

@@ -63,32 +63,32 @@ export default class UploadsService {
             );
             return {
                 name: response.name,
-                id: response.filename,
+                fileName: response.filename,
                 headers: response.headers,
-                _id: response.id,
+                id: response.id,
             };
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (err: any) {
             if (err.response.data.title === 'ALREADY_EXISTS')
                 return {
                     name: 'ERROR',
-                    id: 'File name already exists',
+                    fileName: 'File name already exists',
                     headers: [],
-                    _id: '',
+                    id: '',
                 };
             if (err.response.data.title === 'INVALID_FIELDS')
                 return {
                     name: 'ERROR',
-                    id: 'Invalid Fields in CSV',
+                    fileName: 'Invalid Fields in CSV',
                     headers: [],
-                    _id: '',
+                    id: '',
                 };
 
             return {
                 name: 'ERROR',
-                id: 'Something went wrong',
+                fileName: 'Something went wrong',
                 headers: [],
-                _id: '',
+                id: '',
             };
         }
     }
@@ -104,9 +104,9 @@ export default class UploadsService {
                     id: string;
                 }) => ({
                     name: csv.name,
-                    id: csv.filename,
+                    fileName: csv.filename,
                     headers: csv.headers,
-                    _id: csv.id,
+                    id: csv.id,
                 })
             );
         } catch (err) {
