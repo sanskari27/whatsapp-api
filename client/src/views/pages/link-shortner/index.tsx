@@ -219,6 +219,7 @@ const LinkShortner = () => {
 											color={theme === 'dark' ? 'yellow.200' : 'yellow.500'}
 										/>
 										<ActionButton
+											isHidden
 											activeBackgroundColor='red.100'
 											icon={DeleteIcon}
 											onClick={() => {
@@ -250,8 +251,9 @@ type ActionButtonProps = {
 	onClick: () => void;
 	activeBackgroundColor: string;
 	color: string;
+	isHidden?:boolean
 };
-function ActionButton({ icon, onClick, color, activeBackgroundColor }: ActionButtonProps) {
+function ActionButton({ icon, onClick, color, activeBackgroundColor, isHidden = false }: ActionButtonProps) {
 	return (
 		<IconButton
 			backgroundColor={'transparent'}
@@ -271,6 +273,7 @@ function ActionButton({ icon, onClick, color, activeBackgroundColor }: ActionBut
 			icon={<Icon as={icon} />}
 			onClick={onClick}
 			color={color}
+			hidden={isHidden}
 		/>
 	);
 }
