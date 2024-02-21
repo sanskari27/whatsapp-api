@@ -64,7 +64,6 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 			return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
 		}
 		const parsed_csv = await FileUtils.readCSV(csv);
-		console.log(parsed_csv)
 		if (!parsed_csv) {
 			return next(new APIError(API_ERRORS.COMMON_ERRORS.ERROR_PARSING_CSV));
 		}
