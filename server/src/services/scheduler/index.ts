@@ -178,11 +178,13 @@ export default class SchedulerService {
 	public static async scheduleDailyMessages() {
 		const schedulers = await SchedulerDB.find({
 			active: true,
-			'csv.headers': ['number', 'date'],
 		}).populate('attachments shared_contact_cards csv');
 		const today = DateUtils.getMomentNow().format('MM-DD');
 
 		for (const scheduler of schedulers) {
+			if (!scheduler.csv.headers.includes('date') || !scheduler.csv.headers.includes('month')) {
+				continue;
+			}
 			const parsed_csv:
 				| {
 						[key: string]: string;
@@ -204,11 +206,11 @@ export default class SchedulerService {
 				let _message = scheduler.message;
 
 				for (const variable of scheduler.csv.headers) {
-					const _variable = variable.substring(2, variable.length - 2);
-					_message = _message.replace(variable, row[_variable] ?? '');
+					_message = _message.replace(`{{${variable}}}`, row[variable] ?? '');
 				}
+
 				schedulerService.scheduleMessage({
-					receiver: row.number,
+					receiver: `${row.number}@c.us`,
 					sendAt: time.toDate(),
 					attachments: scheduler.attachments.map((attachment) => ({
 						name: attachment.name,
