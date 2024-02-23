@@ -375,13 +375,14 @@ export default class BotService {
 							(contact.pushname || contact.name) ?? ''
 						);
 						dateGenerator.setStartTime(el.start_from).setEndTime(el.end_at);
+						const dateAt = dateGenerator.next(el.after).value;
 						const [_attachments] = await uploadService.listAttachments(
 							el.attachments as unknown as Types.ObjectId[]
 						);
 						return {
 							receiver: triggered_from,
 							message: custom_message,
-							sendAt: dateGenerator.next(el.after).value,
+							sendAt: dateAt,
 							shared_contact_cards: el.shared_contact_cards as unknown as Types.ObjectId[],
 							polls: el.polls,
 							attachments: _attachments.map((el) => ({
