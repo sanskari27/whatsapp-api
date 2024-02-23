@@ -53,6 +53,7 @@ export default class MessageService {
 			const response = await APIInstance.post(`/scheduler`, details);
 			return {
 				id: response.data.scheduler.id ?? '',
+				title: response.data.scheduler.title ?? '',
 				message: response.data.scheduler.message ?? '',
 				attachments: response.data.scheduler.attachments ?? [],
 				shared_contact_cards: response.data.scheduler.shared_contact_cards ?? [],
@@ -60,8 +61,10 @@ export default class MessageService {
 				isActive: response.data.scheduler.isActive,
 				start_from: response.data.scheduler.start_from ?? '',
 				end_at: response.data.scheduler.end_at ?? '',
+				csv: response.data.csv ?? '',
 			} as {
 				id: string;
+				title: string;
 				message: string;
 				attachments: string[];
 				shared_contact_cards: string[];
@@ -73,10 +76,12 @@ export default class MessageService {
 				isActive: boolean;
 				start_from: string;
 				end_at: string;
+				csv: string;
 			};
 		} catch (err: unknown) {
 			return {
 				id: '',
+				title: '',
 				message: '',
 				attachments: [],
 				shared_contact_cards: [],
@@ -84,6 +89,7 @@ export default class MessageService {
 				isActive: false,
 				start_from: '',
 				end_at: '',
+				csv: '',
 			};
 		}
 	}
@@ -93,6 +99,7 @@ export default class MessageService {
 			const { data } = await APIInstance.get('/scheduler');
 			return data.schedulers.map((scheduler: any) => ({
 				id: scheduler.id ?? '',
+				title: scheduler.title ?? '',
 				message: scheduler.message ?? '',
 				attachments: scheduler.attachments ?? [],
 				shared_contact_cards: scheduler.shared_contact_cards ?? [],
@@ -100,26 +107,53 @@ export default class MessageService {
 				isActive: scheduler.isActive,
 				start_from: scheduler.start_from ?? '',
 				end_at: scheduler.end_at ?? '',
+				csv: scheduler.csv ?? '',
 			}));
 		} catch (err: unknown) {
 			return [];
 		}
 	}
 
-	static async toggleScheduledMessage(id: string) {
+	static async editScheduledMessage(scheduledMessage: {
+		id: string;
+		message: string;
+		shared_contact_cards: string[];
+		attachments: string[];
+		polls: {
+			title: string;
+			options: string[];
+			isMultiSelect: boolean;
+		}[];
+		title: string;
+		start_from: string;
+		end_at: string;
+		csv: string;
+	}) {
 		try {
-			const { data } = await APIInstance.put(`/scheduler/${id}`);
+			const { data } = await APIInstance.patch(`/scheduler/${scheduledMessage.id}`, {
+				csv: scheduledMessage.csv,
+				message: scheduledMessage.message,
+				shared_contact_cards: scheduledMessage.shared_contact_cards,
+				attachments: scheduledMessage.attachments,
+				polls: scheduledMessage.polls,
+				title: scheduledMessage.title,
+				start_from: scheduledMessage.start_from,
+				end_at: scheduledMessage.end_at,
+			});
 			return {
-				id: data.scheduler.id ?? '',
-				message: data.scheduler.message ?? '',
-				attachments: data.scheduler.attachments ?? [],
-				shared_contact_cards: data.scheduler.shared_contact_cards ?? [],
-				polls: data.scheduler.polls ?? [],
-				isActive: data.scheduler.isActive,
-				start_from: data.scheduler.start_from ?? '',
-				end_at: data.scheduler.end_at ?? '',
+				id: data.bot.id ?? '',
+				title: data.bot.title ?? '',
+				message: data.bot.message ?? '',
+				attachments: data.bot.attachments ?? [],
+				shared_contact_cards: data.bot.shared_contact_cards ?? [],
+				polls: data.bot.polls ?? [],
+				isActive: data.bot.isActive,
+				start_from: data.bot.start_from ?? '',
+				end_at: data.bot.end_at ?? '',
+				csv: data.bot.csv ?? '',
 			} as {
 				id: string;
+				title: string;
 				message: string;
 				attachments: string[];
 				shared_contact_cards: string[];
@@ -131,10 +165,12 @@ export default class MessageService {
 				isActive: boolean;
 				start_from: string;
 				end_at: string;
+				csv: string;
 			};
-		} catch (err: unknown) {
+		} catch (err) {
 			return {
 				id: '',
+				title: '',
 				message: '',
 				attachments: [],
 				shared_contact_cards: [],
@@ -142,6 +178,53 @@ export default class MessageService {
 				isActive: false,
 				start_from: '',
 				end_at: '',
+				csv: '',
+			};
+		}
+	}
+
+	static async toggleScheduledMessage(id: string) {
+		try {
+			const { data } = await APIInstance.put(`/scheduler/${id}`);
+			return {
+				id: data.scheduler.id ?? '',
+				title: data.scheduler.title ?? '',
+				message: data.scheduler.message ?? '',
+				attachments: data.scheduler.attachments ?? [],
+				shared_contact_cards: data.scheduler.shared_contact_cards ?? [],
+				polls: data.scheduler.polls ?? [],
+				isActive: data.scheduler.isActive,
+				start_from: data.scheduler.start_from ?? '',
+				end_at: data.scheduler.end_at ?? '',
+				csv: data.scheduler.csv ?? '',
+			} as {
+				id: string;
+				title: string;
+				message: string;
+				attachments: string[];
+				shared_contact_cards: string[];
+				polls: {
+					title: string;
+					options: string[];
+					isMultiSelect: boolean;
+				}[];
+				isActive: boolean;
+				start_from: string;
+				end_at: string;
+				csv: string;
+			};
+		} catch (err: unknown) {
+			return {
+				id: '',
+				message: '',
+				title: '',
+				attachments: [],
+				shared_contact_cards: [],
+				polls: [],
+				isActive: false,
+				start_from: '',
+				end_at: '',
+				csv: '',
 			};
 		}
 	}

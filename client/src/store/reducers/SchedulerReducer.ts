@@ -6,6 +6,7 @@ const initialState: SchedulerState = {
 	all_campaigns: [] as ScheduledCampaign[],
 	all_schedulers: [],
 	details: {
+		message_scheduler_id: '',
 		type: 'NUMBERS',
 		numbers: [],
 		csv_file: '',
@@ -37,6 +38,7 @@ const initialState: SchedulerState = {
 		campaignNameError: false,
 		recipientsError: false,
 		apiError: '',
+		editingMessage: false,
 	},
 };
 
@@ -65,12 +67,14 @@ const SchedulerSlice = createSlice({
 				}
 				return scheduler;
 			});
+			state.ui.editingMessage = false;
 		},
 		setAllSchedulers: (state, action: PayloadAction<typeof initialState.all_schedulers>) => {
 			state.all_schedulers = action.payload;
 		},
 		addScheduler: (state, action: PayloadAction<(typeof initialState.all_schedulers)[0]>) => {
 			state.all_schedulers.push(action.payload);
+			state.details = initialState.details;
 		},
 		deleteScheduler: (state, action: PayloadAction<string>) => {
 			state.all_schedulers = state.all_schedulers.filter(
@@ -81,12 +85,16 @@ const SchedulerSlice = createSlice({
 			state,
 			action: PayloadAction<(typeof initialState.all_schedulers)[0]>
 		) => {
+			state.details.message_scheduler_id = action.payload.id;
 			state.details.message = action.payload.message;
+			state.details.campaign_name = action.payload.title;
 			state.details.shared_contact_cards = action.payload.shared_contact_cards;
 			state.details.attachments = action.payload.attachments;
 			state.details.polls = action.payload.polls;
 			state.details.startTime = action.payload.start_from;
 			state.details.endTime = action.payload.end_at;
+			state.details.csv_file = action.payload.csv;
+			state.ui.editingMessage = true;
 		},
 		setCampaignName: (state, action: PayloadAction<typeof initialState.details.campaign_name>) => {
 			state.details.campaign_name = action.payload;
