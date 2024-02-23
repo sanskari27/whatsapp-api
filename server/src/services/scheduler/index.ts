@@ -199,7 +199,7 @@ export default class SchedulerService {
 			const schedulerService = new MessageService(scheduler.user);
 
 			for (const row of parsed_csv) {
-				if (DateUtils.getMoment(row.month + '-' + row.date).format('MM-DD') !== today) {
+				if (DateUtils.getMoment(row.month + '-' + row.date, 'MM-DD').format('MM-DD') !== today) {
 					continue;
 				}
 				const time = DateUtils.getBetween(scheduler.start_from, scheduler.end_at);
