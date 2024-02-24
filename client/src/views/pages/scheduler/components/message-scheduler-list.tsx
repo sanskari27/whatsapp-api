@@ -52,6 +52,7 @@ const MessageSchedulerList = () => {
 			<Table>
 				<Thead>
 					<Tr>
+						<Th>Title</Th>
 						<Th width={'60%'}>Message</Th>
 						<Th width={'10%'}>Start Time</Th>
 						<Th width={'10%'}>End Time</Th>
@@ -60,11 +61,12 @@ const MessageSchedulerList = () => {
 					</Tr>
 				</Thead>
 				<Tbody>
-					{all_schedulers.map((scheduler) => (
-						<Tr key={scheduler.id}>
+					{all_schedulers.map((scheduler, index) => (
+						<Tr key={index}>
+							<Td>{scheduler.title}</Td>
 							<Td>
-								{scheduler.message.split('\n').map((message) => (
-									<Box>{message}</Box>
+								{scheduler.message.split('\n').map((message, index) => (
+									<Box key={index}>{message}</Box>
 								))}
 							</Td>
 							<Td>{scheduler.start_from}</Td>
