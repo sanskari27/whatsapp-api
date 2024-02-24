@@ -40,6 +40,8 @@ const campaignSchema = new mongoose.Schema<ICampaign>(
 	{ timestamps: true }
 );
 
+campaignSchema.index({ user: 1, name: 1 }, { unique: true });
+
 const CampaignDB = mongoose.model<ICampaign>('Campaign', campaignSchema);
 
 export default CampaignDB;
