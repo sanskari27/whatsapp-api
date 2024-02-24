@@ -246,6 +246,7 @@ const Reports = () => {
 			<ConfirmationDialog
 				type={'Campaign'}
 				ref={confirmationDialogRef}
+				disclaimer={'This will pause the campaign.'}
 				onConfirm={deleteCampaign}
 			/>
 		</Flex>

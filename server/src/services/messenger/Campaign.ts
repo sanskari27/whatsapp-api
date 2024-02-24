@@ -2,10 +2,10 @@ import { Types } from 'mongoose';
 import { CAMPAIGN_STATUS, MESSAGE_STATUS } from '../../config/const';
 import { CampaignDB, MessageDB } from '../../repository/messenger';
 import TimeGenerator from '../../structures/TimeGenerator';
+import { IMessage } from '../../types/messenger';
 import { IUser } from '../../types/user';
 import DateUtils from '../../utils/DateUtils';
 import MessageService from './Message';
-import { IMessage } from '../../types/messenger';
 
 export type Message = {
 	number: string;
@@ -72,6 +72,7 @@ export default class CampaignService {
 		}
 
 		campaign.messages = _messages;
+		await campaign.save();
 		return campaign;
 	}
 
