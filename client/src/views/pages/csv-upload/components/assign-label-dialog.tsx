@@ -27,7 +27,6 @@ export type AssignLabelDialogHandler = {
 
 const initState = {
 	type: 'CSV',
-	labels: [],
 	label_id: '',
 	groups: [],
 	group_ids: [],
@@ -51,6 +50,7 @@ const AssignLabelDialog = forwardRef<AssignLabelDialogHandler>((_, ref) => {
 	const [labelDetails, setLabelDetails] = useState(initState);
 
 	const { list } = useSelector((state: StoreState) => state[StoreNames.CSV]);
+	const { labels } = useSelector((state: StoreState) => state[StoreNames.USER]);
 
 	const handleChange = (
 		name: string,
@@ -62,17 +62,6 @@ const AssignLabelDialog = forwardRef<AssignLabelDialogHandler>((_, ref) => {
 			[name]: value,
 		}));
 	};
-
-	useEffect(() => {
-		LabelService.listLabels()
-			.then((list) => handleChange('labels', list))
-			.catch((err) => {
-				if (err === 'BUSINESS_ACCOUNT_REQUIRED') {
-					handleChange('error', 'Business Account Required');
-					handleChange('isBusinessAccount', false);
-				}
-			});
-	}, []);
 
 	useEffect(() => {
 		if (labelDetails.type === 'GROUP' && labelDetails.groups.length === 0) {
@@ -127,7 +116,7 @@ const AssignLabelDialog = forwardRef<AssignLabelDialogHandler>((_, ref) => {
 							>
 								Select Label
 							</option>
-							{labelDetails.labels.map(({ id, name }) => (
+							{labels.map(({ id, name }) => (
 								<option
 									className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] '
 									value={id}
