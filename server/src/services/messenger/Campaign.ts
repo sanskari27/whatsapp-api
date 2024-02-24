@@ -5,6 +5,7 @@ import TimeGenerator from '../../structures/TimeGenerator';
 import { IUser } from '../../types/user';
 import DateUtils from '../../utils/DateUtils';
 import MessageService from './Message';
+import { IMessage } from '../../types/messenger';
 
 export type Message = {
 	number: string;
@@ -51,7 +52,12 @@ export default class CampaignService {
 	}
 
 	async scheduleCampaign(messages: Message[], opts: Batch) {
-		const _messages: Types.ObjectId[] = [];
+		const campaign = await CampaignDB.create({
+			name: opts.campaign_name,
+			description: opts.description,
+			user: this.user,
+		});
+		const _messages: IMessage[] = [];
 		const dateGenerator = new TimeGenerator(opts);
 		for (const message of messages) {
 			const msg = this.messageService.scheduleMessage({
@@ -65,12 +71,7 @@ export default class CampaignService {
 			_messages.push(msg);
 		}
 
-		const campaign = await CampaignDB.create({
-			name: opts.campaign_name,
-			description: opts.description,
-			user: this.user,
-			messages: _messages,
-		});
+		campaign.messages = _messages;
 		return campaign;
 	}
 

@@ -39,7 +39,7 @@ export default class MessageService {
 		this.user = user;
 	}
 
-	scheduleMessage(message: Message): Types.ObjectId {
+	scheduleMessage(message: Message) {
 		const msg = new MessageDB({
 			sender: this.user,
 			receiver: message.receiver,
@@ -50,7 +50,7 @@ export default class MessageService {
 			sendAt: message.sendAt,
 		});
 		msg.save();
-		return msg._id;
+		return msg;
 	}
 
 	async isAttachmentInUse(id: Types.ObjectId) {
