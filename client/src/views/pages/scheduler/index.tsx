@@ -542,7 +542,9 @@ export default function Scheduler() {
 
 							<Center mt={'1rem'} gap={'0.5rem'} alignItems={'center'}>
 								<InfoOutlineIcon color={'gray'} />
-								<Text>Message will be Scheduled at Mid-Night</Text>
+								<Text size={'md'} fontWeight={'bold'} textColor={'red.400'}>
+									Message will be Scheduled at Mid-Night
+								</Text>
 							</Center>
 
 							<Divider width={'full'} my={'1rem'} />
