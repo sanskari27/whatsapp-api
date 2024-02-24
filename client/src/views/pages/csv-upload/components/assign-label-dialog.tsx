@@ -150,7 +150,7 @@ const AssignLabelDialog = forwardRef<AssignLabelDialogHandler>((_, ref) => {
 						<FormLabel>Select Recipients from CSV</FormLabel>
 						<Select
 							name={labelDetails.csv_file}
-							onChange={(e) => handleChange('csvId', e.target.value)}
+							onChange={(e) => handleChange('csv_file', e.target.value)}
 							disabled={labelDetails.type == 'GROUP'}
 						>
 							<option>Select CSV</option>
