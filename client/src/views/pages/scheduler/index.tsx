@@ -35,6 +35,7 @@ import MessageService from '../../../services/message.service';
 import { StoreNames, StoreState } from '../../../store';
 import {
 	addScheduler,
+	editSelectedScheduler,
 	reset,
 	setAPIError,
 	setAttachments,
@@ -108,7 +109,7 @@ export default function Scheduler() {
 		details,
 		recipients,
 		all_schedulers,
-		ui: { apiError, campaignNameError, recipientsError },
+		ui: { apiError, campaignNameError, recipientsError, editingMessage },
 	} = useSelector((state: StoreState) => state[StoreNames.SCHEDULER]);
 
 	const { canSendMessage, groups, labels } = useSelector(
@@ -121,18 +122,6 @@ export default function Scheduler() {
 			item.headers.includes('date') &&
 			item.headers.includes('month')
 	);
-
-	// const [error, setError] = useState({
-	// 	campaignName: '',
-	// 	minDelay: '',
-	// 	maxDelay: '',
-	// 	startTime: '',
-	// 	endTime: '',
-	// 	batchDelay: '',
-	// 	batchSize: '',
-	// 	recipients: '',
-	// 	apiError: '',
-	// });
 
 	useEffect(() => {
 		pushToNavbar({
@@ -226,13 +215,10 @@ export default function Scheduler() {
 		if (!validate()) {
 			return;
 		}
-
 		setUIDetails((prev) => ({
 			...prev,
 			schedulingMessages: true,
 		}));
-
-		
 
 		MessageService.scheduleMessage({
 			title: details.campaign_name,
@@ -254,6 +240,67 @@ export default function Scheduler() {
 			.catch(() => {});
 	};
 
+	const editScheduledMessage = async () => {
+		if (details.campaign_name === '') {
+			dispatch(setCampaignNameError(true));
+			return;
+		}
+
+		if (details.csv_file === '') {
+			dispatch(setRecipientsError(true));
+			return;
+		}
+
+		if (details.startTime === '') {
+			dispatch(setAPIError('Please select start time'));
+			setTimeout(() => {
+				dispatch(setAPIError(''));
+			}, 5000);
+			return;
+		}
+
+		if (details.endTime === '') {
+			dispatch(setAPIError('Please select end time'));
+			setTimeout(() => {
+				dispatch(setAPIError(''));
+			}, 5000);
+			return;
+		}
+
+		if (
+			details.message === '' &&
+			details.attachments.length === 0 &&
+			details.shared_contact_cards.length === 0 &&
+			details.polls.length === 0
+		) {
+			dispatch(setMessageError(true));
+			return;
+		}
+
+		setUIDetails((prev) => ({
+			...prev,
+			schedulingMessages: true,
+		}));
+
+		MessageService.editScheduledMessage({
+			attachments: details.attachments,
+			end_at: details.endTime,
+			id: details.message_scheduler_id,
+			message: details.message,
+			polls: details.polls,
+			shared_contact_cards: details.shared_contact_cards,
+			start_from: details.startDate,
+			title: details.campaign_name,
+			csv: csvList.find((csv) => csv.fileName === details.csv_file)?.id ?? '',
+		}).then((res) => {
+			dispatch(editSelectedScheduler(res));
+			setUIDetails((prev) => ({
+				...prev,
+				schedulingMessages: false,
+			}));
+		});
+	};
+
 	useEffect(() => {
 		fetchRecipients(details.type);
 	}, [fetchRecipients, details.type]);
@@ -261,12 +308,6 @@ export default function Scheduler() {
 	useEffect(() => {
 		dispatch(reset());
 	}, [dispatch]);
-
-	useEffect(() => {
-		MessageService.getScheduledMessages().then((res) => {
-			console.log(res);
-		});
-	}, []);
 
 	return (
 		<Flex padding={'1rem'} justifyContent={'center'} width={'full'}>
@@ -476,14 +517,21 @@ export default function Scheduler() {
 										onContactsSelected={(ids) => dispatch(setContactCards(ids))}
 										onPollsSelected={(polls) => dispatch(setPolls(polls))}
 									/>
-									<Button
-										width={'full'}
-										colorScheme='green'
-										isLoading={uiDetails.schedulingMessages}
-										onClick={handleScheduleMessage}
-									>
-										Schedule Message
-									</Button>
+									<HStack width={'full'}>
+										{editingMessage && (
+											<Button width={'full'} colorScheme='red' onClick={() => dispatch(reset())}>
+												Cancel
+											</Button>
+										)}
+										<Button
+											width={'full'}
+											colorScheme={editingMessage ? 'yellow' : 'green'}
+											isLoading={uiDetails.schedulingMessages}
+											onClick={editingMessage ? editScheduledMessage : handleScheduleMessage}
+										>
+											{editingMessage ? 'Edit Message' : 'Schedule Message'}
+										</Button>
+									</HStack>
 								</VStack>
 								<MessageInputSection
 									textAreaProps={{
