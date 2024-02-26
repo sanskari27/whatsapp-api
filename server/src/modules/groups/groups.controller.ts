@@ -1,10 +1,18 @@
 import { NextFunction, Request, Response } from 'express';
+import Logger from 'n23-logger';
 import { GroupChat, MessageMedia } from 'whatsapp-web.js';
 import { getOrCache, saveToCache } from '../../config/cache';
-import { CACHE_TOKEN_GENERATOR } from '../../config/const';
+import {
+	CACHE_TOKEN_GENERATOR,
+	SOCKET_RESPONSES,
+	TASK_PATH,
+	TASK_RESULT_TYPE,
+	TASK_TYPE,
+} from '../../config/const';
 import APIError, { API_ERRORS } from '../../errors/api-errors';
 import { WhatsappProvider } from '../../provider/whatsapp_provider';
 import GroupMergeService from '../../services/merged-groups';
+import TaskService from '../../services/task';
 import {
 	TBusinessContact,
 	TContact,
@@ -12,9 +20,9 @@ import {
 	TGroupContact,
 } from '../../types/whatsapp';
 import CSVParser from '../../utils/CSVParser';
-import { Respond, RespondCSV, RespondVCF, idValidator } from '../../utils/ExpressUtils';
+import { Respond, idValidator } from '../../utils/ExpressUtils';
 import VCFParser from '../../utils/VCFParser';
-import WhatsappUtils from '../../utils/WhatsappUtils';
+import WhatsappUtils, { MappedContacts } from '../../utils/WhatsappUtils';
 import {
 	FileUpload,
 	FileUtils,
@@ -28,38 +36,21 @@ import {
 	MergeGroupValidationResult,
 } from './groups.validator';
 
-type GroupDetail = {
-	id: string;
-	name: string;
-};
-
 async function groups(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
 
 	const whatsapp = WhatsappProvider.getInstance(client_id);
+	const whatsappUtils = new WhatsappUtils(whatsapp);
 	if (!whatsapp.isReady()) {
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
 
 	try {
-		const groups = await getOrCache<GroupDetail[]>(
-			CACHE_TOKEN_GENERATOR.GROUPS(req.locals.user._id),
-			async () => {
-				const groups = (await whatsapp.getClient().getChats())
-					.filter((chat) => chat.isGroup)
-					.map((chat) => {
-						const groupChat = chat as GroupChat;
-						return {
-							id: groupChat.id._serialized,
-							name: groupChat.name ?? '',
-							isMergedGroup: false,
-							participants: groupChat.participants.length,
-						};
-					});
-
-				return groups;
-			}
+		const { groups } = await getOrCache(
+			CACHE_TOKEN_GENERATOR.CONTACTS(req.locals.user._id),
+			async () => await whatsappUtils.getContacts()
 		);
+
 		const merged_groups = await new GroupMergeService(req.locals.user).listGroups();
 
 		return Respond({
@@ -78,31 +69,24 @@ async function refreshGroup(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
 
 	const whatsapp = WhatsappProvider.getInstance(client_id);
+	const whatsappUtils = new WhatsappUtils(whatsapp);
 	if (!whatsapp.isReady()) {
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
 
 	try {
-		const groups = (await whatsapp.getClient().getChats())
-			.filter((chat) => chat.isGroup)
-			.map((chat) => {
-				const groupChat = chat as GroupChat;
-				return {
-					id: groupChat.id._serialized,
-					name: groupChat.name ?? '',
-					isMergedGroup: false,
-					participants: groupChat.participants.length,
-				};
-			});
-
-		await saveToCache(CACHE_TOKEN_GENERATOR.GROUPS(req.locals.user._id), groups);
+		const contacts = await whatsappUtils.getContacts();
+		await saveToCache(CACHE_TOKEN_GENERATOR.CONTACTS(req.locals.user._id), contacts);
 		const merged_groups = await new GroupMergeService(req.locals.user).listGroups();
 
 		return Respond({
 			res,
 			status: 200,
 			data: {
-				groups: [...groups, ...merged_groups.map((group) => ({ ...group, groups: undefined }))],
+				groups: [
+					...contacts.groups,
+					...merged_groups.map((group) => ({ ...group, groups: undefined })),
+				],
 			},
 		});
 	} catch (err) {
@@ -122,22 +106,22 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 		return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
 	}
 
+	const taskService = new TaskService(req.locals.user);
 	const options = {
-		business_contacts_only: false,
-		vcf: false,
+		business_contacts_only: req.body.business_contacts_only ?? false,
+		vcf: req.body.vcf ?? false,
 	};
-	if (req.body.business_contacts_only) {
-		options.business_contacts_only = true;
-	}
-	if (req.body.vcf) {
-		options.vcf = true;
-	}
 
+	const task_id = await taskService.createTask(
+		TASK_TYPE.EXPORT_GROUP_CONTACTS,
+		options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV
+	);
+
+	Respond({
+		res,
+		status: 201,
+	});
 	try {
-		const contacts = await getOrCache(
-			CACHE_TOKEN_GENERATOR.MAPPED_CONTACTS(req.locals.user._id, options.business_contacts_only),
-			async () => await whatsappUtils.getMappedContacts(options.business_contacts_only)
-		);
 		const groupMergeService = new GroupMergeService(req.locals.user);
 		const merged_group_ids = group_ids.filter((id) => idValidator(id)[0]);
 		const merged_group_whatsapp_ids = await groupMergeService.extractWhatsappGroupIds(
@@ -148,65 +132,88 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 			(id) => !idValidator(id)[0] // check if all ids is valid whatsapp group ids
 		);
 
-		const groups = await Promise.all(
-			ids_to_export.map(async (group_id) => {
-				const chat = await whatsapp.getClient().getChatById(group_id);
+		const saved_contacts = (
+			await Promise.all(
+				(
+					await getOrCache(CACHE_TOKEN_GENERATOR.CONTACTS(req.locals.user._id), async () =>
+						whatsappUtils.getContacts()
+					)
+				).saved.map(async (contact) => ({
+					...(await whatsappUtils.getContactDetails(contact)),
+					...WhatsappUtils.getBusinessDetails(contact),
+				}))
+			)
+		).reduce((acc, contact) => {
+			acc[contact.number] = {
+				name: contact.name ?? '',
+				public_name: contact.public_name ?? '',
+				number: contact.number ?? '',
+				isBusiness: contact.isBusiness ?? 'Personal',
+				country: contact.country ?? '',
+				description: contact.description ?? '',
+				email: contact.email ?? '',
+				websites: contact.websites ?? [],
+				latitude: contact.latitude ?? 0,
+				longitude: contact.longitude ?? 0,
+				address: contact.address ?? '',
+			};
+			return acc;
+		}, {} as MappedContacts);
 
-				if (!chat || !chat.isGroup) {
-					return null;
-				}
-				const groupChat = chat as GroupChat;
-				return groupChat;
-			})
-		);
+		const groups = (
+			await Promise.all(
+				ids_to_export.map(async (group_id) => {
+					const chat = await whatsapp.getClient().getChatById(group_id);
 
-		const filtered_chats = groups.filter((chat) => chat !== null) as GroupChat[];
+					if (!chat || !chat.isGroup) {
+						return null;
+					}
+					const groupChat = chat as GroupChat;
+					return groupChat;
+				})
+			)
+		).filter((chat) => chat !== null) as GroupChat[];
 
 		const participants = (
 			await Promise.all(
-				filtered_chats.map(async (groupChat) => {
+				groups.map(async (groupChat) => {
 					const group_participants = await getOrCache(
 						CACHE_TOKEN_GENERATOR.GROUPS_EXPORT(
 							req.locals.user._id,
 							groupChat.id._serialized,
 							options.business_contacts_only
 						),
-						async () => {
-							const group_contacts = await whatsappUtils.getGroupContacts(groupChat, {
+						async () =>
+							await whatsappUtils.getGroupContacts(groupChat, {
 								business_details: options.business_contacts_only,
-								mapped_contacts: contacts,
-							});
-
-							return group_contacts.map((contact) => ({
-								...contact,
-								group_id: groupChat.id._serialized.split('@')[0],
-							}));
-						}
+								mapped_contacts: saved_contacts,
+							})
 					);
 					return group_participants;
 				})
 			)
 		).flat();
 
-		if (options.vcf) {
-			return RespondVCF({
-				res,
-				filename: 'Exported Group Contacts',
-				data: options.business_contacts_only
-					? VCFParser.exportBusinessContacts(participants as TBusinessContact[])
-					: VCFParser.exportContacts(participants as TContact[]),
-			});
-		} else {
-			return RespondCSV({
-				res,
-				filename: 'Exported Group Contacts',
-				data: options.business_contacts_only
-					? CSVParser.exportGroupBusinessContacts(participants as TGroupBusinessContact[])
-					: CSVParser.exportGroupContacts(participants as TGroupContact[]),
-			});
-		}
+		const data = options.vcf
+			? options.business_contacts_only
+				? VCFParser.exportBusinessContacts(participants as TBusinessContact[])
+				: VCFParser.exportContacts(participants as TContact[])
+			: options.business_contacts_only
+			? CSVParser.exportGroupBusinessContacts(participants as TGroupBusinessContact[])
+			: CSVParser.exportGroupContacts(participants as TGroupContact[]);
+
+		const file_name = `Exported Contacts${options.vcf ? '.vcf' : '.csv'}`;
+
+		const file_path = __basedir + TASK_PATH + task_id.toString() + (options.vcf ? '.vcf' : '.csv');
+
+		await FileUtils.writeFile(file_path, data);
+
+		taskService.markCompleted(task_id, file_name);
+		whatsapp.sendToClient(SOCKET_RESPONSES.TASK_COMPLETED, task_id.toString());
 	} catch (err) {
-		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+		taskService.markFailed(task_id);
+		whatsapp.sendToClient(SOCKET_RESPONSES.TASK_FAILED, task_id.toString());
+		Logger.error('Error Exporting Contacts', err as Error);
 	}
 }
 

@@ -7,6 +7,7 @@ import { Flex, Image, Progress, Text } from '@chakra-ui/react';
 import { LOGO } from './assets/Images';
 import { useNavbar } from './hooks/useNavbar';
 import { useTheme } from './hooks/useTheme';
+import Tasks from './views/pages/tasks';
 const Welcome = lazy(() => import('./views/pages/welcome'));
 const Scheduler = lazy(() => import('./views/pages/scheduler'));
 const Bot = lazy(() => import('./views/pages/bot'));
@@ -39,6 +40,7 @@ function App() {
 							<Route path={NAVIGATION.CSV} element={<CSVUpload />} />
 							<Route path={NAVIGATION.POLL_RESPONSES} element={<PollReport />} />
 							<Route path={NAVIGATION.GROUP_MERGE} element={<GroupMergePage />} />
+							<Route path={NAVIGATION.TASKS} element={<Tasks />} />
 						</Route>
 						<Route path={NAVIGATION.NETWORK_ERROR} element={<NetworkError />} />
 						<Route path='*' element={<Navigate to={NAVIGATION.WELCOME} />} />
