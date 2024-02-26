@@ -14,6 +14,7 @@ import {
 	ModalOverlay,
 	Text,
 	useDisclosure,
+	useToast,
 } from '@chakra-ui/react';
 import Multiselect from 'multiselect-react-dropdown';
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
@@ -43,14 +44,25 @@ const initialExportCriteria = {
 	[EXPORTS_TYPE.BUSINESS_ONLY]: false,
 };
 
+const initialUIDetails = {
+	exportClicked: false,
+	isBusiness: true,
+	selectAllGroups: false,
+	selectAllLabels: false,
+	CSV_EXPORTING: false,
+	VCF_EXPORTING: false,
+};
+
 const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 	const { isOpen, onOpen, onClose } = useDisclosure();
 	const dispatch = useDispatch();
+	const toast = useToast();
 
 	useImperativeHandle(ref, () => ({
 		open: () => {
-			onOpen();
 			setExportCriteria(initialExportCriteria);
+			setUIDetails(initialUIDetails);
+			onOpen();
 		},
 	}));
 
@@ -63,14 +75,7 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 	const [selectedGroup, setSelectedGroup] = useState([]);
 	const [selectedLabel, setSelectedLabel] = useState([]);
 
-	const [uiDetails, setUIDetails] = useState({
-		exportClicked: false,
-		isBusiness: true,
-		selectAllGroups: false,
-		selectAllLabels: false,
-		CSV_EXPORTING: false,
-		VCF_EXPORTING: false,
-	});
+	const [uiDetails, setUIDetails] = useState(initialUIDetails);
 
 	const { ALL, SAVED, UNSAVED, GROUP, LABEL, BUSINESS_ONLY, SAVED_CHAT } = export_criteria;
 
@@ -107,68 +112,66 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 			: undefined;
 		const business_contacts_only = export_criteria[EXPORTS_TYPE.BUSINESS_ONLY];
 
-		const promises: Promise<unknown>[] = [];
-
 		if (ALL) {
-			promises.push(ContactService.contacts({ vcf_only, business_contacts_only }));
+			ContactService.contacts({ vcf_only, business_contacts_only });
 		}
 
 		if (SAVED) {
-			promises.push(
-				ContactService.contacts({
-					saved_contacts: true,
-					vcf_only,
-					business_contacts_only,
-				})
-			);
+			ContactService.contacts({
+				saved_contacts: true,
+				vcf_only,
+				business_contacts_only,
+			});
 		}
 
 		if (SAVED_CHAT) {
-			promises.push(
-				ContactService.contacts({
-					saved_chat_contacts: true,
-					vcf_only,
-					business_contacts_only,
-				})
-			);
+			ContactService.contacts({
+				saved_chat_contacts: true,
+				vcf_only,
+				business_contacts_only,
+			});
 		}
 
 		if (UNSAVED) {
-			promises.push(
-				ContactService.contacts({
-					non_saved_contacts: true,
-					vcf_only,
-					business_contacts_only,
-				})
-			);
+			ContactService.contacts({
+				non_saved_contacts: true,
+				vcf_only,
+				business_contacts_only,
+			});
 		}
 
 		if (GROUP && selectedGroups && selectedGroups.length > 0) {
-			promises.push(
-				GroupService.fetchGroup(selectedGroups, {
-					vcf_only,
-					business_contacts_only,
-				})
-			);
+			GroupService.fetchGroup(selectedGroups, {
+				vcf_only,
+				business_contacts_only,
+			});
 		}
 
 		if (LABEL && selectedLabels && selectedLabels.length > 0) {
-			promises.push(
-				LabelService.fetchLabel(selectedLabels, {
-					vcf_only,
-					business_contacts_only,
-				})
-			);
+			LabelService.fetchLabel(selectedLabels, {
+				vcf_only,
+				business_contacts_only,
+			});
 		}
 
-		Promise.all(promises).then(() => {
-			setUIDetails((prevState) => ({
-				...prevState,
-				exportClicked: false,
-				CSV_EXPORTING: false,
-				VCF_EXPORTING: false,
-			}));
-		});
+		if (
+			ALL ||
+			SAVED ||
+			SAVED_CHAT ||
+			UNSAVED ||
+			(selectedGroups && selectedGroups.length > 0) ||
+			(selectedLabels && selectedLabels.length > 0)
+		) {
+			toast({
+				title: 'Export in progress.',
+				description: 'Check background tasks for further details',
+				status: 'success',
+				duration: 3000,
+				isClosable: true,
+			});
+		}
+
+		onClose();
 	};
 
 	const handleSubscription = async () => {
@@ -409,6 +412,18 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 								bgColor: 'green.400',
 							}}
 							width={'100%'}
+							isDisabled={
+								!(
+									ALL ||
+									SAVED ||
+									SAVED_CHAT ||
+									UNSAVED ||
+									uiDetails.selectAllGroups ||
+									selectedGroup.length > 0 ||
+									uiDetails.selectAllLabels ||
+									selectedLabel.length > 0
+								)
+							}
 							onClick={() =>
 								setUIDetails((prevState) => ({
 									...prevState,

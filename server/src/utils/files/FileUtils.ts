@@ -37,7 +37,6 @@ const base64ToJPG = async (base64: string, path: string) => {
 	fs.writeFileSync(path, base64Data, 'base64');
 };
 
-
 async function readCSV<
 	T extends {
 		[key: string]: string;
@@ -56,4 +55,37 @@ async function readCSV<
 	return parsed_csv as T;
 }
 
-export default { moveFile, deleteFile, exists, base64ToJPG, base64ToPDF, readCSV };
+async function readFile(path: string) {
+	return new Promise<string>((resolve, reject) => {
+		fs.readFile(path, 'utf8', function (err, data) {
+			if (err) {
+				reject(err);
+			} else {
+				resolve(data);
+			}
+		});
+	});
+}
+
+async function writeFile(path: string, data: string) {
+	return new Promise<void>((resolve, reject) => {
+		fs.writeFile(path, data, 'utf8', function (err) {
+			if (err) {
+				reject(err);
+			} else {
+				resolve();
+			}
+		});
+	});
+}
+
+export default {
+	moveFile,
+	deleteFile,
+	exists,
+	base64ToJPG,
+	base64ToPDF,
+	readCSV,
+	readFile,
+	writeFile,
+};

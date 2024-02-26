@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react';
 import { singletonHook } from 'react-singleton-hook';
-import { io } from 'socket.io-client';
-import { SERVER_URL, SOCKET_EVENT } from '../config/const';
+import { socket } from '../config/APIInstance';
+import { SOCKET_EVENT } from '../config/const';
 import UserService from '../services/user.service';
 import { getClientID, saveClientID } from '../utils/ChromeUtils';
 import { recheckNetwork } from './useNetwork';
-
-const socket = io(SERVER_URL);
 
 const initStatus = {
 	isAuthenticated: false,

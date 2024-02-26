@@ -33,32 +33,14 @@ export default class GroupService {
 	}
 	static async fetchGroup(ids: string[], { vcf_only = false, business_contacts_only = false }) {
 		try {
-			const { data } = await APIInstance.post(
-				`/whatsapp/groups/export`,
-				{
-					vcf_only,
-					business_contacts_only,
-					group_ids: ids,
-				},
-				{ responseType: 'blob' }
-			);
-			const blob = new Blob([data], {
-				type: vcf_only ? 'text/vcf' : 'text/csv',
+			await APIInstance.post(`/whatsapp/groups/export`, {
+				vcf: vcf_only,
+				business_contacts_only,
+				group_ids: ids,
 			});
-
-			// Create a temporary link element
-			const downloadLink = document.createElement('a');
-			downloadLink.href = window.URL.createObjectURL(blob);
-			downloadLink.download = `Group Contacts.${vcf_only ? 'vcf' : 'csv'}`; // Specify the filename
-
-			// Append the link to the body and trigger the download
-			document.body.appendChild(downloadLink);
-			downloadLink.click();
-
-			// Clean up - remove the link
-			document.body.removeChild(downloadLink);
+			return true;
 		} catch (err) {
-			//ignore
+			return false;
 		}
 	}
 	static async createGroup(name: string, csv_file: string) {
