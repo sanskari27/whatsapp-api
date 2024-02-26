@@ -1,6 +1,8 @@
 import {
 	Box,
+	Button,
 	HStack,
+	Icon,
 	Select,
 	SkeletonText,
 	Table,
@@ -13,8 +15,9 @@ import {
 	useToast,
 } from '@chakra-ui/react';
 
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { MdGroups3 } from 'react-icons/md';
+import { TbDatabaseExport } from 'react-icons/tb';
 import { useDispatch, useSelector } from 'react-redux';
 import { createSearchParams, useNavigate } from 'react-router-dom';
 import { NAVIGATION } from '../../../config/const';
@@ -48,6 +51,10 @@ const UsersPage = () => {
 	const confirmationAlertDialogRef = useRef<ConfirmationDialogHandle>(null);
 	const paymentReminderDialogRef = useRef<PaymentReminderDialogHandle>(null);
 
+	const handleExportUsers = useCallback(() => {
+		UsersService.getUsers({ csv: true });
+	}, []);
+
 	useEffect(() => {
 		pushToNavbar({
 			title: 'Users',
@@ -55,13 +62,21 @@ const UsersPage = () => {
 			actions: (
 				<HStack>
 					<NavbarSearchElement />
+					<Button
+						leftIcon={<Icon as={TbDatabaseExport} height={5} width={5} />}
+						colorScheme={'blue'}
+						size={'sm'}
+						onClick={handleExportUsers}
+					>
+						EXPORT
+					</Button>
 				</HStack>
 			),
 		});
 		return () => {
 			popFromNavbar();
 		};
-	}, []);
+	}, [handleExportUsers]);
 
 	const filtered = useFilteredList(list, { name: 1, phone: 1 });
 
