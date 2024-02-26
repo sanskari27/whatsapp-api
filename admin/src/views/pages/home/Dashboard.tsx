@@ -8,7 +8,11 @@ export default function Dashboard() {
 	const theme = useTheme();
 
 	return (
-		<Grid p={'1rem'} textColor={theme === 'dark' ? 'white' : 'black'} gap={'1rem'}>
+		<Grid
+			p={'1rem'}
+			textColor={theme === 'dark' ? 'white' : 'black'}
+			gap={'1rem'}
+		>
 			<GridItem>
 				<Token />
 			</GridItem>

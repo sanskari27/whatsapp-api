@@ -125,6 +125,12 @@ export default class AdminService {
 				phone: user.phone,
 				type: user.userType,
 				subscription_expiry: DateUtils.format(user.subscription_expiry, 'DD/MM/YYYY'),
+				description: user.business_details.description ?? '',
+				email: user.business_details.email ?? '',
+				websites: (user.business_details.websites ?? []).join(', '),
+				latitude: user.business_details.latitude ?? '',
+				longitude: user.business_details.longitude ?? '',
+				address: user.business_details.address ?? '',
 			};
 		});
 	}

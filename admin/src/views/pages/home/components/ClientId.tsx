@@ -34,7 +34,7 @@ export default function Token() {
 	};
 
 	return (
-		<Card maxW='250px' bgColor={theme === 'light' ? 'gray.100' : '#464343'}>
+		<Card maxW='450px' bgColor={theme === 'light' ? 'gray.100' : '#464343'}>
 			<CardHeader pb={'0'}>
 				<Heading size='md' textAlign={'center'} color={theme === 'light' ? 'gray.600' : 'gray.200'}>
 					Client ID
@@ -46,7 +46,7 @@ export default function Token() {
 					<Heading size='xs' textTransform='uppercase'>
 						<Editable
 							border={`1px solid ${theme === 'light' ? 'black' : 'white'}`}
-							width={'150px'}
+							width={'350px'}
 							rounded={'md'}
 							textAlign={'center'}
 							defaultValue={clientId}
