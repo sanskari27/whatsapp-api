@@ -4,19 +4,35 @@ import APIError, { API_ERRORS } from '../../errors/api-errors';
 import { WhatsappProvider } from '../../provider/whatsapp_provider';
 import { UserService } from '../../services';
 import AdminService from '../../services/user/admin-service';
+import CSVParser from '../../utils/CSVParser';
 import DateUtils from '../../utils/DateUtils';
-import { Respond } from '../../utils/ExpressUtils';
+import { Respond, RespondCSV } from '../../utils/ExpressUtils';
 
 async function listUsers(req: Request, res: Response, next: NextFunction) {
 	const userService = new AdminService(req.locals.admin);
 
-	return Respond({
-		res,
-		status: 200,
-		data: {
-			users: await userService.allUsers(),
-		},
-	});
+	const options = {
+		csv: false,
+	};
+	if (req.query.csv === 'true') {
+		options.csv = true;
+	}
+
+	if (options.csv) {
+		return RespondCSV({
+			res,
+			filename: 'Exported Contacts',
+			data: CSVParser.exportUsersDetails(await userService.allUsers()),
+		});
+	} else {
+		return Respond({
+			res,
+			status: 200,
+			data: {
+				users: await userService.allUsers(),
+			},
+		});
+	}
 }
 
 async function extendUserExpiry(req: Request, res: Response, next: NextFunction) {
