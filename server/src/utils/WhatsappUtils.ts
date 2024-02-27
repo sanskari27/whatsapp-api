@@ -130,7 +130,7 @@ export default class WhatsappUtils {
 
 	async getContacts() {
 		const saved_contacts = (await this.whatsapp.getClient().getContacts()).filter(
-			(contact) => contact.isMyContact && !contact.isMe && !contact.isGroup
+			(contact) => contact.isMyContact && !contact.isMe && !contact.isGroup && contact.isWAContact
 		);
 		const chats = await this.whatsapp.getClient().getChats();
 
