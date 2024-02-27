@@ -12,7 +12,7 @@ import {
 } from '@chakra-ui/react';
 
 import { useEffect, useRef, useState } from 'react';
-import { MdGroupAdd, MdGroups3 } from 'react-icons/md';
+import { MdAdminPanelSettings, MdGroupAdd, MdGroups3 } from 'react-icons/md';
 import { useDispatch, useSelector } from 'react-redux';
 import { popFromNavbar, pushToNavbar } from '../../../hooks/useNavbar';
 import GroupService from '../../../services/group.service';
@@ -96,17 +96,17 @@ const GroupMergePage = () => {
 						>
 							MERGE
 						</Button>
-					) : null
-					// <Button
-					// 	leftIcon={<MdAdminPanelSettings />}
-					// 	size={'sm'}
-					// 	colorScheme='blue'
-					// 	isDisabled={selectedGroups.length === 0}
-					// 	onClick={openSettingDialog}
-					// >
-					// 	GROUP SETTINGS
-					// </Button>
-					}
+					) : (
+						<Button
+							leftIcon={<MdAdminPanelSettings />}
+							size={'sm'}
+							colorScheme='blue'
+							isDisabled={selectedGroups.length === 0}
+							onClick={openSettingDialog}
+						>
+							GROUP SETTINGS
+						</Button>
+					)}
 				</HStack>
 			),
 		});
