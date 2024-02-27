@@ -13,8 +13,8 @@ import {
 	Tr,
 } from '@chakra-ui/react';
 import { useEffect, useRef, useState } from 'react';
+import { GrTasks } from 'react-icons/gr';
 import { IoIosCloudDownload } from 'react-icons/io';
-import { TbCsv } from 'react-icons/tb';
 import { NAVIGATION } from '../../../config/const';
 import useFilteredList from '../../../hooks/useFilteredList';
 import { popFromNavbar, pushToNavbar } from '../../../hooks/useNavbar';
@@ -42,8 +42,8 @@ const Tasks = () => {
 	useEffect(() => {
 		pushToNavbar({
 			title: 'Background Tasks',
-			icon: TbCsv,
-			link: NAVIGATION.CSV,
+			icon: GrTasks,
+			link: NAVIGATION.TASKS,
 			actions: (
 				<HStack>
 					<NavbarSearchElement />
