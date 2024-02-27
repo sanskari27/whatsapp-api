@@ -18,7 +18,7 @@ import { IoIosCloudDownload } from 'react-icons/io';
 import { NAVIGATION } from '../../../config/const';
 import useFilteredList from '../../../hooks/useFilteredList';
 import { popFromNavbar, pushToNavbar } from '../../../hooks/useNavbar';
-import useTask from '../../../hooks/useTask';
+import useTask, { TASK_STATUS } from '../../../hooks/useTask';
 import { useTheme } from '../../../hooks/useTheme';
 import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
 import { NavbarDeleteElement, NavbarSearchElement } from '../../components/navbar';
@@ -104,6 +104,7 @@ const Tasks = () => {
 									<Td>{task.status}</Td>
 									<Td>
 										<IconButton
+											isDisabled={task.status !== TASK_STATUS.COMPLETED}
 											aria-label='download file'
 											icon={<Icon as={IoIosCloudDownload} height={5} width={5} />}
 											onClick={() => downloadTask(task.id)}
