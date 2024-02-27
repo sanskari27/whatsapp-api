@@ -1,11 +1,12 @@
 import fs from 'fs';
 import Logger from 'n23-logger';
-import WAWebJS, { BusinessContact, GroupChat } from 'whatsapp-web.js';
+import WAWebJS, { BusinessContact, Contact, GroupChat } from 'whatsapp-web.js';
 import { COUNTRIES, IS_PRODUCTION, SESSION_STARTUP_WAIT_TIME } from '../config/const';
 import InternalError, { INTERNAL_ERRORS } from '../errors/internal-errors';
 import { WhatsappProvider } from '../provider/whatsapp_provider';
 import { UserService } from '../services';
 import {
+	GroupDetails,
 	TBusinessContact,
 	TContact,
 	TGroupBusinessContact,
@@ -21,6 +22,22 @@ type MappedContact_ReturnType<T extends boolean> = T extends true
 	: {
 			[contact_number: string]: TContact;
 	  };
+
+export type MappedContacts = {
+	[contact_number: string]: {
+		name: string;
+		public_name: string;
+		number: string;
+		isBusiness: 'Business' | 'Personal';
+		country: string;
+		description: string;
+		email: string;
+		websites: string[];
+		latitude: number;
+		longitude: number;
+		address: string;
+	};
+};
 
 export default class WhatsappUtils {
 	private whatsapp: WhatsappProvider;
@@ -111,60 +128,59 @@ export default class WhatsappUtils {
 		return chats.map((chat) => chat.id._serialized);
 	}
 
-	async getSavedContacts() {
-		const contacts = (await this.whatsapp.getClient().getContacts()).filter(
+	async getContacts() {
+		const saved_contacts = (await this.whatsapp.getClient().getContacts()).filter(
 			(contact) => contact.isMyContact && !contact.isMe && !contact.isGroup
 		);
-
-		return contacts;
-	}
-
-	async getSavedChatContacts() {
 		const chats = await this.whatsapp.getClient().getChats();
 
-		const saved_chat_contacts = await Promise.all(
-			chats.map(async (chat) => {
-				if (chat.isGroup) return Promise.resolve(null);
-				const contact = await this.whatsapp.getClient().getContactById(chat.id._serialized);
-				if (contact.isMyContact && !contact.isMe) {
-					return contact;
+		const { non_saved_contacts, saved_chat, groups } = await chats.reduce(
+			async (accP, chat) => {
+				const acc = await accP;
+				if (chat.isGroup) {
+					acc.groups.push({
+						id: (chat as GroupChat).id._serialized,
+						name: (chat as GroupChat).name ?? '',
+						isMergedGroup: false,
+						participants: (chat as GroupChat).participants.length,
+					} as GroupDetails);
+					return acc;
 				}
-				return null;
+				const contact = await this.whatsapp.getClient().getContactById(chat.id._serialized);
+				if (!contact.isMyContact && !contact.isMe) {
+					acc.non_saved_contacts.push(contact);
+				} else if (contact.isMyContact && !contact.isMe) {
+					acc.saved_chat.push(contact);
+				}
+				return acc;
+			},
+			Promise.resolve({
+				non_saved_contacts: [] as WAWebJS.Contact[],
+				saved_chat: [] as WAWebJS.Contact[],
+				groups: [] as GroupDetails[],
 			})
 		);
 
-		return saved_chat_contacts.filter((contact) => contact !== null) as WAWebJS.Contact[];
+		return { saved: saved_contacts, non_saved: non_saved_contacts, saved_chat: saved_chat, groups };
 	}
 
-	async getNonSavedContacts() {
-		const chats = await this.whatsapp.getClient().getChats();
-
-		const non_saved_contacts = await Promise.all(
-			chats.map(async (chat) => {
-				if (chat.isGroup) return Promise.resolve(null);
-				const contact = await this.whatsapp.getClient().getContactById(chat.id._serialized);
-				if (!contact.isMyContact && !contact.isGroup && !contact.isMe) {
-					return contact;
-				}
-				return null;
-			})
-		);
-
-		return non_saved_contacts.filter((contact) => contact !== null) as WAWebJS.Contact[];
-	}
-
-	static async getContactDetails(contact: WAWebJS.Contact) {
-		const country_code = await contact.getCountryCode();
+	async getContactDetails(contact: WAWebJS.Contact) {
+		let country_code = '';
+		if (Object.hasOwnProperty('getCountryCode')) {
+			country_code = await contact.getCountryCode();
+		} else if (Object.hasOwnProperty('number')) {
+			country_code = await this.whatsapp.getClient().getCountryCode(contact.number);
+		}
 		const country = COUNTRIES[country_code as string];
 		return {
 			name: contact.name,
 			number: contact.number,
-			isBusiness: contact.isBusiness ? 'Business' : 'Personal',
+			isBusiness: (contact.isBusiness ? 'Business' : 'Personal') as 'Business' | 'Personal',
 			country,
 			public_name: contact.pushname ?? '',
 		};
 	}
-	static getBusinessDetails(contact: BusinessContact) {
+	static getBusinessDetails(contact: Contact) {
 		const business_contact = contact as BusinessContact;
 		const business_details = business_contact.businessProfile as {
 			description: string;
@@ -176,12 +192,12 @@ export default class WhatsappUtils {
 		};
 
 		return {
-			description: business_details.description,
-			email: business_details.email,
-			websites: business_details.website,
-			latitude: business_details.latitude,
-			longitude: business_details.longitude,
-			address: business_details.address,
+			description: business_details?.description ?? '',
+			email: business_details?.email ?? '',
+			websites: business_details?.website ?? [],
+			latitude: business_details?.latitude ?? 0,
+			longitude: business_details?.longitude ?? 0,
+			address: business_details?.address ?? '',
 		};
 	}
 
@@ -195,7 +211,7 @@ export default class WhatsappUtils {
 	): Promise<T extends true ? TBusinessContact[] : TContact[]> {
 		const detailed_contacts = await Promise.all(
 			contacts.map(async (contact) => {
-				const contact_details = (await WhatsappUtils.getContactDetails(contact)) as TContact;
+				const contact_details = (await this.getContactDetails(contact)) as TContact;
 				if (!options.business_details) {
 					return contact_details;
 				}
@@ -229,7 +245,7 @@ export default class WhatsappUtils {
 			});
 		const contacts = await Promise.all(
 			filtered_contacts.map(async (contact) => {
-				const contact_details = await WhatsappUtils.getContactDetails(contact);
+				const contact_details = await this.getContactDetails(contact);
 				if (!business_contacts_only) {
 					return contact_details as TContact;
 				} else {
@@ -261,21 +277,18 @@ export default class WhatsappUtils {
 	async getGroupContacts<T extends boolean>(
 		groupChat: GroupChat,
 		options: {
-			business_details: T;
-			mapped_contacts: MappedContact_ReturnType<T> | null;
-		} = {
-			business_details: false as T,
-			mapped_contacts: null,
+			business_details?: T;
+			mapped_contacts: MappedContacts;
 		}
 	): Promise<T extends true ? TGroupBusinessContact[] : TGroupContact[]> {
-		const contacts =
-			options.mapped_contacts ?? (await this.getMappedContacts(options.business_details));
+		const contacts = options.mapped_contacts;
 
 		const group_participants = await Promise.all(
 			groupChat.participants.map(async (participant) => {
 				const contact = contacts[participant.id.user];
 
 				const contact_details: TGroupContact = {
+					group_id: groupChat.id._serialized.split('@')[0],
 					name: contact ? contact.name : '',
 					number: participant.id.user,
 					country: contact ? contact.country : '',
@@ -301,7 +314,7 @@ export default class WhatsappUtils {
 					return contact_details;
 				}
 
-				if (!contact.isBusiness) {
+				if (contact_details.isBusiness !== 'Business') {
 					return null;
 				}
 
@@ -329,11 +342,8 @@ export default class WhatsappUtils {
 	async getContactsByLabel<T extends boolean>(
 		label_id: string,
 		options: {
-			business_details: boolean;
-			mapped_contacts: MappedContact_ReturnType<T> | null;
-		} = {
-			business_details: false,
-			mapped_contacts: null,
+			business_details?: boolean;
+			mapped_contacts: MappedContacts;
 		}
 	) {
 		try {
@@ -354,7 +364,7 @@ export default class WhatsappUtils {
 						})) as (TLabelContact | TLabelBusinessContact)[];
 					} else {
 						const contact = await this.whatsapp.getClient().getContactById(chat.id._serialized);
-						const contacts_details = await WhatsappUtils.getContactDetails(contact);
+						const contacts_details = await this.getContactDetails(contact);
 						if (!options.business_details) {
 							return [
 								{

@@ -28,6 +28,10 @@ export enum SOCKET_RESPONSES {
 	WHATSAPP_AUTHENTICATED = 'whatsapp-authenticated',
 	WHATSAPP_READY = 'whatsapp-ready',
 	WHATSAPP_CLOSED = 'whatsapp-closed',
+
+	TASK_CREATED = 'task-created',
+	TASK_COMPLETED = 'task-completed',
+	TASK_FAILED = 'task-failed',
 }
 
 export const COUNTRIES: {
@@ -114,6 +118,27 @@ export enum BOT_TRIGGER_TO {
 	NON_SAVED_CONTACTS = 'NON_SAVED_CONTACTS',
 }
 
+export enum TASK_TYPE {
+	EXPORT_ALL_CONTACTS = 'EXPORT_ALL_CONTACTS',
+	EXPORT_CHAT_CONTACTS = 'EXPORT_CHAT_CONTACTS',
+	EXPORT_SAVED_CONTACTS = 'EXPORT_SAVED_CONTACTS',
+	EXPORT_UNSAVED_CONTACTS = 'EXPORT_UNSAVED_CONTACTS',
+	EXPORT_GROUP_CONTACTS = 'EXPORT_GROUP_CONTACTS',
+	EXPORT_LABEL_CONTACTS = 'EXPORT_LABEL_CONTACTS',
+	SCHEDULE_CAMPAIGN = 'SCHEDULE_CAMPAIGN',
+}
+
+export enum TASK_STATUS {
+	COMPLETED = 'COMPLETED',
+	PENDING = 'PENDING',
+	FAILED = 'FAILED',
+}
+
+export enum TASK_RESULT_TYPE {
+	CSV = 'CSV',
+	VCF = 'VCF',
+}
+
 export const TAX = 0.18;
 
 export const UPLOADS_PATH = '/static/uploads/';
@@ -121,6 +146,7 @@ export const CSV_PATH = '/static/csv/';
 export const ATTACHMENTS_PATH = '/static/attachments/';
 export const INVOICE_PATH = '/static/invoices/';
 export const MISC_PATH = '/static/misc/';
+export const TASK_PATH = '/static/task/';
 export const LOGO_PATH = '/static/assets/logo.png';
 
 export const SHORTNER_REDIRECT = 'https://open.whatsleads.in/';
@@ -130,8 +156,12 @@ export const CACHE_TIMEOUT = 60 * 60; //seconds
 export const REFRESH_CACHE_TIMEOUT = 30 * 24 * 60 * 60; //seconds
 
 export const CACHE_TOKEN_GENERATOR = {
-	SAVED_CONTACTS: (user_id: string, business_only: boolean = false) =>
-		`SAVED_CONTACTS?user_id=${user_id}&business_only=${business_only}`,
+	CONTACTS: (user_id: string, business_only: boolean = false) =>
+		`CONTACTS?user_id=${user_id}&business_only=${business_only}`,
+	CONTACT_DETAILS: (user_id: string, business_only: boolean = false) =>
+		`CONTACT_DETAILS?user_id=${user_id}&business_only=${business_only}`,
+	CONTACTS_COUNT: (user_id: string, business_only: boolean = false) =>
+		`CONTACTS_COUNT?user_id=${user_id}`,
 	REFRESH_TOKENS: () => `REFRESH_TOKENS`,
 
 	SAVED_CHAT_CONTACTS: (user_id: string, business_only: boolean = false) =>

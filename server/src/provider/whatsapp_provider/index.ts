@@ -222,7 +222,7 @@ export class WhatsappProvider {
 		});
 	}
 
-	private async sendToClient(event: SOCKET_RESPONSES, data: string | null = null) {
+	sendToClient(event: SOCKET_RESPONSES, data: string | null = null) {
 		if (!this.socket) return;
 		this.socket.emit(event, data);
 	}

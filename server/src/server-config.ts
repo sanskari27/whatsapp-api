@@ -15,6 +15,7 @@ import {
 	IS_PRODUCTION,
 	IS_WINDOWS,
 	MISC_PATH,
+	TASK_PATH,
 	UPLOADS_PATH,
 } from './config/const';
 import APIError from './errors/api-errors';
@@ -169,4 +170,5 @@ function createDir() {
 	fs.mkdirSync(__basedir + UPLOADS_PATH, { recursive: true });
 	fs.mkdirSync(__basedir + INVOICE_PATH, { recursive: true });
 	fs.mkdirSync(__basedir + MISC_PATH, { recursive: true });
+	fs.mkdirSync(__basedir + TASK_PATH, { recursive: true });
 }

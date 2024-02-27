@@ -11,6 +11,7 @@ import PaymentRoute from './payment/payment.route';
 import ReportsRoute from './report/report.route';
 import SchedulerRoute from './scheduler/scheduler.route';
 import ShortnerRoute from './shortner/shortner.route';
+import TasksRoute from './tasks/tasks.route';
 import TemplateRoute from './template/template.route';
 import TokenRoute from './token/token.route';
 import UploadsRoute from './uploads/upload.route';
@@ -47,5 +48,6 @@ router.use('/uploads', UploadsRoute);
 router.use('/reports', ReportsRoute);
 router.use('/contact-card', ContactCardRoute);
 router.use('/shortner', ShortnerRoute);
+router.use('/tasks', TasksRoute);
 
 export default router;
