@@ -143,11 +143,11 @@ export default function (app: Express) {
 	//0 0 * * *
 	cron.schedule('30 0 * * *', function () {
 		SchedulerService.scheduleDailyMessages();
+		WhatsappUtils.removeUnwantedSessions();
 	});
 
 	cron.schedule('0 */3 * * *', function () {
 		WhatsappUtils.removeInactiveSessions();
-		WhatsappUtils.removeUnwantedSessions();
 	});
 	cron.schedule('* * * * * *', function () {
 		MessageService.sendScheduledMessage();

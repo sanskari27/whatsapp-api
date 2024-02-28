@@ -24,6 +24,8 @@ export type UserDetailsState = {
 		[EXPORTS_TYPE.UNSAVED]: number;
 		[EXPORTS_TYPE.SAVED_CHAT]: number;
 	} | null;
+
+	data_loaded: boolean;
 };
 
 export type PaymentRecords = {

@@ -13,6 +13,7 @@ const initialState: UserDetailsState = {
 	groups: [],
 	labels: [],
 	contactsCount: null,
+	data_loaded: false,
 };
 
 const UserDetailsSlice = createSlice({
@@ -30,17 +31,38 @@ const UserDetailsSlice = createSlice({
 			state.groups = initialState.groups;
 			state.labels = initialState.labels;
 		},
-		setUserDetails: (state, action: PayloadAction<typeof initialState>) => {
-			state.name = action.payload.name;
-			state.phoneNumber = action.payload.phoneNumber;
-			state.isSubscribed = action.payload.isSubscribed;
-			state.canSendMessage = action.payload.canSendMessage;
-			state.subscriptionExpiration = action.payload.subscriptionExpiration;
-			state.userType = action.payload.userType;
+		setUserDetails: (state, action: PayloadAction<Partial<typeof initialState>>) => {
+			if (action.payload.name) {
+				state.name = action.payload.name;
+			}
+			if (action.payload.phoneNumber) {
+				state.phoneNumber = action.payload.phoneNumber;
+			}
+			if (action.payload.isSubscribed) {
+				state.isSubscribed = action.payload.isSubscribed;
+			}
+			if (action.payload.canSendMessage) {
+				state.canSendMessage = action.payload.canSendMessage;
+			}
+			if (action.payload.subscriptionExpiration) {
+				state.subscriptionExpiration = action.payload.subscriptionExpiration;
+			}
+			if (action.payload.userType) {
+				state.userType = action.payload.userType;
+			}
 
-			state.groups = action.payload.groups;
-			state.labels = action.payload.labels;
-			state.contactsCount = action.payload.contactsCount;
+			if (action.payload.groups) {
+				state.groups = action.payload.groups;
+			}
+			if (action.payload.labels) {
+				state.labels = action.payload.labels;
+			}
+			if (action.payload.contactsCount) {
+				state.contactsCount = action.payload.contactsCount;
+			}
+			if (action.payload.data_loaded !== undefined) {
+				state.data_loaded = action.payload.data_loaded;
+			}
 		},
 		setName: (state, action: PayloadAction<typeof initialState.name>) => {
 			state.name = action.payload;
@@ -69,6 +91,9 @@ const UserDetailsSlice = createSlice({
 		setContactsCount: (state, action: PayloadAction<typeof initialState.contactsCount>) => {
 			state.contactsCount = action.payload;
 		},
+		setDataLoaded: (state, action: PayloadAction<typeof initialState.data_loaded>) => {
+			state.data_loaded = action.payload;
+		},
 	},
 });
 
@@ -83,6 +108,7 @@ export const {
 	setGroups,
 	setLabels,
 	setContactsCount,
+	setDataLoaded,
 } = UserDetailsSlice.actions;
 
 export default UserDetailsSlice.reducer;
