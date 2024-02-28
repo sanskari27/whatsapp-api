@@ -9,13 +9,15 @@ export default class TaskService {
 			return data.tasks.map(
 				(task: {
 					id: string;
-					type: 'string';
+					type: string;
+					description: string;
 					status: TASK_STATUS;
 					data_result_type: TASK_RESULT_TYPE;
 					data?: string;
 				}) => ({
 					id: task.id as string,
-					type: task.type as 'string',
+					type: task.type as string,
+					description: task.description as string,
 					status: task.status as TASK_STATUS,
 					data_result_type: task.data_result_type as TASK_RESULT_TYPE,
 					data: (task.data as string) || undefined,

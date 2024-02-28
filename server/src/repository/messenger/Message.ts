@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { MESSAGE_STATUS } from '../../config/const';
+import { MESSAGE_SCHEDULER_TYPE, MESSAGE_STATUS } from '../../config/const';
 import { IMessage } from '../../types/messenger';
 
 const messageSchema = new mongoose.Schema<IMessage>({
@@ -45,6 +45,13 @@ const messageSchema = new mongoose.Schema<IMessage>({
 	sendAt: {
 		type: Date,
 		required: true,
+	},
+	scheduled_by: {
+		type: {
+			type: String,
+			enum: Object.keys(MESSAGE_SCHEDULER_TYPE),
+		},
+		id: Schema.Types.ObjectId,
 	},
 });
 

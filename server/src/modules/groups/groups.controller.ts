@@ -102,7 +102,7 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 	const whatsappUtils = new WhatsappUtils(whatsapp);
 	if (!whatsapp.isReady()) {
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
-	} else if (!group_ids || group_ids.length === 0) {
+	} else if (!Array.isArray(group_ids) || group_ids.length === 0) {
 		return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
 	}
 
@@ -114,7 +114,10 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 
 	const task_id = await taskService.createTask(
 		TASK_TYPE.EXPORT_GROUP_CONTACTS,
-		options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV
+		options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV,
+		{
+			description: `Export ${group_ids.length} groups.`,
+		}
 	);
 
 	Respond({
@@ -176,21 +179,12 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 
 		const participants = (
 			await Promise.all(
-				groups.map(async (groupChat) => {
-					const group_participants = await getOrCache(
-						CACHE_TOKEN_GENERATOR.GROUPS_EXPORT(
-							req.locals.user._id,
-							groupChat.id._serialized,
-							options.business_contacts_only
-						),
-						async () =>
-							await whatsappUtils.getGroupContacts(groupChat, {
-								business_details: options.business_contacts_only,
-								mapped_contacts: saved_contacts,
-							})
-					);
-					return group_participants;
-				})
+				groups.map((groupChat) =>
+					whatsappUtils.getGroupContacts(groupChat, {
+						business_details: options.business_contacts_only,
+						mapped_contacts: saved_contacts,
+					})
+				)
 			)
 		).flat();
 

@@ -8,6 +8,7 @@ import { LOTTIE_LOADER } from '../../../assets/Lottie';
 import { DATA_LOADED_DELAY, NAVIGATION } from '../../../config/const';
 import { useAuth } from '../../../hooks/useAuth';
 import { useNetwork } from '../../../hooks/useNetwork';
+import useTask from '../../../hooks/useTask';
 import '../../../index.css';
 import AttachmentService from '../../../services/attachment.service';
 import BotService from '../../../services/bot.service';
@@ -35,6 +36,7 @@ export default function Home() {
 	const status = useNetwork();
 	const outlet = useOutlet();
 	const dispatch = useDispatch();
+	useTask();
 	const { isAuthenticated, isAuthenticating } = useAuth();
 	const { phoneNumber } = useSelector((state: StoreState) => state[StoreNames.USER]);
 	const [dataLoaded, setDataLoaded] = useBoolean(false);

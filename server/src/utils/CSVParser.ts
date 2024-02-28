@@ -377,6 +377,58 @@ export default class CSVParser {
 		});
 	}
 
+	static exportSchedulerReport(
+		records: {
+			campaign_name: string;
+			receiver: string;
+			message: string;
+			attachments: number;
+			contacts: number;
+			polls: number;
+			status: string;
+		}[]
+	) {
+		const keys = [
+			{
+				field: 'campaign_name',
+				title: 'Scheduler Name',
+			},
+			{
+				field: 'receiver',
+				title: 'Recipient',
+			},
+			{
+				field: 'message',
+				title: 'Message',
+			},
+			{
+				field: 'attachments',
+				title: 'Attachments',
+			},
+			{
+				field: 'contacts',
+				title: 'Contacts',
+			},
+			{
+				field: 'polls',
+				title: 'Polls',
+			},
+			{
+				field: 'status',
+				title: 'Status',
+			},
+			{
+				field: 'scheduled_at',
+				title: 'Scheduled At',
+			},
+		];
+
+		return json2csv(records, {
+			keys: keys,
+			emptyFieldValue: '',
+		});
+	}
+
 	static exportPollReport(
 		records: {
 			title: string;

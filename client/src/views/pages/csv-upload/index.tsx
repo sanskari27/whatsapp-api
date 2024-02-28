@@ -4,6 +4,7 @@ import {
 	Checkbox,
 	HStack,
 	Icon,
+	IconButton,
 	Table,
 	TableContainer,
 	Tbody,
@@ -14,6 +15,7 @@ import {
 } from '@chakra-ui/react';
 import { useEffect, useRef, useState } from 'react';
 import { BiGroup, BiLabel } from 'react-icons/bi';
+import { IoIosCloudDownload } from 'react-icons/io';
 import { TbCsv } from 'react-icons/tb';
 import { useDispatch, useSelector } from 'react-redux';
 import { NAVIGATION } from '../../../config/const';
@@ -60,6 +62,10 @@ const CSVUpload = () => {
 		setSelectedFiles([]);
 	};
 
+	const downloadCSV = (id: string) => {
+		UploadsService.downloadCSV(id);
+	};
+
 	useEffect(() => {
 		pushToNavbar({
 			title: 'CSV Upload',
@@ -72,7 +78,7 @@ const CSVUpload = () => {
 					<Button
 						size={'sm'}
 						leftIcon={<BiGroup />}
-						colorScheme='green'
+						colorScheme='blue'
 						onClick={() => createGroupDialogRef.current?.open()}
 					>
 						GROUP
@@ -131,6 +137,7 @@ const CSVUpload = () => {
 							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'50%'}>
 								Headers
 							</Th>
+							<Th width={'5%'}></Th>
 						</Tr>
 					</Thead>
 					<Tbody>
@@ -154,6 +161,13 @@ const CSVUpload = () => {
 									</Td>
 									<Td className='whitespace-break-spaces'>{csv.name}</Td>
 									<Td className='whitespace-break-spaces'>{csv.headers.join(', ')}</Td>
+									<Td>
+										<IconButton
+											aria-label='Edit'
+											icon={<Icon as={IoIosCloudDownload} height={5} width={5} />}
+											onClick={() => downloadCSV(csv.id)}
+										/>
+									</Td>
 								</Tr>
 							);
 						})}

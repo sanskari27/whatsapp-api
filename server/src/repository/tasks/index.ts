@@ -23,6 +23,7 @@ const schema = new mongoose.Schema<ITask>({
 		required: true,
 	},
 	data: String,
+	description:String,
 });
 
 const TaskDB = mongoose.model<ITask>('Task', schema);

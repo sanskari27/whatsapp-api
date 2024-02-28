@@ -18,7 +18,7 @@ import { IoIosCloudDownload } from 'react-icons/io';
 import { NAVIGATION } from '../../../config/const';
 import useFilteredList from '../../../hooks/useFilteredList';
 import { popFromNavbar, pushToNavbar } from '../../../hooks/useNavbar';
-import useTask, { TASK_STATUS } from '../../../hooks/useTask';
+import useTask, { TASK_RESULT_TYPE, TASK_STATUS } from '../../../hooks/useTask';
 import { useTheme } from '../../../hooks/useTheme';
 import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
 import { NavbarDeleteElement, NavbarSearchElement } from '../../components/navbar';
@@ -70,8 +70,11 @@ const Tasks = () => {
 							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>
 								Sl no.
 							</Th>
-							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'80%'}>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'30%'}>
 								Type
+							</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'50%'}>
+								Description
 							</Th>
 							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'10%'}>
 								Status
@@ -101,9 +104,11 @@ const Tasks = () => {
 										{index + 1}.
 									</Td>
 									<Td className='capitalize'>{task.type.toLowerCase().split('_').join(' ')}</Td>
+									<Td>{task.description}</Td>
 									<Td>{task.status}</Td>
 									<Td>
 										<IconButton
+											hidden={task.data_result_type === TASK_RESULT_TYPE.NONE}
 											isDisabled={task.status !== TASK_STATUS.COMPLETED}
 											aria-label='download file'
 											icon={<Icon as={IoIosCloudDownload} height={5} width={5} />}
