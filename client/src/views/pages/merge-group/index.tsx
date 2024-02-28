@@ -15,7 +15,6 @@ import { useEffect, useRef, useState } from 'react';
 import { MdAdminPanelSettings, MdGroupAdd, MdGroups3 } from 'react-icons/md';
 import { useDispatch, useSelector } from 'react-redux';
 import { popFromNavbar, pushToNavbar } from '../../../hooks/useNavbar';
-import { useTheme } from '../../../hooks/useTheme';
 import GroupService from '../../../services/group.service';
 import { StoreNames, StoreState } from '../../../store';
 import {
@@ -34,7 +33,6 @@ import {
 } from './components';
 
 const GroupMergePage = () => {
-	const theme = useTheme();
 	const {
 		isOpen: isMergeDialogOpen,
 		onOpen: openMergeDialog,
@@ -76,13 +74,7 @@ const GroupMergePage = () => {
 			icon: MdGroups3,
 			actions: (
 				<HStack>
-					<FormControl
-						width={'fit-content'}
-						display='flex'
-						alignItems='center'
-						gap='0.5rem'
-						textColor={theme === 'light' ? 'blue' : 'whitesmoke'}
-					>
+					<FormControl width={'fit-content'} display='flex' alignItems='center' gap='0.5rem'>
 						<FormLabel mb='0'>Merged Groups</FormLabel>
 						<Switch id='merged-groups' onChange={(e) => handleSwitchChange(e.target.checked)} />
 						<FormLabel mb='0'>Whatsapp Groups</FormLabel>
