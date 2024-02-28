@@ -1,6 +1,8 @@
 import { Types } from 'mongoose';
+import { MESSAGE_SCHEDULER_TYPE } from '../../config/const';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import ContactCardDB from '../../repository/contact-cards';
+import { MessageDB } from '../../repository/messenger';
 import SchedulerDB from '../../repository/scheduler';
 import IUpload from '../../types/uploads';
 import { IUser } from '../../types/user';
@@ -175,6 +177,30 @@ export default class SchedulerService {
 		await SchedulerDB.deleteOne({ _id: id });
 	}
 
+	public async generateReport(id: Types.ObjectId) {
+		const scheduler = await SchedulerDB.findById(id).populate('csv');
+		if (!scheduler) {
+			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
+		}
+		const messages = await MessageDB.find({
+			'scheduled_by.id': id,
+			sendAt: { $gte: DateUtils.getMomentNow().subtract(1, 'years').toDate() },
+		});
+
+		return messages.map((message) => ({
+			campaign_name: scheduler.title,
+			message: message.message,
+			receiver: message.receiver.split('@')[0],
+			attachments: message.attachments.length,
+			contacts: message.shared_contact_cards.length,
+			polls: message.polls.length,
+			status: message.status,
+			scheduled_at: message.sendAt
+				? DateUtils.getMoment(message.sendAt).format('DD/MM/YYYY HH:mm:ss')
+				: '',
+		}));
+	}
+
 	public static async scheduleDailyMessages() {
 		const schedulers = await SchedulerDB.find({
 			active: true,
@@ -209,20 +235,26 @@ export default class SchedulerService {
 					_message = _message.replace(`{{${variable}}}`, row[variable] ?? '');
 				}
 
-				schedulerService.scheduleMessage({
-					receiver: `${row.number}@c.us`,
-					sendAt: time.toDate(),
-					attachments: scheduler.attachments.map((attachment) => ({
-						name: attachment.name,
-						filename: attachment.filename,
-						caption: attachment.caption,
-					})),
-					polls: scheduler.polls,
-					shared_contact_cards: scheduler.shared_contact_cards.map(
-						({ _id }) => new Types.ObjectId(_id)
-					),
-					message: _message,
-				});
+				schedulerService.scheduleMessage(
+					{
+						receiver: `${row.number}@c.us`,
+						sendAt: time.toDate(),
+						attachments: scheduler.attachments.map((attachment) => ({
+							name: attachment.name,
+							filename: attachment.filename,
+							caption: attachment.caption,
+						})),
+						polls: scheduler.polls,
+						shared_contact_cards: scheduler.shared_contact_cards.map(
+							({ _id }) => new Types.ObjectId(_id)
+						),
+						message: _message,
+					},
+					{
+						scheduled_by: MESSAGE_SCHEDULER_TYPE.SCHEDULER,
+						scheduler_id: scheduler._id,
+					}
+				);
 			}
 		}
 	}

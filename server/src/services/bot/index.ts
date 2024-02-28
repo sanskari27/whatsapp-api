@@ -2,7 +2,12 @@ import fs from 'fs';
 import { Types } from 'mongoose';
 import Logger from 'n23-logger';
 import WAWebJS, { MessageMedia, Poll } from 'whatsapp-web.js';
-import { ATTACHMENTS_PATH, BOT_TRIGGER_OPTIONS, BOT_TRIGGER_TO } from '../../config/const';
+import {
+	ATTACHMENTS_PATH,
+	BOT_TRIGGER_OPTIONS,
+	BOT_TRIGGER_TO,
+	MESSAGE_SCHEDULER_TYPE,
+} from '../../config/const';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import { WhatsappProvider } from '../../provider/whatsapp_provider';
 import { BotResponseDB } from '../../repository/bot';
@@ -393,7 +398,10 @@ export default class BotService {
 						};
 					})
 				);
-				this.messageSchedulerService.scheduleLeadNurturingMessage(nurtured_messages);
+				this.messageSchedulerService.scheduleLeadNurturingMessage(nurtured_messages, {
+					scheduled_by: MESSAGE_SCHEDULER_TYPE.BOT,
+					scheduler_id: bot.bot_id,
+				});
 			}
 		});
 	}

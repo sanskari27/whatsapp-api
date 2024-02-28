@@ -8,4 +8,5 @@ export default interface ITask extends Document {
 	status: TASK_STATUS;
 	data: string;
 	data_result_type: TASK_RESULT_TYPE;
+	description: string;
 }

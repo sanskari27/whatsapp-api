@@ -16,18 +16,28 @@ export default class TaskService {
 		return tasks.map((task) => ({
 			id: task._id as string,
 			type: task.type,
+			description: task.description,
 			status: task.status,
 			data: task.data,
 			data_result_type: task.data_result_type,
 		}));
 	}
 
-	async createTask(type: TASK_TYPE, response_type: TASK_RESULT_TYPE) {
-		const task = await TaskDB.create({ user: this.user, type, data_result_type: response_type });
+	async createTask(
+		type: TASK_TYPE,
+		response_type: TASK_RESULT_TYPE,
+		{ description }: { description?: string } = {}
+	) {
+		const task = await TaskDB.create({
+			user: this.user,
+			type,
+			data_result_type: response_type,
+			description,
+		});
 		return task._id as Types.ObjectId;
 	}
 
-	async markCompleted(id: Types.ObjectId, data: string) {
+	async markCompleted(id: Types.ObjectId, data?: string) {
 		await TaskDB.updateOne(
 			{
 				_id: id,
@@ -64,6 +74,13 @@ export default class TaskService {
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
 		}
 		await TaskDB.deleteOne({ _id: id });
-		return id + (task.data_result_type === TASK_RESULT_TYPE.VCF ? '.vcf' : '.csv');
+		return (
+			id +
+			(task.data_result_type === TASK_RESULT_TYPE.VCF
+				? '.vcf'
+				: task.data_result_type === TASK_RESULT_TYPE.CSV
+				? '.csv'
+				: '')
+		);
 	}
 }

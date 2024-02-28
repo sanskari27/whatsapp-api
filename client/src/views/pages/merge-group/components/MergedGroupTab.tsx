@@ -12,9 +12,9 @@ import {
 	Tr,
 	useDisclosure,
 } from '@chakra-ui/react';
-import { useTheme } from '@emotion/react';
 import { useDispatch, useSelector } from 'react-redux';
 import useFilteredList from '../../../../hooks/useFilteredList';
+import { useTheme } from '../../../../hooks/useTheme';
 import { StoreNames, StoreState } from '../../../../store';
 import {
 	addSelectedGroups,
@@ -47,7 +47,7 @@ export default function MergedGroupTab() {
 					<Thead>
 						<Tr>
 							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>
-								sl no
+								Sl no.
 							</Th>
 							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'75%'}>
 								Group Name

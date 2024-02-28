@@ -73,6 +73,12 @@ export enum MESSAGE_STATUS {
 	PAUSED = 'PAUSED',
 }
 
+export enum MESSAGE_SCHEDULER_TYPE {
+	CAMPAIGN = 'CAMPAIGN',
+	SCHEDULER = 'SCHEDULER',
+	BOT = 'BOT',
+}
+
 export enum BILLING_PLANS_TYPE {
 	SILVER_MONTH = 'SILVER_MONTH',
 	GOLD_MONTH = 'GOLD_MONTH',
@@ -137,6 +143,7 @@ export enum TASK_STATUS {
 export enum TASK_RESULT_TYPE {
 	CSV = 'CSV',
 	VCF = 'VCF',
+	NONE = 'NONE',
 }
 
 export const TAX = 0.18;
@@ -160,26 +167,6 @@ export const CACHE_TOKEN_GENERATOR = {
 		`CONTACTS?user_id=${user_id}&business_only=${business_only}`,
 	CONTACT_DETAILS: (user_id: string, business_only: boolean = false) =>
 		`CONTACT_DETAILS?user_id=${user_id}&business_only=${business_only}`,
-	CONTACTS_COUNT: (user_id: string, business_only: boolean = false) =>
-		`CONTACTS_COUNT?user_id=${user_id}`,
+
 	REFRESH_TOKENS: () => `REFRESH_TOKENS`,
-
-	SAVED_CHAT_CONTACTS: (user_id: string, business_only: boolean = false) =>
-		`SAVED_CHAT_CONTACTS?user_id=${user_id}&business_only=${business_only}`,
-
-	NON_SAVED_CONTACTS: (user_id: string, business_only: boolean = false) =>
-		`NON_SAVED_CONTACTS?user_id=${user_id}&business_only=${business_only}`,
-
-	GROUPS: (user_id: string) => `GROUPS?user_id=${user_id}`,
-
-	LABELS: (user_id: string) => `LABELS?user_id=${user_id}`,
-
-	MAPPED_CONTACTS: (user_id: string, business_only: boolean = false) =>
-		`MAPPED_CONTACTS?user_id=${user_id}&business_only=${business_only}`,
-
-	GROUPS_EXPORT: (user_id: string, group_id: string, business_only: boolean = false) =>
-		`GROUPS_EXPORT?user_id=${user_id}&group_id=${group_id}&business_only=${business_only}`,
-
-	LABELS_EXPORT: (user_id: string, label_id: string, business_only: boolean = false) =>
-		`LABELS_EXPORT?user_id=${user_id}&label_id=${label_id}&business_only=${business_only}`,
 };

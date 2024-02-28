@@ -3,7 +3,8 @@ import APIError, { API_ERRORS } from '../../errors/api-errors';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import SchedulerService from '../../services/scheduler';
 import UploadService from '../../services/uploads';
-import { Respond } from '../../utils/ExpressUtils';
+import CSVParser from '../../utils/CSVParser';
+import { Respond, RespondCSV } from '../../utils/ExpressUtils';
 import { CreateSchedulerValidationResult } from './scheduler.validator';
 
 async function allSchedulers(req: Request, res: Response, next: NextFunction) {
@@ -132,6 +133,21 @@ async function deleteScheduler(req: Request, res: Response, next: NextFunction) 
 	});
 }
 
+async function downloadSchedulerReport(req: Request, res: Response, next: NextFunction) {
+	try {
+		const schedulerService = new SchedulerService(req.locals.user);
+		const reports = await schedulerService.generateReport(req.locals.id);
+
+		return RespondCSV({
+			res,
+			filename: 'Scheduler Reports',
+			data: CSVParser.exportSchedulerReport(reports),
+		});
+	} catch (err) {
+		next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
+	}
+}
+
 const BotController = {
 	allSchedulers,
 	deleteScheduler,
@@ -139,6 +155,7 @@ const BotController = {
 	createScheduler,
 	toggleActive,
 	schedulerById,
+	downloadSchedulerReport,
 };
 
 export default BotController;

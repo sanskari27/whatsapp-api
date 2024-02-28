@@ -179,6 +179,12 @@ const Reports = () => {
 								<Td>
 									<LineSkeleton />
 								</Td>
+								<Td>
+									<LineSkeleton />
+								</Td>
+								<Td>
+									<LineSkeleton />
+								</Td>
 							</Tr>
 						) : (
 							filtered.map((campaign, index) => (

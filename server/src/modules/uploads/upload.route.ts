@@ -1,12 +1,13 @@
 import express from 'express';
-import  UploadsController  from './upload.controllers';
+import UploadsController from './upload.controllers';
 
 const router = express.Router();
 
+router.route('/csv/:id/download').get(UploadsController.download);
 router.route('/csv/:id').delete(UploadsController.deleteCSV);
 router.route('/csv').post(UploadsController.saveCSV).get(UploadsController.listCSV);
 
-router.route('/attachment/:id/download').get(UploadsController.downloadAttachment);
+router.route('/attachment/:id/download').get(UploadsController.download);
 
 router
 	.route('/attachment/:id')
