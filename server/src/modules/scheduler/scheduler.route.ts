@@ -7,6 +7,11 @@ import { CreateSchedulerValidator } from './scheduler.validator';
 const router = express.Router();
 
 router
+	.route('/:id/report')
+	.all(IDValidator)
+	.get(SchedulerController.downloadSchedulerReport)
+
+router
 	.route('/:id')
 	.all(IDValidator)
 	.get(SchedulerController.schedulerById)

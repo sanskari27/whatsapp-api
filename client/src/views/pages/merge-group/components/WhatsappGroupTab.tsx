@@ -1,7 +1,7 @@
 import { Checkbox, Table, TableContainer, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react';
-import { useTheme } from '@emotion/react';
 import { useDispatch, useSelector } from 'react-redux';
 import useFilteredList from '../../../../hooks/useFilteredList';
+import { useTheme } from '../../../../hooks/useTheme';
 import { StoreNames, StoreState } from '../../../../store';
 import {
 	addSelectedGroups,

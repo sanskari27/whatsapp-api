@@ -1,10 +1,11 @@
 import { NextFunction, Request, Response } from 'express';
+import { SOCKET_RESPONSES, TASK_RESULT_TYPE, TASK_TYPE } from '../../config/const';
 import APIError, { API_ERRORS } from '../../errors/api-errors';
-import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import { WhatsappProvider } from '../../provider/whatsapp_provider';
 import { UserService } from '../../services';
 import GroupMergeService from '../../services/merged-groups';
 import CampaignService from '../../services/messenger/Campaign';
+import TaskService from '../../services/task';
 import UploadService from '../../services/uploads';
 import { Respond } from '../../utils/ExpressUtils';
 import MessagesUtils from '../../utils/Messages';
@@ -51,6 +52,16 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
 
+	const taskService = new TaskService(req.locals.user);
+	const task_id = await taskService.createTask(TASK_TYPE.SCHEDULE_CAMPAIGN, TASK_RESULT_TYPE.NONE, {
+		description: req_data.campaign_name,
+	});
+
+	Respond({
+		res,
+		status: 201,
+	});
+
 	const groupMergeService = new GroupMergeService(req.locals.user);
 
 	const uploadService = new UploadService(req.locals.user);
@@ -61,11 +72,11 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 	} else if (type === 'CSV') {
 		const csv = await uploadService.getCSVFile(csv_file);
 		if (!csv) {
-			return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
+			return taskService.markFailed(task_id);
 		}
 		const parsed_csv = await FileUtils.readCSV(csv);
 		if (!parsed_csv) {
-			return next(new APIError(API_ERRORS.COMMON_ERRORS.ERROR_PARSING_CSV));
+			return taskService.markFailed(task_id);
 		}
 
 		messages = [];
@@ -84,35 +95,27 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 		await Promise.all(promises);
 	} else if (type === 'GROUP_INDIVIDUAL') {
 		try {
-			const merged_group_whatsapp_ids = await groupMergeService.extractWhatsappGroupIds(group_ids);
+			const _group_ids = await groupMergeService.extractWhatsappGroupIds(group_ids);
 			numbers = (
-				await Promise.all(
-					merged_group_whatsapp_ids.map(
-						async (id) => await whatsappUtils.getParticipantsChatByGroup(id as string)
-					)
-				)
+				await Promise.all(_group_ids.map((id) => whatsappUtils.getParticipantsChatByGroup(id)))
 			).flat();
 		} catch (err) {
-			return next(new APIError(API_ERRORS.WHATSAPP_ERROR.INVALID_GROUP_ID));
+			return taskService.markFailed(task_id);
 		}
 	} else if (type === 'GROUP') {
 		try {
-			const merged_group_whatsapp_ids = await groupMergeService.extractWhatsappGroupIds(group_ids);
-			numbers = await whatsappUtils.getChatIds(merged_group_whatsapp_ids);
+			const _group_ids = await groupMergeService.extractWhatsappGroupIds(group_ids);
+			numbers = await whatsappUtils.getChatIds(_group_ids);
 		} catch (err) {
-			return next(new APIError(API_ERRORS.WHATSAPP_ERROR.INVALID_GROUP_ID));
+			return taskService.markFailed(task_id);
 		}
 	} else if (type === 'LABEL') {
 		try {
 			numbers = (
-				await Promise.all(
-					(label_ids as string[]).map(
-						async (id) => await whatsappUtils.getChatIdsByLabel(id as string)
-					)
-				)
+				await Promise.all(label_ids.map((id) => whatsappUtils.getChatIdsByLabel(id)))
 			).flat();
 		} catch (err) {
-			return next(new APIError(API_ERRORS.WHATSAPP_ERROR.BUSINESS_ACCOUNT_REQUIRED));
+			return taskService.markFailed(task_id);
 		}
 	}
 
@@ -132,7 +135,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 		const campaignService = new CampaignService(req.locals.user);
 		const campaign_exists = await campaignService.alreadyExists(req_data.campaign_name);
 		if (campaign_exists) {
-			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.ALREADY_EXISTS);
+			return taskService.markFailed(task_id);
 		}
 		const campaign = await campaignService.scheduleCampaign(await Promise.all(sendMessageList), {
 			...req_data,
@@ -142,21 +145,10 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 			endTime: req_data.endTime,
 		});
 
-		return Respond({
-			res,
-			status: 200,
-			data: {
-				message: `${campaign.messages.length} messages scheduled.`,
-				campaign_id: campaign._id,
-			},
-		});
+		taskService.markCompleted(task_id, campaign._id);
+		whatsapp.sendToClient(SOCKET_RESPONSES.TASK_COMPLETED, task_id.toString());
 	} catch (err) {
-		if (err instanceof InternalError) {
-			if (err.isSameInstanceof(INTERNAL_ERRORS.COMMON_ERRORS.ALREADY_EXISTS)) {
-				return next(new APIError(API_ERRORS.COMMON_ERRORS.ALREADY_EXISTS));
-			}
-		}
-		next(new APIError(API_ERRORS.WHATSAPP_ERROR.MESSAGE_SENDING_FAILED, err));
+		return taskService.markFailed(task_id);
 	}
 }
 

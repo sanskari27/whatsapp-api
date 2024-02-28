@@ -13,6 +13,7 @@ export enum TASK_STATUS {
 export enum TASK_RESULT_TYPE {
 	CSV = 'CSV',
 	VCF = 'VCF',
+	NONE = 'NONE',
 }
 
 export default function useTask() {
@@ -20,7 +21,8 @@ export default function useTask() {
 	const [tasks, setTasks] = useState<
 		{
 			id: string;
-			type: 'string';
+			type: string;
+			description: string;
 			status: TASK_STATUS;
 			data_result_type: TASK_RESULT_TYPE;
 			data?: string;
@@ -46,7 +48,6 @@ export default function useTask() {
 			);
 			toast({
 				title: 'Background Task Completed.',
-				description: 'Download your file from Background Tasks',
 				status: 'success',
 				duration: 3000,
 				isClosable: true,
@@ -69,7 +70,7 @@ export default function useTask() {
 			socket.off(SOCKET_EVENT.TASK_COMPLETED, listenerCompleted);
 			socket.off(SOCKET_EVENT.TASK_FAILED, listenerFailed);
 		};
-	}, []);
+	}, [toast]);
 
 	function removeTask(id: string) {
 		TaskService.removeTask(id).then(

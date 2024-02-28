@@ -1,3 +1,4 @@
+import { DownloadIcon } from '@chakra-ui/icons';
 import {
 	Box,
 	HStack,
@@ -26,25 +27,21 @@ const MessageSchedulerList = () => {
 	const { all_schedulers } = useSelector((state: StoreState) => state[StoreNames.SCHEDULER]);
 
 	const handleSchedulerToggleActive = (id: string) => {
-		MessageService.toggleScheduledMessage(id)
-			.then((res) => {
-				if (!res) return;
-				dispatch(editSelectedScheduler(res));
-			})
-			.catch((err) => {
-				console.log(err);
-			});
+		MessageService.toggleScheduledMessage(id).then((res) => {
+			if (!res) return;
+			dispatch(editSelectedScheduler(res));
+		});
 	};
 
 	const handleDeleteScheduledMessage = (id: string) => {
-		MessageService.deleteScheduledMessage(id)
-			.then((res) => {
-				if (!res) return;
-				dispatch(deleteScheduler(id));
-			})
-			.catch((err) => {
-				console.log(err);
-			});
+		MessageService.deleteScheduledMessage(id).then((res) => {
+			if (!res) return;
+			dispatch(deleteScheduler(id));
+		});
+	};
+
+	const downloadSchedulerReport = (id: string) => {
+		MessageService.generateScheduledMessagesReport(id);
 	};
 
 	return (
@@ -78,12 +75,19 @@ const MessageSchedulerList = () => {
 							<Td>
 								<HStack>
 									<IconButton
+										aria-label='download-scheduled-messages'
+										icon={<DownloadIcon />}
+										onClick={() => {
+											downloadSchedulerReport(scheduler.id);
+										}}
+									/>
+									<IconButton
 										aria-label='toggle-scheduler'
 										icon={scheduler.isActive ? <FiPause /> : <FiPlay />}
 										onClick={() => {
 											handleSchedulerToggleActive(scheduler.id);
 										}}
-										colorScheme={scheduler.isActive ? 'red' : 'green'}
+										colorScheme={scheduler.isActive ? 'yellow' : 'blue'}
 									/>
 									<IconButton
 										aria-label='edit-scheduler'
@@ -93,6 +97,7 @@ const MessageSchedulerList = () => {
 										}}
 										colorScheme='gray'
 									/>
+
 									<IconButton
 										aria-label='delete-scheduler'
 										icon={<MdDelete />}

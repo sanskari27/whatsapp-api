@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
 import Logger from 'n23-logger';
-import WAWebJS from 'whatsapp-web.js';
 import { getOrCache } from '../../config/cache';
 import {
 	CACHE_TOKEN_GENERATOR,
@@ -38,10 +37,7 @@ async function labels(req: Request, res: Response, next: NextFunction) {
 		if (!whatsapp.isBusiness()) {
 			return next(new APIError(API_ERRORS.WHATSAPP_ERROR.BUSINESS_ACCOUNT_REQUIRED));
 		}
-		const labels = await getOrCache<WAWebJS.Label[]>(
-			CACHE_TOKEN_GENERATOR.LABELS(req.locals.user._id),
-			async () => await whatsapp.getClient().getLabels()
-		);
+		const labels = await whatsapp.getClient().getLabels();
 
 		return Respond({
 			res,
@@ -66,6 +62,8 @@ async function exportLabels(req: Request, res: Response, next: NextFunction) {
 	const whatsappUtils = new WhatsappUtils(whatsapp);
 	if (!whatsapp.isReady()) {
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+	} else if (!Array.isArray(label_ids) || label_ids.length === 0) {
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
 	}
 
 	const taskService = new TaskService(req.locals.user);
@@ -76,7 +74,10 @@ async function exportLabels(req: Request, res: Response, next: NextFunction) {
 
 	const task_id = await taskService.createTask(
 		TASK_TYPE.EXPORT_LABEL_CONTACTS,
-		options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV
+		options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV,
+		{
+			description: `Export ${label_ids.length} labels.`,
+		}
 	);
 
 	Respond({
@@ -113,18 +114,10 @@ async function exportLabels(req: Request, res: Response, next: NextFunction) {
 		}, {} as MappedContacts);
 
 		const participants_promise = label_ids.map(async (label_id) => {
-			const label_participants = await getOrCache(
-				CACHE_TOKEN_GENERATOR.LABELS_EXPORT(
-					req.locals.user._id,
-					label_id,
-					options.business_contacts_only
-				),
-				async () =>
-					await whatsappUtils.getContactsByLabel(label_id, {
-						business_details: options.business_contacts_only,
-						mapped_contacts: saved_contacts,
-					})
-			);
+			const label_participants = await whatsappUtils.getContactsByLabel(label_id, {
+				business_details: options.business_contacts_only,
+				mapped_contacts: saved_contacts,
+			});
 			return label_participants;
 		});
 

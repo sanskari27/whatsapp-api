@@ -49,7 +49,12 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 		options.saved_chat_contacts = false;
 		task_id = await taskService.createTask(
 			TASK_TYPE.EXPORT_SAVED_CONTACTS,
-			options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV
+			options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV,
+			{
+				description: `Export saved contacts to ${
+					options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV
+				}`,
+			}
 		);
 	} else if (req.body.non_saved_contacts) {
 		options.non_saved_contacts = true;
@@ -57,7 +62,12 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 		options.saved_chat_contacts = false;
 		task_id = await taskService.createTask(
 			TASK_TYPE.EXPORT_UNSAVED_CONTACTS,
-			options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV
+			options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV,
+			{
+				description: `Export non saved contacts to ${
+					options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV
+				}`,
+			}
 		);
 	} else if (req.body.saved_chat_contacts) {
 		options.saved_chat_contacts = true;
@@ -65,12 +75,22 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 		options.non_saved_contacts = false;
 		task_id = await taskService.createTask(
 			TASK_TYPE.EXPORT_CHAT_CONTACTS,
-			options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV
+			options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV,
+			{
+				description: `Export saved chat contacts to ${
+					options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV
+				}`,
+			}
 		);
 	} else {
 		task_id = await taskService.createTask(
 			TASK_TYPE.EXPORT_ALL_CONTACTS,
-			options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV
+			options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV,
+			{
+				description: `Export all contacts to ${
+					options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV
+				}`,
+			}
 		);
 	}
 
@@ -94,7 +114,10 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 		}[] = await getOrCache(
 			CACHE_TOKEN_GENERATOR.CONTACT_DETAILS(req.locals.user._id, options.business_contacts_only),
 			async () => {
-				let { saved, non_saved, saved_chat } = await whatsappUtils.getContacts();
+				const { saved, non_saved, saved_chat } = await getOrCache(
+					CACHE_TOKEN_GENERATOR.CONTACTS(req.locals.user._id),
+					async () => whatsappUtils.getContacts()
+				);
 				const contacts = [
 					...(options.saved_chat_contacts ? saved : []),
 					...(options.non_saved_contacts ? non_saved : []),

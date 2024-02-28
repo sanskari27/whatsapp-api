@@ -1,10 +1,5 @@
 import { InfoOutlineIcon } from '@chakra-ui/icons';
 import {
-	AlertDialog,
-	AlertDialogContent,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogOverlay,
 	Box,
 	Button,
 	Center,
@@ -23,9 +18,9 @@ import {
 	Tabs,
 	Text,
 	VStack,
-	useDisclosure,
+	useToast,
 } from '@chakra-ui/react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { MdCampaign } from 'react-icons/md';
 import { useDispatch, useSelector } from 'react-redux';
 import { NAVIGATION } from '../../../config/const';
@@ -82,14 +77,9 @@ export type SchedulerDetails = {
 };
 
 export default function Scheduler() {
+	const toast = useToast();
 	const dispatch = useDispatch();
 	const theme = useTheme();
-
-	const {
-		isOpen: successCampaignCreation,
-		onOpen: openCampaignCreation,
-		onClose: closeCampaignCreation,
-	} = useDisclosure();
 
 	const [uiDetails, setUIDetails] = useState<{
 		uploadingCSV: boolean;
@@ -190,25 +180,23 @@ export default function Scheduler() {
 			...prev,
 			schedulingMessages: true,
 		}));
-		MessageService.scheduleCampaign(details).then((errorMessage) => {
-			if (errorMessage) {
+		MessageService.scheduleCampaign(details)
+			.then(() => {
+				dispatch(reset());
+				toast({
+					title: 'Campaign scheduler.',
+					description: 'Campaign is being Scheduled',
+					status: 'info',
+					duration: 3000,
+					isClosable: true,
+				});
+			})
+			.finally(() => {
 				setUIDetails((prev) => ({
 					...prev,
 					schedulingMessages: false,
 				}));
-				dispatch(setAPIError(errorMessage));
-				setTimeout(() => {
-					dispatch(setAPIError(''));
-				}, 5000);
-				return;
-			}
-			openCampaignCreation();
-			dispatch(reset());
-			setUIDetails((prev) => ({
-				...prev,
-				schedulingMessages: false,
-			}));
-		});
+			});
 	};
 
 	const handleScheduleMessage = () => {
@@ -231,13 +219,18 @@ export default function Scheduler() {
 			end_at: details.endTime,
 		})
 			.then((res) => {
+				if (!res) {
+					return;
+				}
+
+				dispatch(addScheduler(res));
+			})
+			.finally(() => {
 				setUIDetails((prev) => ({
 					...prev,
 					schedulingMessages: false,
 				}));
-				dispatch(addScheduler(res));
-			})
-			.catch(() => {});
+			});
 	};
 
 	const editScheduledMessage = async () => {
@@ -292,13 +285,16 @@ export default function Scheduler() {
 			start_from: details.startDate,
 			title: details.campaign_name,
 			csv: csvList.find((csv) => csv.fileName === details.csv_file)?.id ?? '',
-		}).then((res) => {
-			dispatch(editSelectedScheduler(res));
-			setUIDetails((prev) => ({
-				...prev,
-				schedulingMessages: false,
-			}));
-		});
+		})
+			.then((res) => {
+				if (res) dispatch(editSelectedScheduler(res));
+			})
+			.finally(() => {
+				setUIDetails((prev) => ({
+					...prev,
+					schedulingMessages: false,
+				}));
+			});
 	};
 
 	useEffect(() => {
@@ -430,7 +426,6 @@ export default function Scheduler() {
 								>
 									Schedule
 								</Button>
-								<SuccessDialog isOpen={successCampaignCreation} onClose={closeCampaignCreation} />
 							</Box>
 						</Flex>
 						<SubscriptionAlert />
@@ -568,42 +563,6 @@ export default function Scheduler() {
 		</Flex>
 	);
 }
-
-const SuccessDialog = ({ isOpen, onClose }: { onClose: () => void; isOpen: boolean }) => {
-	const cancelRef = useRef(null);
-	return (
-		<AlertDialog
-			motionPreset='slideInBottom'
-			leastDestructiveRef={cancelRef}
-			onClose={onClose}
-			isOpen={isOpen}
-			isCentered
-			size={'sm'}
-		>
-			<AlertDialogOverlay />
-
-			<AlertDialogContent width={'80%'}>
-				<AlertDialogHeader>
-					<Text size={'2xl'} textAlign={'center'}>
-						Successfully created campaign.
-					</Text>
-				</AlertDialogHeader>
-				<AlertDialogFooter>
-					<Button
-						bgColor={'green.300'}
-						_hover={{
-							bgColor: 'green.400',
-						}}
-						width={'100%'}
-						onClick={onClose}
-					>
-						<Text color={'white'}>OK</Text>
-					</Button>
-				</AlertDialogFooter>
-			</AlertDialogContent>
-		</AlertDialog>
-	);
-};
 
 function DelayInput({
 	onChange,
