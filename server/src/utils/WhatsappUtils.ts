@@ -62,30 +62,18 @@ export default class WhatsappUtils {
 	}
 
 	async getNumberWithId(number: string) {
-		const number_ids = await this.getNumberWithIds([number]);
-		return number_ids.length > 0 ? number_ids[0] : null;
-	}
-
-	async getNumberWithIds(numbers: string[]) {
-		const numbersPromise = numbers.map(async (number) => {
-			try {
-				const numberID = await this.whatsapp.getClient().getNumberId(number);
-				if (!numberID) {
-					return null;
-				}
-				return {
-					number,
-					numberId: numberID._serialized,
-				};
-			} catch (err) {
+		try {
+			const numberID = await this.whatsapp.getClient().getNumberId(number);
+			if (!numberID) {
 				return null;
 			}
-		});
-
-		return (await Promise.all(numbersPromise)).filter((number) => number !== null) as {
-			number: string;
-			numberId: string;
-		}[];
+			return {
+				number,
+				numberId: numberID._serialized,
+			};
+		} catch (err) {
+			return null;
+		}
 	}
 
 	async getChat(id: string) {
@@ -205,24 +193,14 @@ export default class WhatsappUtils {
 		};
 	}
 
-	async contactsWithCountry<T extends boolean>(
-		contacts: WAWebJS.Contact[],
-		options: {
-			business_details: T;
-		} = {
-			business_details: false as T,
-		}
-	): Promise<T extends true ? TBusinessContact[] : TContact[]> {
+	async contactsWithCountry(contacts: WAWebJS.Contact[]) {
 		const detailed_contacts = await Promise.all(
 			contacts.map(async (contact) => {
 				const contact_details = (await this.getContactDetails(contact)) as TContact;
-				if (!options.business_details) {
+				if (!contact.isBusiness) {
 					return contact_details;
 				}
-				if (!contact.isBusiness) {
-					return null;
-				}
-				const business_details = WhatsappUtils.getBusinessDetails(contact as BusinessContact);
+				const business_details = WhatsappUtils.getBusinessDetails(contact);
 
 				return {
 					...contact_details,
@@ -233,7 +211,7 @@ export default class WhatsappUtils {
 
 		const valid_contacts = detailed_contacts.filter((contact) => contact !== null);
 
-		return valid_contacts as T extends true ? TBusinessContact[] : TContact[];
+		return valid_contacts as (TBusinessContact | TContact)[];
 	}
 
 	async getMappedContacts<T extends boolean>(
@@ -414,11 +392,32 @@ export default class WhatsappUtils {
 			WhatsappProvider.getInstance(session.client_id).logoutClient();
 			const session_deleted = WhatsappUtils.deleteSession(session.client_id);
 			if (session_deleted) {
-				session.session_cleared = true;
-				session.save();
+				session.remove();
 			}
 		}
 		Logger.info('WHATSAPP-HELPER', `Removed ${sessions.length} unwanted sessions`);
+
+		const path = __basedir + '/.wwebjs_auth';
+		if (!fs.existsSync(path)) {
+			return;
+		}
+		const client_ids = (await fs.promises.readdir(path, { withFileTypes: true }))
+			.filter((dirent) => dirent.isDirectory())
+			.map((dirent) => dirent.name.split('session-')[1]);
+
+		const invalid_sessions_promises = client_ids.map(async (client_id) => {
+			const { valid } = await UserService.isValidAuth(client_id);
+			if (valid) {
+				return null;
+			}
+			return client_id;
+		});
+
+		const invalid_sessions = await Promise.all(invalid_sessions_promises);
+
+		invalid_sessions.forEach((id) => id && WhatsappUtils.deleteSession(id));
+
+		Logger.info('WHATSAPP-HELPER', `Removed ${invalid_sessions.length} unwanted folders`);
 	}
 
 	static async removeInactiveSessions() {
