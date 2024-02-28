@@ -124,7 +124,6 @@ const UsersPage = () => {
 	};
 
 	const handleSendReminder = (id: string, message: string) => {
-		console.log(id, message);
 		UsersService.sendPaymentReminder(id, message).then(async () => {
 			const users = await UsersService.getUsers();
 			dispatch(setUsersList(users));

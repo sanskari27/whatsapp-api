@@ -403,7 +403,9 @@ export default function Scheduler() {
 										</Flex>
 										<AddOns
 											marginTop={'0.5rem'}
-											{...details}
+											attachments={details.attachments}
+											shared_contact_cards={details.shared_contact_cards}
+											polls={details.polls}
 											onAttachmentsSelected={(ids) => dispatch(setAttachments(ids))}
 											onContactsSelected={(ids) => dispatch(setContactCards(ids))}
 											onPollsSelected={(polls) => dispatch(setPolls(polls))}
@@ -507,7 +509,9 @@ export default function Scheduler() {
 									</Flex>
 									<AddOns
 										width={'full'}
-										{...details}
+										attachments={details.attachments}
+										shared_contact_cards={details.shared_contact_cards}
+										polls={details.polls}
 										onAttachmentsSelected={(ids) => dispatch(setAttachments(ids))}
 										onContactsSelected={(ids) => dispatch(setContactCards(ids))}
 										onPollsSelected={(polls) => dispatch(setPolls(polls))}
