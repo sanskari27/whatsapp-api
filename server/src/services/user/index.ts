@@ -69,14 +69,14 @@ export default class UserService {
 			return [client_id];
 		}
 
-		const auths = await AuthDetailDB.find({
+		const auth = await AuthDetailDB.find({
 			user: this.user._id,
 			isRevoked: false,
 		});
 
-		auths.forEach((auth) => auth.remove());
+		auth.forEach((el) => el.remove());
 
-		return auths.map((auth) => auth.client_id);
+		return auth.map((el) => el.client_id);
 	}
 
 	getUser() {
@@ -202,16 +202,9 @@ export default class UserService {
 
 	static async logout(client_id: string) {
 		try {
-			await AuthDetailDB.updateOne(
-				{
-					client_id,
-				},
-				{
-					$set: {
-						isRevoked: true,
-					},
-				}
-			);
+			await AuthDetailDB.deleteOne({
+				client_id,
+			});
 		} catch (e) {
 			//ignored
 		}
@@ -245,6 +238,14 @@ export default class UserService {
 			? DateUtils.getMoment(auth.user.subscription_expiry).isAfter(DateUtils.getMomentNow())
 			: false;
 
+		if (auth.isRevoked) {
+			return {
+				valid: false,
+				revoke_at: undefined,
+				user: undefined,
+			};
+		}
+
 		if (isPaymentValid) {
 			return {
 				valid: true,
@@ -253,13 +254,6 @@ export default class UserService {
 			};
 		}
 
-		if (auth.isRevoked) {
-			return {
-				valid: false,
-				revoke_at: undefined,
-				user: undefined,
-			};
-		}
 		if (DateUtils.getMoment(auth.revoke_at).isBefore(DateUtils.getMomentNow())) {
 			if (!auth.isRevoked) {
 				await auth.updateOne({

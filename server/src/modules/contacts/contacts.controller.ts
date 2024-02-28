@@ -99,6 +99,22 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 		status: 201,
 	});
 	try {
+
+		const { saved, non_saved, saved_chat } = await getOrCache(
+			CACHE_TOKEN_GENERATOR.CONTACTS(req.locals.user._id),
+			() => whatsappUtils.getContacts()
+		);
+
+		let listed_contacts = [
+			...(options.saved_chat_contacts ? saved : []),
+			...(options.non_saved_contacts ? non_saved : []),
+			...(options.saved_chat_contacts ? saved_chat : []),
+		];
+
+		if (options.business_contacts_only) {
+			listed_contacts = listed_contacts.filter((c) => c.isBusiness);
+		}
+
 		const contacts: {
 			name: string | undefined;
 			number: string;
@@ -111,26 +127,7 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 			latitude?: number;
 			longitude?: number;
 			address?: string;
-		}[] = await getOrCache(
-			CACHE_TOKEN_GENERATOR.CONTACT_DETAILS(req.locals.user._id, options.business_contacts_only),
-			async () => {
-				const { saved, non_saved, saved_chat } = await getOrCache(
-					CACHE_TOKEN_GENERATOR.CONTACTS(req.locals.user._id),
-					async () => whatsappUtils.getContacts()
-				);
-				const contacts = [
-					...(options.saved_chat_contacts ? saved : []),
-					...(options.non_saved_contacts ? non_saved : []),
-					...(options.saved_chat_contacts ? saved_chat : []),
-				];
-
-				const saved_with_country_code = await whatsappUtils.contactsWithCountry(contacts, {
-					business_details: options.business_contacts_only,
-				});
-
-				return await Promise.all(saved_with_country_code);
-			}
-		);
+		}[] = await whatsappUtils.contactsWithCountry(listed_contacts);
 
 		const data = options.vcf
 			? options.business_contacts_only
