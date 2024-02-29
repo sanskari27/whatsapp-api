@@ -146,8 +146,8 @@ export class WhatsappProvider {
 				business_details,
 			});
 
-			this.sendToClient(SOCKET_RESPONSES.WHATSAPP_READY);
 			this.status = STATUS.READY;
+			this.sendToClient(SOCKET_RESPONSES.WHATSAPP_READY);
 
 			await this.user_service.login(this.client_id);
 
@@ -254,6 +254,9 @@ export class WhatsappProvider {
 
 	public isReady() {
 		return this.status === STATUS.READY;
+	}
+	public getStatus() {
+		return this.status;
 	}
 	public isBusiness() {
 		return this.getContact().isBusiness;
