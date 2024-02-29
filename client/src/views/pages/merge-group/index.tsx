@@ -12,7 +12,7 @@ import {
 } from '@chakra-ui/react';
 
 import { useEffect, useRef, useState } from 'react';
-import { MdAdminPanelSettings, MdGroupAdd, MdGroups3 } from 'react-icons/md';
+import { MdGroupAdd, MdGroups3 } from 'react-icons/md';
 import { useDispatch, useSelector } from 'react-redux';
 import { popFromNavbar, pushToNavbar } from '../../../hooks/useNavbar';
 import GroupService from '../../../services/group.service';
@@ -84,29 +84,31 @@ const GroupMergePage = () => {
 						isDisabled={selectedGroups.length === 0 || tabIndex !== 0}
 						onClick={() => confirmationDialogRef.current?.open('')}
 					/>
-					{tabIndex === 0 ? (
-						<Button
-							leftIcon={<MdGroupAdd />}
-							size={'sm'}
-							colorScheme='blue'
-							onClick={() => {
-								dispatch(clearEditMergeGroup());
-								openMergeDialog();
-							}}
-						>
-							MERGE
-						</Button>
-					) : (
-						<Button
-							leftIcon={<MdAdminPanelSettings />}
-							size={'sm'}
-							colorScheme='blue'
-							isDisabled={selectedGroups.length === 0}
-							onClick={openSettingDialog}
-						>
-							GROUP SETTINGS
-						</Button>
-					)}
+					{
+						tabIndex === 0 ? (
+							<Button
+								leftIcon={<MdGroupAdd />}
+								size={'sm'}
+								colorScheme='blue'
+								onClick={() => {
+									dispatch(clearEditMergeGroup());
+									openMergeDialog();
+								}}
+							>
+								MERGE
+							</Button>
+						) : null
+
+						// <Button
+						// 	leftIcon={<MdAdminPanelSettings />}
+						// 	size={'sm'}
+						// 	colorScheme='blue'
+						// 	isDisabled={selectedGroups.length === 0}
+						// 	onClick={openSettingDialog}
+						// >
+						// 	GROUP SETTINGS
+						// </Button>
+					}
 				</HStack>
 			),
 		});
