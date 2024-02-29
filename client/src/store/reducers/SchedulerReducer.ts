@@ -39,6 +39,10 @@ const initialState: SchedulerState = {
 		recipientsError: false,
 		apiError: '',
 		editingMessage: false,
+		minDelayError: false,
+		maxDelayError: false,
+		batchSizeError: false,
+		batchDelayError: false,
 	},
 };
 
@@ -186,6 +190,18 @@ const SchedulerSlice = createSlice({
 		setRecipientsError: (state, action: PayloadAction<boolean>) => {
 			state.ui.recipientsError = action.payload;
 		},
+		setMinDelayError: (state, action: PayloadAction<boolean>) => {
+			state.ui.minDelayError = action.payload;
+		},
+		setBatchSizeError: (state, action: PayloadAction<boolean>) => {
+			state.ui.batchSizeError = action.payload;
+		},
+		setMaxDelayError: (state, action: PayloadAction<boolean>) => {
+			state.ui.maxDelayError = action.payload;
+		},
+		setBatchDelayError: (state, action: PayloadAction<boolean>) => {
+			state.ui.batchDelayError = action.payload;
+		},
 		setAPIError: (state, action: PayloadAction<string>) => {
 			state.ui.apiError = action.payload;
 		},
@@ -228,7 +244,11 @@ export const {
 	setCampaignNameError,
 	setRecipientsError,
 	setRecipientsLoading,
+	setMinDelayError,
 	setAPIError,
+	setBatchDelayError,
+	setMaxDelayError,
+	setBatchSizeError,
 } = SchedulerSlice.actions;
 
 export default SchedulerSlice.reducer;
