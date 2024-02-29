@@ -107,10 +107,9 @@ export default class ContactCardService {
 
 	static async DeleteContacts(id: string) {
 		try {
-			const { data } = await APIInstance.delete(`/contact-card/${id}`);
-			return data;
+			await APIInstance.delete(`/contact-card/${id}`);
 		} catch (err) {
-			return [];
+			//ignore
 		}
 	}
 
