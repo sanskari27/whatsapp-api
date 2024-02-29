@@ -59,11 +59,9 @@ export default function NavigationDrawer() {
 				<Flex
 					direction={'column'}
 					height={'calc(100vh - 50px)'}
-					overflowY={'scroll'}
+					overflowY={'auto'}
 					paddingBottom={'1rem'}
 					flexGrow={1}
-					overflowX={'hidden'}
-					className='scrollbar-hide'
 				>
 					<Box flexGrow={'1'}>
 						<Flex flexDirection={'column'} paddingY={'0.5rem'} paddingX={'0.5rem'} gap={'0.25rem'}>

@@ -353,13 +353,18 @@ export default function Scheduler() {
 					<TabPanel width={'full'}>
 						<Flex direction={'column'} width={'full'}>
 							<SubscriptionPopup isVisible={!canSendMessage} />
-							<Heading
-								color={theme === 'dark' ? 'white' : 'GrayText'}
-								fontSize={'large'}
-								fontWeight={'medium'}
-							>
-								Campaign Details
-							</Heading>
+							<HStack width={'full'} justifyContent={'space-between'}>
+								<Heading
+									color={theme === 'dark' ? 'white' : 'GrayText'}
+									fontSize={'large'}
+									fontWeight={'medium'}
+								>
+									Campaign Details
+								</Heading>
+								<Button colorScheme='blue' leftIcon={<InfoOutlineIcon />}>
+									See CSV example
+								</Button>
+							</HStack>
 							<Box marginTop={'1rem'}>
 								<CampaignDetailsSection fetchRecipients={fetchRecipients} />
 
@@ -468,13 +473,18 @@ export default function Scheduler() {
 					{/* ---------------------------Message Section------------------------------ */}
 					<TabPanel>
 						<Flex direction={'column'} width={'full'}>
-							<Heading
-								color={theme === 'dark' ? 'white' : 'GrayText'}
-								fontSize={'large'}
-								fontWeight={'medium'}
-							>
-								Message Details
-							</Heading>
+							<HStack width={'full'} justifyContent={'space-between'}>
+								<Heading
+									color={theme === 'dark' ? 'white' : 'GrayText'}
+									fontSize={'large'}
+									fontWeight={'medium'}
+								>
+									Message Details
+								</Heading>
+								<Button colorScheme='blue' leftIcon={<InfoOutlineIcon />}>
+									See CSV example
+								</Button>
+							</HStack>
 							<Flex gap='2rem' marginTop={'1rem'}>
 								<VStack alignItems={'flex-start'} flex={1} gap={'0.5rem'}>
 									<FormControl isInvalid={campaignNameError}>

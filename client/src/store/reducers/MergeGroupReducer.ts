@@ -47,6 +47,9 @@ const MergeGroupSlice = createSlice({
 		addSelectedGroups: (state, action: PayloadAction<string>) => {
 			state.selectedGroups.push(action.payload);
 		},
+		addAllGroups: (state) => {
+			state.selectedGroups = state.list.map((group) => group.id);
+		},
 		removeSelectedGroups: (state, action: PayloadAction<string>) => {
 			state.selectedGroups = state.selectedGroups.filter((id) => id !== action.payload);
 		},
@@ -139,6 +142,7 @@ export const {
 	setMergedGroupList,
 	addMergedGroup,
 	addSelectedGroups,
+	addAllGroups,
 	removeSelectedGroups,
 	clearSelectedGroup,
 	addSelectedGroup,
