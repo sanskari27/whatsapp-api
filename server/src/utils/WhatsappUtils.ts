@@ -15,14 +15,6 @@ import {
 	TLabelContact,
 } from '../types/whatsapp';
 
-type MappedContact_ReturnType<T extends boolean> = T extends true
-	? {
-			[contact_number: string]: TBusinessContact;
-	  }
-	: {
-			[contact_number: string]: TContact;
-	  };
-
 export type MappedContacts = {
 	[contact_number: string]: {
 		name: string;
@@ -60,12 +52,11 @@ export default class WhatsappUtils {
 
 		return (await Promise.all(numbersPromise)).filter((number) => number !== null) as string[];
 	}
-
 	async getNumberWithId(number: string) {
 		try {
 			const numberID = await this.whatsapp.getClient().getNumberId(number);
 			if (!numberID) {
-				return null;
+				throw new Error('Invalid number');
 			}
 			return {
 				number,
@@ -111,9 +102,13 @@ export default class WhatsappUtils {
 		if (!this.whatsapp.isBusiness()) {
 			throw new InternalError(INTERNAL_ERRORS.WHATSAPP_ERROR.BUSINESS_ACCOUNT_REQUIRED);
 		}
-		const chats = await this.whatsapp.getClient().getChatsByLabelId(label_id);
+		try {
+			const chats = await this.whatsapp.getClient().getChatsByLabelId(label_id);
 
-		return chats.map((chat) => chat.id._serialized);
+			return chats.map((chat) => chat.id._serialized);
+		} catch (err) {
+			return [];
+		}
 	}
 
 	async getContacts() {
@@ -200,7 +195,7 @@ export default class WhatsappUtils {
 				if (!contact.isBusiness) {
 					return contact_details;
 				}
-				const business_details = WhatsappUtils.getBusinessDetails(contact);
+				const business_details = WhatsappUtils.getBusinessDetails(contact as BusinessContact);
 
 				return {
 					...contact_details,
@@ -212,48 +207,6 @@ export default class WhatsappUtils {
 		const valid_contacts = detailed_contacts.filter((contact) => contact !== null);
 
 		return valid_contacts as (TBusinessContact | TContact)[];
-	}
-
-	async getMappedContacts<T extends boolean>(
-		business_contacts_only: T = false as T
-	): Promise<MappedContact_ReturnType<T>> {
-		const filtered_contacts = (await this.whatsapp.getClient().getContacts())
-			.filter((contact) => contact.isMyContact && contact.name && contact.number)
-			.filter((contact) => {
-				if (!business_contacts_only) {
-					return true;
-				}
-				return contact.isBusiness;
-			});
-		const contacts = await Promise.all(
-			filtered_contacts.map(async (contact) => {
-				const contact_details = await this.getContactDetails(contact);
-				if (!business_contacts_only) {
-					return contact_details as TContact;
-				} else {
-					const business_details = WhatsappUtils.getBusinessDetails(contact as BusinessContact);
-					return {
-						...(contact_details as Partial<TContact>),
-						...(business_details as Partial<TBusinessContact>),
-					} as TBusinessContact;
-				}
-			})
-		);
-		const mapped_contacts = contacts.reduce(
-			(acc, contact) => {
-				acc[contact.number] = contact;
-				return acc;
-			},
-			{} as T extends true
-				? {
-						[contact_number: string]: TBusinessContact;
-				  }
-				: {
-						[contact_number: string]: TContact;
-				  }
-		);
-
-		return mapped_contacts;
 	}
 
 	async getGroupContacts<T extends boolean>(
@@ -330,7 +283,7 @@ export default class WhatsappUtils {
 	) {
 		try {
 			const chats = await this.whatsapp.getClient().getChatsByLabelId(label_id);
-			const label = await this.whatsapp.getClient().getLabelById(label_id);
+			const { name: label_name } = await this.whatsapp.getClient().getLabelById(label_id);
 			const contactsPromises = chats
 				.map(async (chat) => {
 					if (chat.isGroup) {
@@ -342,7 +295,7 @@ export default class WhatsappUtils {
 						return participants.map((participant) => ({
 							...participant,
 							group_name: chat.name,
-							label: label.name,
+							label: label_name,
 						})) as (TLabelContact | TLabelBusinessContact)[];
 					} else {
 						const contact = await this.whatsapp.getClient().getContactById(chat.id._serialized);
@@ -352,7 +305,7 @@ export default class WhatsappUtils {
 								{
 									...contacts_details,
 									group_name: chat.name,
-									label: label.name,
+									label: label_name,
 								} as TLabelContact,
 							];
 						}
@@ -365,7 +318,7 @@ export default class WhatsappUtils {
 								...contacts_details,
 								...business_details,
 								group_name: chat.name,
-								label: label.name,
+								label: label_name,
 							} as TLabelBusinessContact,
 						];
 					}
@@ -381,9 +334,13 @@ export default class WhatsappUtils {
 	}
 
 	async createGroup(title: string, participants: string[]) {
-		await this.whatsapp.getClient().createGroup(title, participants, {
-			autoSendInviteV4: true,
-		});
+		try {
+			await this.whatsapp.getClient().createGroup(title, participants, {
+				autoSendInviteV4: true,
+			});
+		} catch (error) {
+			//ignored
+		}
 	}
 
 	static async removeUnwantedSessions() {
@@ -394,30 +351,30 @@ export default class WhatsappUtils {
 			if (session_deleted) {
 				session.remove();
 			}
+
+			const path = __basedir + '/.wwebjs_auth';
+			if (!fs.existsSync(path)) {
+				return;
+			}
+			const client_ids = (await fs.promises.readdir(path, { withFileTypes: true }))
+				.filter((dirent) => dirent.isDirectory())
+				.map((dirent) => dirent.name.split('session-')[1]);
+
+			const invalid_sessions_promises = client_ids.map(async (client_id) => {
+				const { valid } = await UserService.isValidAuth(client_id);
+				if (valid) {
+					return null;
+				}
+				return client_id;
+			});
+
+			const invalid_sessions = await Promise.all(invalid_sessions_promises);
+
+			invalid_sessions.forEach((id) => id && WhatsappUtils.deleteSession(id));
+
+			Logger.info('WHATSAPP-HELPER', `Removed ${invalid_sessions.length} unwanted folders`);
 		}
 		Logger.info('WHATSAPP-HELPER', `Removed ${sessions.length} unwanted sessions`);
-
-		const path = __basedir + '/.wwebjs_auth';
-		if (!fs.existsSync(path)) {
-			return;
-		}
-		const client_ids = (await fs.promises.readdir(path, { withFileTypes: true }))
-			.filter((dirent) => dirent.isDirectory())
-			.map((dirent) => dirent.name.split('session-')[1]);
-
-		const invalid_sessions_promises = client_ids.map(async (client_id) => {
-			const { valid } = await UserService.isValidAuth(client_id);
-			if (valid) {
-				return null;
-			}
-			return client_id;
-		});
-
-		const invalid_sessions = await Promise.all(invalid_sessions_promises);
-
-		invalid_sessions.forEach((id) => id && WhatsappUtils.deleteSession(id));
-
-		Logger.info('WHATSAPP-HELPER', `Removed ${invalid_sessions.length} unwanted folders`);
 	}
 
 	static async removeInactiveSessions() {
