@@ -56,64 +56,74 @@ export default function NavigationDrawer() {
 				>
 					<Image src={LOGO} width={'36px'} className='shadow-lg rounded-full' />
 				</Box>
-				<Box flexGrow={'1'}>
-					<Flex flexDirection={'column'} paddingY={'0.5rem'} paddingX={'0.5rem'}>
-						<MenuButton icon={MdOutlineContactPhone} route={NAVIGATION.CONTACT} name='Contacts' />
+				<Flex
+					direction={'column'}
+					height={'calc(100vh - 50px)'}
+					overflowY={'scroll'}
+					paddingBottom={'1rem'}
+					flexGrow={1}
+					overflowX={'hidden'}
+					className='scrollbar-hide'
+				>
+					<Box flexGrow={'1'}>
+						<Flex flexDirection={'column'} paddingY={'0.5rem'} paddingX={'0.5rem'} gap={'0.25rem'}>
+							<MenuButton icon={MdOutlineContactPhone} route={NAVIGATION.CONTACT} name='Contacts' />
 
-						<MenuButton icon={TbMessage2Minus} route={NAVIGATION.SCHEDULER} name='Messages' />
-						<MenuButton icon={SiProbot} route={NAVIGATION.BOT} name='Bot' />
-						<MenuButton
-							icon={MdOutlineAttachment}
-							route={NAVIGATION.ATTACHMENTS}
-							name='Attachments'
+							<MenuButton icon={TbMessage2Minus} route={NAVIGATION.SCHEDULER} name='Messages' />
+							<MenuButton icon={SiProbot} route={NAVIGATION.BOT} name='Bot' />
+							<MenuButton
+								icon={MdOutlineAttachment}
+								route={NAVIGATION.ATTACHMENTS}
+								name='Attachments'
+							/>
+							<MenuButton icon={FiLink2} route={NAVIGATION.SHORT} name='Links' />
+							<MenuButton icon={BiPoll} route={NAVIGATION.POLL_RESPONSES} name='Poll' />
+							<MenuButton icon={FiBarChart2} route={NAVIGATION.REPORTS} name='Reports' />
+							<MenuButton icon={TbCsv} route={NAVIGATION.CSV} name='CSV ' />
+							<MenuButton icon={MdGroups3} route={NAVIGATION.GROUP_MERGE} name='Groups' />
+							<MenuButton icon={GrTasks} route={NAVIGATION.TASKS} name='Tasks' />
+						</Flex>
+					</Box>
+					<VStack alignItems={'flex-start'} pl={4}>
+						<IconButton
+							aria-label='Settings'
+							icon={<SettingsIcon color={theme === 'light' ? 'black' : 'white'} />}
+							onClick={onOpen}
+							className='focus:outline-none focus:border-none'
+							backgroundColor={'transparent'}
+							_hover={{
+								backgroundColor: 'transparent',
+								border: 'none',
+								outline: 'none',
+							}}
 						/>
-						<MenuButton icon={FiLink2} route={NAVIGATION.SHORT} name='Links' />
-						<MenuButton icon={BiPoll} route={NAVIGATION.POLL_RESPONSES} name='Poll' />
-						<MenuButton icon={FiBarChart2} route={NAVIGATION.REPORTS} name='Reports' />
-						<MenuButton icon={TbCsv} route={NAVIGATION.CSV} name='CSV ' />
-						<MenuButton icon={MdGroups3} route={NAVIGATION.GROUP_MERGE} name='Groups' />
-						<MenuButton icon={GrTasks} route={NAVIGATION.TASKS} name='Tasks' />
-					</Flex>
-				</Box>
-				<VStack alignItems={'flex-start'} pl={4}>
-					<IconButton
-						aria-label='Settings'
-						icon={<SettingsIcon color={theme === 'light' ? 'black' : 'white'} />}
-						onClick={onOpen}
-						className='focus:outline-none focus:border-none'
-						backgroundColor={'transparent'}
-						_hover={{
-							backgroundColor: 'transparent',
-							border: 'none',
-							outline: 'none',
-						}}
-					/>
-					<IconButton
-						aria-label='Change Theme'
-						icon={theme === 'light' ? <DarkIcon /> : <LightIcon />}
-						onClick={toggleTheme}
-						className='focus:outline-none focus:border-none'
-						backgroundColor={'transparent'}
-						_hover={{
-							backgroundColor: 'transparent',
-							border: 'none',
-							outline: 'none',
-						}}
-					/>
-					<IconButton
-						aria-label='Logout'
-						color={theme === 'light' ? 'black' : 'white'}
-						icon={<TbLogout2 />}
-						onClick={handleLogout}
-						className='focus:outline-none focus:border-none rotate-180'
-						backgroundColor={'transparent'}
-						_hover={{
-							backgroundColor: 'transparent',
-							border: 'none',
-							outline: 'none',
-						}}
-					/>
-				</VStack>
+						<IconButton
+							aria-label='Change Theme'
+							icon={theme === 'light' ? <DarkIcon /> : <LightIcon />}
+							onClick={toggleTheme}
+							className='focus:outline-none focus:border-none'
+							backgroundColor={'transparent'}
+							_hover={{
+								backgroundColor: 'transparent',
+								border: 'none',
+								outline: 'none',
+							}}
+						/>
+						<IconButton
+							aria-label='Logout'
+							color={theme === 'light' ? 'black' : 'white'}
+							icon={<TbLogout2 />}
+							onClick={handleLogout}
+							className='focus:outline-none focus:border-none rotate-180'
+							backgroundColor={'transparent'}
+							_hover={{
+								backgroundColor: 'transparent',
+								border: 'none',
+								outline: 'none',
+							}}
+						/>
+					</VStack>
+				</Flex>
 			</Flex>
 			<Settings isOpen={isOpen} onClose={onClose} />
 		</Box>

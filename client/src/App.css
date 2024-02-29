@@ -15,6 +15,16 @@ body {
 	font-family: 'Poppins', Arial, Helvetica, sans-serif !important;
 }
 
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
 @layer utilities {
 	.center {
 		@apply flex flex-col justify-center items-center;
