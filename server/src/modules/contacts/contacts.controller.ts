@@ -2,7 +2,6 @@ import csv from 'csvtojson/v2';
 import { NextFunction, Request, Response } from 'express';
 import fs from 'fs';
 import { Types } from 'mongoose';
-import Logger from 'n23-logger';
 import { getOrCache } from '../../config/cache';
 import {
 	CACHE_TOKEN_GENERATOR,
@@ -99,7 +98,6 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 		status: 201,
 	});
 	try {
-
 		const { saved, non_saved, saved_chat } = await getOrCache(
 			CACHE_TOKEN_GENERATOR.CONTACTS(req.locals.user._id),
 			() => whatsappUtils.getContacts()

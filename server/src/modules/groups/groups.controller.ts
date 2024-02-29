@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from 'express';
-import Logger from 'n23-logger';
 import { GroupChat, MessageMedia } from 'whatsapp-web.js';
 import { getOrCache, saveToCache } from '../../config/cache';
 import {
