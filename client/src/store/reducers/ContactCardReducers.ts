@@ -194,6 +194,9 @@ const ContactCardReducers = createSlice({
 		addSelectedContact: (state, action: PayloadAction<string>) => {
 			state.selectedContacts.push(action.payload);
 		},
+		selectAllContacts: (state) => {
+			state.selectedContacts = state.list.map((el) => el.id);
+		},
 		removeSelectedContact: (state, action: PayloadAction<string>) => {
 			state.selectedContacts = state.selectedContacts.filter((el) => el !== action.payload);
 		},
@@ -238,6 +241,7 @@ export const {
 	setLinks,
 	deleteContactCard,
 	addSelectedContact,
+	selectAllContacts,
 	removeSelectedContact
 } = ContactCardReducers.actions;
 

@@ -1,5 +1,6 @@
 import {
 	Box,
+	Button,
 	Checkbox,
 	HStack,
 	Icon,
@@ -51,13 +52,20 @@ const Tasks = () => {
 						isDisabled={selectedTasks.length === 0}
 						onClick={() => confirmationDialogRef.current?.open('')}
 					/>
+					<Button
+						colorScheme='blue'
+						size={'sm'}
+						onClick={() => setSelectedTasks(tasks.map((task) => task.id))}
+					>
+						Select All
+					</Button>
 				</HStack>
 			),
 		});
 		return () => {
 			popFromNavbar();
 		};
-	}, [selectedTasks.length]);
+	}, [selectedTasks.length, tasks]);
 
 	const filtered = useFilteredList(tasks, { type: 1, data: 1 });
 

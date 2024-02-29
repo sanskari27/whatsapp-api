@@ -80,6 +80,15 @@ const Reports = () => {
 					>
 						Export
 					</Button>
+					<Button
+						colorScheme={'blue'}
+						size={'sm'}
+						onClick={() =>
+							setSelectedCampaign(all_campaigns.map((campaign) => campaign.campaign_id))
+						}
+					>
+						Select All
+					</Button>
 				</HStack>
 			),
 		});
@@ -92,6 +101,7 @@ const Reports = () => {
 		exportCampaign,
 		exportingCampaign,
 		selectedCampaign,
+		all_campaigns,
 	]);
 
 	const fetchCampaigns = useCallback(() => {

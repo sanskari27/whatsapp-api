@@ -18,6 +18,7 @@ import { popFromNavbar, pushToNavbar } from '../../../hooks/useNavbar';
 import GroupService from '../../../services/group.service';
 import { StoreNames, StoreState } from '../../../store';
 import {
+	addAllGroups,
 	clearEditMergeGroup,
 	clearSelectedGroup,
 	deleteMergedGroup,
@@ -98,17 +99,21 @@ const GroupMergePage = () => {
 								MERGE
 							</Button>
 						) : null
-
-						// <Button
-						// 	leftIcon={<MdAdminPanelSettings />}
-						// 	size={'sm'}
-						// 	colorScheme='blue'
-						// 	isDisabled={selectedGroups.length === 0}
-						// 	onClick={openSettingDialog}
-						// >
-						// 	GROUP SETTINGS
-						// </Button>
+						// 	<Button
+						// 		leftIcon={<MdAdminPanelSettings />}
+						// 		size={'sm'}
+						// 		colorScheme='blue'
+						// 		isDisabled={selectedGroups.length === 0}
+						// 		onClick={openSettingDialog}
+						// 	>
+						// 		GROUP SETTINGS
+						// 	</Button>
 					}
+					{tabIndex === 0 && (
+						<Button colorScheme='blue' size={'sm'} onClick={() => dispatch(addAllGroups())}>
+							Select All
+						</Button>
+					)}
 				</HStack>
 			),
 		});
@@ -120,11 +125,6 @@ const GroupMergePage = () => {
 	return (
 		<Box>
 			<Tabs index={tabIndex}>
-				{/* <TabList>
-					<Tab>One</Tab>
-					<Tab>Two</Tab>
-					<Tab>Three</Tab>
-				</TabList> */}
 				<TabPanels>
 					<TabPanel>
 						<MergedGroupTab />

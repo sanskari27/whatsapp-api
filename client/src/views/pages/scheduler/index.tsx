@@ -35,15 +35,19 @@ import {
 	setAPIError,
 	setAttachments,
 	setBatchDelay,
+	setBatchDelayError,
 	setBatchSize,
+	setBatchSizeError,
 	setCSVFile,
 	setCampaignName,
 	setCampaignNameError,
 	setContactCards,
 	setEndTime,
 	setMaxDelay,
+	setMaxDelayError,
 	setMessageError,
 	setMinDelay,
+	setMinDelayError,
 	setPolls,
 	setRecipients,
 	setRecipientsError,
@@ -99,7 +103,16 @@ export default function Scheduler() {
 		details,
 		recipients,
 		all_schedulers,
-		ui: { apiError, campaignNameError, recipientsError, editingMessage },
+		ui: {
+			apiError,
+			campaignNameError,
+			recipientsError,
+			editingMessage,
+			minDelayError,
+			maxDelayError,
+			batchDelayError,
+			batchSizeError,
+		},
 	} = useSelector((state: StoreState) => state[StoreNames.SCHEDULER]);
 
 	const { canSendMessage, groups, labels } = useSelector(
@@ -167,6 +180,22 @@ export default function Scheduler() {
 			details.polls.length === 0
 		) {
 			dispatch(setMessageError(true));
+			hasError = true;
+		}
+		if (details.min_delay < 1) {
+			dispatch(setMinDelayError(true));
+			hasError = true;
+		}
+		if (details.max_delay < 1) {
+			dispatch(setMaxDelayError(true));
+			hasError = true;
+		}
+		if (details.batch_size < 1) {
+			dispatch(setBatchSizeError(true));
+			hasError = true;
+		}
+		if (details.batch_delay < 1) {
+			dispatch(setBatchDelayError(true));
 			hasError = true;
 		}
 		return !hasError;
@@ -324,13 +353,18 @@ export default function Scheduler() {
 					<TabPanel width={'full'}>
 						<Flex direction={'column'} width={'full'}>
 							<SubscriptionPopup isVisible={!canSendMessage} />
-							<Heading
-								color={theme === 'dark' ? 'white' : 'GrayText'}
-								fontSize={'large'}
-								fontWeight={'medium'}
-							>
-								Campaign Details
-							</Heading>
+							<HStack width={'full'} justifyContent={'space-between'}>
+								<Heading
+									color={theme === 'dark' ? 'white' : 'GrayText'}
+									fontSize={'large'}
+									fontWeight={'medium'}
+								>
+									Campaign Details
+								</Heading>
+								<Button colorScheme='blue' leftIcon={<InfoOutlineIcon />}>
+									See CSV example
+								</Button>
+							</HStack>
 							<Box marginTop={'1rem'}>
 								<CampaignDetailsSection fetchRecipients={fetchRecipients} />
 
@@ -352,21 +386,25 @@ export default function Scheduler() {
 												placeholder='Min Delay (in sec)'
 												value={details.min_delay}
 												onChange={(num) => dispatch(setMinDelay(num))}
+												invalid={minDelayError}
 											/>
 											<DelayInput
 												placeholder='Max Delay (in sec)'
 												value={details.max_delay}
 												onChange={(num) => dispatch(setMaxDelay(num))}
+												invalid={maxDelayError}
 											/>
 											<DelayInput
 												placeholder='Batch Size'
 												value={details.batch_size}
 												onChange={(num) => dispatch(setBatchSize(num))}
+												invalid={batchSizeError}
 											/>
 											<DelayInput
 												placeholder='Batch Delay'
 												value={details.batch_delay}
 												onChange={(num) => dispatch(setBatchDelay(num))}
+												invalid={batchDelayError}
 											/>
 										</Flex>
 
@@ -435,13 +473,18 @@ export default function Scheduler() {
 					{/* ---------------------------Message Section------------------------------ */}
 					<TabPanel>
 						<Flex direction={'column'} width={'full'}>
-							<Heading
-								color={theme === 'dark' ? 'white' : 'GrayText'}
-								fontSize={'large'}
-								fontWeight={'medium'}
-							>
-								Message Details
-							</Heading>
+							<HStack width={'full'} justifyContent={'space-between'}>
+								<Heading
+									color={theme === 'dark' ? 'white' : 'GrayText'}
+									fontSize={'large'}
+									fontWeight={'medium'}
+								>
+									Message Details
+								</Heading>
+								<Button colorScheme='blue' leftIcon={<InfoOutlineIcon />}>
+									See CSV example
+								</Button>
+							</HStack>
 							<Flex gap='2rem' marginTop={'1rem'}>
 								<VStack alignItems={'flex-start'} flex={1} gap={'0.5rem'}>
 									<FormControl isInvalid={campaignNameError}>
@@ -572,13 +615,15 @@ function DelayInput({
 	onChange,
 	placeholder,
 	value,
+	invalid,
 }: {
 	placeholder: string;
 	value: number;
 	onChange: (num: number) => void;
+	invalid?: boolean;
 }) {
 	return (
-		<FormControl flexGrow={1}>
+		<FormControl flexGrow={1} isInvalid={invalid}>
 			<Text fontSize='sm' className='text-gray-700 dark:text-white'>
 				{placeholder}
 			</Text>
