@@ -104,7 +104,7 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 		);
 
 		let listed_contacts = [
-			...(options.saved_chat_contacts ? saved : []),
+			...(options.saved_contacts ? saved : []),
 			...(options.non_saved_contacts ? non_saved : []),
 			...(options.saved_chat_contacts ? saved_chat : []),
 		];
