@@ -30,6 +30,7 @@ import {
 	deletingContactCard,
 	findContactById,
 	removeSelectedContact,
+	selectAllContacts,
 	updatingContactCard,
 } from '../../../store/reducers/ContactCardReducers';
 import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
@@ -91,13 +92,16 @@ const ContactsPage = () => {
 					>
 						ADD
 					</Button>
+					<Button colorScheme='blue' size={'sm'} onClick={() => dispatch(selectAllContacts())}>
+						Select All
+					</Button>
 				</HStack>
 			),
 		});
 		return () => {
 			popFromNavbar();
 		};
-	}, [selectedContacts.length]);
+	}, [dispatch, selectedContacts.length]);
 
 	const filtered = useFilteredList(list, { first_name: 1, middle_name: 1, last_name: 1 });
 

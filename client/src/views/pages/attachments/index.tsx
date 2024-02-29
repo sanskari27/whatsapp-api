@@ -30,6 +30,7 @@ import {
 	clearSelectedAttachments,
 	deleteAttachment,
 	findAttachmentById,
+	selectAllAttachments,
 	startAttachmentDeleting,
 	startAttachmentUpdating,
 	toggleSelected,
@@ -77,13 +78,16 @@ const AttachmentPage = () => {
 					>
 						ADD
 					</Button>
+					<Button colorScheme='blue' size={'sm'} onClick={()=>dispatch(selectAllAttachments())}>
+						Select All
+					</Button>
 				</HStack>
 			),
 		});
 		return () => {
 			popFromNavbar();
 		};
-	}, [isDeleting, selectedAttachments.length]);
+	}, [dispatch, isDeleting, selectedAttachments.length]);
 
 	const handleDeleteAttachments = async () => {
 		dispatch(startAttachmentDeleting());

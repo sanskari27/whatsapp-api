@@ -108,13 +108,20 @@ const CSVUpload = () => {
 					>
 						ADD
 					</Button>
+					<Button
+						colorScheme='blue'
+						size={'sm'}
+						onClick={() => setSelectedFiles(list.map((csv) => csv.id))}
+					>
+						Select All
+					</Button>
 				</HStack>
 			),
 		});
 		return () => {
 			popFromNavbar();
 		};
-	}, [dispatch, selectedFiles.length, userType]);
+	}, [dispatch, list, selectedFiles.length, userType]);
 
 	useEffect(() => {
 		dispatch(clearSelectedCSVFile());

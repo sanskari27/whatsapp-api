@@ -57,6 +57,7 @@ const CSVNameInputDialog = forwardRef<CSVNameInputDialogHandle>((_, ref) => {
 
 	function handleCSVUpload() {
 		if (!csvFile) return;
+		if (!name) return;
 		dispatch(startSaving());
 
 		UploadsService.uploadCSV({ file: csvFile, name })
