@@ -241,16 +241,25 @@ async function removeLabel(req: Request, res: Response, next: NextFunction) {
 		);
 	}
 
-	const assigned_chats = await whatsappUtils.getChatIdsByLabel(label_id);
-	const chats_to_remove = assigned_chats.filter((id) => chat_ids.includes(id));
-	await whatsapp.getClient().addOrRemoveLabels([label_id], chats_to_remove);
-	return Respond({
-		res,
-		status: 200,
-		data: {
-			message: 'Label removed successfully',
-		},
-	});
+	try {
+		const assigned_chats = await whatsappUtils.getChatIdsByLabel(label_id);
+		const chats_to_assign = assigned_chats.filter((id) => !chat_ids.includes(id));
+		await whatsapp.getClient().addOrRemoveLabels([label_id], chats_to_assign);
+		return Respond({
+			res,
+			status: 200,
+			data: {
+				message: 'Label removed successfully',
+			},
+		});
+	} catch (err) {
+		if (err instanceof InternalError) {
+			if (err.isSameInstanceof(INTERNAL_ERRORS.WHATSAPP_ERROR.BUSINESS_ACCOUNT_REQUIRED)) {
+				return next(new APIError(API_ERRORS.WHATSAPP_ERROR.BUSINESS_ACCOUNT_REQUIRED));
+			}
+		}
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
+	}
 }
 
 const LabelsController = {

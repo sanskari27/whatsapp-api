@@ -166,13 +166,15 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 		const groups = (
 			await Promise.all(
 				ids_to_export.map(async (group_id) => {
-					const chat = await whatsapp.getClient().getChatById(group_id);
-
-					if (!chat || !chat.isGroup) {
+					try {
+						const chat = await whatsapp.getClient().getChatById(group_id);
+						if (!chat.isGroup) {
+							throw new Error('Group not found');
+						}
+						return chat as GroupChat;
+					} catch (err) {
 						return null;
 					}
-					const groupChat = chat as GroupChat;
-					return groupChat;
 				})
 			)
 		).filter((chat) => chat !== null) as GroupChat[];
@@ -396,13 +398,15 @@ async function updateGroupsPicture(req: Request, res: Response, next: NextFuncti
 	const groups = (await Promise.all(
 		ids_to_export
 			.map(async (group_id) => {
-				const chat = await whatsapp.getClient().getChatById(group_id);
-
-				if (!chat || !chat.isGroup) {
+				try {
+					const chat = await whatsapp.getClient().getChatById(group_id);
+					if (!chat.isGroup) {
+						throw new Error('Group not found');
+					}
+					return chat as GroupChat;
+				} catch (err) {
 					return null;
 				}
-				const groupChat = chat as GroupChat;
-				return groupChat;
 			})
 			.filter((groupChat) => groupChat !== null)
 	)) as GroupChat[];
@@ -441,18 +445,20 @@ async function updateGroupsDetails(req: Request, res: Response, next: NextFuncti
 	const groups = (await Promise.all(
 		ids_to_update
 			.map(async (group_id) => {
-				const chat = await whatsapp.getClient().getChatById(group_id);
-
-				if (!chat || !chat.isGroup) {
+				try {
+					const chat = await whatsapp.getClient().getChatById(group_id);
+					if (!chat.isGroup) {
+						throw new Error('Group not found');
+					}
+					for (let participant of (chat as GroupChat).participants) {
+						if (participant.id._serialized === authorId) {
+							return participant.isAdmin ? chat : null;
+						}
+					}
+					return null;
+				} catch (err) {
 					return null;
 				}
-				const groupChat = chat as GroupChat;
-				for (let participant of groupChat.participants) {
-					if (participant.id._serialized === authorId) {
-						return participant.isAdmin ? chat : null;
-					}
-				}
-				return null;
 			})
 			.filter((groupChat) => groupChat !== null)
 	)) as GroupChat[];
