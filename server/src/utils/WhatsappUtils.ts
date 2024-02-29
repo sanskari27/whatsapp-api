@@ -52,19 +52,19 @@ export default class WhatsappUtils {
 
 		return (await Promise.all(numbersPromise)).filter((number) => number !== null) as string[];
 	}
-
 	async getNumberWithId(number: string) {
 		try {
 			const numberID = await this.whatsapp.getClient().getNumberId(number);
 			if (!numberID) {
-				return null;
+				throw new Error('Invalid number');
 			}
-		});
-
-		return (await Promise.all(numbersPromise)).filter((number) => number !== null) as {
-			number: string;
-			numberId: string;
-		}[];
+			return {
+				number,
+				numberId: numberID._serialized,
+			};
+		} catch (err) {
+			return null;
+		}
 	}
 
 	async getChat(id: string) {
@@ -192,9 +192,6 @@ export default class WhatsappUtils {
 		const detailed_contacts = await Promise.all(
 			contacts.map(async (contact) => {
 				const contact_details = (await this.getContactDetails(contact)) as TContact;
-				if (!options.business_details) {
-					return contact_details;
-				}
 				if (!contact.isBusiness) {
 					return contact_details;
 				}
@@ -355,27 +352,27 @@ export default class WhatsappUtils {
 				session.remove();
 			}
 
-		const path = __basedir + '/.wwebjs_auth';
-		if (!fs.existsSync(path)) {
-			return;
-		}
-		const client_ids = (await fs.promises.readdir(path, { withFileTypes: true }))
-			.filter((dirent) => dirent.isDirectory())
-			.map((dirent) => dirent.name.split('session-')[1]);
-
-		const invalid_sessions_promises = client_ids.map(async (client_id) => {
-			const { valid } = await UserService.isValidAuth(client_id);
-			if (valid) {
-				return null;
+			const path = __basedir + '/.wwebjs_auth';
+			if (!fs.existsSync(path)) {
+				return;
 			}
-			return client_id;
-		});
+			const client_ids = (await fs.promises.readdir(path, { withFileTypes: true }))
+				.filter((dirent) => dirent.isDirectory())
+				.map((dirent) => dirent.name.split('session-')[1]);
 
-		const invalid_sessions = await Promise.all(invalid_sessions_promises);
+			const invalid_sessions_promises = client_ids.map(async (client_id) => {
+				const { valid } = await UserService.isValidAuth(client_id);
+				if (valid) {
+					return null;
+				}
+				return client_id;
+			});
 
-		invalid_sessions.forEach((id) => id && WhatsappUtils.deleteSession(id));
+			const invalid_sessions = await Promise.all(invalid_sessions_promises);
 
-		Logger.info('WHATSAPP-HELPER', `Removed ${invalid_sessions.length} unwanted folders`);
+			invalid_sessions.forEach((id) => id && WhatsappUtils.deleteSession(id));
+
+			Logger.info('WHATSAPP-HELPER', `Removed ${invalid_sessions.length} unwanted folders`);
 		}
 		Logger.info('WHATSAPP-HELPER', `Removed ${sessions.length} unwanted sessions`);
 	}
