@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from 'express';
-import Logger from 'n23-logger';
 import { getOrCache } from '../../config/cache';
 import {
 	CACHE_TOKEN_GENERATOR,
@@ -142,7 +141,6 @@ async function exportLabels(req: Request, res: Response, next: NextFunction) {
 	} catch (err) {
 		taskService.markFailed(task_id);
 		whatsapp.sendToClient(SOCKET_RESPONSES.TASK_FAILED, task_id.toString());
-		Logger.error('Error Exporting Contacts', err as Error);
 	}
 }
 
