@@ -29,6 +29,7 @@ import {
 	deleteContactCard,
 	deletingContactCard,
 	findContactById,
+	removeAllSelectedContacts,
 	removeSelectedContact,
 	selectAllContacts,
 	updatingContactCard,
@@ -56,6 +57,7 @@ const ContactsPage = () => {
 			ContactCardService.DeleteContacts(contact);
 			dispatch(deleteContactCard(contact));
 		});
+		dispatch(removeAllSelectedContacts());
 	};
 
 	const handleContactEdit = (id: string) => {

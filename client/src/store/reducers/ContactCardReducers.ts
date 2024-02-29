@@ -68,6 +68,9 @@ const ContactCardReducers = createSlice({
 			state.selectedCard = initialState.selectedCard;
 			state.uiDetails = initialState.uiDetails;
 		},
+		removeAllSelectedContacts: (state) => {
+			state.selectedContacts = [];
+		},
 		clearContactCard: (state) => {
 			state.selectedCard = initialState.selectedCard;
 			state.uiDetails = initialState.uiDetails;
@@ -215,6 +218,7 @@ export const {
 	setLastName,
 	setTitle,
 	setOrganization,
+	removeAllSelectedContacts,
 	setEmailPersonal,
 	setEmailWork,
 	setContactNumberPhone,
