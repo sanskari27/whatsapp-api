@@ -148,7 +148,6 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 	} catch (err) {
 		taskService.markFailed(task_id);
 		whatsapp.sendToClient(SOCKET_RESPONSES.TASK_FAILED, task_id.toString());
-		Logger.error('Error Exporting Contacts', err as Error);
 	}
 }
 
