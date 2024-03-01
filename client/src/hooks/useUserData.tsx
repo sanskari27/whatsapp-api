@@ -24,7 +24,7 @@ import { useAuth } from './useAuth';
 export default function useUserData() {
 	const [hasError, setError] = useState(false);
 	const [dataLoaded, setDataLoaded] = useBoolean(false);
-	const { isAuthenticated } = useAuth();
+	const { isSocketInitialized } = useAuth();
 	const toast = useToast();
 
 	const fetchUserDetails = useCallback(async () => {
@@ -89,11 +89,11 @@ export default function useUserData() {
 	}, [setDataLoaded, toast]);
 
 	useEffect(() => {
-		if (isAuthenticated) {
+		if (isSocketInitialized) {
 			setDataLoaded.off();
 			fetchUserDetails();
 		}
-	}, [fetchUserDetails, setDataLoaded, isAuthenticated]);
+	}, [fetchUserDetails, setDataLoaded, isSocketInitialized]);
 
 	return {
 		loading: !dataLoaded,
