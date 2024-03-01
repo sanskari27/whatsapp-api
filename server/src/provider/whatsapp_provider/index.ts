@@ -146,15 +146,15 @@ export class WhatsappProvider {
 				business_details,
 			});
 
-			this.status = STATUS.READY;
-			this.sendToClient(SOCKET_RESPONSES.WHATSAPP_READY);
-
 			await this.user_service.login(this.client_id);
+			this.status = STATUS.READY;
 
 			this.bot_service = new BotService(this.user_service.getUser());
 			this.group_service = new GroupMergeService(this.user_service.getUser());
 			this.bot_service.attachWhatsappProvider(this);
 			this.vote_response_service = new VoteResponseService(this.user_service.getUser());
+
+			this.sendToClient(SOCKET_RESPONSES.WHATSAPP_READY);
 		});
 
 		this.client.on('vote_update', async (vote) => {
