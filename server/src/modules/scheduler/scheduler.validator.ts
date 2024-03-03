@@ -14,6 +14,7 @@ export type CreateSchedulerValidationResult = {
 		isMultiSelect: boolean;
 	}[];
 	title: string;
+	description: string;
 	start_from: string;
 	end_at: string;
 };
@@ -26,6 +27,7 @@ export async function CreateSchedulerValidator(req: Request, res: Response, next
 			.transform((value) => new Types.ObjectId(value)),
 		message: z.string().trim().default(''),
 		title: z.string().trim().default(''),
+		description: z.string().trim().default(''),
 		start_from: z.string().trim().default(''),
 		end_at: z.string().trim().default(''),
 		shared_contact_cards: z

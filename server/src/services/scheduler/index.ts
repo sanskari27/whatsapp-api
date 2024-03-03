@@ -20,11 +20,12 @@ export default class SchedulerService {
 	public async allScheduler() {
 		const scheduler = await SchedulerDB.find({
 			user: this.user,
-		}).populate('csv attachments shared_contact_cards');
+		}).populate('attachments');
 		return scheduler.map((e) => ({
 			id: e._id as Types.ObjectId,
 			title: e.title,
-			csv: e.csv.filename,
+			description: e.description,
+			csv: e.csv,
 			message: e.message,
 			attachments: e.attachments,
 			shared_contact_cards: e.shared_contact_cards ?? [],
@@ -36,9 +37,7 @@ export default class SchedulerService {
 	}
 
 	public async schedulerByID(id: Types.ObjectId) {
-		const scheduler = await SchedulerDB.findById(id).populate(
-			'csv attachments shared_contact_cards'
-		);
+		const scheduler = await SchedulerDB.findById(id).populate('attachments');
 
 		if (!scheduler) {
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
@@ -47,7 +46,8 @@ export default class SchedulerService {
 		return {
 			id: scheduler._id as Types.ObjectId,
 			title: scheduler.title,
-			csv: scheduler.csv.filename,
+			description: scheduler.description,
+			csv: scheduler.csv,
 			message: scheduler.message,
 			attachments: scheduler.attachments,
 			shared_contact_cards: scheduler.shared_contact_cards ?? [],
@@ -60,11 +60,13 @@ export default class SchedulerService {
 
 	public createScheduler(data: {
 		title: string;
+		description: string;
 		message: string;
 		start_from: string;
 		end_at: string;
 		shared_contact_cards: Types.ObjectId[];
 		attachments: IUpload[];
+		csv: Types.ObjectId;
 		polls: {
 			title: string;
 			options: string[];
@@ -80,7 +82,8 @@ export default class SchedulerService {
 		return {
 			id: scheduler._id as Types.ObjectId,
 			title: scheduler.title,
-			csv: scheduler.csv.filename,
+			description: scheduler.description,
+			csv: scheduler.csv,
 			message: scheduler.message,
 			attachments: scheduler.attachments,
 			shared_contact_cards: scheduler.shared_contact_cards ?? [],
@@ -95,6 +98,7 @@ export default class SchedulerService {
 		id: Types.ObjectId,
 		data: {
 			title: string;
+			description: string;
 			message: string;
 			start_from: string;
 			end_at: string;
@@ -107,15 +111,16 @@ export default class SchedulerService {
 			}[];
 		}
 	) {
-		const scheduler = await SchedulerDB.findById(id).populate(
-			'csv attachments shared_contact_cards'
-		);
+		const scheduler = await SchedulerDB.findById(id).populate('attachments');
 		if (!scheduler) {
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
 		}
 
 		if (data.title) {
 			scheduler.title = data.title;
+		}
+		if (data.description) {
+			scheduler.description = data.description;
 		}
 		if (data.message) {
 			scheduler.message = data.message;
@@ -141,7 +146,8 @@ export default class SchedulerService {
 		return {
 			id: scheduler._id as Types.ObjectId,
 			title: scheduler.title,
-			csv: scheduler.csv.filename,
+			description: scheduler.description,
+			csv: scheduler.csv,
 			message: scheduler.message,
 			attachments: scheduler.attachments,
 			shared_contact_cards: scheduler.shared_contact_cards ?? [],
@@ -153,7 +159,7 @@ export default class SchedulerService {
 	}
 
 	public async toggleActive(id: Types.ObjectId) {
-		const scheduler = await SchedulerDB.findById(id).populate('csv');
+		const scheduler = await SchedulerDB.findById(id);
 		if (!scheduler) {
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
 		}
@@ -162,6 +168,7 @@ export default class SchedulerService {
 		return {
 			id: scheduler._id as Types.ObjectId,
 			title: scheduler.title,
+			description: scheduler.description,
 			csv: scheduler.csv.filename,
 			message: scheduler.message,
 			attachments: scheduler.attachments,
@@ -178,7 +185,7 @@ export default class SchedulerService {
 	}
 
 	public async generateReport(id: Types.ObjectId) {
-		const scheduler = await SchedulerDB.findById(id).populate('csv');
+		const scheduler = await SchedulerDB.findById(id);
 		if (!scheduler) {
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
 		}
@@ -189,6 +196,7 @@ export default class SchedulerService {
 
 		return messages.map((message) => ({
 			campaign_name: scheduler.title,
+			description: scheduler.description,
 			message: message.message,
 			receiver: message.receiver.split('@')[0],
 			attachments: message.attachments.length,

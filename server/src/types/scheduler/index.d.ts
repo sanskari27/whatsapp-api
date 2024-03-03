@@ -20,6 +20,7 @@ export default interface IScheduler extends Document {
 	active: boolean;
 
 	title: string;
+	description: string;
 	start_from: string;
 	end_at: string;
 }

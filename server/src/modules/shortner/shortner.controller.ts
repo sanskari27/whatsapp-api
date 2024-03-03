@@ -66,6 +66,7 @@ async function updateLink(req: Request, res: Response, next: NextFunction) {
 	}
 	if (!link) {
 		doc.link = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+		doc.qrString = '';
 	} else {
 		doc.link = link;
 	}
