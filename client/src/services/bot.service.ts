@@ -142,8 +142,37 @@ export default class BotService {
 	) {
 		try {
 			const { data: response } = await APIInstance.patch(`/whatsapp/bot/${id}`, data);
-			const res = response.bot as Bot;
-
+			const res = response.bot as {
+				bot_id: string;
+				trigger: string;
+				options: string;
+				startAt: string;
+				endAt: string;
+				respond_to: string;
+				message: string;
+				attachments: string[];
+				shared_contact_cards: string[];
+				trigger_gap_seconds: number;
+				response_delay_seconds: number;
+				isActive: boolean;
+				polls: {
+					title: string;
+					options: string[];
+					isMultiSelect: boolean;
+				}[];
+				forward: {
+					number: string;
+					message: string;
+				};
+				nurturing: {
+					message: string;
+					after: number;
+					attachments: { _id: string }[];
+					shared_contact_cards: { _id: string }[];
+					polls: { title: string; options: string[]; isMultiSelect: boolean }[];
+				}[];
+			};
+			console.log(res);
 			return {
 				bot_id: res.bot_id ?? '',
 				trigger: res.trigger ?? '',
@@ -159,7 +188,17 @@ export default class BotService {
 				isActive: res.isActive ?? false,
 				polls: res.polls ?? [],
 				forward: res.forward ?? { number: '', message: '' },
-				nurturing: res.nurturing ?? [],
+				nurturing: (res.nurturing ?? []).map((nurturing) => {
+					return {
+						message: nurturing.message ?? '',
+						after: nurturing.after ?? '',
+						attachments: (nurturing.attachments ?? []).map((attachment) => attachment._id as string),
+						shared_contact_cards: (nurturing ?? []).shared_contact_cards.map(
+							(contact) => contact._id as string
+						),
+						polls: nurturing.polls ?? [],
+					};
+				}) ?? [],
 			} as Bot;
 		} catch (err) {
 			throw new Error('Error Saving group');
