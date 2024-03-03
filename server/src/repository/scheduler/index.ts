@@ -38,6 +38,7 @@ const schedulerSchema = new mongoose.Schema<IScheduler>({
 	},
 
 	title: String,
+	description: String,
 	start_from: String,
 	end_at: String,
 });
