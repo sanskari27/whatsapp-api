@@ -17,6 +17,7 @@ const initialState: LinkShortenerState = {
 		error: '',
 	},
 	ui: {
+		searchText: '',
 		loading_links: false,
 		generating_link: false,
 		shortening_link: false,
@@ -29,26 +30,32 @@ const LinkShortenerReducer = createSlice({
 	initialState: initialState,
 	reducers: {
 		reset: (state) => {
-			state.list = initialState.list;
 			state.create_details = initialState.create_details;
 			state.generation_result = initialState.generation_result;
 			state.ui = initialState.ui;
 		},
 		setLink: (state, action: PayloadAction<typeof initialState.create_details.link>) => {
 			state.create_details.link = action.payload;
+			state.create_details.number = '';
+			state.create_details.message = '';
+			state.generation_result.error = '';
 		},
-		clearCreateDetails: (state) => {
-			state.create_details = initialState.create_details;
-			state.generation_result = initialState.generation_result;
+		setTitle: (state, action: PayloadAction<typeof initialState.create_details.title>) => {
+			state.create_details.title = action.payload;
+			state.generation_result.error = '';
 		},
 		setNumber: (state, action: PayloadAction<typeof initialState.create_details.number>) => {
 			if (isNaN(Number(action.payload))) {
 				return;
 			}
 			state.create_details.number = action.payload;
+			state.create_details.link = '';
+			state.generation_result.error = '';
 		},
 		setMessage: (state, action: PayloadAction<typeof initialState.create_details.message>) => {
 			state.create_details.message = action.payload;
+			state.create_details.link = '';
+			state.generation_result.error = '';
 		},
 		setLinksList: (state, action: PayloadAction<typeof initialState.list>) => {
 			state.list = action.payload;
@@ -57,15 +64,9 @@ const LinkShortenerReducer = createSlice({
 			state.create_details = initialState.create_details;
 			state.list.push(action.payload);
 		},
-		setGenerated: (
-			state,
-			action: PayloadAction<{
-				generated_link: typeof initialState.generation_result.generated_link;
-				generated_image: typeof initialState.generation_result.generated_image;
-			}>
-		) => {
-			state.generation_result.generated_link = action.payload.generated_link;
-			state.generation_result.generated_image = action.payload.generated_image;
+		removeShortenLink: (state, action: PayloadAction<string>) => {
+			state.create_details = initialState.create_details;
+			state.list = state.list.filter((item) => item.id !== action.payload);
 		},
 		setErrorGeneratingLink: (
 			state,
@@ -74,23 +75,23 @@ const LinkShortenerReducer = createSlice({
 			state.generation_result.error = action.payload;
 		},
 
-		setGeneratingLink: (state, action: PayloadAction<typeof initialState.ui.generating_link>) => {
-			state.ui.generating_link = action.payload;
-		},
-		setShortingLink: (state, action: PayloadAction<typeof initialState.ui.shortening_link>) => {
-			state.ui.shortening_link = action.payload;
-		},
-		setTitle: (state, action: PayloadAction<typeof initialState.create_details.title>) => {
-			state.create_details.title = action.payload;
-		},
-		setLoadingLinks: (state, action: PayloadAction<typeof initialState.ui.loading_links>) => {
-			state.ui.loading_links = action.payload;
-		},
-		setLinkCopied: (state, action: PayloadAction<typeof initialState.ui.link_copied>) => {
-			state.ui.link_copied = action.payload;
-		},
-		deleteShortenLink: (state, action: PayloadAction<string>) => {
-			state.list = state.list.filter((link) => link.id !== action.payload);
+		findLinkByID: (state, action: PayloadAction<string>) => {
+			const link = state.list.find((e) => e.id === action.payload);
+			if (!link) {
+				return;
+			}
+			const { link: main_link, title, id } = link;
+
+			if (main_link.includes('wa.me')) {
+				state.create_details.number = main_link.split('wa.me/')[1].split('?')[0];
+				state.create_details.message = decodeURIComponent(main_link.split('text=')[1]);
+				state.create_details.title = title;
+				state.create_details.id = id;
+			} else {
+				state.create_details.link = main_link;
+				state.create_details.title = title;
+				state.create_details.id = id;
+			}
 		},
 		updateShortenLink: (
 			state,
@@ -105,26 +106,29 @@ const LinkShortenerReducer = createSlice({
 					: element
 			);
 		},
+		setGeneratingLink: (state, action: PayloadAction<boolean>) => {
+			state.ui.generating_link = action.payload;
+		},
+		setSearchText: (state, action: PayloadAction<string>) => {
+			state.ui.searchText = action.payload;
+		},
 	},
 });
 
 export const {
 	reset,
 	setLink,
-	clearCreateDetails,
 	setMessage,
 	setNumber,
 	setLinksList,
 	addShortenLink,
-	setGenerated,
-	setGeneratingLink,
-	setLinkCopied,
-	setShortingLink,
 	setTitle,
 	setErrorGeneratingLink,
-	deleteShortenLink,
 	updateShortenLink,
-	setLoadingLinks,
+	setSearchText,
+	findLinkByID,
+	setGeneratingLink,
+	removeShortenLink,
 } = LinkShortenerReducer.actions;
 
 export default LinkShortenerReducer.reducer;

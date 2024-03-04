@@ -11,7 +11,7 @@ export default function Variables({ data, onVariableSelect, ...props }: Variable
 			{data.map((header, index) => (
 				<WrapItem key={index}>
 					<Tag
-						colorScheme='gray'
+						colorScheme='green'
 						size={'md'}
 						_hover={{ cursor: 'pointer', bgColor: 'gray.300' }}
 						onClick={() => onVariableSelect(`{{${header}}}`)}

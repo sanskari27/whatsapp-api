@@ -57,6 +57,7 @@ export type ContactCardState = {
 		pincode?: string;
 	};
 	uiDetails: {
+		searchText: string;
 		isSaving: boolean;
 		isFetching: boolean;
 		isDeleting: boolean;

@@ -3,6 +3,7 @@ import APIInstance from '../config/APIInstance';
 type Scheduler = {
 	id: string;
 	title: string;
+	description: string;
 	message: string;
 	attachments: string[];
 	shared_contact_cards: string[];
@@ -74,6 +75,7 @@ export default class MessageService {
 			return (data.schedulers as Scheduler[]).map((scheduler) => ({
 				id: scheduler.id ?? '',
 				title: scheduler.title ?? '',
+				description: scheduler.description ?? '',
 				message: scheduler.message ?? '',
 				attachments: scheduler.attachments ?? [],
 				shared_contact_cards: scheduler.shared_contact_cards ?? [],

@@ -42,7 +42,7 @@ import {
 	setPollAt,
 	setTitle,
 } from '../../../store/reducers/PollReducers';
-import { TemplateNameInputDialog } from '../../pages/scheduler/components';
+import TemplateNameInputDialog from '../template-name-input';
 
 export type PollInputDialogHandle = {
 	open: (

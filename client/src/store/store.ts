@@ -9,7 +9,7 @@ import { default as LinkShortenerReducer } from './reducers/LinkShortnerReducers
 import { default as MergeGroupReducers } from './reducers/MergeGroupReducer';
 import { default as PollReducers } from './reducers/PollReducers';
 import { default as SchedulerReducer } from './reducers/SchedulerReducer';
-import { default as UserDetailsReducers } from './reducers/UserDetailsReducers';
+import { default as UserDetailsReducers, setUserConfig } from './reducers/UserDetailsReducers';
 
 const store = configureStore({
 	reducer: {
@@ -28,6 +28,17 @@ const store = configureStore({
 			serializableCheck: false,
 		}),
 });
+
+store.subscribe(() => {
+	const loadPreview = store.getState()[StoreNames.USER].ui_config;
+	localStorage.setItem('ui_config', JSON.stringify(loadPreview));
+});
+
+const savedLoadPreview = JSON.parse(localStorage.getItem('ui_config')!);
+if (savedLoadPreview !== null) {
+	store.dispatch(setUserConfig(savedLoadPreview));
+}
+// Example: Dispatch an action to update the loadPreview value
 
 export default store;
 

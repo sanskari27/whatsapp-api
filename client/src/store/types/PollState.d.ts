@@ -1,5 +1,5 @@
 export type PollState = {
-	list: Poll[];
+	list: (Poll & { vote_count: number })[];
 	polls: Poll[];
 	error: { pollIndex: number; message: string };
 	selectedPollDetails: {
@@ -12,6 +12,9 @@ export type PollState = {
 		voter_name: string;
 		voter_number: string;
 	}[];
+	ui: {
+		searchText: string;
+	};
 };
 
 type Poll = {

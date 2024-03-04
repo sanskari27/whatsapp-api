@@ -67,18 +67,17 @@ export default class ReportsService {
 			//ignore
 		}
 	}
-	static async listPolls(): Promise<Poll[]> {
+	static async listPolls(): Promise<(Poll & { vote_count: number })[]> {
 		try {
 			const { data } = await APIInstance.get('/reports/polls');
-			return data.polls.map(
-				(poll: { title: string; options: string[]; isMultiSelect: boolean }) => {
-					return {
-						title: (poll.title ?? '') as string,
-						isMultiSelect: (poll.isMultiSelect ?? false) as boolean,
-						options: poll.options?.map((option: string) => option ?? '') as string[],
-					};
-				}
-			);
+			return data.polls.map((poll: Poll & { vote_count: number }) => {
+				return {
+					title: (poll.title ?? '') as string,
+					isMultiSelect: (poll.isMultiSelect ?? false) as boolean,
+					options: poll.options?.map((option: string) => option ?? '') as string[],
+					vote_count: poll.vote_count ?? 0,
+				};
+			});
 		} catch (err) {
 			return [];
 		}

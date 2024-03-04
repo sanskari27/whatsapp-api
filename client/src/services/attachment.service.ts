@@ -10,12 +10,7 @@ export default class AttachmentService {
 	}
 
 	static async deleteAttachment(id: string) {
-		try {
-			await APIInstance.delete(`/uploads/attachment/${id}`);
-			return true;
-		} catch (err) {
-			return false;
-		}
+		await APIInstance.delete(`/uploads/attachment/${id}`);
 	}
 
 	static async downloadAttachment(id: string) {

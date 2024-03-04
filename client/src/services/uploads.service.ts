@@ -36,7 +36,7 @@ export default class UploadsService {
 
 			return {
 				name: 'ERROR',
-				fileName: 'Something went wrong',
+				fileName: 'File not supported',
 				headers: [],
 				id: '',
 			};

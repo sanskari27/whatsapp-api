@@ -26,6 +26,14 @@ export type UserDetailsState = {
 	} | null;
 
 	data_loaded: boolean;
+
+	current_profile: string;
+	profiles: string[];
+
+	ui_config: {
+		load_preview: boolean;
+		confirmation_required: boolean;
+	};
 };
 
 export type PaymentRecords = {

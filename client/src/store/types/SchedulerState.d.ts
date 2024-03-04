@@ -1,22 +1,7 @@
 export type SchedulerState = {
 	details: SchedulerDetails;
-	all_campaigns: ScheduledCampaign[];
-	all_schedulers: {
-		id: string;
-		title: string;
-		end_at: string;
-		start_from: string;
-		isActive: boolean;
-		polls: {
-			title: string;
-			options: string[];
-			isMultiSelect: boolean;
-		}[];
-		attachments: string[];
-		shared_contact_cards: string[];
-		message: string;
-		csv: string;
-	}[];
+	all_campaigns: Campaign[];
+	all_schedulers: Scheduler[];
 	recipients: {
 		fileName?: string;
 		name: string;
@@ -24,11 +9,12 @@ export type SchedulerState = {
 		id: string;
 	}[];
 	isRecipientsLoading: boolean;
-	isBusinessAccount: boolean;
 	ui: {
+		condition: 'ALL' | 'RUNNING' | 'PAUSED' | 'COMPLETED';
+		searchText: string;
+		filterDateStart: Date;
+		filterDateEnd: Date;
 		campaignLoading: boolean;
-		exportingCampaign: boolean;
-		deletingCampaign: boolean;
 		messageError: boolean;
 		campaignNameError: boolean;
 		recipientsError: boolean;
@@ -41,7 +27,7 @@ export type SchedulerState = {
 	};
 };
 
-export type ScheduledCampaign = {
+export type Campaign = {
 	campaign_id: string;
 	campaignName: string;
 	sent: number;
@@ -50,6 +36,23 @@ export type ScheduledCampaign = {
 	isPaused: boolean;
 	createdAt: string;
 	description: string;
+};
+export type Scheduler = {
+	id: string;
+	title: string;
+	description: string;
+	end_at: string;
+	start_from: string;
+	isActive: boolean;
+	polls: {
+		title: string;
+		options: string[];
+		isMultiSelect: boolean;
+	}[];
+	attachments: string[];
+	shared_contact_cards: string[];
+	message: string;
+	csv: string;
 };
 
 export type SchedulerDetails = {

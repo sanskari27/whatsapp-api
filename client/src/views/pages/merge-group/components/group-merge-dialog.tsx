@@ -140,7 +140,7 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 							border={'none'}
 							className='text-black !bg-[#ECECEC] '
 							_placeholder={{
-								opacity: 0.4,
+								opacity: 0.7,
 								color: 'inherit',
 							}}
 							_focus={{ border: 'none', outline: 'none' }}
@@ -159,7 +159,7 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 							border={'none'}
 							className='text-black !bg-[#ECECEC] '
 							_placeholder={{
-								opacity: 0.4,
+								opacity: 0.7,
 								color: 'inherit',
 							}}
 							_focus={{ border: 'none', outline: 'none' }}
@@ -178,7 +178,7 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 							border={'none'}
 							className='text-black !bg-[#ECECEC] '
 							_placeholder={{
-								opacity: 0.4,
+								opacity: 0.7,
 								color: 'inherit',
 							}}
 							_focus={{ border: 'none', outline: 'none' }}
@@ -197,7 +197,7 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 							border={'none'}
 							className='text-black !bg-[#ECECEC] '
 							_placeholder={{
-								opacity: 0.4,
+								opacity: 0.7,
 								color: 'inherit',
 							}}
 							_focus={{ border: 'none', outline: 'none' }}

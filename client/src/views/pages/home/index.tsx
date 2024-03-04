@@ -1,15 +1,15 @@
-import { Box, Flex, Image, Progress, Text } from '@chakra-ui/react';
+import { Box, Flex, Text } from '@chakra-ui/react';
 import Lottie from 'lottie-react';
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Navigate, useNavigate, useOutlet } from 'react-router-dom';
-import { LOGO } from '../../../assets/Images';
 import { LOTTIE_LOADER } from '../../../assets/Lottie';
 import { NAVIGATION } from '../../../config/const';
 import { useAuth } from '../../../hooks/useAuth';
 import { useNetwork } from '../../../hooks/useNetwork';
 import '../../../index.css';
 import { StoreNames, StoreState } from '../../../store';
+import LoadingPage from '../../components/loading-page';
 import Navbar from '../../components/navbar';
 import NavigationDrawer from '../../components/navigation-drawer';
 
@@ -17,7 +17,7 @@ export default function Home() {
 	const navigate = useNavigate();
 	const status = useNetwork();
 	const outlet = useOutlet();
-	const { isAuthenticated, isAuthenticating } = useAuth();
+	const { isAuthenticated, isAuthenticating, qrGenerated } = useAuth();
 
 	const { data_loaded } = useSelector((state: StoreState) => state[StoreNames.USER]);
 
@@ -27,24 +27,11 @@ export default function Home() {
 		}
 	}, [status, navigate]);
 
+	if (isAuthenticating && qrGenerated) {
+		return <Navigate to={NAVIGATION.WELCOME} />;
+	}
 	if (isAuthenticating) {
-		return (
-			<Flex
-				justifyContent={'center'}
-				alignItems={'center'}
-				direction={'column'}
-				gap={'3rem'}
-				width={'full'}
-			>
-				<Flex justifyContent={'center'} alignItems={'center'} width={'full'} gap={'1rem'}>
-					<Image src={LOGO} width={'48px'} className='shadow-lg rounded-full' />
-					<Text className='text-black dark:text-white' fontSize={'lg'} fontWeight='bold'>
-						WhatsLeads
-					</Text>
-				</Flex>
-				<Progress size='xs' isIndeterminate width={'30%'} rounded={'lg'} />
-			</Flex>
-		);
+		return <LoadingPage />;
 	}
 
 	if (!isAuthenticated) {
@@ -52,11 +39,11 @@ export default function Home() {
 	}
 
 	return (
-		<Box width='full' className='custom-scrollbar'>
+		<Box width='full' className='custom-scrollbar bg-background'>
 			<NavigationDrawer />
 			<Navbar />
-			<Box paddingLeft={'70px'} paddingTop={'70px'} overflowX={'hidden'} className='min-h-screen'>
-				{outlet ? outlet : <Navigate to={NAVIGATION.CONTACT} />}
+			<Box paddingLeft={'320px'} paddingTop={'65px'} overflowX={'hidden'} className='min-h-screen'>
+				{outlet ? outlet : <Navigate to={NAVIGATION.DASHBOARD + NAVIGATION.CAMPAIGN_REPORTS} />}
 				<Loading isLoaded={data_loaded} />
 			</Box>
 		</Box>

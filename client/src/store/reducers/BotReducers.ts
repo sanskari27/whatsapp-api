@@ -15,8 +15,8 @@ const initialState: BotState = {
 		attachments: [],
 		shared_contact_cards: [],
 		isActive: false,
-		response_delay_seconds: 0,
-		trigger_gap_seconds: 0,
+		response_delay_seconds: 1,
+		trigger_gap_seconds: 1,
 		polls: [],
 		forward: {
 			number: '',
@@ -25,6 +25,8 @@ const initialState: BotState = {
 		nurturing: [],
 	},
 	ui: {
+		searchText: '',
+		condition: 'ALL',
 		isAddingBot: false,
 		isEditingBot: false,
 		triggerError: '',
@@ -227,6 +229,13 @@ const BotSlice = createSlice({
 		) => {
 			state.ui[action.payload.type] = action.payload.error;
 		},
+
+		setSearchText: (state, action: PayloadAction<string>) => {
+			state.ui.searchText = action.payload;
+		},
+		setCondition: (state, action: PayloadAction<typeof initialState.ui.condition>) => {
+			state.ui.condition = action.payload;
+		},
 	},
 });
 
@@ -256,6 +265,8 @@ export const {
 	setForwardTo,
 	setEndAt,
 	setStartAt,
+	setSearchText,
+	setCondition,
 } = BotSlice.actions;
 
 export default BotSlice.reducer;

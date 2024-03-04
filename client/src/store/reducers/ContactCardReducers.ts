@@ -31,6 +31,7 @@ const initialState: ContactCardState = {
 		pincode: '',
 	},
 	uiDetails: {
+		searchText: '',
 		error: '',
 		isFetching: false,
 		isSaving: false,
@@ -203,6 +204,10 @@ const ContactCardReducers = createSlice({
 		removeSelectedContact: (state, action: PayloadAction<string>) => {
 			state.selectedContacts = state.selectedContacts.filter((el) => el !== action.payload);
 		},
+
+		setSearchText: (state, action: PayloadAction<string>) => {
+			state.uiDetails.searchText = action.payload;
+		},
 	},
 });
 
@@ -246,7 +251,8 @@ export const {
 	deleteContactCard,
 	addSelectedContact,
 	selectAllContacts,
-	removeSelectedContact
+	removeSelectedContact,
+	setSearchText,
 } = ContactCardReducers.actions;
 
 export default ContactCardReducers.reducer;

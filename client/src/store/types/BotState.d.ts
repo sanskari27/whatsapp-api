@@ -4,6 +4,8 @@ export type BotState = {
 	all_bots: Bot[];
 	details: Bot;
 	ui: {
+		searchText: string;
+		condition: 'ALL' | 'RUNNING' | 'PAUSED';
 		isAddingBot: boolean;
 		isEditingBot: boolean;
 		triggerError: string;

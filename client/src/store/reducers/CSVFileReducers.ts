@@ -17,8 +17,10 @@ const initialState: CSVFileState = {
 		isCreating: false,
 		isUpdating: false,
 		error: '',
+		searchText: '',
 	},
 	csvFile: undefined,
+	size: '',
 };
 
 const CSVFileSlice = createSlice({
@@ -37,8 +39,8 @@ const CSVFileSlice = createSlice({
 			state.list.push(action.payload);
 			state.uiDetails.isSaving = false;
 		},
-		deleteSelectedCSVFile: (state, action: PayloadAction<{ _id: string }>) => {
-			state.list = state.list.filter((csv) => csv.id !== action.payload._id);
+		deleteSelectedCSVFile: (state, action: PayloadAction<string>) => {
+			state.list = state.list.filter((csv) => csv.id !== action.payload);
 			state.selectedCSV = initialState.selectedCSV;
 			state.uiDetails.isDeleting = false;
 		},
@@ -54,8 +56,19 @@ const CSVFileSlice = createSlice({
 		setName: (state, action: PayloadAction<typeof initialState.selectedCSV.name>) => {
 			state.selectedCSV.name = action.payload;
 		},
-		setFile: (state, action: PayloadAction<typeof initialState.csvFile>) => {
-			state.csvFile = action.payload;
+		setFile: (
+			state,
+			action: PayloadAction<{
+				file: typeof initialState.csvFile;
+				size: string;
+			}>
+		) => {
+			state.csvFile = action.payload.file;
+			state.size = action.payload.size;
+		},
+		removeFile: (state) => {
+			state.csvFile = undefined;
+			state.size = '';
 		},
 		startSaving: (state) => {
 			state.uiDetails.isSaving = true;
@@ -78,6 +91,10 @@ const CSVFileSlice = createSlice({
 		setError: (state, action: PayloadAction<typeof initialState.uiDetails.error>) => {
 			state.uiDetails.error = action.payload;
 		},
+
+		setSearchText: (state, action: PayloadAction<string>) => {
+			state.uiDetails.searchText = action.payload;
+		},
 	},
 });
 
@@ -97,6 +114,8 @@ export const {
 	clearSelectedCSVFile,
 	setName,
 	setFile,
+	setSearchText,
+	removeFile,
 } = CSVFileSlice.actions;
 
 export default CSVFileSlice.reducer;

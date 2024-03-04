@@ -13,7 +13,6 @@ import {
 	useDisclosure,
 } from '@chakra-ui/react';
 import { useDispatch, useSelector } from 'react-redux';
-import useFilteredList from '../../../../hooks/useFilteredList';
 import { useTheme } from '../../../../hooks/useTheme';
 import { StoreNames, StoreState } from '../../../../store';
 import {
@@ -38,7 +37,7 @@ export default function MergedGroupTab() {
 		uiDetails: { isFetching },
 	} = useSelector((state: StoreState) => state[StoreNames.MERGE_GROUP]);
 
-	const filtered = useFilteredList(list, { name: 1 });
+	const filtered = list;
 
 	return (
 		<>

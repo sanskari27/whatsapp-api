@@ -1,9 +1,6 @@
 import { Button, HStack, StackProps } from '@chakra-ui/react';
 import { useRef } from 'react';
 import { Poll } from '../../../store/types/PollState';
-import InputLeadsNurturingDialog, {
-	InputLeadsNurturingDialogHandle,
-} from '../../pages/bot/components/InputLeadsNurturingDialog';
 import PollInputDialog, { PollInputDialogHandle } from '../polls-input-dialog';
 import AttachmentSelectorDialog, {
 	AttachmentDialogHandle,
@@ -11,6 +8,9 @@ import AttachmentSelectorDialog, {
 import ContactSelectorDialog, {
 	ContactDialogHandle,
 } from '../selector-dialog/ContactSelectorDialog';
+import InputLeadsNurturingDialog, {
+	InputLeadsNurturingDialogHandle,
+} from './InputLeadsNurturingDialog';
 
 type Props = {
 	attachments: string[];
@@ -73,7 +73,7 @@ export default function AddOns({
 					colorScheme='green'
 					onClick={() => attachmentRef.current?.open(attachments)}
 				>
-					Select Attachment ({attachments.length})
+					Attachments ({attachments.length})
 				</Button>
 				<Button
 					width={'full'}
@@ -81,7 +81,7 @@ export default function AddOns({
 					colorScheme='green'
 					onClick={() => contactRef.current?.open(shared_contact_cards)}
 				>
-					Select Contact ({shared_contact_cards.length})
+					Contacts ({shared_contact_cards.length})
 				</Button>
 				<Button
 					width={'full'}
@@ -89,16 +89,16 @@ export default function AddOns({
 					colorScheme='green'
 					onClick={() => pollInputRef.current?.open(polls.length === 0 ? DEFAULT_POLL : polls)}
 				>
-					Add Polls ({polls.length}) added
+					Polls ({polls.length})
 				</Button>
 				{nurturing && (
 					<Button
 						width={'full'}
-						variant={'solid'}
+						variant={'outline'}
 						colorScheme='green'
 						onClick={() => leadsNurturingRef.current?.open(nurturing)}
 					>
-						Add Nurturing ({nurturing.length}) Added
+						Nurturing ({nurturing.length})
 					</Button>
 				)}
 			</HStack>
