@@ -16,12 +16,45 @@ type MergedGroup = {
 	id: string;
 	name: string;
 	groups: string[];
-	group_reply: {
-		saved: string;
-		unsaved: string;
+	group_reply_saved: {
+		text: string;
+		shared_contact_cards: string[];
+		attachments: string[];
+		polls: {
+			title: string;
+			options: string[];
+			isMultiSelect: boolean;
+		}[];
 	};
-	private_reply: {
-		saved: string;
-		unsaved: string;
+	group_reply_unsaved: {
+		text: string;
+		shared_contact_cards: string[];
+		attachments: string[];
+		polls: {
+			title: string;
+			options: string[];
+			isMultiSelect: boolean;
+		}[];
 	};
+	private_reply_saved: {
+		text: string;
+		shared_contact_cards: string[];
+		attachments: string[];
+		polls: {
+			title: string;
+			options: string[];
+			isMultiSelect: boolean;
+		}[];
+	};
+	private_reply_unsaved: {
+		text: string;
+		shared_contact_cards: string[];
+		attachments: string[];
+		polls: {
+			title: string;
+			options: string[];
+			isMultiSelect: boolean;
+		}[];
+	};
+	restricted_numbers: string;
 };
