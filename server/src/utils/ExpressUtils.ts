@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import { Request, Response } from 'express';
+import fs from 'fs';
 import mime from 'mime';
 import { Types } from 'mongoose';
 import { z } from 'zod';
@@ -39,10 +40,12 @@ export const RespondVCF = ({ res, filename, data }: CSVResponseData) => {
 	res.status(200).send(data);
 };
 export const RespondFile = ({ res, filename, filepath }: FileResponseData) => {
+	const stat = fs.statSync(filepath);
 	res.setHeader(
 		'Content-Disposition',
 		`attachment; filename="${filename}.${mime.getExtension(mime.getType(filepath) ?? '')}"`
 	);
+	res.set('content-length', stat.size.toString());
 	res.set('Content-Type', mime.getType(filepath) ?? '');
 	res.status(200).sendFile(filepath);
 };
