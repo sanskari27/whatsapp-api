@@ -39,11 +39,11 @@ const initialState: BotState = {
 		responseGapError: '',
 	},
 	response_delay: {
-		time: 0,
+		time: 1,
 		type: 'SEC',
 	},
 	trigger_gap: {
-		time: 0,
+		time: 1,
 		type: 'SEC',
 	},
 };
