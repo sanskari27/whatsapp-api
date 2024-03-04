@@ -1,5 +1,5 @@
 #! /bin/bash
-git pull -f origin prod
+git pull -f origin master
 
 # Server
 cd server
