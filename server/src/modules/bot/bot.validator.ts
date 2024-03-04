@@ -11,6 +11,8 @@ export type CreateBotValidationResult = {
 	options: BOT_TRIGGER_OPTIONS;
 	trigger: string;
 	message: string;
+	startAt: string;
+	endAt: string;
 	shared_contact_cards: Types.ObjectId[];
 	attachments: Types.ObjectId[];
 	group_respond: boolean;
@@ -28,6 +30,13 @@ export type CreateBotValidationResult = {
 		after: number;
 		start_from: string;
 		end_at: string;
+		shared_contact_cards?: Types.ObjectId[];
+		attachments?: Types.ObjectId[];
+		polls?: {
+			title: string;
+			options: string[];
+			isMultiSelect: boolean;
+		}[];
 	}[];
 };
 
@@ -61,6 +70,8 @@ export async function CreateBotValidator(req: Request, res: Response, next: Next
 			.refine((attachments) => !attachments.some((value) => !Types.ObjectId.isValid(value)))
 			.transform((attachments) => attachments.map((value) => new Types.ObjectId(value))),
 		group_respond: z.boolean().default(false),
+		startAt: z.string().default("00:01"),
+		endAt: z.string().default("23:59"),
 		polls: z
 			.object({
 				title: z.string(),
@@ -84,6 +95,26 @@ export async function CreateBotValidator(req: Request, res: Response, next: Next
 				message: z.string(),
 				start_from: z.string().trim().default('00:01'),
 				end_at: z.string().trim().default('23:59'),
+				shared_contact_cards: z
+					.string()
+					.array()
+					.default([])
+					.refine((attachments) => !attachments.some((value) => !Types.ObjectId.isValid(value)))
+					.transform((attachments) => attachments.map((value) => new Types.ObjectId(value))),
+				attachments: z
+					.string()
+					.array()
+					.default([])
+					.refine((attachments) => !attachments.some((value) => !Types.ObjectId.isValid(value)))
+					.transform((attachments) => attachments.map((value) => new Types.ObjectId(value))),
+				polls: z
+					.object({
+						title: z.string(),
+						options: z.string().array().min(1),
+						isMultiSelect: z.boolean().default(false),
+					})
+					.array()
+					.default([]),
 			})
 			.array()
 			.default([]),

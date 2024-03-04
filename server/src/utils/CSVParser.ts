@@ -13,6 +13,19 @@ import {
 	TLabelContact,
 } from '../types/whatsapp';
 
+type UserDetails = {
+	name: string;
+	phone: string;
+	type: 'BUSINESS' | 'PERSONAL';
+	subscription_expiry: string;
+	description: string;
+	email: string;
+	websites: string;
+	latitude: number;
+	longitude: number;
+	address: string;
+};
+
 export default class CSVParser {
 	static exportContacts(contacts: TContact[]) {
 		const keys = [
@@ -364,6 +377,58 @@ export default class CSVParser {
 		});
 	}
 
+	static exportSchedulerReport(
+		records: {
+			campaign_name: string;
+			receiver: string;
+			message: string;
+			attachments: number;
+			contacts: number;
+			polls: number;
+			status: string;
+		}[]
+	) {
+		const keys = [
+			{
+				field: 'campaign_name',
+				title: 'Scheduler Name',
+			},
+			{
+				field: 'receiver',
+				title: 'Recipient',
+			},
+			{
+				field: 'message',
+				title: 'Message',
+			},
+			{
+				field: 'attachments',
+				title: 'Attachments',
+			},
+			{
+				field: 'contacts',
+				title: 'Contacts',
+			},
+			{
+				field: 'polls',
+				title: 'Polls',
+			},
+			{
+				field: 'status',
+				title: 'Status',
+			},
+			{
+				field: 'scheduled_at',
+				title: 'Scheduled At',
+			},
+		];
+
+		return json2csv(records, {
+			keys: keys,
+			emptyFieldValue: '',
+		});
+	}
+
 	static exportPollReport(
 		records: {
 			title: string;
@@ -544,6 +609,56 @@ export default class CSVParser {
 			{
 				field: 'billing_address.pincode',
 				title: 'Pincode',
+			},
+		];
+
+		return json2csv(records, {
+			keys: keys,
+			emptyFieldValue: '',
+		});
+	}
+
+	static exportUsersDetails(records: UserDetails[]) {
+		const keys = [
+			{
+				field: 'name',
+				title: 'Name',
+			},
+			{
+				field: 'phone',
+				title: 'Phone Number',
+			},
+			{
+				field: 'type',
+				title: 'Is Business',
+			},
+			{
+				field: 'email',
+				title: 'Email',
+			},
+			{
+				field: 'description',
+				title: 'Description',
+			},
+			{
+				field: 'address',
+				title: 'Address',
+			},
+			{
+				field: 'latitude',
+				title: 'Latitude',
+			},
+			{
+				field: 'longitude',
+				title: 'Longitude',
+			},
+			{
+				field: 'websites',
+				title: 'Websites',
+			},
+			{
+				field: 'subscription_expiry',
+				title: 'Subscription Expires',
 			},
 		];
 

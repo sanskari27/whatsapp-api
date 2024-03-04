@@ -1,55 +1,119 @@
 import csv from 'csvtojson/v2';
 import { NextFunction, Request, Response } from 'express';
 import fs from 'fs';
+import { Types } from 'mongoose';
 import { getOrCache } from '../../config/cache';
-import { CACHE_TOKEN_GENERATOR, COUNTRIES, CSV_PATH } from '../../config/const';
+import {
+	CACHE_TOKEN_GENERATOR,
+	COUNTRIES,
+	CSV_PATH,
+	SOCKET_RESPONSES,
+	TASK_PATH,
+	TASK_RESULT_TYPE,
+	TASK_TYPE,
+} from '../../config/const';
 import APIError, { API_ERRORS } from '../../errors/api-errors';
 import { WhatsappProvider } from '../../provider/whatsapp_provider';
 import { UserService } from '../../services';
+import TaskService from '../../services/task';
 import { TBusinessContact, TContact } from '../../types/whatsapp';
 import CSVParser from '../../utils/CSVParser';
-import { Respond, RespondCSV, RespondVCF } from '../../utils/ExpressUtils';
+import { Respond, RespondCSV } from '../../utils/ExpressUtils';
 import VCFParser from '../../utils/VCFParser';
 import WhatsappUtils from '../../utils/WhatsappUtils';
+import { FileUtils } from '../../utils/files';
 import { ValidateNumbersValidationResult } from './contacts.validator';
 
 async function contacts(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
-
 	const whatsapp = WhatsappProvider.getInstance(client_id);
 	const whatsappUtils = new WhatsappUtils(whatsapp);
 	if (!whatsapp.isReady()) {
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
 
+	const taskService = new TaskService(req.locals.user);
 	const options = {
 		saved_contacts: true,
 		non_saved_contacts: true,
 		saved_chat_contacts: true,
-		business_contacts_only: false,
-		vcf: false,
+		business_contacts_only: req.body.business_contacts_only ?? false,
+		vcf: req.body.vcf ?? false,
 	};
+
+	let task_id: Types.ObjectId | null = null;
 	if (req.body.saved_contacts) {
 		options.saved_contacts = true;
 		options.non_saved_contacts = false;
 		options.saved_chat_contacts = false;
+		task_id = await taskService.createTask(
+			TASK_TYPE.EXPORT_SAVED_CONTACTS,
+			options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV,
+			{
+				description: `Export saved contacts to ${
+					options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV
+				}`,
+			}
+		);
 	} else if (req.body.non_saved_contacts) {
 		options.non_saved_contacts = true;
 		options.saved_contacts = false;
 		options.saved_chat_contacts = false;
+		task_id = await taskService.createTask(
+			TASK_TYPE.EXPORT_UNSAVED_CONTACTS,
+			options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV,
+			{
+				description: `Export non saved contacts to ${
+					options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV
+				}`,
+			}
+		);
 	} else if (req.body.saved_chat_contacts) {
 		options.saved_chat_contacts = true;
 		options.saved_contacts = false;
 		options.non_saved_contacts = false;
+		task_id = await taskService.createTask(
+			TASK_TYPE.EXPORT_CHAT_CONTACTS,
+			options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV,
+			{
+				description: `Export saved chat contacts to ${
+					options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV
+				}`,
+			}
+		);
+	} else {
+		task_id = await taskService.createTask(
+			TASK_TYPE.EXPORT_ALL_CONTACTS,
+			options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV,
+			{
+				description: `Export all contacts to ${
+					options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV
+				}`,
+			}
+		);
 	}
-	if (req.body.business_contacts_only) {
-		options.business_contacts_only = true;
-	}
-	if (req.body.vcf) {
-		options.vcf = true;
-	}
+
+	Respond({
+		res,
+		status: 201,
+	});
 	try {
-		const contacts = [] as {
+		const { saved, non_saved, saved_chat } = await getOrCache(
+			CACHE_TOKEN_GENERATOR.CONTACTS(req.locals.user._id),
+			() => whatsappUtils.getContacts()
+		);
+
+		let listed_contacts = [
+			...(options.saved_contacts ? saved : []),
+			...(options.non_saved_contacts ? non_saved : []),
+			...(options.saved_chat_contacts ? saved_chat : []),
+		];
+
+		if (options.business_contacts_only) {
+			listed_contacts = listed_contacts.filter((c) => c.isBusiness);
+		}
+
+		const contacts: {
 			name: string | undefined;
 			number: string;
 			isBusiness: string;
@@ -61,81 +125,27 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 			latitude?: number;
 			longitude?: number;
 			address?: string;
-		}[];
+		}[] = await whatsappUtils.contactsWithCountry(listed_contacts);
 
-		const saved = await getOrCache(
-			CACHE_TOKEN_GENERATOR.SAVED_CONTACTS(req.locals.user._id, options.business_contacts_only),
-			async () => {
-				let saved = await whatsappUtils.getSavedContacts();
-				if (options.business_contacts_only) {
-					saved = saved.filter((c) => c.isBusiness);
-				}
-				const contact_with_country_code = await whatsappUtils.contactsWithCountry(saved, {
-					business_details: options.business_contacts_only,
-				});
-				return await Promise.all(contact_with_country_code);
-			}
-		);
+		const data = options.vcf
+			? options.business_contacts_only
+				? VCFParser.exportBusinessContacts(contacts as TBusinessContact[])
+				: VCFParser.exportContacts(contacts as TContact[])
+			: options.business_contacts_only
+			? CSVParser.exportBusinessContacts(contacts as TBusinessContact[])
+			: CSVParser.exportContacts(contacts as TContact[]);
 
-		const non_saved = await getOrCache(
-			CACHE_TOKEN_GENERATOR.NON_SAVED_CONTACTS(req.locals.user._id, options.business_contacts_only),
-			async () => {
-				let non_saved = await whatsappUtils.getNonSavedContacts();
-				if (options.business_contacts_only) {
-					non_saved = non_saved.filter((c) => c.isBusiness);
-				}
-				const contact_with_country_code = await whatsappUtils.contactsWithCountry(non_saved, {
-					business_details: options.business_contacts_only,
-				});
-				return await Promise.all(contact_with_country_code);
-			}
-		);
+		const file_name = `Exported Contacts${options.vcf ? '.vcf' : '.csv'}`;
 
-		const saved_chat_contacts = await getOrCache(
-			CACHE_TOKEN_GENERATOR.SAVED_CHAT_CONTACTS(
-				req.locals.user._id,
-				options.business_contacts_only
-			),
-			async () => {
-				let saved_chat = await whatsappUtils.getSavedChatContacts();
-				if (options.business_contacts_only) {
-					saved_chat = saved_chat.filter((c) => c.isBusiness);
-				}
-				const contact_with_country_code = await whatsappUtils.contactsWithCountry(saved_chat, {
-					business_details: options.business_contacts_only,
-				});
-				return await Promise.all(contact_with_country_code);
-			}
-		);
+		const file_path = __basedir + TASK_PATH + task_id.toString() + (options.vcf ? '.vcf' : '.csv');
 
-		if (options.saved_contacts) {
-			contacts.push(...saved);
-		}
-		if (options.non_saved_contacts) {
-			contacts.push(...non_saved);
-		}
-		if (options.saved_chat_contacts) {
-			contacts.push(...saved_chat_contacts);
-		}
-		if (options.vcf) {
-			return RespondVCF({
-				res,
-				filename: 'Exported Contacts',
-				data: options.business_contacts_only
-					? VCFParser.exportBusinessContacts(contacts as TBusinessContact[])
-					: VCFParser.exportContacts(contacts as TContact[]),
-			});
-		} else {
-			return RespondCSV({
-				res,
-				filename: 'Exported Contacts',
-				data: options.business_contacts_only
-					? CSVParser.exportBusinessContacts(contacts as TBusinessContact[])
-					: CSVParser.exportContacts(contacts as TContact[]),
-			});
-		}
+		await FileUtils.writeFile(file_path, data);
+
+		taskService.markCompleted(task_id, file_name);
+		whatsapp.sendToClient(SOCKET_RESPONSES.TASK_COMPLETED, task_id.toString());
 	} catch (err) {
-		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+		taskService.markFailed(task_id);
+		whatsapp.sendToClient(SOCKET_RESPONSES.TASK_FAILED, task_id.toString());
 	}
 }
 
@@ -149,33 +159,9 @@ async function countContacts(req: Request, res: Response, next: NextFunction) {
 	}
 
 	try {
-		const saved = await getOrCache(
-			CACHE_TOKEN_GENERATOR.SAVED_CONTACTS(req.locals.user._id),
-			async () => {
-				const saved = await whatsappUtils.getSavedContacts();
-				const contact_with_country_code = await whatsappUtils.contactsWithCountry(saved);
-				return await Promise.all(contact_with_country_code);
-			}
-		);
-
-		const non_saved = await getOrCache(
-			CACHE_TOKEN_GENERATOR.NON_SAVED_CONTACTS(req.locals.user._id),
-			async () => {
-				const non_saved = await whatsappUtils.getNonSavedContacts();
-				const contact_with_country_code = await whatsappUtils.contactsWithCountry(non_saved);
-				return await Promise.all(contact_with_country_code);
-			}
-		);
-
-		const saved_chat_contacts = await getOrCache(
-			CACHE_TOKEN_GENERATOR.SAVED_CHAT_CONTACTS(req.locals.user._id),
-			async () => {
-				const saved_chat_contacts = await whatsappUtils.getSavedChatContacts();
-				const contact_with_country_code = await whatsappUtils.contactsWithCountry(
-					saved_chat_contacts
-				);
-				return await Promise.all(contact_with_country_code);
-			}
+		const { saved, non_saved, saved_chat, groups } = await getOrCache(
+			CACHE_TOKEN_GENERATOR.CONTACTS(req.locals.user._id),
+			async () => whatsappUtils.getContacts()
 		);
 
 		return Respond({
@@ -184,8 +170,9 @@ async function countContacts(req: Request, res: Response, next: NextFunction) {
 			data: {
 				saved_contacts: saved.length,
 				non_saved_contacts: non_saved.length,
-				saved_chat_contacts: saved_chat_contacts.length,
-				total_contacts: saved.length + non_saved.length + saved_chat_contacts.length,
+				saved_chat_contacts: saved_chat.length,
+				total_contacts: saved.length + non_saved.length + saved_chat.length,
+				groups: groups.length,
 			},
 		});
 	} catch (err) {

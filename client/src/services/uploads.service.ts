@@ -1,124 +1,96 @@
 import APIInstance from '../config/APIInstance';
 
 export default class UploadsService {
-    static async uploadAttachment(data: {
-        file: File;
-        name: string;
-        caption: string;
-    }) {
-        const formData = new FormData();
-        formData.append('file', data.file);
-        formData.append('name', data.name);
-        formData.append('caption', data.caption);
-        try {
-            const { data: response } = await APIInstance.post(
-                `/uploads/attachment`,
-                data,
-                {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                    },
-                }
-            );
-            return response.attachment as {
-                id: string;
-                name: string;
-                filename: string;
-                caption?: string;
-            };
-        } catch (err) {
-            return null;
-        }
-    }
+	static async uploadCSV(data: { file: File; name: string }) {
+		const formData = new FormData();
+		formData.append('file', data.file);
+		formData.append('name', data.name);
+		try {
+			const { data: response } = await APIInstance.post(`/uploads/csv`, data, {
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			});
+			return {
+				name: response.name,
+				fileName: response.filename,
+				headers: response.headers,
+				id: response.id,
+			};
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		} catch (err: any) {
+			if (err.response.data.title === 'ALREADY_EXISTS')
+				return {
+					name: 'ERROR',
+					fileName: 'File name already exists',
+					headers: [],
+					id: '',
+				};
+			if (err.response.data.title === 'INVALID_FIELDS')
+				return {
+					name: 'ERROR',
+					fileName: 'Invalid Fields in CSV',
+					headers: [],
+					id: '',
+				};
 
-    static async listAttachments() {
-        try {
-            const { data: response } = await APIInstance.get(
-                `/uploads/attachment`
-            );
-            return response.attachments as {
-                id: string;
-                name: string;
-                caption: string;
-                filename: string;
-            }[];
-        } catch (err) {
-            return [];
-        }
-    }
+			return {
+				name: 'ERROR',
+				fileName: 'Something went wrong',
+				headers: [],
+				id: '',
+			};
+		}
+	}
 
-    static async uploadCSV(data: { file: File; name: string }) {
-        const formData = new FormData();
-        formData.append('file', data.file);
-        formData.append('name', data.name);
-        try {
-            const { data: response } = await APIInstance.post(
-                `/uploads/csv`,
-                data,
-                {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                    },
-                }
-            );
-            return {
-                name: response.name,
-                id: response.filename,
-                headers: response.headers,
-                _id: response.id,
-            };
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } catch (err: any) {
-            if (err.response.data.title === 'ALREADY_EXISTS')
-                return {
-                    name: 'ERROR',
-                    id: 'File name already exists',
-                    headers: [],
-                    _id: '',
-                };
-            if (err.response.data.title === 'INVALID_FIELDS')
-                return {
-                    name: 'ERROR',
-                    id: 'Invalid Fields in CSV',
-                    headers: [],
-                    _id: '',
-                };
+	static async listCSV() {
+		try {
+			const { data: response } = await APIInstance.get(`/uploads/csv`);
+			return response.csv_list.map(
+				(csv: { name: string; filename: string; headers: string[]; id: string }) => ({
+					name: csv.name,
+					fileName: csv.filename,
+					headers: csv.headers,
+					id: csv.id,
+				})
+			);
+		} catch (err) {
+			return [];
+		}
+	}
+	static async deleteCSV(id: string) {
+		try {
+			await APIInstance.delete(`/uploads/csv/${id}`);
+			return true;
+		} catch (err) {
+			return false;
+		}
+	}
 
-            return {
-                name: 'ERROR',
-                id: 'Something went wrong',
-                headers: [],
-                _id: '',
-            };
-        }
-    }
+	static async downloadCSV(id: string) {
+		try {
+			const response = await APIInstance.get(`/uploads/csv/${id}/download`, {
+				responseType: 'blob',
+			});
+			const blob = new Blob([response.data]);
 
-    static async listCSV() {
-        try {
-            const { data: response } = await APIInstance.get(`/uploads/csv`);
-            return response.csv_list.map(
-                (csv: {
-                    name: string;
-                    filename: string;
-                    headers: string[];
-                    id: string;
-                }) => ({
-                    name: csv.name,
-                    id: csv.filename,
-                    headers: csv.headers,
-                    _id: csv.id,
-                })
-            );
-        } catch (err) {
-            return [];
-        }
-    }
-    static async deleteCSV(id: string) {
-        try {
-            await APIInstance.delete(`/uploads/csv/${id}`);
-            return true;
-        } catch (err) {
-            return false;
-        }
-    }
+			const contentDisposition = response.headers['content-disposition'];
+			const filenameMatch = contentDisposition && contentDisposition.match(/filename="(.*)"/);
+			const filename = filenameMatch ? filenameMatch[1] : 'downloaded-file.csv';
+
+			// Create a temporary link element
+			const downloadLink = document.createElement('a');
+			downloadLink.href = window.URL.createObjectURL(blob);
+			downloadLink.download = filename; // Specify the filename
+
+			// Append the link to the body and trigger the download
+			document.body.appendChild(downloadLink);
+			downloadLink.click();
+
+			// Clean up - remove the link
+			document.body.removeChild(downloadLink);
+		} catch (err) {
+			//ignore
+		}
+	}
 }

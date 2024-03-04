@@ -2,7 +2,7 @@ import fs from 'fs';
 import { Types } from 'mongoose';
 import Logger from 'n23-logger';
 import { MessageMedia, Poll } from 'whatsapp-web.js';
-import { ATTACHMENTS_PATH, MESSAGE_STATUS } from '../../config/const';
+import { ATTACHMENTS_PATH, MESSAGE_SCHEDULER_TYPE, MESSAGE_STATUS } from '../../config/const';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import { WhatsappProvider } from '../../provider/whatsapp_provider';
 import { MessageDB } from '../../repository/messenger';
@@ -30,6 +30,11 @@ export type Message = {
 	sendAt: Date;
 };
 
+type MessageSchedulerOptions = {
+	scheduled_by: MESSAGE_SCHEDULER_TYPE;
+	scheduler_id: Types.ObjectId;
+};
+
 type TextMessage = string;
 
 export default class MessageService {
@@ -39,7 +44,7 @@ export default class MessageService {
 		this.user = user;
 	}
 
-	scheduleMessage(message: Message): Types.ObjectId {
+	scheduleMessage(message: Message, opts: MessageSchedulerOptions) {
 		const msg = new MessageDB({
 			sender: this.user,
 			receiver: message.receiver,
@@ -48,9 +53,13 @@ export default class MessageService {
 			shared_contact_cards: message.shared_contact_cards ?? [],
 			polls: message.polls ?? [],
 			sendAt: message.sendAt,
+			scheduled_by: {
+				type: opts.scheduled_by,
+				id: opts.scheduler_id,
+			},
 		});
 		msg.save();
-		return msg._id;
+		return msg;
 	}
 
 	async isAttachmentInUse(id: Types.ObjectId) {
@@ -73,39 +82,20 @@ export default class MessageService {
 		return messages.length > 0;
 	}
 
-	async scheduleLeadNurturingMessage(
-		messages: Omit<Message, 'polls' | 'shared_contact_cards' | 'attachments'>[]
-	) {
+	async scheduleLeadNurturingMessage(messages: Message[], opts: MessageSchedulerOptions) {
 		for (const message of messages) {
-			let date = DateUtils.getMoment(message.sendAt);
-			let startOfDay = date.clone().hours(0).minutes(0).seconds(0);
-			let endOfDay = date.clone().hours(23).minutes(59).seconds(59);
-
-			const exists = await MessageDB.exists({
-				sender: this.user,
-				receiver: message.receiver,
-				message: message.message,
-				sendAt: {
-					$gte: startOfDay.toDate(),
-					$lte: endOfDay.toDate(),
-				},
-			});
-			if (exists) {
-				continue;
-			}
-
-			startOfDay = startOfDay.hours(10).minutes(0).seconds(0);
-			endOfDay = endOfDay.hours(18).minutes(0).seconds(0);
-			if (date.isBefore(startOfDay)) {
-				date = date.hours(10).minutes(0).seconds(0);
-			} else if (date.isAfter(endOfDay)) {
-				date = date.add(1, 'day').hours(10).minutes(0).seconds(0);
-			}
 			await MessageDB.create({
 				sender: this.user,
 				receiver: message.receiver,
 				message: message.message,
-				sendAt: date.toDate(),
+				attachments: message.attachments ?? [],
+				shared_contact_cards: message.shared_contact_cards ?? [],
+				polls: message.polls ?? [],
+				sendAt: message.sendAt,
+				scheduled_by: {
+					type: opts.scheduled_by,
+					id: opts.scheduler_id,
+				},
 			});
 		}
 	}

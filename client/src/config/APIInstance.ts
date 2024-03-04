@@ -1,9 +1,11 @@
 import axios from 'axios';
+import { io } from 'socket.io-client';
 import { recheckNetwork } from '../hooks/useNetwork';
 import UserService from '../services/user.service';
 import { getClientID } from '../utils/ChromeUtils';
 import { NAVIGATION, SERVER_URL } from './const';
 
+const socket = io(SERVER_URL);
 const APIInstance = axios.create({
 	baseURL: SERVER_URL,
 	headers: {
@@ -48,3 +50,4 @@ APIInstance.interceptors.response.use(
 );
 
 export default APIInstance;
+export { socket };

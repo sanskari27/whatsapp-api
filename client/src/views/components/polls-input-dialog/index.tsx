@@ -1,4 +1,4 @@
-import { AddIcon, DeleteIcon } from '@chakra-ui/icons';
+import { AddIcon, DeleteIcon, EditIcon } from '@chakra-ui/icons';
 import {
 	Accordion,
 	AccordionButton,
@@ -7,6 +7,7 @@ import {
 	AccordionPanel,
 	Box,
 	Button,
+	Flex,
 	FormControl,
 	FormLabel,
 	HStack,
@@ -18,11 +19,15 @@ import {
 	ModalFooter,
 	ModalHeader,
 	ModalOverlay,
+	Select,
 	Switch,
 	Text,
+	useDisclosure,
 } from '@chakra-ui/react';
 import { forwardRef, useImperativeHandle, useState } from 'react';
+import { MdDelete } from 'react-icons/md';
 import { useDispatch, useSelector } from 'react-redux';
+import useTemplate from '../../../hooks/useTemplate';
 import { StoreNames, StoreState } from '../../../store';
 import {
 	addBlankPoll,
@@ -34,8 +39,10 @@ import {
 	setIsMultiSelect,
 	setOptions,
 	setPoll,
+	setPollAt,
 	setTitle,
 } from '../../../store/reducers/PollReducers';
+import { TemplateNameInputDialog } from '../../pages/scheduler/components';
 
 export type PollInputDialogHandle = {
 	open: (
@@ -64,9 +71,25 @@ const PollInputDialog = forwardRef<PollInputDialogHandle, Props>(({ onConfirm }:
 
 	const { polls, error } = useSelector((state: StoreState) => state[StoreNames.POLL]);
 
-	const onClose = () => {
-		setOpen(false);
-	};
+	const {
+		isOpen: isNameInputOpen,
+		onOpen: openNameInput,
+		onClose: closeNameInput,
+	} = useDisclosure();
+
+	const {
+		templates,
+		add: addToTemplate,
+		addingTemplate,
+		update: updateTemplate,
+		remove: removeTemplate,
+	} = useTemplate('poll');
+	const [selectedTemplate, setSelectedTemplate] = useState({
+		id: '',
+		name: '',
+	});
+
+	const onClose = () => setOpen(false);
 
 	useImperativeHandle(ref, () => ({
 		open: (
@@ -115,6 +138,16 @@ const PollInputDialog = forwardRef<PollInputDialogHandle, Props>(({ onConfirm }:
 					return false;
 				}
 			}
+			const nonDistinctOptions = polls[i].options.some((e, i, arr) => arr.indexOf(e) !== i);
+			if (nonDistinctOptions) {
+				dispatch(
+					setError({
+						pollIndex: i,
+						message: 'Please Remove duplicate options',
+					})
+				);
+				return false;
+			}
 		}
 		return true;
 	};
@@ -159,6 +192,100 @@ const PollInputDialog = forwardRef<PollInputDialogHandle, Props>(({ onConfirm }:
 									<AccordionIcon />
 								</AccordionButton>
 								<AccordionPanel pb={4}>
+									<Flex gap={3} alignItems={'center'}>
+										<Select
+											className='text-black  !bg-[#ECECEC] '
+											border={'none'}
+											rounded={'md'}
+											onChange={(e) => {
+												const template = templates.find((el) => el.id === e.target.value);
+												if (!template) {
+													setSelectedTemplate({
+														id: '',
+														name: '',
+													});
+													return;
+												}
+												dispatch(
+													setPollAt({
+														poll: template.poll,
+														pollIndex,
+													})
+												);
+												setSelectedTemplate({
+													id: template.id,
+													name: template.name,
+												});
+											}}
+										>
+											<option
+												className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] '
+												value={''}
+												data-id={''}
+												data-name={''}
+											>
+												Select template!
+											</option>
+											{(templates ?? []).map(({ name, id }, index) => (
+												<option
+													className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] '
+													value={id}
+													key={index}
+													data-id={id}
+													data-name={name}
+												>
+													{name}
+												</option>
+											))}
+										</Select>
+										<HStack>
+											<Button
+												width={'200px'}
+												colorScheme='green'
+												aria-label='Add Template'
+												rounded={'md'}
+												isLoading={addingTemplate}
+												leftIcon={<AddIcon />}
+												onClick={() => {
+													if (!poll.title || poll.options.length === 0) return;
+													openNameInput();
+												}}
+												fontSize={'sm'}
+												px={4}
+											>
+												Add Template
+											</Button>
+											<IconButton
+												aria-label='Edit'
+												icon={<EditIcon />}
+												color={'yellow.600'}
+												isDisabled={!selectedTemplate.id}
+												onClick={() =>
+													updateTemplate(selectedTemplate.id, {
+														name: selectedTemplate.name,
+														poll,
+													})
+												}
+											/>
+											<IconButton
+												aria-label='Delete'
+												icon={<MdDelete />}
+												color={'red.400'}
+												isDisabled={!selectedTemplate.id}
+												onClick={() => removeTemplate(selectedTemplate.id)}
+											/>
+										</HStack>
+
+										<TemplateNameInputDialog
+											isOpen={isNameInputOpen}
+											onClose={closeNameInput}
+											onConfirm={(name) => {
+												if (!poll.title || poll.options.length === 0) return;
+												addToTemplate({ name, poll });
+												closeNameInput();
+											}}
+										/>
+									</Flex>
 									<FormControl isInvalid={error.pollIndex === pollIndex && !!error.message}>
 										<FormLabel>Question</FormLabel>
 
@@ -175,6 +302,7 @@ const PollInputDialog = forwardRef<PollInputDialogHandle, Props>(({ onConfirm }:
 											}
 										/>
 									</FormControl>
+
 									<HStack justifyContent={'space-between'} py={'1rem'}>
 										<Text fontWeight={'medium'} mt={'0.5rem'}>
 											Options
@@ -184,6 +312,7 @@ const PollInputDialog = forwardRef<PollInputDialogHandle, Props>(({ onConfirm }:
 											icon={<AddIcon />}
 											size={'sm'}
 											colorScheme='green'
+											isDisabled={poll.options.length >= 12}
 											onClick={() => dispatch(addBlankPollOption(pollIndex))}
 										/>
 									</HStack>

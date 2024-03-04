@@ -21,6 +21,11 @@ export default class UploadService {
 		}));
 	}
 
+	async getCSVFile(id: Types.ObjectId) {
+		const csv_docs = await UploadDB.findById(id);
+		return csv_docs?.filename || null;
+	}
+	
 	async addCSV(name: string, filename: string, headers: string[]) {
 		const exists = await UploadDB.exists({ name, user: this.user, type: 'NUMBERS' });
 		if (exists) {
@@ -121,13 +126,13 @@ export default class UploadService {
 		if (!attachment) {
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
 		}
-		if (data.name) {
+		if (data.name !== undefined) {
 			attachment.name = data.name;
 		}
-		if (data.caption) {
+		if (data.caption !== undefined) {
 			attachment.caption = data.caption;
 		}
-		if (data.custom_caption) {
+		if (data.custom_caption !== undefined) {
 			attachment.custom_caption = data.custom_caption;
 		}
 

@@ -68,6 +68,7 @@ export default class VoteResponseService {
 						isMultiSelect: '$isMultiSelect',
 					},
 					responses: { $push: '$$ROOT' },
+					vote_count: { $sum: 1 },
 				},
 			},
 			{
@@ -76,6 +77,7 @@ export default class VoteResponseService {
 					title: '$_id.title',
 					options: '$_id.options',
 					isMultiSelect: '$_id.isMultiSelect',
+					vote_count: 1,
 				},
 			},
 		]);
@@ -83,6 +85,7 @@ export default class VoteResponseService {
 			title: string;
 			options: string[];
 			isMultiSelect: boolean;
+			vote_count: number;
 		}[];
 	}
 

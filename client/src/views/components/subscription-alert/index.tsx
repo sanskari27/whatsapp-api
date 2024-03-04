@@ -19,11 +19,13 @@ const SubscriptionAlert = () => {
 	const onClose = () => setIsOpen(false);
 	const cancelRef = React.useRef<HTMLButtonElement>(null);
 
-	const { canSendMessage } = useSelector((state: StoreState) => state[StoreNames.USER]);
+	const { canSendMessage, data_loaded } = useSelector(
+		(state: StoreState) => state[StoreNames.USER]
+	);
 
 	useEffect(() => {
-		setIsOpen(!canSendMessage);
-	}, [canSendMessage]);
+		setIsOpen(!canSendMessage && data_loaded);
+	}, [canSendMessage, data_loaded]);
 
 	return (
 		<AlertDialog isOpen={isOpen} leastDestructiveRef={cancelRef} onClose={onClose}>
@@ -69,7 +71,7 @@ const SubscriptionAlert = () => {
 
 export function SubscriptionPopup({ isVisible }: { isVisible: boolean }) {
 	return (
-		<Alert hidden={!isVisible} status='warning'>
+		<Alert hidden={!isVisible} status='warning' rounded={'md'} my={2}>
 			<AlertIcon />
 			Seems this feature needs a subscription
 			<Link

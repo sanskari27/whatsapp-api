@@ -6,6 +6,7 @@ const initialState: SchedulerState = {
 	all_campaigns: [] as ScheduledCampaign[],
 	all_schedulers: [],
 	details: {
+		message_scheduler_id: '',
 		type: 'NUMBERS',
 		numbers: [],
 		csv_file: '',
@@ -33,6 +34,15 @@ const initialState: SchedulerState = {
 		campaignLoading: false,
 		exportingCampaign: false,
 		deletingCampaign: false,
+		messageError: false,
+		campaignNameError: false,
+		recipientsError: false,
+		apiError: '',
+		editingMessage: false,
+		minDelayError: false,
+		maxDelayError: false,
+		batchSizeError: false,
+		batchDelayError: false,
 	},
 };
 
@@ -61,12 +71,14 @@ const SchedulerSlice = createSlice({
 				}
 				return scheduler;
 			});
+			state.ui.editingMessage = false;
 		},
 		setAllSchedulers: (state, action: PayloadAction<typeof initialState.all_schedulers>) => {
 			state.all_schedulers = action.payload;
 		},
 		addScheduler: (state, action: PayloadAction<(typeof initialState.all_schedulers)[0]>) => {
 			state.all_schedulers.push(action.payload);
+			state.details = initialState.details;
 		},
 		deleteScheduler: (state, action: PayloadAction<string>) => {
 			state.all_schedulers = state.all_schedulers.filter(
@@ -77,12 +89,16 @@ const SchedulerSlice = createSlice({
 			state,
 			action: PayloadAction<(typeof initialState.all_schedulers)[0]>
 		) => {
+			state.details.message_scheduler_id = action.payload.id;
 			state.details.message = action.payload.message;
+			state.details.campaign_name = action.payload.title;
 			state.details.shared_contact_cards = action.payload.shared_contact_cards;
 			state.details.attachments = action.payload.attachments;
 			state.details.polls = action.payload.polls;
 			state.details.startTime = action.payload.start_from;
 			state.details.endTime = action.payload.end_at;
+			state.details.csv_file = action.payload.csv;
+			state.ui.editingMessage = true;
 		},
 		setCampaignName: (state, action: PayloadAction<typeof initialState.details.campaign_name>) => {
 			state.details.campaign_name = action.payload;
@@ -156,20 +172,38 @@ const SchedulerSlice = createSlice({
 		setDescription: (state, action: PayloadAction<typeof initialState.details.description>) => {
 			state.details.description = action.payload;
 		},
-		setCampaignLoading: (state, action: PayloadAction<typeof initialState.ui.campaignLoading>) => {
+		setCampaignLoading: (state, action: PayloadAction<boolean>) => {
 			state.ui.campaignLoading = action.payload;
 		},
-		setExportingCampaign: (
-			state,
-			action: PayloadAction<typeof initialState.ui.exportingCampaign>
-		) => {
+		setExportingCampaign: (state, action: PayloadAction<boolean>) => {
 			state.ui.exportingCampaign = action.payload;
 		},
-		setDeletingCampaign: (
-			state,
-			action: PayloadAction<typeof initialState.ui.deletingCampaign>
-		) => {
+		setDeletingCampaign: (state, action: PayloadAction<boolean>) => {
 			state.ui.deletingCampaign = action.payload;
+		},
+		setMessageError: (state, action: PayloadAction<boolean>) => {
+			state.ui.messageError = action.payload;
+		},
+		setCampaignNameError: (state, action: PayloadAction<boolean>) => {
+			state.ui.campaignNameError = action.payload;
+		},
+		setRecipientsError: (state, action: PayloadAction<boolean>) => {
+			state.ui.recipientsError = action.payload;
+		},
+		setMinDelayError: (state, action: PayloadAction<boolean>) => {
+			state.ui.minDelayError = action.payload;
+		},
+		setBatchSizeError: (state, action: PayloadAction<boolean>) => {
+			state.ui.batchSizeError = action.payload;
+		},
+		setMaxDelayError: (state, action: PayloadAction<boolean>) => {
+			state.ui.maxDelayError = action.payload;
+		},
+		setBatchDelayError: (state, action: PayloadAction<boolean>) => {
+			state.ui.batchDelayError = action.payload;
+		},
+		setAPIError: (state, action: PayloadAction<string>) => {
+			state.ui.apiError = action.payload;
 		},
 	},
 });
@@ -184,7 +218,6 @@ export const {
 	setSelectedScheduler,
 	setCampaignName,
 	setRecipientsFrom,
-	setRecipientsLoading,
 	setBusinessAccount,
 	setRecipients,
 	setCSVFile,
@@ -207,6 +240,15 @@ export const {
 	setDeletingCampaign,
 	setExportingCampaign,
 	setNumbers,
+	setMessageError,
+	setCampaignNameError,
+	setRecipientsError,
+	setRecipientsLoading,
+	setMinDelayError,
+	setAPIError,
+	setBatchDelayError,
+	setMaxDelayError,
+	setBatchSizeError,
 } = SchedulerSlice.actions;
 
 export default SchedulerSlice.reducer;

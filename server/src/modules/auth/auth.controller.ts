@@ -33,6 +33,7 @@ async function validateClientID(req: Request, res: Response, next: NextFunction)
 		data: {
 			session_expires_at: authStatus.revoke_at,
 			isWhatsappReady: whatsapp.isReady(),
+			status: whatsapp.getStatus(),
 		},
 	});
 }

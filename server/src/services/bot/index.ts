@@ -2,7 +2,12 @@ import fs from 'fs';
 import { Types } from 'mongoose';
 import Logger from 'n23-logger';
 import WAWebJS, { MessageMedia, Poll } from 'whatsapp-web.js';
-import { ATTACHMENTS_PATH, BOT_TRIGGER_OPTIONS, BOT_TRIGGER_TO } from '../../config/const';
+import {
+	ATTACHMENTS_PATH,
+	BOT_TRIGGER_OPTIONS,
+	BOT_TRIGGER_TO,
+	MESSAGE_SCHEDULER_TYPE,
+} from '../../config/const';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import { WhatsappProvider } from '../../provider/whatsapp_provider';
 import { BotResponseDB } from '../../repository/bot';
@@ -16,6 +21,7 @@ import { Delay } from '../../utils/ExpressUtils';
 import VCardBuilder from '../../utils/VCardBuilder';
 import { MessageService } from '../messenger';
 import TokenService from '../token';
+import UploadService from '../uploads';
 import UserService from '../user';
 
 export default class BotService {
@@ -37,7 +43,7 @@ export default class BotService {
 	public async allBots() {
 		const bots = await BotDB.find({
 			user: this.user,
-		}).populate('attachments shared_contact_cards');
+		}).populate('attachments shared_contact_cards ');
 		return bots.map((bot) => ({
 			bot_id: bot._id as Types.ObjectId,
 			respond_to: bot.respond_to,
@@ -46,6 +52,8 @@ export default class BotService {
 			response_delay_seconds: bot.response_delay_seconds,
 			options: bot.options,
 			message: bot.message,
+			startAt: bot.startAt,
+			endAt: bot.endAt,
 			attachments: bot.attachments.map((attachment) => ({
 				id: attachment._id,
 				name: attachment.name,
@@ -57,8 +65,20 @@ export default class BotService {
 				options: poll.options,
 				isMultiSelect: poll.isMultiSelect,
 			})),
-			nurturing: bot.nurturing ?? [],
 			shared_contact_cards: bot.shared_contact_cards ?? [],
+			nurturing: (bot.nurturing ?? []).map((el) => ({
+				message: el.message,
+				after: el.after,
+				start_from: el.start_from,
+				end_at: el.end_at,
+				shared_contact_cards: el.shared_contact_cards ?? [],
+				attachments: el.attachments ?? [],
+				polls: (el.polls ?? []).map((poll) => ({
+					title: poll.title,
+					options: poll.options,
+					isMultiSelect: poll.isMultiSelect,
+				})),
+			})),
 			forward: bot.forward ?? { number: '', message: '' },
 			group_respond: bot.group_respond,
 			isActive: bot.active,
@@ -80,6 +100,8 @@ export default class BotService {
 			response_delay_seconds: bot.response_delay_seconds,
 			options: bot.options,
 			message: bot.message,
+			startAt: bot.startAt,
+			endAt: bot.endAt,
 			attachments: bot.attachments.map((attachment) => ({
 				id: attachment._id,
 				name: attachment.name,
@@ -91,7 +113,16 @@ export default class BotService {
 				options: poll.options,
 				isMultiSelect: poll.isMultiSelect,
 			})),
-			nurturing: bot.nurturing ?? [],
+			nurturing: (bot.nurturing ?? []).map((el) => ({
+				...el,
+				shared_contact_cards: el.shared_contact_cards ?? [],
+				attachments: el.attachments ?? [],
+				polls: (el.polls ?? []).map((poll) => ({
+					title: poll.title,
+					options: poll.options,
+					isMultiSelect: poll.isMultiSelect,
+				})),
+			})),
 			shared_contact_cards: bot.shared_contact_cards ?? [],
 			isActive: bot.active,
 		};
@@ -147,6 +178,11 @@ export default class BotService {
 			if (!is_recipient) {
 				return false;
 			}
+
+			if (!DateUtils.isTimeBetween(bot.startAt, bot.endAt, DateUtils.getMomentNow())) {
+				return false;
+			}
+
 			if (bot.trigger_gap_seconds > 0) {
 				const last_message_time = last_messages[bot.bot_id.toString()];
 				if (!isNaN(last_message_time) && last_message_time <= bot.trigger_gap_seconds) {
@@ -221,6 +257,7 @@ export default class BotService {
 		const message_from = triggered_from.split('@')[0];
 
 		const botsEngaged = await this.botsEngaged({ message_body: body, message_from, contact });
+		const uploadService = new UploadService(this.user);
 
 		const whatsapp = this.whatsapp;
 
@@ -335,20 +372,36 @@ export default class BotService {
 				const dateGenerator = new TimeGenerator({
 					batch_size: 1,
 				});
-				const nurtured_messages = bot.nurturing.map((el) => {
-					const _variable = '{{public_name}}';
-					const custom_message = el.message.replace(
-						new RegExp(_variable, 'g'),
-						(contact.pushname || contact.name) ?? ''
-					);
-					dateGenerator.setStartTime(el.start_from).setEndTime(el.end_at);
-					return {
-						receiver: triggered_from,
-						message: custom_message,
-						sendAt: dateGenerator.next(el.after).value,
-					};
+				const nurtured_messages = await Promise.all(
+					bot.nurturing.map(async (el) => {
+						const _variable = '{{public_name}}';
+						const custom_message = el.message.replace(
+							new RegExp(_variable, 'g'),
+							(contact.pushname || contact.name) ?? ''
+						);
+						dateGenerator.setStartTime(el.start_from).setEndTime(el.end_at);
+						const dateAt = dateGenerator.next(el.after).value;
+						const [_attachments] = await uploadService.listAttachments(
+							el.attachments as unknown as Types.ObjectId[]
+						);
+						return {
+							receiver: triggered_from,
+							message: custom_message,
+							sendAt: dateAt,
+							shared_contact_cards: el.shared_contact_cards as unknown as Types.ObjectId[],
+							polls: el.polls,
+							attachments: _attachments.map((el) => ({
+								name: el.name,
+								filename: el.filename,
+								caption: el.caption,
+							})),
+						};
+					})
+				);
+				this.messageSchedulerService.scheduleLeadNurturingMessage(nurtured_messages, {
+					scheduled_by: MESSAGE_SCHEDULER_TYPE.BOT,
+					scheduler_id: bot.bot_id,
 				});
-				this.messageSchedulerService.scheduleLeadNurturingMessage(nurtured_messages);
 			}
 		});
 	}
@@ -378,7 +431,10 @@ export default class BotService {
 				recipient: message_from,
 				bot: bot_id,
 				last_message: DateUtils.getMomentNow().toDate(),
-				triggered_at: [DateUtils.getMomentNow().toDate()],
+				triggered_at: {
+					[opts.fromPoll ? 'POLL' : 'BOT']: [DateUtils.getMomentNow().toDate()],
+					[opts.fromPoll ? 'BOT' : 'POLL']: [],
+				},
 			});
 		}
 	}
@@ -390,6 +446,8 @@ export default class BotService {
 		options: BOT_TRIGGER_OPTIONS;
 		trigger: string;
 		message: string;
+		startAt: string;
+		endAt: string;
 		shared_contact_cards: Types.ObjectId[];
 		attachments: IUpload[];
 		group_respond: boolean;
@@ -407,6 +465,13 @@ export default class BotService {
 			after: number;
 			start_from: string;
 			end_at: string;
+			shared_contact_cards?: Types.ObjectId[];
+			attachments?: Types.ObjectId[];
+			polls?: {
+				title: string;
+				options: string[];
+				isMultiSelect: boolean;
+			}[];
 		}[];
 	}) {
 		const bot = new BotDB({
@@ -422,6 +487,8 @@ export default class BotService {
 			trigger_gap_seconds: bot.trigger_gap_seconds,
 			response_delay_seconds: bot.response_delay_seconds,
 			options: bot.options,
+			startAt: bot.startAt,
+			endAt: bot.endAt,
 			message: bot.message,
 			attachments: data.attachments.map((attachment) => ({
 				id: attachment._id,
@@ -444,6 +511,8 @@ export default class BotService {
 			response_delay_seconds?: number;
 			options?: BOT_TRIGGER_OPTIONS;
 			trigger?: string;
+			startAt?: string;
+			endAt?: string;
 			message?: string;
 			shared_contact_cards?: Types.ObjectId[];
 			attachments?: IUpload[];
@@ -461,10 +530,18 @@ export default class BotService {
 				after: number;
 				start_from: string;
 				end_at: string;
+				shared_contact_cards?: Types.ObjectId[];
+				attachments?: Types.ObjectId[];
+				polls?: {
+					title: string;
+					options: string[];
+					isMultiSelect: boolean;
+				}[];
 			}[];
 		}
 	) {
 		const bot = await BotDB.findById(id).populate('attachments shared_contact_cards');
+		const uploadService = new UploadService(this.user);
 		if (!bot) {
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
 		}
@@ -486,6 +563,12 @@ export default class BotService {
 		if (data.options) {
 			bot.options = data.options;
 		}
+		if (data.startAt) {
+			bot.startAt = data.startAt;
+		}
+		if (data.endAt) {
+			bot.endAt = data.endAt;
+		}
 		if (data.message) {
 			bot.message = data.message;
 		}
@@ -499,7 +582,19 @@ export default class BotService {
 			bot.polls = data.polls;
 		}
 		if (data.nurturing) {
-			bot.nurturing = data.nurturing;
+			bot.nurturing = await Promise.all(
+				data.nurturing.map(async (el) => {
+					const [_, attachments] = await uploadService.listAttachments(el.attachments);
+					const contacts = await ContactCardDB.find({
+						_id: { $in: el.shared_contact_cards },
+					});
+					return {
+						...el,
+						shared_contact_cards: contacts,
+						attachments,
+					};
+				})
+			);
 		}
 		bot.shared_contact_cards = await ContactCardDB.find({
 			_id: { $in: data.shared_contact_cards },
@@ -514,6 +609,8 @@ export default class BotService {
 			trigger_gap_seconds: bot.trigger_gap_seconds,
 			response_delay_seconds: bot.response_delay_seconds,
 			options: bot.options,
+			startAt: bot.startAt,
+			endAt: bot.endAt,
 			message: bot.message,
 			attachments: bot.attachments.map((attachment) => ({
 				id: attachment._id,
@@ -543,6 +640,8 @@ export default class BotService {
 			trigger_gap_seconds: bot.trigger_gap_seconds,
 			response_delay_seconds: bot.response_delay_seconds,
 			options: bot.options,
+			startAt: bot.startAt,
+			endAt: bot.endAt,
 			message: bot.message,
 			attachments: bot.attachments.map((attachment) => ({
 				id: attachment._id,

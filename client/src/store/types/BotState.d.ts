@@ -1,3 +1,5 @@
+import { Poll } from './PollState';
+
 export type BotState = {
 	all_bots: Bot[];
 	details: Bot;
@@ -30,6 +32,8 @@ export type Bot = {
 	trigger_gap_seconds: number;
 	response_delay_seconds: number;
 	options: string;
+	startAt: string;
+	endAt: string;
 	message: string;
 	attachments: string[];
 	shared_contact_cards: string[];
@@ -48,5 +52,8 @@ export type Bot = {
 		after: number;
 		start_from: string;
 		end_at: string;
+		shared_contact_cards: string[];
+		attachments: string[];
+		polls: Poll[];
 	}[];
 };

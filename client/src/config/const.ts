@@ -19,6 +19,7 @@ export const NAVIGATION = {
 	ATTACHMENTS: '/attachments',
 	CSV: '/csv',
 	GROUP_MERGE: '/group-merge',
+	TASKS: '/pending-tasks',
 };
 
 export enum CHROME_ACTION {
@@ -66,6 +67,10 @@ export enum SOCKET_EVENT {
 	WHATSAPP_READY = 'whatsapp-ready',
 	WHATSAPP_CLOSED = 'whatsapp-closed',
 	PAYMENT_SUCCESS = 'payment-success',
+
+	TASK_CREATED = 'task-created',
+	TASK_COMPLETED = 'task-completed',
+	TASK_FAILED = 'task-failed',
 }
 
 export enum SETTINGS {

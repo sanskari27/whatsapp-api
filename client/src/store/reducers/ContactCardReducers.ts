@@ -68,6 +68,9 @@ const ContactCardReducers = createSlice({
 			state.selectedCard = initialState.selectedCard;
 			state.uiDetails = initialState.uiDetails;
 		},
+		removeAllSelectedContacts: (state) => {
+			state.selectedContacts = [];
+		},
 		clearContactCard: (state) => {
 			state.selectedCard = initialState.selectedCard;
 			state.uiDetails = initialState.uiDetails;
@@ -194,6 +197,9 @@ const ContactCardReducers = createSlice({
 		addSelectedContact: (state, action: PayloadAction<string>) => {
 			state.selectedContacts.push(action.payload);
 		},
+		selectAllContacts: (state) => {
+			state.selectedContacts = state.list.map((el) => el.id);
+		},
 		removeSelectedContact: (state, action: PayloadAction<string>) => {
 			state.selectedContacts = state.selectedContacts.filter((el) => el !== action.payload);
 		},
@@ -212,6 +218,7 @@ export const {
 	setLastName,
 	setTitle,
 	setOrganization,
+	removeAllSelectedContacts,
 	setEmailPersonal,
 	setEmailWork,
 	setContactNumberPhone,
@@ -238,6 +245,7 @@ export const {
 	setLinks,
 	deleteContactCard,
 	addSelectedContact,
+	selectAllContacts,
 	removeSelectedContact
 } = ContactCardReducers.actions;
 

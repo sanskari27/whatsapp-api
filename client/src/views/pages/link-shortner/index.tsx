@@ -39,7 +39,7 @@ import {
 } from '../../../store/reducers/LinkShortnerReducers';
 import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
 import { NavbarSearchElement } from '../../components/navbar';
-import QrImage from '../../components/qr-image';
+import QRImage from '../../components/qr-image/QRImage';
 import CreateLinkDrawer, { CreateLinkDrawerHandle } from './components/CreateLinkDrawer';
 import EditLinkDialog, { EditLinkDialogHandle } from './components/editLinkDialog';
 import GeneratedResultDialog from './components/generatedResultDialog';
@@ -189,7 +189,7 @@ const LinkShortner = () => {
 								<Tr key={index} textColor={theme === 'dark' ? 'white' : 'black'}>
 									<Td>{index + 1}.</Td>
 									<Td>
-										<QrImage base64={item.base64} />
+										<QRImage base64={item.base64} />
 									</Td>
 									<Td>{item.title ?? 'No title'}</Td>
 									<Td>
@@ -219,6 +219,7 @@ const LinkShortner = () => {
 											color={theme === 'dark' ? 'yellow.200' : 'yellow.500'}
 										/>
 										<ActionButton
+											isHidden
 											activeBackgroundColor='red.100'
 											icon={DeleteIcon}
 											onClick={() => {
@@ -250,8 +251,9 @@ type ActionButtonProps = {
 	onClick: () => void;
 	activeBackgroundColor: string;
 	color: string;
+	isHidden?:boolean
 };
-function ActionButton({ icon, onClick, color, activeBackgroundColor }: ActionButtonProps) {
+function ActionButton({ icon, onClick, color, activeBackgroundColor, isHidden = false }: ActionButtonProps) {
 	return (
 		<IconButton
 			backgroundColor={'transparent'}
@@ -271,6 +273,7 @@ function ActionButton({ icon, onClick, color, activeBackgroundColor }: ActionBut
 			icon={<Icon as={icon} />}
 			onClick={onClick}
 			color={color}
+			hidden={isHidden}
 		/>
 	);
 }

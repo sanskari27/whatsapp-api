@@ -1,6 +1,8 @@
 import { Types } from 'mongoose';
+import { MESSAGE_SCHEDULER_TYPE } from '../../config/const';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import ContactCardDB from '../../repository/contact-cards';
+import { MessageDB } from '../../repository/messenger';
 import SchedulerDB from '../../repository/scheduler';
 import IUpload from '../../types/uploads';
 import { IUser } from '../../types/user';
@@ -18,11 +20,12 @@ export default class SchedulerService {
 	public async allScheduler() {
 		const scheduler = await SchedulerDB.find({
 			user: this.user,
-		}).populate('csv attachments shared_contact_cards');
+		}).populate('attachments');
 		return scheduler.map((e) => ({
 			id: e._id as Types.ObjectId,
 			title: e.title,
-			csv: e.csv.filename,
+			description: e.description,
+			csv: e.csv,
 			message: e.message,
 			attachments: e.attachments,
 			shared_contact_cards: e.shared_contact_cards ?? [],
@@ -34,9 +37,7 @@ export default class SchedulerService {
 	}
 
 	public async schedulerByID(id: Types.ObjectId) {
-		const scheduler = await SchedulerDB.findById(id).populate(
-			'csv attachments shared_contact_cards'
-		);
+		const scheduler = await SchedulerDB.findById(id).populate('attachments');
 
 		if (!scheduler) {
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
@@ -45,7 +46,8 @@ export default class SchedulerService {
 		return {
 			id: scheduler._id as Types.ObjectId,
 			title: scheduler.title,
-			csv: scheduler.csv.filename,
+			description: scheduler.description,
+			csv: scheduler.csv,
 			message: scheduler.message,
 			attachments: scheduler.attachments,
 			shared_contact_cards: scheduler.shared_contact_cards ?? [],
@@ -58,11 +60,13 @@ export default class SchedulerService {
 
 	public createScheduler(data: {
 		title: string;
+		description: string;
 		message: string;
 		start_from: string;
 		end_at: string;
 		shared_contact_cards: Types.ObjectId[];
 		attachments: IUpload[];
+		csv: Types.ObjectId;
 		polls: {
 			title: string;
 			options: string[];
@@ -78,7 +82,8 @@ export default class SchedulerService {
 		return {
 			id: scheduler._id as Types.ObjectId,
 			title: scheduler.title,
-			csv: scheduler.csv.filename,
+			description: scheduler.description,
+			csv: scheduler.csv,
 			message: scheduler.message,
 			attachments: scheduler.attachments,
 			shared_contact_cards: scheduler.shared_contact_cards ?? [],
@@ -93,6 +98,7 @@ export default class SchedulerService {
 		id: Types.ObjectId,
 		data: {
 			title: string;
+			description: string;
 			message: string;
 			start_from: string;
 			end_at: string;
@@ -105,15 +111,16 @@ export default class SchedulerService {
 			}[];
 		}
 	) {
-		const scheduler = await SchedulerDB.findById(id).populate(
-			'csv attachments shared_contact_cards'
-		);
+		const scheduler = await SchedulerDB.findById(id).populate('attachments');
 		if (!scheduler) {
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
 		}
 
 		if (data.title) {
 			scheduler.title = data.title;
+		}
+		if (data.description) {
+			scheduler.description = data.description;
 		}
 		if (data.message) {
 			scheduler.message = data.message;
@@ -139,7 +146,8 @@ export default class SchedulerService {
 		return {
 			id: scheduler._id as Types.ObjectId,
 			title: scheduler.title,
-			csv: scheduler.csv.filename,
+			description: scheduler.description,
+			csv: scheduler.csv,
 			message: scheduler.message,
 			attachments: scheduler.attachments,
 			shared_contact_cards: scheduler.shared_contact_cards ?? [],
@@ -151,7 +159,7 @@ export default class SchedulerService {
 	}
 
 	public async toggleActive(id: Types.ObjectId) {
-		const scheduler = await SchedulerDB.findById(id).populate('csv');
+		const scheduler = await SchedulerDB.findById(id);
 		if (!scheduler) {
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
 		}
@@ -160,6 +168,7 @@ export default class SchedulerService {
 		return {
 			id: scheduler._id as Types.ObjectId,
 			title: scheduler.title,
+			description: scheduler.description,
 			csv: scheduler.csv.filename,
 			message: scheduler.message,
 			attachments: scheduler.attachments,
@@ -175,14 +184,41 @@ export default class SchedulerService {
 		await SchedulerDB.deleteOne({ _id: id });
 	}
 
+	public async generateReport(id: Types.ObjectId) {
+		const scheduler = await SchedulerDB.findById(id);
+		if (!scheduler) {
+			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
+		}
+		const messages = await MessageDB.find({
+			'scheduled_by.id': id,
+			sendAt: { $gte: DateUtils.getMomentNow().subtract(1, 'years').toDate() },
+		});
+
+		return messages.map((message) => ({
+			campaign_name: scheduler.title,
+			description: scheduler.description,
+			message: message.message,
+			receiver: message.receiver.split('@')[0],
+			attachments: message.attachments.length,
+			contacts: message.shared_contact_cards.length,
+			polls: message.polls.length,
+			status: message.status,
+			scheduled_at: message.sendAt
+				? DateUtils.getMoment(message.sendAt).format('DD/MM/YYYY HH:mm:ss')
+				: '',
+		}));
+	}
+
 	public static async scheduleDailyMessages() {
 		const schedulers = await SchedulerDB.find({
 			active: true,
-			'csv.headers': ['number', 'date'],
 		}).populate('attachments shared_contact_cards csv');
 		const today = DateUtils.getMomentNow().format('MM-DD');
 
 		for (const scheduler of schedulers) {
+			if (!scheduler.csv.headers.includes('date') || !scheduler.csv.headers.includes('month')) {
+				continue;
+			}
 			const parsed_csv:
 				| {
 						[key: string]: string;
@@ -197,30 +233,36 @@ export default class SchedulerService {
 			const schedulerService = new MessageService(scheduler.user);
 
 			for (const row of parsed_csv) {
-				if (DateUtils.getMoment(row.month + '-' + row.date).format('MM-DD') !== today) {
+				if (DateUtils.getMoment(row.month + '-' + row.date, 'MM-DD').format('MM-DD') !== today) {
 					continue;
 				}
 				const time = DateUtils.getBetween(scheduler.start_from, scheduler.end_at);
 				let _message = scheduler.message;
 
 				for (const variable of scheduler.csv.headers) {
-					const _variable = variable.substring(2, variable.length - 2);
-					_message = _message.replace(variable, row[_variable] ?? '');
+					_message = _message.replace(`{{${variable}}}`, row[variable] ?? '');
 				}
-				schedulerService.scheduleMessage({
-					receiver: row.number,
-					sendAt: time.toDate(),
-					attachments: scheduler.attachments.map((attachment) => ({
-						name: attachment.name,
-						filename: attachment.filename,
-						caption: attachment.caption,
-					})),
-					polls: scheduler.polls,
-					shared_contact_cards: scheduler.shared_contact_cards.map(
-						({ _id }) => new Types.ObjectId(_id)
-					),
-					message: _message,
-				});
+
+				schedulerService.scheduleMessage(
+					{
+						receiver: `${row.number}@c.us`,
+						sendAt: time.toDate(),
+						attachments: scheduler.attachments.map((attachment) => ({
+							name: attachment.name,
+							filename: attachment.filename,
+							caption: attachment.caption,
+						})),
+						polls: scheduler.polls,
+						shared_contact_cards: scheduler.shared_contact_cards.map(
+							({ _id }) => new Types.ObjectId(_id)
+						),
+						message: _message,
+					},
+					{
+						scheduled_by: MESSAGE_SCHEDULER_TYPE.SCHEDULER,
+						scheduler_id: scheduler._id,
+					}
+				);
 			}
 		}
 	}

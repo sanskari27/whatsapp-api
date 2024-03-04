@@ -1,5 +1,5 @@
-import { Document } from 'mongoose';
-import { MESSAGE_STATUS } from '../../config/const';
+import { Document, Types } from 'mongoose';
+import { MESSAGE_SCHEDULER_TYPE, MESSAGE_STATUS } from '../../config/const';
 import { IUser } from '../user';
 
 export default interface IMessage extends Document {
@@ -20,4 +20,9 @@ export default interface IMessage extends Document {
 	}[];
 	createdAt: Date;
 	sendAt: Date;
+
+	scheduled_by: {
+		type: MESSAGE_SCHEDULER_TYPE;
+		id: Types.ObjectId;
+	};
 }

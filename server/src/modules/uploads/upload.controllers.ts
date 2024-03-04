@@ -195,7 +195,7 @@ export async function updateAttachment(req: Request, res: Response, next: NextFu
 	}
 }
 
-export async function downloadAttachment(req: Request, res: Response, next: NextFunction) {
+export async function download(req: Request, res: Response, next: NextFunction) {
 	const [isIDValid, id] = idValidator(req.params.id);
 
 	if (!isIDValid) {
@@ -276,7 +276,7 @@ const UploadsController = {
 	deleteAttachment,
 	updateAttachment,
 	updateAttachmentFile,
-	downloadAttachment,
+	download,
 };
 
 export default UploadsController;

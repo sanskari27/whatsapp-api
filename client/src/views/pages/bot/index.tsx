@@ -9,6 +9,7 @@ import {
 	FormErrorMessage,
 	HStack,
 	IconButton,
+	Input,
 	Tag,
 	TagLabel,
 	Text,
@@ -29,6 +30,7 @@ import {
 	setAddingBot,
 	setAttachments,
 	setContactCards,
+	setEndAt,
 	setError,
 	setForwardMessage,
 	setForwardTo,
@@ -39,34 +41,22 @@ import {
 	setRespondTo,
 	setResponseDelayTime,
 	setResponseDelayType,
+	setStartAt,
 	setTrigger,
 	setTriggerGapTime,
 	setTriggerGapType,
 	updateBot,
 } from '../../../store/reducers/BotReducers';
+import AddOns from '../../components/add-ons';
 import Info from '../../components/info';
-import PollInputDialog, { PollInputDialogHandle } from '../../components/polls-input-dialog';
-import AttachmentSelectorDialog, {
-	AttachmentDialogHandle,
-} from '../../components/selector-dialog/AttachmentSelectorDialog';
-import ContactSelectorDialog, {
-	ContactDialogHandle,
-} from '../../components/selector-dialog/ContactSelectorDialog';
-import SubscriptionAlert, { SubscriptionPopup } from '../../components/subscription-alert';
+import { SubscriptionPopup } from '../../components/subscription-alert';
 import AllResponders from './components/AllResponders';
-import InputLeadsNurturingDialog, {
-	InputLeadsNurturingDialogHandle,
-} from './components/InputLeadsNurturingDialog';
 import { NumberInput, SelectElement, TextAreaElement, TextInput } from './components/Inputs';
 
 export default function Bot() {
 	const dispatch = useDispatch();
 	const theme = useTheme();
 	const toast = useToast();
-	const attachmentSelectorRef = useRef<AttachmentDialogHandle>(null);
-	const contactSelectorRef = useRef<ContactDialogHandle>(null);
-	const pollInputRef = useRef<PollInputDialogHandle>(null);
-	const leadsNurturingRef = useRef<InputLeadsNurturingDialogHandle>(null);
 	const messageRef = useRef(0);
 
 	const { details, trigger_gap, response_delay, ui, all_bots } = useSelector(
@@ -196,6 +186,7 @@ export default function Bot() {
 		}
 		return notHasError;
 	}
+
 	const insertVariablesToMessage = (variable: string) => {
 		dispatch(
 			setMessage(
@@ -221,6 +212,7 @@ export default function Bot() {
 		toast.promise(promise, {
 			success: (data) => {
 				const acton = isEditingBot ? updateBot({ id: data.bot_id, data }) : addBot(data);
+				console.log(acton);
 				dispatch(acton);
 				dispatch(reset());
 				return {
@@ -232,92 +224,7 @@ export default function Bot() {
 			},
 			loading: { title: 'Saving Data', description: 'Please wait' },
 		});
-		// const data = await BotService.createBot(details);
-		// dispatch(setAddingBot(true));
-		// if (!data) {
-		// 	return;
-		// }
-		// dispatch(addBot(data));
 		dispatch(reset());
-	}
-
-	const handleAddPolls = (
-		polls: {
-			title: string;
-			options: string[];
-			isMultiSelect: boolean;
-		}[]
-	) => {
-		dispatch(setPolls(polls));
-	};
-
-	const handleAddLeadsNurturing = (
-		nurturing: {
-			message: string;
-			delay: string;
-			unit: 'MINUTES' | 'HOURS' | 'DAYS';
-			start_from: string;
-			end_at: string;
-		}[]
-	) => {
-		dispatch(
-			setNurturing(
-				nurturing.map((nurturing) => {
-					return {
-						message: nurturing.message,
-						after:
-							nurturing.unit === 'DAYS'
-								? Number(nurturing.delay) * 86400
-								: nurturing.unit === 'HOURS'
-								? Number(nurturing.delay) * 3600
-								: Number(nurturing.delay) * 60,
-						start_from: nurturing.start_from,
-						end_at: nurturing.end_at,
-					};
-				})
-			)
-		);
-	};
-
-	function handleCancel() {
-		dispatch(reset());
-	}
-	function openLeadNurturing() {
-		if (details.nurturing.length === 0) {
-			leadsNurturingRef.current?.open([
-				{
-					message: '',
-					delay: '1',
-					unit: 'MINUTES',
-					end_at: '18:00',
-					start_from: '10:00',
-				},
-			]);
-		} else {
-			leadsNurturingRef.current?.open(
-				details.nurturing.map((nurturing) => {
-					let unit = 'MINUTES' as 'MINUTES' | 'HOURS' | 'DAYS';
-					let delay = nurturing.after;
-					if (delay >= 86400) {
-						delay = delay / 86400;
-						unit = 'DAYS';
-					} else if (delay >= 3600) {
-						delay = delay / 3600;
-						unit = 'HOURS';
-					} else {
-						delay = delay / 60;
-						unit = 'MINUTES';
-					}
-					return {
-						message: nurturing.message,
-						delay: delay.toString(),
-						unit: unit,
-						end_at: '18:00',
-						start_from: '10:00',
-					};
-				})
-			);
-		}
 	}
 
 	return (
@@ -524,71 +431,54 @@ export default function Bot() {
 							</HStack>
 							{ui.responseGapError && <FormErrorMessage>{ui.responseGapError}</FormErrorMessage>}
 						</FormControl>
+						<Flex flex={1} gap={'0.5rem'}>
+							<FormControl flex={1}>
+								<Text className='text-gray-700 dark:text-gray-400'>Start At (in IST)</Text>
+								<Input
+									type='time'
+									placeholder='00:00'
+									rounded={'md'}
+									border={'none'}
+									className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]'
+									_focus={{
+										border: 'none',
+										outline: 'none',
+									}}
+									value={details.startAt}
+									onChange={(e) => dispatch(setStartAt(e.target.value))}
+								/>
+							</FormControl>
+							<FormControl flex={1}>
+								<Text className='text-gray-700 dark:text-gray-400'>End At (in IST)</Text>
+								<Input
+									type='time'
+									width={'full'}
+									placeholder='23:59'
+									rounded={'md'}
+									border={'none'}
+									className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]'
+									_focus={{
+										border: 'none',
+										outline: 'none',
+									}}
+									value={details.endAt}
+									onChange={(e) => dispatch(setEndAt(e.target.value))}
+								/>
+							</FormControl>
+						</Flex>
 					</HStack>
 
 					{/*--------------------------------- ATTACHMENTS, CONTACTS & POLLS SECTION--------------------------- */}
-					<HStack>
-						<Box flex={1}>
-							<Text className='text-gray-700 dark:text-gray-400'>Attachments</Text>
-							<Button
-								width={'full'}
-								size={'sm'}
-								variant={'outline'}
-								colorScheme='green'
-								onClick={() => attachmentSelectorRef.current?.open(details.attachments)}
-							>
-								Select Attachments ({attachments.length}) Selected
-							</Button>
-						</Box>
-						<Box flex={1}>
-							<Text className='text-gray-700 dark:text-gray-400'>Contact Card</Text>
-							<Button
-								width={'full'}
-								size={'sm'}
-								variant={'outline'}
-								colorScheme='green'
-								onClick={() => contactSelectorRef.current?.open(details.shared_contact_cards)}
-							>
-								Select Contacts ({shared_contact_cards.length}) Selected
-							</Button>
-						</Box>
-						<Box flex={1}>
-							<Text className='text-gray-700 dark:text-gray-400'>Polls</Text>
-							<Button
-								width={'full'}
-								size={'sm'}
-								variant={'outline'}
-								colorScheme='green'
-								onClick={() => {
-									if (details.polls.length === 0) {
-										pollInputRef.current?.open([
-											{
-												title: '',
-												options: ['', ''],
-												isMultiSelect: false,
-											},
-										]);
-									} else {
-										pollInputRef.current?.open(details.polls);
-									}
-								}}
-							>
-								Add Polls ({details.polls.length}) Added
-							</Button>
-						</Box>
-						<Box flex={1}>
-							<Text className='text-gray-700 dark:text-gray-400'>Leads Nurturing</Text>
-							<Button
-								width={'full'}
-								size={'sm'}
-								variant={'solid'}
-								colorScheme='green'
-								onClick={openLeadNurturing}
-							>
-								Add Nurturing ({details.nurturing.length}) Added
-							</Button>
-						</Box>
-					</HStack>
+					<AddOns
+						attachments={details.attachments}
+						shared_contact_cards={shared_contact_cards}
+						polls={details.polls}
+						nurturing={details.nurturing}
+						onAttachmentsSelected={(ids) => dispatch(setAttachments(ids))}
+						onContactsSelected={(ids) => dispatch(setContactCards(ids))}
+						onPollsSelected={(ids) => dispatch(setPolls(ids))}
+						onLeadNurturingSelected={(nurturing) => dispatch(setNurturing(nurturing))}
+					/>
 
 					{/*--------------------------------- FORWARD SECTION--------------------------- */}
 					<Flex direction={'column'} gap={2} mt={'1rem'}>
@@ -630,7 +520,7 @@ export default function Bot() {
 								<Button
 									bgColor={'red.300'}
 									width={'100%'}
-									onClick={handleCancel}
+									onClick={() => dispatch(reset())}
 									isLoading={isAddingBot}
 								>
 									<Text color={'white'}>Cancel</Text>
@@ -664,17 +554,6 @@ export default function Bot() {
 				</Flex>
 				<AllResponders />
 			</Flex>
-			<AttachmentSelectorDialog
-				ref={attachmentSelectorRef}
-				onConfirm={(ids) => dispatch(setAttachments(ids))}
-			/>
-			<ContactSelectorDialog
-				ref={contactSelectorRef}
-				onConfirm={(ids) => dispatch(setContactCards(ids))}
-			/>
-			<PollInputDialog ref={pollInputRef} onConfirm={handleAddPolls} />
-			<InputLeadsNurturingDialog ref={leadsNurturingRef} onConfirm={handleAddLeadsNurturing} />
-			<SubscriptionAlert />
 		</Flex>
 	);
 }

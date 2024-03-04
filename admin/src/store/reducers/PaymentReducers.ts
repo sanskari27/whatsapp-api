@@ -25,6 +25,7 @@ const initialState: PaymentRecords = {
 		gross_amount: 0,
 		discount: 0,
 		tax: 0,
+		total_amount: 0,
 		transaction_status: '',
 		invoice_id: '',
 		coupon: '',

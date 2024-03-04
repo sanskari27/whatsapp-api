@@ -6,7 +6,6 @@ const campaignSchema = new mongoose.Schema<ICampaign>(
 	{
 		name: {
 			type: String,
-			unique: true,
 			required: true,
 		},
 		description: {
@@ -40,6 +39,8 @@ const campaignSchema = new mongoose.Schema<ICampaign>(
 	},
 	{ timestamps: true }
 );
+
+campaignSchema.index({ user: 1, name: 1 }, { unique: true });
 
 const CampaignDB = mongoose.model<ICampaign>('Campaign', campaignSchema);
 

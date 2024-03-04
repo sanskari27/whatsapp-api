@@ -144,6 +144,11 @@ const AttachmentSlice = createSlice({
                 state.selectedAttachments.push(action.payload);
             }
         },
+        selectAllAttachments: (state) => {
+            state.selectedAttachments = state.attachments.map(
+                (attachment) => attachment.id
+            );
+        }
     },
 });
 
@@ -167,6 +172,7 @@ export const {
     deleteAttachment,
     clearSelectedAttachments,
     toggleSelected,
+    selectAllAttachments,
 } = AttachmentSlice.actions;
 
 export default AttachmentSlice.reducer;

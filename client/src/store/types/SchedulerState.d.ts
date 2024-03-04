@@ -3,6 +3,7 @@ export type SchedulerState = {
 	all_campaigns: ScheduledCampaign[];
 	all_schedulers: {
 		id: string;
+		title: string;
 		end_at: string;
 		start_from: string;
 		isActive: boolean;
@@ -14,12 +15,13 @@ export type SchedulerState = {
 		attachments: string[];
 		shared_contact_cards: string[];
 		message: string;
+		csv: string;
 	}[];
 	recipients: {
-		id: string;
+		fileName?: string;
 		name: string;
 		headers?: string[];
-		_id?: string;
+		id: string;
 	}[];
 	isRecipientsLoading: boolean;
 	isBusinessAccount: boolean;
@@ -27,6 +29,15 @@ export type SchedulerState = {
 		campaignLoading: boolean;
 		exportingCampaign: boolean;
 		deletingCampaign: boolean;
+		messageError: boolean;
+		campaignNameError: boolean;
+		recipientsError: boolean;
+		apiError: string;
+		editingMessage: boolean;
+		minDelayError: boolean;
+		maxDelayError: boolean;
+		batchSizeError: boolean;
+		batchDelayError: boolean;
 	};
 };
 
@@ -42,6 +53,7 @@ export type ScheduledCampaign = {
 };
 
 export type SchedulerDetails = {
+	message_scheduler_id: string;
 	type: 'NUMBERS' | 'CSV' | 'GROUP' | 'LABEL' | 'GROUP_INDIVIDUAL';
 	numbers?: string[];
 	csv_file: string;

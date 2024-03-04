@@ -14,9 +14,10 @@ import {
 	ModalOverlay,
 	Text,
 	useDisclosure,
+	useToast,
 } from '@chakra-ui/react';
 import Multiselect from 'multiselect-react-dropdown';
-import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
+import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { PiExportBold, PiFileCsvLight } from 'react-icons/pi';
 import { useDispatch, useSelector } from 'react-redux';
 import { EXPORTS_TYPE } from '../../../config/const';
@@ -43,14 +44,44 @@ const initialExportCriteria = {
 	[EXPORTS_TYPE.BUSINESS_ONLY]: false,
 };
 
+const initialUIDetails = {
+	exportClicked: false,
+	isBusiness: true,
+	selectAllGroups: false,
+	selectAllLabels: false,
+	CSV_EXPORTING: false,
+	VCF_EXPORTING: false,
+};
+
 const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 	const { isOpen, onOpen, onClose } = useDisclosure();
 	const dispatch = useDispatch();
+	const toast = useToast();
+	const generatingCount = useRef(false);
 
 	useImperativeHandle(ref, () => ({
 		open: () => {
-			onOpen();
 			setExportCriteria(initialExportCriteria);
+			setUIDetails(initialUIDetails);
+			onOpen();
+
+			if (contactsCount !== null || generatingCount.current) {
+				return;
+			}
+			ContactService.contactCount()
+				.then((res) => {
+					dispatch(
+						setContactsCount({
+							[EXPORTS_TYPE.ALL]: res.total,
+							[EXPORTS_TYPE.SAVED]: res.saved,
+							[EXPORTS_TYPE.UNSAVED]: res.unsaved,
+							[EXPORTS_TYPE.SAVED_CHAT]: res.saved_chat,
+						})
+					);
+				})
+				.finally(() => {
+					generatingCount.current = true;
+				});
 		},
 	}));
 
@@ -63,14 +94,7 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 	const [selectedGroup, setSelectedGroup] = useState([]);
 	const [selectedLabel, setSelectedLabel] = useState([]);
 
-	const [uiDetails, setUIDetails] = useState({
-		exportClicked: false,
-		isBusiness: true,
-		selectAllGroups: false,
-		selectAllLabels: false,
-		CSV_EXPORTING: false,
-		VCF_EXPORTING: false,
-	});
+	const [uiDetails, setUIDetails] = useState(initialUIDetails);
 
 	const { ALL, SAVED, UNSAVED, GROUP, LABEL, BUSINESS_ONLY, SAVED_CHAT } = export_criteria;
 
@@ -82,17 +106,10 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 	};
 
 	const exportContacts = (vcf_only = false) => {
-		if (vcf_only) {
-			setUIDetails((prevState) => ({
-				...prevState,
-				VCF_EXPORTING: true,
-			}));
-		} else {
-			setUIDetails((prevState) => ({
-				...prevState,
-				CSV_EXPORTING: true,
-			}));
-		}
+		setUIDetails((prevState) => ({
+			...prevState,
+			[vcf_only ? 'VCF_EXPORTING' : 'CSV_EXPORTING']: true,
+		}));
 
 		const selectedGroups = export_criteria[EXPORTS_TYPE.GROUP]
 			? export_criteria[EXPORTS_TYPE.GROUP_ALL]
@@ -106,90 +123,67 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 				: selectedLabel
 			: undefined;
 		const business_contacts_only = export_criteria[EXPORTS_TYPE.BUSINESS_ONLY];
-
-		const promises: Promise<unknown>[] = [];
+		const opts = {
+			vcf_only,
+			business_contacts_only,
+		};
 
 		if (ALL) {
-			promises.push(ContactService.contacts({ vcf_only, business_contacts_only }));
+			ContactService.contacts(opts);
 		}
 
 		if (SAVED) {
-			promises.push(
-				ContactService.contacts({
-					saved_contacts: true,
-					vcf_only,
-					business_contacts_only,
-				})
-			);
+			ContactService.contacts({
+				saved_contacts: true,
+				...opts,
+			});
 		}
 
 		if (SAVED_CHAT) {
-			promises.push(
-				ContactService.contacts({
-					saved_chat_contacts: true,
-					vcf_only,
-					business_contacts_only,
-				})
-			);
+			ContactService.contacts({
+				saved_chat_contacts: true,
+				...opts,
+			});
 		}
 
 		if (UNSAVED) {
-			promises.push(
-				ContactService.contacts({
-					non_saved_contacts: true,
-					vcf_only,
-					business_contacts_only,
-				})
-			);
+			ContactService.contacts({
+				...opts,
+				non_saved_contacts: true,
+			});
 		}
 
 		if (GROUP && selectedGroups && selectedGroups.length > 0) {
-			promises.push(
-				GroupService.fetchGroup(selectedGroups, {
-					vcf_only,
-					business_contacts_only,
-				})
-			);
+			GroupService.fetchGroup(selectedGroups, opts);
 		}
 
 		if (LABEL && selectedLabels && selectedLabels.length > 0) {
-			promises.push(
-				LabelService.fetchLabel(selectedLabels, {
-					vcf_only,
-					business_contacts_only,
-				})
-			);
+			LabelService.fetchLabel(selectedLabels, opts);
 		}
 
-		Promise.all(promises).then(() => {
-			setUIDetails((prevState) => ({
-				...prevState,
-				exportClicked: false,
-				CSV_EXPORTING: false,
-				VCF_EXPORTING: false,
-			}));
-		});
+		if (
+			ALL ||
+			SAVED ||
+			SAVED_CHAT ||
+			UNSAVED ||
+			(selectedGroups && selectedGroups.length > 0) ||
+			(selectedLabels && selectedLabels.length > 0)
+		) {
+			toast({
+				title: 'Export in progress.',
+				description: 'Check background tasks for further details',
+				status: 'success',
+				duration: 3000,
+				isClosable: true,
+			});
+		}
+
+		onClose();
 	};
 
 	const handleSubscription = async () => {
 		window.open('https://whatsleads.in/pricing', '_blank');
 	};
-
-	useEffect(() => {
-		if (contactsCount !== null) {
-			return;
-		}
-		ContactService.contactCount().then((res) => {
-			dispatch(
-				setContactsCount({
-					[EXPORTS_TYPE.ALL]: res.total,
-					[EXPORTS_TYPE.SAVED]: res.saved,
-					[EXPORTS_TYPE.UNSAVED]: res.unsaved,
-					[EXPORTS_TYPE.SAVED_CHAT]: res.saved_chat,
-				})
-			);
-		});
-	}, [dispatch, contactsCount]);
 
 	return (
 		<Modal isOpen={isOpen} onClose={onClose}>
@@ -409,6 +403,18 @@ const ExporterModal = forwardRef<ExportsModalHandler>((_, ref) => {
 								bgColor: 'green.400',
 							}}
 							width={'100%'}
+							isDisabled={
+								!(
+									ALL ||
+									SAVED ||
+									SAVED_CHAT ||
+									UNSAVED ||
+									uiDetails.selectAllGroups ||
+									selectedGroup.length > 0 ||
+									uiDetails.selectAllLabels ||
+									selectedLabel.length > 0
+								)
+							}
 							onClick={() =>
 								setUIDetails((prevState) => ({
 									...prevState,

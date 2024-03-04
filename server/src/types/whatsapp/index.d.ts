@@ -16,6 +16,14 @@ export type TBusinessContact = TContact & {
 };
 
 type GroupDetails = {
+	id: string;
+	name: string;
+	isMergedGroup: boolean;
+	participants: number;
+};
+
+type ContactGroupDetails = {
+	group_id: string;
 	group_name: string;
 	user_type: 'CREATOR' | 'ADMIN' | 'USER';
 };
@@ -24,8 +32,8 @@ type LabelDetails = {
 	label: string;
 };
 
-export type TGroupContact = TContact & GroupDetails;
-export type TGroupBusinessContact = TBusinessContact & GroupDetails;
+export type TGroupContact = TContact & ContactGroupDetails;
+export type TGroupBusinessContact = TBusinessContact & ContactGroupDetails;
 
 export type TLabelContact = TContact & LabelDetails;
 export type TLabelBusinessContact = TBusinessContact & LabelDetails;

@@ -69,14 +69,14 @@ export default class UserService {
 			return [client_id];
 		}
 
-		const auths = await AuthDetailDB.find({
+		const auth = await AuthDetailDB.find({
 			user: this.user._id,
 			isRevoked: false,
 		});
 
-		auths.forEach((auth) => auth.remove());
+		auth.forEach((el) => el.remove());
 
-		return auths.map((auth) => auth.client_id);
+		return auth.map((el) => el.client_id);
 	}
 
 	getUser() {
@@ -151,26 +151,34 @@ export default class UserService {
 		name,
 		phone,
 		isBusiness,
+		business_details,
 	}: {
 		name?: string;
 		phone: string;
 		isBusiness?: boolean;
+		business_details?: {
+			description: string;
+			email: string;
+			websites: string[];
+			latitude: number;
+			longitude: number;
+			address: string;
+		};
 	}) {
 		const user = await UserDB.findOne({ phone });
 
 		if (user) {
-			let isUpdated = false;
-			if (isBusiness !== undefined && user.userType !== (isBusiness ? 'BUSINESS' : 'PERSONAL')) {
-				user.userType = isBusiness ? 'BUSINESS' : 'PERSONAL';
-				isUpdated = true;
-			}
-			if (name !== undefined && user.name !== name) {
-				user.name = name;
-				isUpdated = true;
-			}
-			if (isUpdated) {
-				await user.save();
-			}
+			user.userType = isBusiness ? 'BUSINESS' : 'PERSONAL';
+			user.name = name ?? '';
+			user.business_details = business_details ?? {
+				description: '',
+				email: '',
+				websites: [] as string[],
+				latitude: 0,
+				longitude: 0,
+				address: '',
+			};
+			await user.save();
 
 			return new UserService(user);
 		}
@@ -179,6 +187,14 @@ export default class UserService {
 			name,
 			phone,
 			userType: isBusiness ? 'BUSINESS' : 'PERSONAL',
+			business_details: business_details ?? {
+				description: '',
+				email: '',
+				websites: [] as string[],
+				latitude: 0,
+				longitude: 0,
+				address: '',
+			},
 		});
 
 		return new UserService(createdUser);
@@ -186,22 +202,26 @@ export default class UserService {
 
 	static async logout(client_id: string) {
 		try {
-			await AuthDetailDB.updateOne(
-				{
-					client_id,
-				},
-				{
-					$set: {
-						isRevoked: true,
-					},
-				}
-			);
+			await AuthDetailDB.deleteOne({
+				client_id,
+			});
 		} catch (e) {
 			//ignored
 		}
 	}
 
-	static async isValidAuth(client_id: string) {
+	static async isValidAuth(client_id: string): Promise<
+		| {
+				valid: false;
+				revoke_at: undefined;
+				user: undefined;
+		  }
+		| {
+				valid: true;
+				revoke_at: Date;
+				user: IUser;
+		  }
+	> {
 		const auth = await AuthDetailDB.findOne({
 			client_id,
 		}).populate('user');
@@ -209,12 +229,22 @@ export default class UserService {
 		if (!auth) {
 			return {
 				valid: false,
+				revoke_at: undefined,
+				user: undefined,
 			};
 		}
 
 		const isPaymentValid = !auth.user.subscription_expiry
 			? DateUtils.getMoment(auth.user.subscription_expiry).isAfter(DateUtils.getMomentNow())
 			: false;
+
+		if (auth.isRevoked) {
+			return {
+				valid: false,
+				revoke_at: undefined,
+				user: undefined,
+			};
+		}
 
 		if (isPaymentValid) {
 			return {
@@ -224,11 +254,6 @@ export default class UserService {
 			};
 		}
 
-		if (auth.isRevoked) {
-			return {
-				valid: false,
-			};
-		}
 		if (DateUtils.getMoment(auth.revoke_at).isBefore(DateUtils.getMomentNow())) {
 			if (!auth.isRevoked) {
 				await auth.updateOne({
@@ -237,6 +262,8 @@ export default class UserService {
 			}
 			return {
 				valid: false,
+				revoke_at: undefined,
+				user: undefined,
 			};
 		}
 

@@ -6,23 +6,23 @@ const cache = createClient({
 	url: 'redis://127.0.0.1:6379',
 });
 
-export function getOrCache<T>(key: string, cb: () => Promise<T>) {
-	return new Promise((resolve: (value: T) => void, reject) => {
-		cache
-			.get(key)
-			.then(async (value) => {
-				if (value) {
-					resolve(JSON.parse(value));
-					return;
-				}
-				const updatedData = await cb();
-				cache.setEx(key, CACHE_TIMEOUT, JSON.stringify(updatedData));
-				resolve(updatedData);
-			})
-			.catch((err) => {
-				Logger.error('Error getting cached: ' + key, err);
-			});
-	});
+export async function getOrCache<T>(key: string, cb: () => Promise<T>) {
+	try {
+		const value = await cache.get(key);
+		if (value) {
+			return JSON.parse(value) as T;
+		}
+	} catch (err) {
+		Logger.error('ERROR-CACHE: Error fetching Data ' + key, err as Error);
+	}
+	try {
+		const updatedData = await cb();
+		cache.setEx(key, CACHE_TIMEOUT, JSON.stringify(updatedData));
+		return updatedData as T;
+	} catch (err) {
+		Logger.error('ERROR-CACHE: Error Generating Data ' + key, err as Error);
+	}
+	throw new Error('Error generating cache');
 }
 
 export function saveToCache(key: string, value: string | string[] | number | object) {

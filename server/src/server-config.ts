@@ -15,6 +15,7 @@ import {
 	IS_PRODUCTION,
 	IS_WINDOWS,
 	MISC_PATH,
+	TASK_PATH,
 	UPLOADS_PATH,
 } from './config/const';
 import APIError from './errors/api-errors';
@@ -142,11 +143,11 @@ export default function (app: Express) {
 	//0 0 * * *
 	cron.schedule('30 0 * * *', function () {
 		SchedulerService.scheduleDailyMessages();
+		WhatsappUtils.removeUnwantedSessions();
 	});
 
 	cron.schedule('0 */3 * * *', function () {
 		WhatsappUtils.removeInactiveSessions();
-		WhatsappUtils.removeUnwantedSessions();
 	});
 	cron.schedule('* * * * * *', function () {
 		MessageService.sendScheduledMessage();
@@ -169,4 +170,5 @@ function createDir() {
 	fs.mkdirSync(__basedir + UPLOADS_PATH, { recursive: true });
 	fs.mkdirSync(__basedir + INVOICE_PATH, { recursive: true });
 	fs.mkdirSync(__basedir + MISC_PATH, { recursive: true });
+	fs.mkdirSync(__basedir + TASK_PATH, { recursive: true });
 }

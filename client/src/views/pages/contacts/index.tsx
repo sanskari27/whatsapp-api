@@ -29,13 +29,15 @@ import {
 	deleteContactCard,
 	deletingContactCard,
 	findContactById,
+	removeAllSelectedContacts,
 	removeSelectedContact,
+	selectAllContacts,
 	updatingContactCard,
 } from '../../../store/reducers/ContactCardReducers';
 import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
 import ExporterModal, { ExportsModalHandler } from '../../components/exporter';
 import { NavbarDeleteElement, NavbarSearchElement } from '../../components/navbar';
-import QrImage from '../../components/qr-image';
+import QRImage from '../../components/qr-image/QRImage';
 import ContactInputDialog, { ContactInputDialogHandle } from './components/contact-input-dialog';
 
 const ContactsPage = () => {
@@ -55,6 +57,7 @@ const ContactsPage = () => {
 			ContactCardService.DeleteContacts(contact);
 			dispatch(deleteContactCard(contact));
 		});
+		dispatch(removeAllSelectedContacts());
 	};
 
 	const handleContactEdit = (id: string) => {
@@ -91,13 +94,16 @@ const ContactsPage = () => {
 					>
 						ADD
 					</Button>
+					<Button colorScheme='blue' size={'sm'} onClick={() => dispatch(selectAllContacts())}>
+						Select All
+					</Button>
 				</HStack>
 			),
 		});
 		return () => {
 			popFromNavbar();
 		};
-	}, [selectedContacts.length]);
+	}, [dispatch, selectedContacts.length]);
 
 	const filtered = useFilteredList(list, { first_name: 1, middle_name: 1, last_name: 1 });
 
@@ -135,7 +141,7 @@ const ContactsPage = () => {
 									{index + 1}.
 								</Td>
 								<Td>
-									<QrImage base64={contact.base64} />
+									<QRImage base64={contact.base64} />
 								</Td>
 								<Td>
 									<Box>

@@ -80,6 +80,15 @@ const Reports = () => {
 					>
 						Export
 					</Button>
+					<Button
+						colorScheme={'blue'}
+						size={'sm'}
+						onClick={() =>
+							setSelectedCampaign(all_campaigns.map((campaign) => campaign.campaign_id))
+						}
+					>
+						Select All
+					</Button>
 				</HStack>
 			),
 		});
@@ -92,6 +101,7 @@ const Reports = () => {
 		exportCampaign,
 		exportingCampaign,
 		selectedCampaign,
+		all_campaigns,
 	]);
 
 	const fetchCampaigns = useCallback(() => {
@@ -179,6 +189,12 @@ const Reports = () => {
 								<Td>
 									<LineSkeleton />
 								</Td>
+								<Td>
+									<LineSkeleton />
+								</Td>
+								<Td>
+									<LineSkeleton />
+								</Td>
 							</Tr>
 						) : (
 							filtered.map((campaign, index) => (
@@ -246,6 +262,7 @@ const Reports = () => {
 			<ConfirmationDialog
 				type={'Campaign'}
 				ref={confirmationDialogRef}
+				disclaimer={'This will pause the campaign.'}
 				onConfirm={deleteCampaign}
 			/>
 		</Flex>

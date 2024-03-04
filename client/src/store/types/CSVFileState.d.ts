@@ -1,13 +1,13 @@
 export type CSVFileState = {
 	list: {
-		id: string;
+		fileName: string;
 		name: string;
 		headers: string[];
-		_id: string;
+		id: string;
 	}[];
 	selectedCSV: {
-		_id: string;
 		id: string;
+		fileName: string;
 		name: string;
 		headers: string[];
 	};

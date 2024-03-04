@@ -1,3 +1,4 @@
+import { DownloadIcon } from '@chakra-ui/icons';
 import {
 	Box,
 	HStack,
@@ -26,32 +27,29 @@ const MessageSchedulerList = () => {
 	const { all_schedulers } = useSelector((state: StoreState) => state[StoreNames.SCHEDULER]);
 
 	const handleSchedulerToggleActive = (id: string) => {
-		MessageService.toggleScheduledMessage(id)
-			.then((res) => {
-				if (!res) return;
-				dispatch(editSelectedScheduler(res));
-			})
-			.catch((err) => {
-				console.log(err);
-			});
+		MessageService.toggleScheduledMessage(id).then((res) => {
+			if (!res) return;
+			dispatch(editSelectedScheduler(res));
+		});
 	};
 
 	const handleDeleteScheduledMessage = (id: string) => {
-		MessageService.deleteScheduledMessage(id)
-			.then((res) => {
-				if (!res) return;
-				dispatch(deleteScheduler(id));
-			})
-			.catch((err) => {
-				console.log(err);
-			});
+		MessageService.deleteScheduledMessage(id).then((res) => {
+			if (!res) return;
+			dispatch(deleteScheduler(id));
+		});
+	};
+
+	const downloadSchedulerReport = (id: string) => {
+		MessageService.generateScheduledMessagesReport(id);
 	};
 
 	return (
-		<TableContainer mt={'2rem'}>
+		<TableContainer mt={'1rem'}>
 			<Table>
 				<Thead>
 					<Tr>
+						<Th>Title</Th>
 						<Th width={'60%'}>Message</Th>
 						<Th width={'10%'}>Start Time</Th>
 						<Th width={'10%'}>End Time</Th>
@@ -60,11 +58,12 @@ const MessageSchedulerList = () => {
 					</Tr>
 				</Thead>
 				<Tbody>
-					{all_schedulers.map((scheduler) => (
-						<Tr key={scheduler.id}>
+					{all_schedulers.map((scheduler, index) => (
+						<Tr key={index}>
+							<Td>{scheduler.title}</Td>
 							<Td>
-								{scheduler.message.split('\n').map((message) => (
-									<Box>{message}</Box>
+								{scheduler.message.split('\n').map((message, index) => (
+									<Box key={index}>{message}</Box>
 								))}
 							</Td>
 							<Td>{scheduler.start_from}</Td>
@@ -76,12 +75,19 @@ const MessageSchedulerList = () => {
 							<Td>
 								<HStack>
 									<IconButton
+										aria-label='download-scheduled-messages'
+										icon={<DownloadIcon />}
+										onClick={() => {
+											downloadSchedulerReport(scheduler.id);
+										}}
+									/>
+									<IconButton
 										aria-label='toggle-scheduler'
 										icon={scheduler.isActive ? <FiPause /> : <FiPlay />}
 										onClick={() => {
 											handleSchedulerToggleActive(scheduler.id);
 										}}
-										colorScheme={scheduler.isActive ? 'red' : 'green'}
+										colorScheme={scheduler.isActive ? 'yellow' : 'blue'}
 									/>
 									<IconButton
 										aria-label='edit-scheduler'
@@ -91,6 +97,7 @@ const MessageSchedulerList = () => {
 										}}
 										colorScheme='gray'
 									/>
+
 									<IconButton
 										aria-label='delete-scheduler'
 										icon={<MdDelete />}

@@ -1,7 +1,8 @@
 import { Types } from 'mongoose';
-import { CAMPAIGN_STATUS, MESSAGE_STATUS } from '../../config/const';
+import { CAMPAIGN_STATUS, MESSAGE_SCHEDULER_TYPE, MESSAGE_STATUS } from '../../config/const';
 import { CampaignDB, MessageDB } from '../../repository/messenger';
 import TimeGenerator from '../../structures/TimeGenerator';
+import { IMessage } from '../../types/messenger';
 import { IUser } from '../../types/user';
 import DateUtils from '../../utils/DateUtils';
 import MessageService from './Message';
@@ -51,26 +52,33 @@ export default class CampaignService {
 	}
 
 	async scheduleCampaign(messages: Message[], opts: Batch) {
-		const _messages: Types.ObjectId[] = [];
-		const dateGenerator = new TimeGenerator(opts);
-		for (const message of messages) {
-			const msg = this.messageService.scheduleMessage({
-				receiver: message.number,
-				message: message.message ?? '',
-				attachments: message.attachments ?? [],
-				shared_contact_cards: message.shared_contact_cards ?? [],
-				polls: message.polls ?? [],
-				sendAt: dateGenerator.next().value,
-			});
-			_messages.push(msg);
-		}
-
 		const campaign = await CampaignDB.create({
 			name: opts.campaign_name,
 			description: opts.description,
 			user: this.user,
-			messages: _messages,
 		});
+		const _messages: IMessage[] = [];
+		const dateGenerator = new TimeGenerator(opts);
+		for (const message of messages) {
+			const msg = this.messageService.scheduleMessage(
+				{
+					receiver: message.number,
+					message: message.message ?? '',
+					attachments: message.attachments ?? [],
+					shared_contact_cards: message.shared_contact_cards ?? [],
+					polls: message.polls ?? [],
+					sendAt: dateGenerator.next().value,
+				},
+				{
+					scheduled_by: MESSAGE_SCHEDULER_TYPE.CAMPAIGN,
+					scheduler_id: campaign._id,
+				}
+			);
+			_messages.push(msg);
+		}
+
+		campaign.messages = _messages;
+		await campaign.save();
 		return campaign;
 	}
 

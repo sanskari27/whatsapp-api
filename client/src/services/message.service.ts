@@ -1,5 +1,21 @@
-import axios from 'axios';
 import APIInstance from '../config/APIInstance';
+
+type Scheduler = {
+	id: string;
+	title: string;
+	message: string;
+	attachments: string[];
+	shared_contact_cards: string[];
+	polls: {
+		title: string;
+		options: string[];
+		isMultiSelect: boolean;
+	}[];
+	isActive: boolean;
+	start_from: string;
+	end_at: string;
+	csv: string;
+};
 
 export default class MessageService {
 	static async scheduleCampaign(data: {
@@ -19,36 +35,24 @@ export default class MessageService {
 		endTime?: string;
 		batch_delay?: number;
 		batch_size?: number;
-		description?:string;
+		description?: string;
 	}) {
+		const { csv_file, ...details } = data;
 		try {
-			await APIInstance.post(`/whatsapp/schedule-message`, data);
-			return null;
+			await APIInstance.post(`/whatsapp/schedule-message`, {
+				...details,
+				...(csv_file ? { csv_file } : {}),
+			});
 		} catch (err: unknown) {
-			if (axios.isAxiosError(err)) {
-				if (err.response?.data.title === 'ALREADY_EXISTS') return 'Campaign name already exists';
-			}
-			return 'Unable to schedule message';
+			//ignored
 		}
 	}
-	static async scheduleMessage(data: {
-		csv: string;
-		message: string;
-		shared_contact_cards: string[];
-		attachments: string[];
-		polls: {
-			title: string;
-			options: string[];
-			isMultiSelect: boolean;
-		}[];
-		title: string;
-		start_from: string;
-		end_at: string;
-	}) {
+	static async scheduleMessage(details: Omit<Scheduler, 'id' | 'isActive'>) {
 		try {
-			const response = await APIInstance.post(`/scheduler`, data);
+			const response = await APIInstance.post(`/scheduler`, details);
 			return {
 				id: response.data.scheduler.id ?? '',
+				title: response.data.scheduler.title ?? '',
 				message: response.data.scheduler.message ?? '',
 				attachments: response.data.scheduler.attachments ?? [],
 				shared_contact_cards: response.data.scheduler.shared_contact_cards ?? [],
@@ -56,39 +60,20 @@ export default class MessageService {
 				isActive: response.data.scheduler.isActive,
 				start_from: response.data.scheduler.start_from ?? '',
 				end_at: response.data.scheduler.end_at ?? '',
-			} as {
-				id: string;
-				message: string;
-				attachments: string[];
-				shared_contact_cards: string[];
-				polls: {
-					title: string;
-					options: string[];
-					isMultiSelect: boolean;
-				}[];
-				isActive: boolean;
-				start_from: string;
-				end_at: string;
-			};
+				csv: response.data.csv ?? '',
+			} as Scheduler;
 		} catch (err: unknown) {
-			return {
-				id: '',
-				message: '',
-				attachments: [],
-				shared_contact_cards: [],
-				polls: [],
-				isActive: false,
-				start_from: '',
-				end_at: '',
-			};
+			return null;
 		}
 	}
 
 	static async getScheduledMessages() {
 		try {
 			const { data } = await APIInstance.get('/scheduler');
-			return data.schedulers.map((scheduler:any) => ({
+
+			return (data.schedulers as Scheduler[]).map((scheduler) => ({
 				id: scheduler.id ?? '',
+				title: scheduler.title ?? '',
 				message: scheduler.message ?? '',
 				attachments: scheduler.attachments ?? [],
 				shared_contact_cards: scheduler.shared_contact_cards ?? [],
@@ -96,9 +81,63 @@ export default class MessageService {
 				isActive: scheduler.isActive,
 				start_from: scheduler.start_from ?? '',
 				end_at: scheduler.end_at ?? '',
+				csv: scheduler.csv ?? '',
 			}));
 		} catch (err: unknown) {
-			return [];
+			return [] as Scheduler[];
+		}
+	}
+
+	static async generateScheduledMessagesReport(id: string) {
+		try {
+			const response = await APIInstance.get(`/scheduler/${id}/report`, {
+				responseType: 'blob',
+			});
+
+			const contentType = response.headers['content-type'];
+			const blob = new Blob([response.data], { type: contentType });
+
+			// Create a temporary link element
+			const downloadLink = document.createElement('a');
+			downloadLink.href = window.URL.createObjectURL(blob);
+
+			const contentDispositionHeader = response.headers['content-disposition'];
+			const fileNameMatch = contentDispositionHeader.match(/filename="(.+)"/);
+			const fileName = fileNameMatch ? fileNameMatch[1] : 'download.csv';
+
+			downloadLink.download = fileName; // Specify the filename
+
+			// Append the link to the body and trigger the download
+			document.body.appendChild(downloadLink);
+			downloadLink.click();
+
+			// Clean up - remove the link
+			document.body.removeChild(downloadLink);
+		} catch (err) {
+			//ignore
+		}
+	}
+
+	static async editScheduledMessage(scheduledMessage: Omit<Scheduler, 'isActive'>) {
+		try {
+			const { data } = await APIInstance.patch(
+				`/scheduler/${scheduledMessage.id}`,
+				scheduledMessage
+			);
+			return {
+				id: data.bot.id ?? '',
+				title: data.bot.title ?? '',
+				message: data.bot.message ?? '',
+				attachments: data.bot.attachments ?? [],
+				shared_contact_cards: data.bot.shared_contact_cards ?? [],
+				polls: data.bot.polls ?? [],
+				isActive: data.bot.isActive,
+				start_from: data.bot.start_from ?? '',
+				end_at: data.bot.end_at ?? '',
+				csv: data.bot.csv ?? '',
+			} as Scheduler;
+		} catch (err) {
+			return null;
 		}
 	}
 
@@ -107,6 +146,7 @@ export default class MessageService {
 			const { data } = await APIInstance.put(`/scheduler/${id}`);
 			return {
 				id: data.scheduler.id ?? '',
+				title: data.scheduler.title ?? '',
 				message: data.scheduler.message ?? '',
 				attachments: data.scheduler.attachments ?? [],
 				shared_contact_cards: data.scheduler.shared_contact_cards ?? [],
@@ -114,31 +154,10 @@ export default class MessageService {
 				isActive: data.scheduler.isActive,
 				start_from: data.scheduler.start_from ?? '',
 				end_at: data.scheduler.end_at ?? '',
-			} as {
-				id: string;
-				message: string;
-				attachments: string[];
-				shared_contact_cards: string[];
-				polls: {
-					title: string;
-					options: string[];
-					isMultiSelect: boolean;
-				}[];
-				isActive: boolean;
-				start_from: string;
-				end_at: string;
-			};
+				csv: data.scheduler.csv ?? '',
+			} as Scheduler;
 		} catch (err: unknown) {
-			return {
-				id: '',
-				message: '',
-				attachments: [],
-				shared_contact_cards: [],
-				polls: [],
-				isActive: false,
-				start_from: '',
-				end_at: '',
-			};
+			return null;
 		}
 	}
 

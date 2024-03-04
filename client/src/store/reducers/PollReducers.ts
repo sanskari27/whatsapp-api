@@ -99,6 +99,19 @@ const PollSlice = createSlice({
 		) => {
 			state.selectedPollDetails = action.payload;
 		},
+		setPollAt: (
+			state,
+			action: PayloadAction<{
+				pollIndex: number;
+				poll: {
+					title: string;
+					options: string[];
+					isMultiSelect: boolean;
+				};
+			}>
+		) => {
+			state.polls[action.payload.pollIndex] = action.payload.poll;
+		},
 	},
 });
 
@@ -115,5 +128,6 @@ export const {
 	deletePollOption,
 	setError,
 	setSelectedPollDetails,
+	setPollAt,
 } = PollSlice.actions;
 export default PollSlice.reducer;
