@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { singletonHook } from 'react-singleton-hook';
-import { socket } from '../config/APIInstance';
-import { SOCKET_EVENT } from '../config/const';
+import { io } from 'socket.io-client';
+import { SERVER_URL, SOCKET_EVENT } from '../config/const';
 import UserService from '../services/user.service';
 import { getClientID, saveClientID } from '../utils/ChromeUtils';
 import { recheckNetwork } from './useNetwork';
@@ -24,6 +24,8 @@ let globalSet: React.Dispatch<
 > = () => {
 	throw new Error('you must useAuth before setting its state');
 };
+
+const socket = io(SERVER_URL + 'auth');
 
 export const useAuth = singletonHook(initStatus, () => {
 	const [auth, setAuth] = useState(initStatus);

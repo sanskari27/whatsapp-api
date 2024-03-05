@@ -33,7 +33,7 @@ export default class SocketServerProvider {
 	}
 
 	private attachListeners() {
-		this.io.on('connection', (socket) => {
+		this.io.of('/auth').on('connection', (socket) => {
 			socket.on(SOCKET_EVENTS.INITIALIZE, async (cid: string | undefined) => {
 				let client_id = '';
 				if (cid) {
