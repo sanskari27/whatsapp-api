@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from 'express';
 import { saveRefreshTokens } from '../../config/cache';
 import { IS_PRODUCTION, JWT_COOKIE, JWT_REFRESH_COOKIE } from '../../config/const';
-import APIError, { API_ERRORS } from '../../errors/api-errors';
+import { APIError, USER_ERRORS } from '../../errors';
 import { WhatsappProvider } from '../../provider/whatsapp_provider';
 import { UserService } from '../../services';
-import AdminService from '../../services/user/admin-service';
+import { AccountService, AccountServiceFactory } from '../../services/account';
 import { Respond } from '../../utils/ExpressUtils';
-import { AdminLoginValidationResult } from './auth.validator';
+import { LoginValidationResult } from './auth.validator';
 
 const JWT_EXPIRE_TIME = 3 * 60 * 1000;
 const REFRESH_EXPIRE_TIME = 30 * 24 * 60 * 60 * 1000;
@@ -14,7 +14,7 @@ const REFRESH_EXPIRE_TIME = 30 * 24 * 60 * 60 * 1000;
 async function validateClientID(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.headers['client-id'] as string;
 	if (!client_id) {
-		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+		return next(new APIError(USER_ERRORS.SESSION_INVALIDATED));
 	}
 
 	const authStatus = await UserService.isValidAuth(client_id);
@@ -24,7 +24,7 @@ async function validateClientID(req: Request, res: Response, next: NextFunction)
 		if (client_id) {
 			whatsapp.logoutClient();
 		}
-		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+		return next(new APIError(USER_ERRORS.SESSION_INVALIDATED));
 	}
 
 	return Respond({
@@ -58,7 +58,7 @@ async function details(req: Request, res: Response, next: NextFunction) {
 	});
 }
 
-async function logout(req: Request, res: Response, next: NextFunction) {
+async function user_logout(req: Request, res: Response, next: NextFunction) {
 	WhatsappProvider.getInstance(req.locals.client_id).logoutClient();
 
 	return Respond({
@@ -68,19 +68,25 @@ async function logout(req: Request, res: Response, next: NextFunction) {
 	});
 }
 
-async function adminLogin(req: Request, res: Response, next: NextFunction) {
-	const { username, password } = req.locals.data as AdminLoginValidationResult;
+async function login(req: Request, res: Response, next: NextFunction) {
+	const { username, password, access_level } = req.locals.data as LoginValidationResult;
 	try {
-		const adminService = await AdminService.getService(username, password);
+		const service = await AccountServiceFactory.createByUsernameAndPassword(
+			username,
+			password,
+			access_level
+		);
 
-		res.cookie(JWT_COOKIE, adminService.getToken(), {
+		res.cookie(JWT_COOKIE, service.token, {
 			sameSite: 'strict',
 			expires: new Date(Date.now() + JWT_EXPIRE_TIME),
 			httpOnly: IS_PRODUCTION,
 			secure: IS_PRODUCTION,
 		});
-		const t = adminService.getRefreshToken();
-		saveRefreshTokens(t, adminService.getUser()._id);
+
+		const t = service.refreshToken;
+		saveRefreshTokens(t, service.id);
+
 		res.cookie(JWT_REFRESH_COOKIE, t, {
 			sameSite: 'strict',
 			expires: new Date(Date.now() + REFRESH_EXPIRE_TIME),
@@ -94,15 +100,15 @@ async function adminLogin(req: Request, res: Response, next: NextFunction) {
 			data: {},
 		});
 	} catch (err) {
-		return next(new APIError(API_ERRORS.USER_ERRORS.USER_NOT_FOUND_ERROR));
+		return next(new APIError(USER_ERRORS.USER_NOT_FOUND_ERROR));
 	}
 }
 
-async function adminLogout(req: Request, res: Response, next: NextFunction) {
+async function logout(req: Request, res: Response, next: NextFunction) {
 	const refreshTokens = req.cookies[JWT_REFRESH_COOKIE] as string;
 	res.clearCookie(JWT_COOKIE);
 	res.clearCookie(JWT_REFRESH_COOKIE);
-	await AdminService.logout(refreshTokens);
+	await AccountService.logout(refreshTokens);
 	return Respond({
 		res,
 		status: 200,
@@ -110,34 +116,25 @@ async function adminLogout(req: Request, res: Response, next: NextFunction) {
 	});
 }
 
-async function setAdminClientID(req: Request, res: Response, next: NextFunction) {
-	const { client_id } = req.body;
-	if (!client_id) {
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
+async function validateAuth(req: Request, res: Response, next: NextFunction) {
+	const refreshToken = req.cookies[JWT_REFRESH_COOKIE];
+	if (!refreshToken) {
+		return next(new APIError(USER_ERRORS.AUTHORIZATION_ERROR));
 	}
-	const adminService = new AdminService(req.locals.admin);
-	await adminService.setClientID(client_id);
+
+	const authStatus = await AccountService.isValidAuth(refreshToken);
+	if (!authStatus) {
+		return next(new APIError(USER_ERRORS.AUTHORIZATION_ERROR));
+	}
+
 	return Respond({
 		res,
 		status: 200,
 		data: {
-			client_id,
+			profiles: await authStatus.listProfiles(),
 		},
 	});
-}
 
-async function getAdminClientID(req: Request, res: Response, next: NextFunction) {
-	const adminService = new AdminService(req.locals.admin);
-	return Respond({
-		res,
-		status: 200,
-		data: {
-			client_id: adminService.getClientID(),
-		},
-	});
-}
-
-async function validateAdmin(req: Request, res: Response, next: NextFunction) {
 	return Respond({
 		res,
 		status: 200,
@@ -148,12 +145,10 @@ async function validateAdmin(req: Request, res: Response, next: NextFunction) {
 const AuthController = {
 	validateClientID,
 	details,
+	user_logout,
+	login,
 	logout,
-	adminLogin,
-	adminLogout,
-	validateAdmin,
-	getAdminClientID,
-	setAdminClientID,
+	validateAuth,
 };
 
 export default AuthController;
