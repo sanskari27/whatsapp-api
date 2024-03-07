@@ -7,6 +7,7 @@ type Attachment = {
 };
 
 type AttachmentUiDetails = {
+	searchText: string;
 	isSaving: boolean;
 	isDeleting: boolean;
 	isUpdating: boolean;
@@ -17,6 +18,9 @@ export type AttachmentState = {
 	attachments: Attachment[];
 	selectedAttachment: Attachment;
 	file: File | null;
+	size: string;
+	url: string;
+	type: string;
 	uiDetails: AttachmentUiDetails;
 	selectedAttachments: string[];
 };

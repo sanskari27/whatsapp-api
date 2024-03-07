@@ -34,8 +34,7 @@ export default class ShortenerService {
 				title: data.title as string,
 			};
 		} catch (err) {
-						return null;
-
+			return null;
 		}
 	}
 
@@ -77,12 +76,20 @@ export default class ShortenerService {
 		}
 	}
 
-	static async updateLink(shorten_link_id: string, link: string, title: string) {
+	static async updateLink(
+		shorten_link_id: string,
+		title: string,
+		details: { link: string } | { number: string; message: string }
+	) {
 		try {
-			const { data } = await APIInstance.patch(`/shortner/${shorten_link_id}`, { link, title });
+			const { data } = await APIInstance.patch(`/shortner/${shorten_link_id}`, {
+				...details,
+				title,
+			});
 			return data as {
 				shorten_link: string;
 				link: string;
+				id: string;
 				base64: string;
 				title: string;
 			};

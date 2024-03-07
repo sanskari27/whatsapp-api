@@ -14,7 +14,9 @@ export default class ContactCardService {
 				organization: card.organization as string,
 				email_personal: card.email_personal as string,
 				email_work: card.email_work as string,
-				links: card.links as string[],
+				links: (card.links ?? []).map((link: string) =>
+					link.includes('://') ? link.split('://')[1] : link
+				),
 				street: card.street as string,
 				city: card.city as string,
 				state: card.state as string,
@@ -52,7 +54,7 @@ export default class ContactCardService {
 		contact_details_phone?: string | undefined;
 		contact_details_work?: string | undefined;
 		contact_details_other?: (string | undefined)[];
-		links?: (string | undefined)[];
+		links?: string[];
 		street?: string;
 		city?: string;
 		state?: string;
@@ -60,7 +62,15 @@ export default class ContactCardService {
 		pincode?: string;
 	}) {
 		try {
-			const { data: response } = await APIInstance.post(`/contact-card`, data);
+			if (!data.first_name) {
+				throw Error('First name required');
+			}
+			const { data: response } = await APIInstance.post(`/contact-card`, {
+				...data,
+				links: (data.links ?? []).map((link: string) =>
+					link.includes('://') ? link : 'https://' + link
+				),
+			});
 			return {
 				id: response.contact_card.id as string,
 				first_name: response.contact_card.first_name as string,
@@ -125,7 +135,7 @@ export default class ContactCardService {
 		contact_details_phone?: string | undefined;
 		contact_details_work?: string | undefined;
 		contact_details_other?: (string | undefined)[];
-		links?: (string | undefined)[];
+		links?: string[];
 		street?: string;
 		city?: string;
 		state?: string;
@@ -133,7 +143,15 @@ export default class ContactCardService {
 		pincode?: string;
 	}) {
 		try {
-			const { data: response } = await APIInstance.put(`/contact-card/${data.id}`, data);
+			if (!data.first_name) {
+				throw Error('First name required');
+			}
+			const { data: response } = await APIInstance.put(`/contact-card/${data.id}`, {
+				...data,
+				links: (data.links ?? []).map((link: string) =>
+					link.includes('://') ? link : 'https://' + link
+				),
+			});
 			return {
 				id: response.contact_card.id as string,
 				first_name: response.contact_card.first_name as string,

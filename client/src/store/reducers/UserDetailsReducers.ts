@@ -14,6 +14,14 @@ const initialState: UserDetailsState = {
 	labels: [],
 	contactsCount: null,
 	data_loaded: false,
+
+	current_profile: '',
+	profiles: [],
+
+	ui_config: {
+		load_preview: true,
+		confirmation_required: true,
+	},
 };
 
 const UserDetailsSlice = createSlice({
@@ -30,6 +38,9 @@ const UserDetailsSlice = createSlice({
 
 			state.groups = initialState.groups;
 			state.labels = initialState.labels;
+
+			state.current_profile = '';
+			state.profiles = [];
 		},
 		setUserDetails: (state, action: PayloadAction<Partial<typeof initialState>>) => {
 			if (action.payload.name) {
@@ -63,6 +74,12 @@ const UserDetailsSlice = createSlice({
 			if (action.payload.data_loaded !== undefined) {
 				state.data_loaded = action.payload.data_loaded;
 			}
+			if (action.payload.profiles !== undefined) {
+				state.profiles = action.payload.profiles;
+			}
+			if (action.payload.current_profile !== undefined) {
+				state.current_profile = action.payload.current_profile;
+			}
 		},
 		setName: (state, action: PayloadAction<typeof initialState.name>) => {
 			state.name = action.payload;
@@ -94,6 +111,18 @@ const UserDetailsSlice = createSlice({
 		setDataLoaded: (state, action: PayloadAction<typeof initialState.data_loaded>) => {
 			state.data_loaded = action.payload;
 		},
+		setCurrentProfile: (state, action: PayloadAction<typeof initialState.current_profile>) => {
+			state.current_profile = action.payload;
+		},
+
+		setUserConfig: (state, action: PayloadAction<Partial<typeof initialState.ui_config>>) => {
+			for (const key in action.payload) {
+				if (Object.prototype.hasOwnProperty.call(action.payload, key)) {
+					const typedKey = key as keyof typeof action.payload;
+					state.ui_config[typedKey] = action.payload[typedKey]!;
+				}
+			}
+		},
 	},
 });
 
@@ -109,6 +138,8 @@ export const {
 	setLabels,
 	setContactsCount,
 	setDataLoaded,
+	setCurrentProfile,
+	setUserConfig,
 } = UserDetailsSlice.actions;
 
 export default UserDetailsSlice.reducer;

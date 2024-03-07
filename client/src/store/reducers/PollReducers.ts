@@ -27,6 +27,7 @@ const initialState: PollState = {
 		pollIndex: -1,
 		message: '',
 	},
+	ui: { searchText: '' },
 };
 
 const PollSlice = createSlice({
@@ -37,6 +38,7 @@ const PollSlice = createSlice({
 			state.polls = initialState.polls;
 			state.error = initialState.error;
 			state.list = initialState.list;
+			state.ui = initialState.ui;
 		},
 		setPollList: (state, action: PayloadAction<typeof initialState.list>) => {
 			state.list = action.payload;
@@ -112,6 +114,9 @@ const PollSlice = createSlice({
 		) => {
 			state.polls[action.payload.pollIndex] = action.payload.poll;
 		},
+		setSearchText: (state, action: PayloadAction<typeof initialState.ui.searchText>) => {
+			state.ui.searchText = action.payload;
+		},
 	},
 });
 
@@ -129,5 +134,6 @@ export const {
 	setError,
 	setSelectedPollDetails,
 	setPollAt,
+	setSearchText
 } = PollSlice.actions;
 export default PollSlice.reducer;

@@ -1,6 +1,5 @@
 import { Checkbox, Table, TableContainer, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react';
 import { useDispatch, useSelector } from 'react-redux';
-import useFilteredList from '../../../../hooks/useFilteredList';
 import { useTheme } from '../../../../hooks/useTheme';
 import { StoreNames, StoreState } from '../../../../store';
 import {
@@ -15,8 +14,7 @@ export default function WhatsappGroupTab() {
 	const { groups: list } = useSelector((state: StoreState) => state[StoreNames.USER]);
 	const { selectedGroups } = useSelector((state: StoreState) => state[StoreNames.MERGE_GROUP]);
 
-	let filtered = list.filter((g) => !g.isMergedGroup);
-	filtered = useFilteredList(filtered, { name: 1 });
+	const filtered = list.filter((g) => !g.isMergedGroup);
 
 	return (
 		<>

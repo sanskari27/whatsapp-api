@@ -1,0 +1,26 @@
+.nav-menu {
+	color: hsl(0, 0%, 15%);
+	cursor: pointer;
+	position: relative;
+	font-weight: 400;
+	padding: 0 0.5rem;
+}
+
+.nav-menu.nav-active {
+	font-weight: 500;
+}
+
+.nav-menu:hover {
+	transform: scale(1.05);
+}
+
+.nav-menu:link,
+.nav-menu:active,
+.nav-menu:visited {
+	text-decoration: none;
+	color: hsl(0, 0%, 15%);
+}
+.nav-menu:hover {
+	text-decoration: none;
+	color: #4f7560;
+}

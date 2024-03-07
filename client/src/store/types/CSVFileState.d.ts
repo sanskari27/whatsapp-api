@@ -18,6 +18,8 @@ export type CSVFileState = {
 		isCreating: boolean;
 		isUpdating: boolean;
 		error: string;
+		searchText: string;
 	};
 	csvFile?: File;
+	size: string;
 };

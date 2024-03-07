@@ -6,20 +6,30 @@ export const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
 export const DATA_LOADED_DELAY = import.meta.env.VITE_DATA_LOADED_DELAY;
 
 export const NAVIGATION = {
-	WELCOME: '/welcome',
-	HOME: '/',
-	SCHEDULER: '/scheduler',
-	BOT: '/bot',
-	SETTINGS: '/settings',
-	NETWORK_ERROR: '/network-error',
-	REPORTS: '/reports',
+	DASHBOARD: '/dashboard',
+	CAMPAIGNS: '/campaigns',
+	MEDIA: '/media',
+	AUDIENCE: '/audience',
+
+	CAMPAIGN_REPORTS: '/campaign-reports',
 	POLL_RESPONSES: '/poll-responses',
-	SHORT: '/short',
+
+	BULK_MESSAGING: '/bulk-messaging',
+	AUTO_RESPONDER: '/auto-responder',
+	DAILY_MESSENGER: '/daily-messenger',
+
 	CONTACT: '/contact',
 	ATTACHMENTS: '/attachments',
+	SHORT_LINKS: '/short-links',
+
 	CSV: '/csv',
-	GROUP_MERGE: '/group-merge',
-	TASKS: '/pending-tasks',
+	GROUP: '/group',
+	EXPORT_CONTACTS: '/export-contacts',
+
+	WELCOME: '/welcome',
+	HOME: '/',
+	SETTINGS: '/settings',
+	NETWORK_ERROR: '/network-error',
 };
 
 export enum CHROME_ACTION {
@@ -85,3 +95,10 @@ export enum SETTINGS {
 export const COUNTRIES: {
 	[country_code: string]: string;
 } = countries;
+
+export enum Colors {
+	ACCENT_LIGHT = '#E8F2ED',
+	ACCENT_DARK = '#4F966E',
+	PRIMARY_DARK = '#0D1C12',
+	BACKGROUND_LIGHT = '#F7FCFA',
+}

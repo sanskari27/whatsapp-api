@@ -8,7 +8,6 @@ type CheckButtonType = {
 	onChange: ({ name, value }: { name: string; value: boolean }) => void;
 	isDisabled?: boolean;
 	gap?: number;
-	backgroundClassName?: string;
 };
 
 const CheckButton = ({
@@ -18,7 +17,6 @@ const CheckButton = ({
 	value,
 	isDisabled = false,
 	gap = 6,
-	backgroundClassName = '',
 }: CheckButtonType) => {
 	const handleChange = (e: boolean) => {
 		onChange({
@@ -35,13 +33,9 @@ const CheckButton = ({
 				aria-label='Done'
 				size='xs'
 				icon={value ? <CheckIcon color='white' /> : <></>}
-				onClick={() => {
-					handleChange(!value);
-				}}
+				onClick={() => handleChange(!value)}
 				isDisabled={isDisabled}
-				className={`${
-					value ? '!bg-[#4CB072]' : backgroundClassName || '!bg-[#A6A6A6] '
-				} hover:!bg-green-700 `}
+				className={`${value ? '!bg-[#4CB072]' : '!bg-[#A6A6A6] '} hover:!bg-green-700 `}
 			/>
 			<Text fontSize='sm'>{label}</Text>
 		</Flex>

@@ -19,6 +19,7 @@ const initialState: MergeGroupState = {
 		},
 	},
 	uiDetails: {
+		searchText: '',
 		isSaving: false,
 		isFetching: false,
 		isDeleting: false,
@@ -134,6 +135,10 @@ const MergeGroupSlice = createSlice({
 		setError: (state, action: PayloadAction<typeof initialState.uiDetails.error>) => {
 			state.uiDetails.error = action.payload;
 		},
+
+		setSearchText: (state, action: PayloadAction<string>) => {
+			state.uiDetails.searchText = action.payload;
+		},
 	},
 });
 
@@ -164,6 +169,7 @@ export const {
 	setGroupReplyUnsaved,
 	setPrivateReplySaved,
 	setPrivateReplyUnsaved,
+	setSearchText,
 } = MergeGroupSlice.actions;
 
 export default MergeGroupSlice.reducer;

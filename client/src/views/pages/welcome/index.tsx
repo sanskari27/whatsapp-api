@@ -1,11 +1,11 @@
-import { ChevronRightIcon } from '@chakra-ui/icons';
-import { Box, Button, Flex, Image, Progress, Text } from '@chakra-ui/react';
+import { Flex, Text } from '@chakra-ui/react';
 import { useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
-import { GREEN_SHADOW, LOGO, WELCOME_TYPING } from '../../../assets/Images';
+import { LOGO } from '../../../assets/Images';
 import { NAVIGATION } from '../../../config/const';
 import { startAuth, useAuth } from '../../../hooks/useAuth';
 import { useNetwork } from '../../../hooks/useNetwork';
+import LoadingPage from '../../components/loading-page';
 import QRLogo from '../../components/qr-image';
 
 export default function Welcome() {
@@ -19,12 +19,18 @@ export default function Welcome() {
 		}
 	}, [status, navigate]);
 
+	useEffect(() => {
+		if (!isAuthenticating && !isAuthenticated) {
+			startAuth();
+		}
+	}, [isAuthenticating, isAuthenticated]);
+
 	if (isSocketInitialized) {
 		return <Navigate to={NAVIGATION.HOME} />;
 	}
 
-	return (
-		<>
+	if (qrGenerated) {
+		return (
 			<Flex
 				direction={'column'}
 				justifyContent={'center'}
@@ -41,84 +47,15 @@ export default function Welcome() {
 					padding={'3rem'}
 					rounded={'lg'}
 					width={'500px'}
-					height={'550px'}
+					height={'500px'}
 					className='border shadow-xl drop-shadow-xl '
 				>
-					{!isAuthenticating && !isAuthenticated ? (
-						<Flex
-							direction={'column'}
-							justifyContent={'center'}
-							alignItems={'center'}
-							flexDirection='column'
-							padding={'3rem'}
-							rounded={'lg'}
-							width={'500px'}
-							height={'550px'}
-						>
-							<Flex justifyContent={'center'} alignItems={'center'} width={'full'} gap={'1rem'}>
-								<Image src={LOGO} width={'48px'} className='shadow-lg rounded-full' />
-								<Text className='text-black dark:text-white' fontSize={'lg'} fontWeight='bold'>
-									WhatsLeads
-								</Text>
-							</Flex>
-							<Box
-								width='250px'
-								height='250px'
-								display='flex'
-								justifyContent={'center'}
-								alignItems='center'
-								className='blur-sm'
-								position='relative'
-								backgroundRepeat={'no-repeat'}
-								backgroundPosition={'center'}
-								backgroundSize={'contain'}
-								backgroundImage={`url(${GREEN_SHADOW})`}
-							>
-								<Image src={WELCOME_TYPING} className='filter-none' width={'60%'} />
-							</Box>
-							<Box
-								width='250px'
-								height='250px'
-								display='flex'
-								justifyContent={'center'}
-								alignItems='center'
-								position='relative'
-								marginTop={'-250px'}
-							>
-								<Image src={WELCOME_TYPING} className='filter-none' width={'60%'} />
-							</Box>
-							<Button
-								bgColor={'green.300'}
-								width={'max-content'}
-								marginTop={'1rem'}
-								_hover={{
-									bgColor: 'green.400',
-								}}
-								onClick={startAuth}
-							>
-								<Text textColor='white' fontSize={'lg'} fontWeight='bold'>
-									Get Started
-								</Text>
-								<ChevronRightIcon w={6} h={6} color='white' ml={'0.5rem'} />
-							</Button>
-						</Flex>
-					) : qrGenerated ? (
-						<>
-							<QRLogo base64Data={qrCode} logoUrl={LOGO} />
-						</>
-					) : (
-						<Flex justifyContent={'center'} alignItems={'center'} direction={'column'} gap={'3rem'}>
-							<Flex justifyContent={'center'} alignItems={'center'} width={'full'} gap={'1rem'}>
-								<Image src={LOGO} width={'48px'} className='shadow-lg rounded-full' />
-								<Text className='text-black dark:text-white' fontSize={'lg'} fontWeight='bold'>
-									WhatsLeads
-								</Text>
-							</Flex>
-							<Progress size='xs' isIndeterminate width={'150%'} rounded={'lg'} />
-						</Flex>
-					)}
+					<QRLogo base64Data={qrCode} logoUrl={LOGO} />
+					<Text color={'whitesmoke'}>Connect Whatsleads to Whatsapp</Text>
 				</Flex>
 			</Flex>
-		</>
-	);
+		);
+	}
+
+	return <LoadingPage />;
 }

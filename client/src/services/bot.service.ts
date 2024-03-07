@@ -188,17 +188,20 @@ export default class BotService {
 				isActive: res.isActive ?? false,
 				polls: res.polls ?? [],
 				forward: res.forward ?? { number: '', message: '' },
-				nurturing: (res.nurturing ?? []).map((nurturing) => {
-					return {
-						message: nurturing.message ?? '',
-						after: nurturing.after ?? '',
-						attachments: (nurturing.attachments ?? []).map((attachment) => attachment._id as string),
-						shared_contact_cards: (nurturing ?? []).shared_contact_cards.map(
-							(contact) => contact._id as string
-						),
-						polls: nurturing.polls ?? [],
-					};
-				}) ?? [],
+				nurturing:
+					(res.nurturing ?? []).map((nurturing) => {
+						return {
+							message: nurturing.message ?? '',
+							after: nurturing.after ?? '',
+							attachments: (nurturing.attachments ?? []).map(
+								(attachment) => (attachment as unknown as { _id: string })._id as string
+							),
+							shared_contact_cards: (nurturing ?? []).shared_contact_cards.map(
+								(contact) => (contact as unknown as { _id: string })._id as string
+							),
+							polls: nurturing.polls ?? [],
+						};
+					}) ?? [],
 			} as Bot;
 		} catch (err) {
 			throw new Error('Error Saving group');

@@ -3,6 +3,7 @@ export type MergeGroupState = {
 	selectedGroups: string[];
 	editSelectedGroup: MergedGroup;
 	uiDetails: {
+		searchText: string;
 		isSaving: boolean;
 		isFetching: boolean;
 		isDeleting: boolean;

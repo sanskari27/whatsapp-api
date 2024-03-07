@@ -1,184 +1,248 @@
-import { SettingsIcon } from '@chakra-ui/icons';
-import { Box, Flex, Icon, IconButton, Image, Text, VStack, useDisclosure } from '@chakra-ui/react';
-import { IconType } from 'react-icons';
-import { BiPoll } from 'react-icons/bi';
-import { FiBarChart2, FiLink2 } from 'react-icons/fi';
-import { GrTasks } from 'react-icons/gr';
-import { MdGroups3, MdOutlineAttachment, MdOutlineContactPhone } from 'react-icons/md';
-import { SiProbot } from 'react-icons/si';
-import { TbCsv, TbLogout2, TbMessage2Minus } from 'react-icons/tb';
-import { useNavigate } from 'react-router-dom';
-import { LOGO } from '../../../assets/Images';
-import { NAVIGATION } from '../../../config/const';
-import { logout } from '../../../hooks/useAuth';
-import { toggleTheme, useTheme } from '../../../hooks/useTheme';
-import Settings from '../../pages/settings';
+import { Box, Button, Flex, Icon, Text } from '@chakra-ui/react';
+import { AiFillMessage, AiOutlineMessage } from 'react-icons/ai';
+import { FaFileImage, FaLink, FaRegFileImage } from 'react-icons/fa';
+import { IoTimer, IoTimerOutline } from 'react-icons/io5';
+import {
+	MdCampaign,
+	MdGroups,
+	MdOutlineCampaign,
+	MdOutlineGroups,
+	MdOutlinePoll,
+	MdPoll,
+} from 'react-icons/md';
+import {
+	RiContactsFill,
+	RiContactsLine,
+	RiFileExcel2Fill,
+	RiFileExcel2Line,
+	RiRobot2Fill,
+	RiRobot2Line,
+} from 'react-icons/ri';
+import { Link } from 'react-router-dom';
+import { Colors, NAVIGATION } from '../../../config/const';
+import Each from '../../../utils/Each';
 
-function isActiveTab(tab: string, path: string): boolean {
-	if (path.includes(tab)) return true;
+function isActiveTab(tab: string): boolean {
+	if (location.pathname.includes(tab)) return true;
 	return false;
 }
 
+const OPTIONS = {
+	[NAVIGATION.DASHBOARD]: [
+		{
+			title: 'Campaign Report',
+			icon: MdOutlineCampaign,
+			active_icon: MdCampaign,
+			parent: NAVIGATION.DASHBOARD,
+			route: NAVIGATION.CAMPAIGN_REPORTS,
+		},
+		{
+			title: 'Daily Messenger Report',
+			icon: IoTimerOutline,
+			active_icon: IoTimer,
+			parent: NAVIGATION.DASHBOARD,
+			route: NAVIGATION.DAILY_MESSENGER,
+		},
+		{
+			title: 'Auto Responder Report',
+			icon: RiRobot2Line,
+			active_icon: RiRobot2Fill,
+			parent: NAVIGATION.DASHBOARD,
+			route: NAVIGATION.AUTO_RESPONDER,
+		},
+		{
+			title: 'Poll Responses',
+			icon: MdOutlinePoll,
+			active_icon: MdPoll,
+			parent: NAVIGATION.DASHBOARD,
+			route: NAVIGATION.POLL_RESPONSES,
+		},
+	],
+	[NAVIGATION.CAMPAIGNS]: [
+		{
+			title: 'Bulk Messaging',
+			icon: AiOutlineMessage,
+			active_icon: AiFillMessage,
+			parent: NAVIGATION.CAMPAIGNS,
+			route: NAVIGATION.BULK_MESSAGING,
+		},
+		{
+			title: 'Auto Responder',
+			icon: RiRobot2Line,
+			active_icon: RiRobot2Fill,
+			parent: NAVIGATION.CAMPAIGNS,
+			route: NAVIGATION.AUTO_RESPONDER,
+		},
+		{
+			title: 'Daily Messenger',
+			icon: IoTimerOutline,
+			active_icon: IoTimer,
+			parent: NAVIGATION.CAMPAIGNS,
+			route: NAVIGATION.DAILY_MESSENGER,
+		},
+	],
+	[NAVIGATION.MEDIA]: [
+		{
+			title: 'Contacts',
+			icon: RiContactsLine,
+			active_icon: RiContactsFill,
+			parent: NAVIGATION.MEDIA,
+			route: NAVIGATION.CONTACT,
+		},
+		{
+			title: 'Short Links',
+			icon: FaLink,
+			active_icon: FaLink,
+			parent: NAVIGATION.MEDIA,
+			route: NAVIGATION.SHORT_LINKS,
+		},
+		{
+			title: 'Attachments',
+			icon: FaRegFileImage,
+			active_icon: FaFileImage,
+			parent: NAVIGATION.MEDIA,
+			route: NAVIGATION.ATTACHMENTS,
+		},
+	],
+	[NAVIGATION.AUDIENCE]: [
+		{
+			title: 'CSV',
+			icon: RiFileExcel2Line,
+			active_icon: RiFileExcel2Fill,
+			parent: NAVIGATION.AUDIENCE,
+			route: NAVIGATION.CSV,
+		},
+		{
+			title: 'Groups',
+			icon: MdOutlineGroups,
+			active_icon: MdGroups,
+			parent: NAVIGATION.AUDIENCE,
+			route: NAVIGATION.GROUP,
+		},
+	],
+};
+
+const SHORTCUTS = {
+	[NAVIGATION.DASHBOARD]: [
+		{
+			title: 'Create New Campaign',
+			route: NAVIGATION.CAMPAIGNS,
+		},
+	],
+	[NAVIGATION.CAMPAIGNS]: [
+		{
+			title: 'Manage Media',
+			route: NAVIGATION.MEDIA + NAVIGATION.ATTACHMENTS,
+		},
+		{
+			title: 'Reports',
+			route: NAVIGATION.DASHBOARD,
+		},
+	],
+	[NAVIGATION.MEDIA]: [
+		{
+			title: 'Create New Campaign',
+			route: NAVIGATION.CAMPAIGNS,
+		},
+		{
+			title: 'Reports',
+			route: NAVIGATION.DASHBOARD,
+		},
+	],
+	[NAVIGATION.AUDIENCE]: [
+		{
+			title: 'Export Contacts',
+			route: NAVIGATION.AUDIENCE + NAVIGATION.GROUP + NAVIGATION.EXPORT_CONTACTS,
+		},
+	],
+};
+
 export default function NavigationDrawer() {
-	const theme = useTheme();
+	// const theme = useTheme();
 
-	const { onOpen, onClose, isOpen } = useDisclosure();
+	// const { onOpen, onClose, isOpen } = useDisclosure();
 
-	const handleLogout = async () => {
-		logout();
-	};
+	// const handleLogout = async () => {
+	// 	logout();
+	// };
+	const options = OPTIONS['/' + location.pathname?.split('/')?.[1]] ?? [];
+	const shortcuts = SHORTCUTS['/' + location.pathname?.split('/')?.[1]] ?? [];
 
 	return (
 		<Box>
 			<Flex
 				direction={'column'}
-				// alignItems={'center'}
-				width={'70px'}
-				_hover={{
-					width: '200px',
-				}}
+				width={'300px'}
 				userSelect={'none'}
 				position={'fixed'}
-				minHeight={'100vh'}
-				borderRightWidth={'thin'}
-				borderRightColor={theme === 'light' ? 'gray.300' : 'gray.500'}
-				paddingY={'0.75rem'}
+				minHeight={'calc(95% - 65px)'}
+				top={'65px'}
+				paddingLeft={'1.5rem'}
 				zIndex={99}
-				background={theme === 'light' ? 'white' : '#252525'}
+				paddingTop={'1rem'}
+				background={Colors.BACKGROUND_LIGHT}
 			>
-				<Box
-					borderBottomWidth={'thin'}
-					borderBottomColor={theme === 'light' ? 'gray.300' : 'gray.500'}
-					paddingBottom={'0.75rem'}
-					width={'100%'}
-					height={'50px'}
-					paddingLeft={'15px'}
-				>
-					<Image src={LOGO} width={'36px'} className='shadow-lg rounded-full' />
-				</Box>
-				<Flex
-					direction={'column'}
-					height={'calc(100vh - 50px)'}
-					overflowY={'auto'}
-					paddingBottom={'1rem'}
-					flexGrow={1}
-				>
-					<Box flexGrow={'1'}>
-						<Flex flexDirection={'column'} paddingY={'0.5rem'} paddingX={'0.5rem'} gap={'0.25rem'}>
-							<MenuButton icon={MdOutlineContactPhone} route={NAVIGATION.CONTACT} name='Contacts' />
-
-							<MenuButton icon={TbMessage2Minus} route={NAVIGATION.SCHEDULER} name='Messages' />
-							<MenuButton icon={SiProbot} route={NAVIGATION.BOT} name='Bot' />
-							<MenuButton
-								icon={MdOutlineAttachment}
-								route={NAVIGATION.ATTACHMENTS}
-								name='Attachments'
-							/>
-							<MenuButton icon={FiLink2} route={NAVIGATION.SHORT} name='Links' />
-							<MenuButton icon={BiPoll} route={NAVIGATION.POLL_RESPONSES} name='Poll' />
-							<MenuButton icon={FiBarChart2} route={NAVIGATION.REPORTS} name='Reports' />
-							<MenuButton icon={TbCsv} route={NAVIGATION.CSV} name='CSV ' />
-							<MenuButton icon={MdGroups3} route={NAVIGATION.GROUP_MERGE} name='Groups' />
-							<MenuButton icon={GrTasks} route={NAVIGATION.TASKS} name='Tasks' />
-						</Flex>
-					</Box>
-					<VStack alignItems={'flex-start'} pl={4}>
-						<IconButton
-							aria-label='Settings'
-							icon={<SettingsIcon color={theme === 'light' ? 'black' : 'white'} />}
-							onClick={onOpen}
-							className='focus:outline-none focus:border-none'
-							backgroundColor={'transparent'}
-							_hover={{
-								backgroundColor: 'transparent',
-								border: 'none',
-								outline: 'none',
+				<Flex direction={'column'} flexGrow={1} overflowY={'auto'} paddingBottom={'1rem'}>
+					<Flex direction={'column'} flexGrow={1} gap={'0.5rem'}>
+						<Each
+							items={options}
+							render={(item) => {
+								const isActive = isActiveTab(item.parent + item.route);
+								return (
+									<Link to={item.parent + item.route}>
+										<Flex
+											className={
+												isActive
+													? ' bg-[#E8F2ED]   font-medium'
+													: 'hover:!font-medium   hover:!bg-accent-light hover:shadow-sm '
+											}
+											paddingY={'0.75rem'}
+											paddingX={'1rem'}
+											rounded={'lg'}
+											gap={'1rem'}
+											cursor={'pointer'}
+											textColor={'black'}
+											alignItems={'center'}
+										>
+											<Icon
+												as={isActive ? item.active_icon : item.icon}
+												color={'black'}
+												width={'18px'}
+												height={'18px'}
+											/>
+											<Text
+												transition={'none'}
+												className={isActive ? 'text-primary-dark' : 'text-gray-800'}
+											>
+												{item.title}
+											</Text>
+										</Flex>
+									</Link>
+								);
 							}}
 						/>
-						<IconButton
-							aria-label='Change Theme'
-							icon={theme === 'light' ? <DarkIcon /> : <LightIcon />}
-							onClick={toggleTheme}
-							className='focus:outline-none focus:border-none'
-							backgroundColor={'transparent'}
-							_hover={{
-								backgroundColor: 'transparent',
-								border: 'none',
-								outline: 'none',
-							}}
+					</Flex>
+					<Flex width={'full'} direction={'column'} gap={'0.5rem'}>
+						<Each
+							items={shortcuts}
+							render={(el, index) => (
+								<Link to={el.route}>
+									<Button
+										width={'full'}
+										colorScheme='green'
+										variant={index % 2 === 0 ? 'outline' : 'solid'}
+										paddingY={'0.5rem'}
+										paddingX={'1rem'}
+										rounded={'lg'}
+									>
+										{el.title}
+									</Button>
+								</Link>
+							)}
 						/>
-						<IconButton
-							aria-label='Logout'
-							color={theme === 'light' ? 'black' : 'white'}
-							icon={<TbLogout2 />}
-							onClick={handleLogout}
-							className='focus:outline-none focus:border-none rotate-180'
-							backgroundColor={'transparent'}
-							_hover={{
-								backgroundColor: 'transparent',
-								border: 'none',
-								outline: 'none',
-							}}
-						/>
-					</VStack>
+					</Flex>
 				</Flex>
 			</Flex>
-			<Settings isOpen={isOpen} onClose={onClose} />
 		</Box>
-	);
-}
-
-type MenuButtonProps = {
-	route: string;
-	icon: IconType;
-	name: string;
-};
-
-function MenuButton({ route, icon, name }: MenuButtonProps) {
-	const navigate = useNavigate();
-	return (
-		<Flex
-			className={`cursor-pointer overflow-hidden
-							hover:!shadow-xl  hover:!drop-shadow-lg hover:!bg-green-100 hover:!font-medium 
-							${
-								isActiveTab(route, location.pathname) &&
-								'shadow-xl  drop-shadow-lg bg-green-200 group-hover:shadow-none group-hover:drop-shadow-none group-hover:bg-transparent text-green-900 font-bold'
-							}`}
-			padding={'1rem'}
-			rounded={'lg'}
-			gap={'1.1rem'}
-			onClick={() => navigate(route)}
-		>
-			<Icon as={icon} color={'green.400'} width={5} height={5} />
-			<Text transition={'none'} className=' text-green-700'>
-				{name}
-			</Text>
-		</Flex>
-	);
-}
-
-function DarkIcon() {
-	return (
-		<svg
-			height='20'
-			width='20'
-			fill='currentColor'
-			viewBox='0 0 24 24'
-			xmlns='http://www.w3.org/2000/svg'
-		>
-			<path
-				clipRule='evenodd'
-				d='M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z'
-				fillRule='evenodd'
-			></path>
-		</svg>
-	);
-}
-
-function LightIcon() {
-	return (
-		<svg height='20' width='20' fill='white' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'>
-			<path d='M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z'></path>
-		</svg>
 	);
 }

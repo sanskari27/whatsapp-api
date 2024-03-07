@@ -10,7 +10,9 @@ import {
 	Text,
 } from '@chakra-ui/react';
 import React, { RefObject, forwardRef, useImperativeHandle, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { useTheme } from '../../../hooks/useTheme';
+import { StoreNames, StoreState } from '../../../store';
 
 export type ConfirmationDialogHandle = {
 	close: () => void;
@@ -35,11 +37,18 @@ const ConfirmationDialog = forwardRef<ConfirmationDialogHandle, Props>(
 			onClose();
 		};
 
+		const {
+			ui_config: { confirmation_required },
+		} = useSelector((state: StoreState) => state[StoreNames.USER]);
+
 		useImperativeHandle(ref, () => ({
 			close: () => {
 				setOpen(false);
 			},
 			open: (id: string = '') => {
+				if (!confirmation_required) {
+					return onConfirm(id);
+				}
 				setId(id);
 				setOpen(true);
 				setConfirm('');

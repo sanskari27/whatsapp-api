@@ -29,26 +29,26 @@ export default function useUserData() {
 
 	const fetchUserDetails = useCallback(async () => {
 		try {
-			toast.promise(GroupService.listGroups(), {
-				success: (res) => {
-					store.dispatch(
-						setUserDetails({
-							groups: res,
-						})
-					);
-					return {
-						title: 'Groups loaded.',
-						duration: 3000,
-					};
-				},
-				error: {
-					title: 'Error loading groups.',
-					duration: 3000,
-				},
-				loading: {
-					title: 'Loading groups.',
-				},
-			});
+			// toast.promise(GroupService.listGroups(), {
+			// 	success: (res) => {
+			// 		store.dispatch(
+			// 			setUserDetails({
+			// 				groups: res,
+			// 			})
+			// 		);
+			// 		return {
+			// 			title: 'Groups loaded.',
+			// 			duration: 3000,
+			// 		};
+			// 	},
+			// 	error: {
+			// 		title: 'Error loading groups.',
+			// 		duration: 3000,
+			// 	},
+			// 	loading: {
+			// 		title: 'Loading groups.',
+			// 	},
+			// });
 
 			const promises = [
 				UserService.getUserDetails(),

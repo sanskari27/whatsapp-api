@@ -38,7 +38,14 @@ const QRLogo = ({ base64Data, logoUrl }: Props) => {
 		});
 	};
 
-	return <canvas ref={(ref) => (canvasRef.current = ref)} height={'350px'} width={'350px'} />;
+	return (
+		<canvas
+			ref={(ref) => (canvasRef.current = ref)}
+			height={'350px'}
+			width={'350px'}
+			className='rounded-lg'
+		/>
+	);
 };
 
 export default QRLogo;

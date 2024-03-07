@@ -1,27 +1,57 @@
-import { DeleteIcon, SearchIcon } from '@chakra-ui/icons';
+import { ChevronDownIcon, DeleteIcon } from '@chakra-ui/icons';
 import {
-	As,
-	Box,
-	Breadcrumb,
-	BreadcrumbItem,
-	BreadcrumbLink,
+	Avatar,
+	Button,
 	Flex,
 	Icon,
 	IconButton,
-	Input,
-	InputGroup,
-	InputLeftElement,
+	Image,
+	Menu,
+	MenuButton,
+	MenuItem,
+	MenuList,
+	Popover,
+	PopoverArrow,
+	PopoverBody,
+	PopoverContent,
+	PopoverHeader,
+	PopoverTrigger,
 	Text,
 } from '@chakra-ui/react';
-import { useNavigate } from 'react-router-dom';
-import { setNavbarSearchText, useNavbar } from '../../../hooks/useNavbar';
-import { useTheme } from '../../../hooks/useTheme';
+import { useRef } from 'react';
+import { IoIosCloudDownload, IoMdCloseCircle } from 'react-icons/io';
+import { LuBell } from 'react-icons/lu';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
+import { LOGO } from '../../../assets/Images';
+import { Colors, NAVIGATION } from '../../../config/const';
+import useTask, { TASK_RESULT_TYPE, TASK_STATUS } from '../../../hooks/useTask';
+import { StoreNames } from '../../../store/config';
+import { setCurrentProfile } from '../../../store/reducers/UserDetailsReducers';
+import { StoreState } from '../../../store/store';
+import Each from '../../../utils/Each';
+import './module.css';
+
+function isActiveTab(tab: string): boolean {
+	if (location.pathname.includes(tab)) return true;
+	return false;
+}
+
+const object_none = {
+	border: 'none',
+	outline: 'none',
+	bgColor: Colors.ACCENT_LIGHT,
+};
+const object_border = {
+	border: `1px ${Colors.ACCENT_DARK} solid`,
+	outline: 'none',
+	bgColor: Colors.ACCENT_LIGHT,
+};
 
 export default function Navbar() {
-	const theme = useTheme();
-	const navigate = useNavigate();
+	const dispatch = useDispatch();
 
-	const { locations } = useNavbar();
+	const { current_profile, profiles } = useSelector((state: StoreState) => state[StoreNames.USER]);
 
 	return (
 		<Flex
@@ -29,80 +59,103 @@ export default function Navbar() {
 			alignItems={'center'}
 			position={'fixed'}
 			top={0}
-			left={'70px'}
-			width={'calc(100% - 70px)'}
-			height={'calc(50px + 0.75rem)'}
+			width={'full'}
+			height={'65px'}
 			borderBottomWidth={'thin'}
-			borderBottomColor={theme === 'light' ? 'gray.300' : 'gray.500'}
-			paddingY={'0.75rem'}
-			paddingX={'0.75rem'}
+			borderBottomColor={'gray.300'}
+			paddingX={'1rem'}
 			zIndex={99}
-			background={theme === 'light' ? 'white' : '#252525'}
+			shadow={'md'}
+			background={Colors.BACKGROUND_LIGHT}
 		>
-			<Flex alignItems={'center'}>
-				<Box>
-					<Breadcrumb
-						fontSize={'lg'}
-						fontWeight='medium'
-						textDecoration={'none'}
-						className='hover:no-underline'
-						color={theme === 'light' ? 'black' : 'gray.200'}
-					>
-						{locations.map((loc, index) => {
-							return (
-								<BreadcrumbItem key={index}>
-									<BreadcrumbLink
-										as={Box}
-										textDecoration={'none'}
-										isCurrentPage={index === locations.length - 1}
-										onClick={() => loc.link && navigate(loc.link)}
-									>
-										<Flex alignItems={'center'}>
-											{loc.icon ? (
-												<Icon
-													as={loc.icon as As | undefined}
-													height={5}
-													width={5}
-													color={'green.400'}
-													mr={'0.5rem'}
-												/>
-											) : null}
-											<Text fontSize={'xl'}>{loc.title}</Text>
-										</Flex>
-									</BreadcrumbLink>
-								</BreadcrumbItem>
-							);
-						})}
-					</Breadcrumb>
-				</Box>
+			<Flex gap='0.5rem' alignItems={'center'}>
+				<Image src={LOGO} width={'36px'} className='shadow-lg rounded-full' />
+				<Text fontWeight={'bold'} color={Colors.ACCENT_DARK}>
+					whatsleads.in
+				</Text>
 			</Flex>
-			<Flex alignItems={'center'}>
-				{locations.length > 0 ? locations[locations.length - 1].actions : null}
+			<Flex alignItems={'center'} gap={'1rem'}>
+				<Flex gap={'1rem'}>
+					<NavElement to={NAVIGATION.DASHBOARD} />
+					<NavElement to={NAVIGATION.CAMPAIGNS} />
+					<NavElement to={NAVIGATION.MEDIA} />
+					<NavElement to={NAVIGATION.AUDIENCE} />
+				</Flex>
+				<Flex gap={'1rem'}>
+					<NotificationButton />
+				</Flex>
+				<Flex>
+					<Menu>
+						<MenuButton
+							as={Button}
+							rightIcon={<ChevronDownIcon />}
+							bg={Colors.ACCENT_LIGHT}
+							width={'150px'}
+							rounded={'lg'}
+							_hover={object_none}
+							_expanded={object_none}
+							_focus={object_none}
+						>
+							Profile {profiles.findIndex((profile) => profile === current_profile) + 1}
+						</MenuButton>
+						<MenuList bg={Colors.ACCENT_LIGHT} rounded={'lg'}>
+							{profiles.length > 0 ? (
+								<Each
+									items={profiles}
+									render={(profile, index) => (
+										<MenuItem
+											bg={Colors.ACCENT_LIGHT}
+											_hover={object_border}
+											_active={object_border}
+											_focus={object_border}
+											width={'250px'}
+											height={'40px'}
+											onClick={() => dispatch(setCurrentProfile(profile))}
+										>
+											Profile {index + 1}
+										</MenuItem>
+									)}
+								/>
+							) : (
+								<MenuItem
+									bg={Colors.ACCENT_LIGHT}
+									_hover={object_none}
+									_active={object_none}
+									_focus={object_none}
+									width={'250px'}
+									height={'40px'}
+									onClick={() => dispatch(setCurrentProfile(''))}
+								>
+									No Profiles Found
+								</MenuItem>
+							)}
+						</MenuList>
+					</Menu>
+				</Flex>
+				<Flex gap={'1rem'} alignItems={'center'}>
+					<Avatar
+						size='sm'
+						bgColor={Colors.ACCENT_DARK}
+						src='https://bit.ly/broken-link'
+						cursor={'pointer'}
+					/>
+				</Flex>
 			</Flex>
 		</Flex>
 	);
 }
 
-export function NavbarSearchElement() {
-	const { searchText } = useNavbar();
-	const theme = useTheme();
-
+function NavElement({ to, title }: { to: string; title?: string }) {
 	return (
-		<InputGroup size='sm' variant={'outline'} width={'250px'}>
-			<InputLeftElement pointerEvents='none'>
-				<SearchIcon color='gray.300' />
-			</InputLeftElement>
-			<Input
-				placeholder='Search here...'
-				value={searchText}
-				onChange={(e) => setNavbarSearchText(e.target.value)}
-				borderRadius={'5px'}
-				focusBorderColor='gray.300'
-				color={theme === 'light' ? 'black' : 'gray.200'}
-			/>
-		</InputGroup>
+		<Link
+			to={to}
+			className={`nav-menu ${isActiveTab(to) && 'nav-active !text-accent-dark'} capitalize`}
+		>
+			{title || to.split('/')[1]}
+		</Link>
 	);
 }
+
 export function NavbarDeleteElement({
 	isLoading = false,
 	isDisabled,
@@ -122,5 +175,83 @@ export function NavbarDeleteElement({
 			isLoading={isLoading}
 			onClick={onClick}
 		/>
+	);
+}
+
+function NotificationButton() {
+	const { tasks, downloadTask, removeTask } = useTask();
+	const ref = useRef(null);
+	return (
+		<Popover initialFocusRef={ref} isLazy placement='bottom-end' closeOnBlur={true}>
+			<PopoverTrigger>
+				<IconButton
+					aria-label={'Notification'}
+					icon={<Icon as={LuBell} width='20px' height='20px' />}
+					bgColor={Colors.ACCENT_LIGHT}
+					border={'none'}
+					outline={'none'}
+					_hover={object_none}
+					_focus={object_none}
+					_active={object_none}
+					borderRadius={'12px'}
+				/>
+			</PopoverTrigger>
+			<PopoverContent width={'700px'} bg={Colors.ACCENT_LIGHT} borderColor={Colors.ACCENT_DARK}>
+				<PopoverHeader pt={4} border='0'>
+					<Text
+						ref={ref}
+						textAlign={'right'}
+						fontSize={'sm'}
+						cursor={'pointer'}
+						textColor='black'
+						textDecoration={'underline dashed'}
+						textUnderlineOffset={'5px'}
+					>
+						Clear All
+					</Text>
+				</PopoverHeader>
+				<PopoverArrow bg='blue.800' />
+				<PopoverBody maxHeight={'400px'} overflowY={'scroll'} py={'1rem'}>
+					<Each
+						items={tasks}
+						render={(task) => (
+							<Flex
+								justifyContent={'space-between'}
+								alignItems={'center'}
+								className='group border-b border-accent-dark/50'
+								py={'0.5rem'}
+							>
+								<Icon
+									as={IoMdCloseCircle}
+									color={'red.200'}
+									_hover={{
+										color: 'red.600',
+									}}
+									mr={'0.25rem'}
+									className={`!invisible group-hover:!visible transition-all ${
+										task.status !== TASK_STATUS.COMPLETED && 'hidden'
+									}`}
+									cursor={'pointer'}
+									onClick={() => task.status === TASK_STATUS.COMPLETED && removeTask(task.id)}
+								/>
+								<Text flexGrow={1} px={'1rem'}>
+									{task.type.toLowerCase().split('_').join(' ')} {task.description}
+								</Text>
+								<IconButton
+									hidden={task.data_result_type === TASK_RESULT_TYPE.NONE}
+									isDisabled={task.status !== TASK_STATUS.COMPLETED}
+									borderColor={Colors.ACCENT_DARK}
+									color={Colors.ACCENT_DARK}
+									aria-label='download file'
+									icon={<Icon as={IoIosCloudDownload} height={5} width={5} />}
+									onClick={() => downloadTask(task.id)}
+									size={'sm'}
+								/>
+							</Flex>
+						)}
+					/>
+				</PopoverBody>
+			</PopoverContent>
+		</Popover>
 	);
 }
