@@ -4,6 +4,7 @@ import { IUser } from '../users';
 import IMessage from './message';
 
 export default interface ICampaign extends Document {
+	_id: Types.ObjectId;
 	name: string;
 	description: string;
 	user: IUser;

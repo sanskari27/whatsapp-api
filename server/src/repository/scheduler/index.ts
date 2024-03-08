@@ -4,7 +4,11 @@ import IScheduler from '../../types/scheduler';
 const schedulerSchema = new mongoose.Schema<IScheduler>({
 	user: {
 		type: Schema.Types.ObjectId,
-		ref: 'User',
+		ref: 'Account',
+	},
+	device: {
+		type: Schema.Types.ObjectId,
+		ref: 'WADevice',
 	},
 	csv: {
 		type: Schema.Types.ObjectId,

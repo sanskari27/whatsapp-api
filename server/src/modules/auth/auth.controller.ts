@@ -1,71 +1,96 @@
 import { NextFunction, Request, Response } from 'express';
 import { saveRefreshTokens } from '../../config/cache';
 import { IS_PRODUCTION, JWT_COOKIE, JWT_REFRESH_COOKIE } from '../../config/const';
-import { APIError, USER_ERRORS } from '../../errors';
+import { APIError, COMMON_ERRORS, ERRORS, InternalError, USER_ERRORS } from '../../errors';
+import SocketServerProvider from '../../provider/socket';
 import { WhatsappProvider } from '../../provider/whatsapp_provider';
-import { UserService } from '../../services';
 import { AccountService, AccountServiceFactory } from '../../services/account';
-import { Respond } from '../../utils/ExpressUtils';
-import { LoginValidationResult } from './auth.validator';
+import { Respond, generateClientID } from '../../utils/ExpressUtils';
+import {
+	CreateAccountValidationResult,
+	LoginValidationResult,
+	UsernameValidationResult,
+} from './auth.validator';
 
 const JWT_EXPIRE_TIME = 3 * 60 * 1000;
 const REFRESH_EXPIRE_TIME = 30 * 24 * 60 * 60 * 1000;
 
-async function validateClientID(req: Request, res: Response, next: NextFunction) {
-	const client_id = req.headers['client-id'] as string;
-	if (!client_id) {
-		return next(new APIError(USER_ERRORS.SESSION_INVALIDATED));
+async function addDevice(req: Request, res: Response, next: NextFunction) {
+	const { account, accountService } = req.locals;
+
+	if (!accountService.canAddProfile()) {
+		return next(new APIError(ERRORS.USER_ERRORS.MAX_DEVICE_LIMIT_REACHED));
 	}
 
-	const authStatus = await UserService.isValidAuth(client_id);
-	const whatsapp = WhatsappProvider.getInstance(client_id);
+	const client_id = generateClientID();
 
-	if (!authStatus.valid) {
-		if (client_id) {
-			whatsapp.logoutClient();
-		}
-		return next(new APIError(USER_ERRORS.SESSION_INVALIDATED));
-	}
+	const whatsappInstance = WhatsappProvider.getInstance(account, client_id);
+	whatsappInstance.onDestroy(function (client_id) {
+		SocketServerProvider.clientsMap.delete(client_id);
+	});
 
+	SocketServerProvider.clientsMap.set(client_id, whatsappInstance);
 	return Respond({
 		res,
 		status: 200,
 		data: {
-			session_expires_at: authStatus.revoke_at,
-			isWhatsappReady: whatsapp.isReady(),
-			status: whatsapp.getStatus(),
+			client_id: client_id,
 		},
 	});
 }
 
-async function details(req: Request, res: Response, next: NextFunction) {
-	const userService = new UserService(req.locals.user);
-	const paymentRecords = await userService.getPaymentRecords();
-	const { isSubscribed, isNew } = userService.isSubscribed();
+async function isUsernameAvailable(req: Request, res: Response, next: NextFunction) {
+	const { username } = req.locals.data as UsernameValidationResult;
+	const taken = await AccountService.isUsernameTaken(username);
 
-	return Respond({
-		res,
-		status: 200,
-		data: {
-			name: userService.getName(),
-			phoneNumber: userService.getPhoneNumber(),
-			isSubscribed: isSubscribed,
-			canSendMessage: isSubscribed || isNew,
-			subscriptionExpiration: isSubscribed ? userService.getExpiration('DD/MM/YYYY') : '',
-			userType: userService.getUserType(),
-			paymentRecords: paymentRecords,
-		},
-	});
-}
-
-async function user_logout(req: Request, res: Response, next: NextFunction) {
-	WhatsappProvider.getInstance(req.locals.client_id).logoutClient();
+	if (taken) {
+		return next(new APIError(ERRORS.USER_ERRORS.USERNAME_ALREADY_EXISTS));
+	}
 
 	return Respond({
 		res,
 		status: 200,
 		data: {},
 	});
+}
+
+async function signup(req: Request, res: Response, next: NextFunction) {
+	const { username, password, name, phone } = req.locals.data as CreateAccountValidationResult;
+	try {
+		const service = await AccountService.createAccount({ username, password, name, phone });
+
+		res.cookie(JWT_COOKIE, service.token, {
+			sameSite: 'strict',
+			expires: new Date(Date.now() + JWT_EXPIRE_TIME),
+			httpOnly: IS_PRODUCTION,
+			secure: IS_PRODUCTION,
+		});
+
+		const t = service.refreshToken;
+		saveRefreshTokens(t, service.id);
+
+		res.cookie(JWT_REFRESH_COOKIE, t, {
+			sameSite: 'strict',
+			expires: new Date(Date.now() + REFRESH_EXPIRE_TIME),
+			httpOnly: IS_PRODUCTION,
+			secure: IS_PRODUCTION,
+		});
+
+		return Respond({
+			res,
+			status: 200,
+			data: {},
+		});
+	} catch (err) {
+		if (err instanceof InternalError) {
+			if (err.isSameInstanceof(USER_ERRORS.USERNAME_ALREADY_EXISTS)) {
+				return next(new APIError(USER_ERRORS.USERNAME_ALREADY_EXISTS));
+			} else if (err.isSameInstanceof(USER_ERRORS.PHONE_ALREADY_EXISTS)) {
+				return next(new APIError(USER_ERRORS.PHONE_ALREADY_EXISTS));
+			}
+		}
+		return next(new APIError(COMMON_ERRORS.INTERNAL_SERVER_ERROR));
+	}
 }
 
 async function login(req: Request, res: Response, next: NextFunction) {
@@ -130,11 +155,35 @@ async function validateAuth(req: Request, res: Response, next: NextFunction) {
 	return Respond({
 		res,
 		status: 200,
+		data: {},
+	});
+}
+
+async function profiles(req: Request, res: Response, next: NextFunction) {
+	const { accountService, account } = req.locals;
+
+	return Respond({
+		res,
+		status: 200,
 		data: {
-			profiles: await authStatus.listProfiles(),
+			profiles: await accountService.listProfiles(),
+			max_profiles: account.max_devices ?? 0,
 		},
 	});
+}
 
+async function removeDevice(req: Request, res: Response, next: NextFunction) {
+	const { client_id } = req.body;
+
+	if (!client_id) {
+		return next(new APIError(COMMON_ERRORS.INVALID_FIELDS));
+	}
+
+	const { accountService, account } = req.locals;
+
+	await accountService.removeDevice(client_id);
+	const provider = WhatsappProvider.getInstance(account, client_id);
+	provider.logoutClient();
 	return Respond({
 		res,
 		status: 200,
@@ -143,12 +192,14 @@ async function validateAuth(req: Request, res: Response, next: NextFunction) {
 }
 
 const AuthController = {
-	validateClientID,
-	details,
-	user_logout,
+	addDevice,
+	removeDevice,
 	login,
 	logout,
 	validateAuth,
+	isUsernameAvailable,
+	signup,
+	profiles,
 };
 
 export default AuthController;

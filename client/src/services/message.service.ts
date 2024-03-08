@@ -68,7 +68,7 @@ export default class MessageService {
 		}
 	}
 
-	static async getScheduledMessages() {
+	static async getScheduledMessengers() {
 		try {
 			const { data } = await APIInstance.get('/scheduler');
 

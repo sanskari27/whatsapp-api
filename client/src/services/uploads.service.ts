@@ -53,7 +53,12 @@ export default class UploadsService {
 					headers: csv.headers,
 					id: csv.id,
 				})
-			);
+			) as {
+				fileName: string;
+				name: string;
+				headers: string[];
+				id: string;
+			}[];
 		} catch (err) {
 			return [];
 		}

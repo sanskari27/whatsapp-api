@@ -1,9 +1,10 @@
+import { Types } from 'mongoose';
 import { getRefreshTokens, removeRefreshTokens } from '../../config/cache';
-import { InternalError, USER_ERRORS } from '../../errors';
-import { AccountLinkDB } from '../../repository/account';
+import { ERRORS, InternalError, USER_ERRORS } from '../../errors';
+import { AccountDB, AccountLinkDB, WADeviceDB } from '../../repository/account';
 import { IAccount, IWADevice } from '../../types/account';
 import DateUtils from '../../utils/DateUtils';
-import { generateClientID, idValidator } from '../../utils/ExpressUtils';
+import { idValidator } from '../../utils/ExpressUtils';
 import AccountServiceFactory from './AccountServiceFactory';
 
 export default class AccountService {
@@ -25,6 +26,10 @@ export default class AccountService {
 		return this._account;
 	}
 
+	public get access_level() {
+		return this._account.access_level;
+	}
+
 	public get token() {
 		return this._account.getSignedToken();
 	}
@@ -41,6 +46,26 @@ export default class AccountService {
 		}
 	}
 
+	async isSubscribed(deviceID: Types.ObjectId | null) {
+		const isPaymentValid = this._account.subscription_expiry
+			? DateUtils.getMoment(this._account.subscription_expiry).isAfter(DateUtils.getMomentNow())
+			: false;
+
+		let isNew = false;
+
+		if (deviceID) {
+			const device = await WADeviceDB.findById(deviceID);
+			isNew = device
+				? DateUtils.getMoment(device.createdAt).add(28, 'days').isAfter(DateUtils.getMomentNow())
+				: false;
+		}
+
+		return {
+			isSubscribed: isPaymentValid,
+			isNew: isNew,
+		};
+	}
+
 	static async isValidAuth(refreshToken: string): Promise<AccountService | null> {
 		const refreshTokens = await getRefreshTokens();
 
@@ -54,6 +79,31 @@ export default class AccountService {
 		} catch (e) {
 			return null;
 		}
+	}
+
+	async isValidDevice(device_id: string) {
+		const link = await AccountLinkDB.findOne({
+			account: this._account._id,
+			client_id: device_id,
+		}).populate('device');
+
+		if (!link) {
+			return null;
+		}
+
+		return {
+			device: link.device,
+			client_id: link.client_id,
+		};
+	}
+
+	async deviceLogout(client_id: string) {
+		await AccountLinkDB.updateOne(
+			{ client_id },
+			{
+				client_id: '',
+			}
+		);
 	}
 
 	async listProfiles() {
@@ -81,28 +131,37 @@ export default class AccountService {
 		});
 	}
 
-	async addProfile(device: IWADevice) {
+	async canAddProfile() {
 		const listed_count = await AccountLinkDB.countDocuments({ account: this._account._id });
 
-		if (this._account.max_devices >= listed_count) {
+		if (listed_count >= this._account.max_devices) {
+			return false;
+		}
+		return true;
+	}
+
+	async addProfile(device: IWADevice, c_id: string) {
+		const listed_count = await AccountLinkDB.countDocuments({ account: this._account._id });
+		console.log(listed_count);
+		console.log(this._account.max_devices);
+
+		if (listed_count >= this._account.max_devices) {
 			throw new InternalError(USER_ERRORS.MAX_DEVICE_LIMIT_REACHED);
 		}
-		const c_id = generateClientID();
 
-		AccountLinkDB.create({
+		await AccountLinkDB.create({
 			client_id: c_id,
 			account: this._account,
 			device: device,
 		});
-
-		return c_id;
 	}
 
-	static async removeDevice(client_id: string) {
+	async removeDevice(client_id: string) {
 		try {
-			await AccountLinkDB.deleteOne({ client_id });
+			await AccountLinkDB.deleteOne({ account: this._account._id, client_id });
+			return true;
 		} catch (e) {
-			//ignored
+			return false;
 		}
 	}
 
@@ -133,6 +192,44 @@ export default class AccountService {
 		} else {
 			this._account.subscription_expiry = date.toDate();
 			await this._account.save();
+		}
+	}
+
+	static async isUsernameTaken(username: string) {
+		const exists = await AccountDB.findOne({ username });
+		return exists !== null;
+	}
+
+	static async createAccount({
+		name,
+		phone,
+		username,
+		password,
+	}: {
+		name: string;
+		phone: string;
+		username: string;
+		password: string;
+	}) {
+		const exists_username = await AccountDB.findOne({ username });
+		const exists_phone = await AccountDB.findOne({ phone });
+		if (exists_username) {
+			throw new InternalError(ERRORS.USER_ERRORS.USERNAME_ALREADY_EXISTS);
+		} else if (exists_phone) {
+			throw new InternalError(ERRORS.USER_ERRORS.PHONE_ALREADY_EXISTS);
+		}
+
+		try {
+			const account = await AccountDB.create({
+				username,
+				phone,
+				name,
+				password,
+			});
+
+			return new AccountService(account);
+		} catch (err) {
+			throw new InternalError(ERRORS.USER_ERRORS.USERNAME_ALREADY_EXISTS);
 		}
 	}
 }

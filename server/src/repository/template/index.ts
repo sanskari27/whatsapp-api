@@ -4,7 +4,7 @@ import ITemplate from '../../types/template';
 const TemplateSchema = new mongoose.Schema<ITemplate>({
 	user: {
 		type: Schema.Types.ObjectId,
-		ref: 'User',
+		ref: 'Account',
 	},
 	name: {
 		type: String,

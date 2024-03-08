@@ -4,7 +4,7 @@ import IVoteResponse from '../../types/vote-response';
 const voteResponseSchema = new mongoose.Schema<IVoteResponse>({
 	user: {
 		type: Schema.Types.ObjectId,
-		ref: 'User',
+		ref: 'Account',
 	},
 
 	title: String,

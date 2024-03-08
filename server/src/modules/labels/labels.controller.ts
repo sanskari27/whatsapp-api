@@ -7,8 +7,8 @@ import {
 	TASK_RESULT_TYPE,
 	TASK_TYPE,
 } from '../../config/const';
-import APIError, { API_ERRORS } from '../../errors/api-errors';
-import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
+import { APIError, COMMON_ERRORS, InternalError, USER_ERRORS, WHATSAPP_ERRORS } from '../../errors';
+import SocketServerProvider from '../../provider/socket';
 import { WhatsappProvider } from '../../provider/whatsapp_provider';
 import TaskService from '../../services/task';
 import {
@@ -25,16 +25,16 @@ import { FileUtils } from '../../utils/files';
 import { AssignLabelValidationResult } from './labels.validator';
 
 async function labels(req: Request, res: Response, next: NextFunction) {
-	const client_id = req.locals.client_id;
+	const { account, client_id } = req.locals;
 
-	const whatsapp = WhatsappProvider.getInstance(client_id);
+	const whatsapp = WhatsappProvider.getInstance(account, client_id);
 	if (!whatsapp.isReady()) {
-		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+		return next(new APIError(USER_ERRORS.WHATSAPP_NOT_READY));
 	}
 
 	try {
 		if (!whatsapp.isBusiness()) {
-			return next(new APIError(API_ERRORS.WHATSAPP_ERROR.BUSINESS_ACCOUNT_REQUIRED));
+			return next(new APIError(WHATSAPP_ERRORS.BUSINESS_ACCOUNT_REQUIRED));
 		}
 		const labels = await whatsapp.getClient().getLabels();
 
@@ -49,23 +49,24 @@ async function labels(req: Request, res: Response, next: NextFunction) {
 			},
 		});
 	} catch (err) {
-		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+		return next(new APIError(USER_ERRORS.SESSION_INVALIDATED));
 	}
 }
 
 async function exportLabels(req: Request, res: Response, next: NextFunction) {
-	const client_id = req.locals.client_id;
+	const { account, client_id, device } = req.locals;
+
 	const { label_ids } = req.body as { label_ids: string[] };
 
-	const whatsapp = WhatsappProvider.getInstance(client_id);
+	const whatsapp = WhatsappProvider.getInstance(account, client_id);
 	const whatsappUtils = new WhatsappUtils(whatsapp);
 	if (!whatsapp.isReady()) {
-		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+		return next(new APIError(USER_ERRORS.WHATSAPP_NOT_READY));
 	} else if (!Array.isArray(label_ids) || label_ids.length === 0) {
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
+		return next(new APIError(COMMON_ERRORS.INVALID_FIELDS));
 	}
 
-	const taskService = new TaskService(req.locals.user);
+	const taskService = new TaskService(req.locals.account);
 	const options = {
 		business_contacts_only: req.body.business_contacts_only ?? false,
 		vcf: req.body.vcf ?? false,
@@ -87,7 +88,7 @@ async function exportLabels(req: Request, res: Response, next: NextFunction) {
 		const saved_contacts = (
 			await Promise.all(
 				(
-					await getOrCache(CACHE_TOKEN_GENERATOR.CONTACTS(req.locals.user._id), async () =>
+					await getOrCache(CACHE_TOKEN_GENERATOR.CONTACTS(device._id), async () =>
 						whatsappUtils.getContacts()
 					)
 				).saved.map(async (contact) => ({
@@ -137,29 +138,33 @@ async function exportLabels(req: Request, res: Response, next: NextFunction) {
 		await FileUtils.writeFile(file_path, data);
 
 		taskService.markCompleted(task_id, file_name);
-		whatsapp.sendToClient(SOCKET_RESPONSES.TASK_COMPLETED, task_id.toString());
+		SocketServerProvider.attachedSockets
+			.get(account.phone)
+			?.emit(SOCKET_RESPONSES.TASK_COMPLETED, task_id.toString());
 	} catch (err) {
 		taskService.markFailed(task_id);
-		whatsapp.sendToClient(SOCKET_RESPONSES.TASK_FAILED, task_id.toString());
+		SocketServerProvider.attachedSockets
+			.get(account.phone)
+			?.emit(SOCKET_RESPONSES.TASK_FAILED, task_id.toString());
 	}
 }
 
 async function addLabel(req: Request, res: Response, next: NextFunction) {
-	const client_id = req.locals.client_id;
+	const { account, client_id } = req.locals;
 
 	const { group_ids, csv_file, type, label_id } = req.locals.data as AssignLabelValidationResult;
 
-	const whatsapp = WhatsappProvider.getInstance(client_id);
+	const whatsapp = WhatsappProvider.getInstance(account, client_id);
 	const whatsappUtils = new WhatsappUtils(whatsapp);
 	if (!whatsapp.isReady()) {
-		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+		return next(new APIError(USER_ERRORS.WHATSAPP_NOT_READY));
 	}
 
 	const chat_ids: string[] = [];
 	if (type === 'CSV') {
 		const parsed_csv = await FileUtils.readCSV(csv_file);
 		if (!parsed_csv) {
-			return next(new APIError(API_ERRORS.COMMON_ERRORS.ERROR_PARSING_CSV));
+			return next(new APIError(COMMON_ERRORS.ERROR_PARSING_CSV));
 		}
 
 		await Promise.all(
@@ -194,30 +199,30 @@ async function addLabel(req: Request, res: Response, next: NextFunction) {
 		});
 	} catch (err) {
 		if (err instanceof InternalError) {
-			if (err.isSameInstanceof(INTERNAL_ERRORS.WHATSAPP_ERROR.BUSINESS_ACCOUNT_REQUIRED)) {
-				return next(new APIError(API_ERRORS.WHATSAPP_ERROR.BUSINESS_ACCOUNT_REQUIRED));
+			if (err.isSameInstanceof(WHATSAPP_ERRORS.BUSINESS_ACCOUNT_REQUIRED)) {
+				return next(new APIError(WHATSAPP_ERRORS.BUSINESS_ACCOUNT_REQUIRED));
 			}
 		}
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
+		return next(new APIError(COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
 	}
 }
 
 async function removeLabel(req: Request, res: Response, next: NextFunction) {
-	const client_id = req.locals.client_id;
-
 	const { group_ids, csv_file, type, label_id } = req.locals.data as AssignLabelValidationResult;
 
-	const whatsapp = WhatsappProvider.getInstance(client_id);
+	const { account, client_id } = req.locals;
+
+	const whatsapp = WhatsappProvider.getInstance(account, client_id);
 	const whatsappUtils = new WhatsappUtils(whatsapp);
 	if (!whatsapp.isReady()) {
-		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+		return next(new APIError(USER_ERRORS.WHATSAPP_NOT_READY));
 	}
 
 	const chat_ids: string[] = [];
 	if (type === 'CSV') {
 		const parsed_csv = await FileUtils.readCSV(csv_file);
 		if (!parsed_csv) {
-			return next(new APIError(API_ERRORS.COMMON_ERRORS.ERROR_PARSING_CSV));
+			return next(new APIError(COMMON_ERRORS.ERROR_PARSING_CSV));
 		}
 
 		await Promise.all(
@@ -252,11 +257,11 @@ async function removeLabel(req: Request, res: Response, next: NextFunction) {
 		});
 	} catch (err) {
 		if (err instanceof InternalError) {
-			if (err.isSameInstanceof(INTERNAL_ERRORS.WHATSAPP_ERROR.BUSINESS_ACCOUNT_REQUIRED)) {
-				return next(new APIError(API_ERRORS.WHATSAPP_ERROR.BUSINESS_ACCOUNT_REQUIRED));
+			if (err.isSameInstanceof(WHATSAPP_ERRORS.BUSINESS_ACCOUNT_REQUIRED)) {
+				return next(new APIError(WHATSAPP_ERRORS.BUSINESS_ACCOUNT_REQUIRED));
 			}
 		}
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
+		return next(new APIError(COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
 	}
 }
 

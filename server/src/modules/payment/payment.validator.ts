@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { z } from 'zod';
 import { BILLING_PLANS_DETAILS, BILLING_PLANS_TYPE } from '../../config/const';
-import APIError from '../../errors/api-errors';
+import { APIError } from '../../errors';
 
 export type CreateBucketValidationResult = {
 	name: string;

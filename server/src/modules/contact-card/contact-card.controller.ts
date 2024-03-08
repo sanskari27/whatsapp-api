@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from 'express';
-import APIError, { API_ERRORS } from '../../errors/api-errors';
+import { APIError, USER_ERRORS } from '../../errors';
 import { WhatsappProvider } from '../../provider/whatsapp_provider';
 import ContactCardService from '../../services/contact-card';
 import { Respond, validatePhoneNumber } from '../../utils/ExpressUtils';
 import { CreateContactValidationResult } from './contact-card.validator';
 
 async function listContactCards(req: Request, res: Response, next: NextFunction) {
-	const contact_cards = await new ContactCardService(req.locals.user).listContacts();
+	const contact_cards = await new ContactCardService(req.locals.account).listContacts();
 
 	return Respond({
 		res,
@@ -18,15 +18,15 @@ async function listContactCards(req: Request, res: Response, next: NextFunction)
 }
 
 async function createContactCard(req: Request, res: Response, next: NextFunction) {
-	const client_id = req.locals.client_id;
+	const { account, client_id } = req.locals;
 
-	const whatsapp = WhatsappProvider.getInstance(client_id);
+	const whatsapp = WhatsappProvider.getInstance(account, client_id);
 	if (!whatsapp.isReady()) {
-		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+		return next(new APIError(USER_ERRORS.WHATSAPP_NOT_READY));
 	}
 
 	const data = req.locals.data as CreateContactValidationResult;
-	const service = new ContactCardService(req.locals.user);
+	const service = new ContactCardService(req.locals.account);
 	const details: {
 		contact_details_phone?: {
 			contact_number: string;
@@ -73,15 +73,15 @@ async function createContactCard(req: Request, res: Response, next: NextFunction
 }
 
 async function updateContactCard(req: Request, res: Response, next: NextFunction) {
-	const client_id = req.locals.client_id;
+	const { account, client_id } = req.locals;
 
-	const whatsapp = WhatsappProvider.getInstance(client_id);
+	const whatsapp = WhatsappProvider.getInstance(account, client_id);
 	if (!whatsapp.isReady()) {
-		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+		return next(new APIError(USER_ERRORS.WHATSAPP_NOT_READY));
 	}
 
 	const data = req.locals.data as CreateContactValidationResult;
-	const service = new ContactCardService(req.locals.user);
+	const service = new ContactCardService(req.locals.account);
 	const details: {
 		contact_details_phone?: {
 			contact_number: string;
@@ -128,7 +128,7 @@ async function updateContactCard(req: Request, res: Response, next: NextFunction
 }
 
 async function deleteContactCard(req: Request, res: Response, next: NextFunction) {
-	new ContactCardService(req.locals.user).deleteContactCard(req.locals.id);
+	new ContactCardService(req.locals.account).deleteContactCard(req.locals.id);
 
 	return Respond({
 		res,

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { z } from 'zod';
-import APIError from '../../errors/api-errors';
+import { APIError } from '../../errors';
 
 export async function PaymentRemainderValidator(req: Request, res: Response, next: NextFunction) {
 	const reqValidator = z.object({

@@ -2,12 +2,12 @@ import { Types } from 'mongoose';
 import { TASK_RESULT_TYPE, TASK_STATUS, TASK_TYPE } from '../../config/const';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import TaskDB from '../../repository/tasks';
-import { IUser } from '../../types/user';
+import { IAccount } from '../../types/account';
 
 export default class TaskService {
-	private user: IUser;
+	private user: IAccount;
 
-	public constructor(user: IUser) {
+	public constructor(user: IAccount) {
 		this.user = user;
 	}
 

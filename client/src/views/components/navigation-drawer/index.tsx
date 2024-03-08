@@ -120,6 +120,22 @@ const OPTIONS = {
 			route: NAVIGATION.GROUP,
 		},
 	],
+	// [NAVIGATION.SETTINGS]: [
+	// 	{
+	// 		title: 'User Details',
+	// 		icon: IoSettingsOutline,
+	// 		active_icon: IoSettings,
+	// 		parent: NAVIGATION.SETTINGS,
+	// 		route: NAVIGATION.USER_SETTINGS,
+	// 	},
+	// 	{
+	// 		title: 'Profiles',
+	// 		icon: HiOutlineDeviceMobile,
+	// 		active_icon: HiDeviceMobile,
+	// 		parent: NAVIGATION.SETTINGS,
+	// 		route: NAVIGATION.PROFILES,
+	// 	},
+	// ],
 };
 
 const SHORTCUTS = {

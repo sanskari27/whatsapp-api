@@ -1,8 +1,8 @@
 /* eslint-disable no-var */
 
 import { Types } from 'mongoose';
-import { IUser } from './user';
-import IAdmin from './user/Admin';
+import { AccountService } from '../services/account';
+import { IAccount, IWADevice } from './account';
 
 export { APIError } from './server-error';
 
@@ -21,8 +21,13 @@ declare global {
 }
 export interface Locals {
 	client_id: string;
-	user: IUser;
-	admin: IAdmin;
+	// user: IUser;
+	// admin: IAdmin;
+
+	accountService: AccountService;
+	account: IAccount;
+	device: IWADevice;
+
 	data: any;
 	id: Types.ObjectId;
 	token: string;

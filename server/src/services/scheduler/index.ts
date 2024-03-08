@@ -4,22 +4,25 @@ import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import ContactCardDB from '../../repository/contact-cards';
 import { MessageDB } from '../../repository/messenger';
 import SchedulerDB from '../../repository/scheduler';
+import { IAccount, IWADevice } from '../../types/account';
 import IUpload from '../../types/uploads';
-import { IUser } from '../../types/user';
 import DateUtils from '../../utils/DateUtils';
 import { FileUtils } from '../../utils/files';
 import { MessageService } from '../messenger';
 
 export default class SchedulerService {
-	private user: IUser;
+	private user: IAccount;
+	private device: IWADevice;
 
-	public constructor(user: IUser) {
+	public constructor(user: IAccount, device: IWADevice) {
 		this.user = user;
+		this.device = device;
 	}
 
 	public async allScheduler() {
 		const scheduler = await SchedulerDB.find({
 			user: this.user,
+			device: this.device,
 		}).populate('attachments');
 		return scheduler.map((e) => ({
 			id: e._id as Types.ObjectId,
@@ -212,7 +215,7 @@ export default class SchedulerService {
 	public static async scheduleDailyMessages() {
 		const schedulers = await SchedulerDB.find({
 			active: true,
-		}).populate('attachments shared_contact_cards csv');
+		}).populate('attachments shared_contact_cards csv user device');
 		const today = DateUtils.getMomentNow().format('MM-DD');
 
 		for (const scheduler of schedulers) {
@@ -230,7 +233,7 @@ export default class SchedulerService {
 			if (!parsed_csv) {
 				continue;
 			}
-			const schedulerService = new MessageService(scheduler.user);
+			const schedulerService = new MessageService(scheduler.user, scheduler.device);
 
 			for (const row of parsed_csv) {
 				if (DateUtils.getMoment(row.month + '-' + row.date, 'MM-DD').format('MM-DD') !== today) {

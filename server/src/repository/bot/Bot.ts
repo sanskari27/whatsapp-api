@@ -5,7 +5,11 @@ import IBot from '../../types/bot/Bot';
 const botSchema = new mongoose.Schema<IBot>({
 	user: {
 		type: Schema.Types.ObjectId,
-		ref: 'User',
+		ref: 'Account',
+	},
+	device: {
+		type: Schema.Types.ObjectId,
+		ref: 'WADevice',
 	},
 	respond_to: {
 		type: String,

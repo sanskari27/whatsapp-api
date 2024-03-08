@@ -12,9 +12,15 @@ import {
 	TASK_RESULT_TYPE,
 	TASK_TYPE,
 } from '../../config/const';
-import APIError, { API_ERRORS } from '../../errors/api-errors';
+import {
+	APIError,
+	COMMON_ERRORS,
+	PAYMENT_ERRORS,
+	USER_ERRORS,
+	WHATSAPP_ERRORS,
+} from '../../errors';
+import SocketServerProvider from '../../provider/socket';
 import { WhatsappProvider } from '../../provider/whatsapp_provider';
-import { UserService } from '../../services';
 import TaskService from '../../services/task';
 import { TBusinessContact, TContact } from '../../types/whatsapp';
 import CSVParser from '../../utils/CSVParser';
@@ -25,14 +31,15 @@ import { FileUtils } from '../../utils/files';
 import { ValidateNumbersValidationResult } from './contacts.validator';
 
 async function contacts(req: Request, res: Response, next: NextFunction) {
-	const client_id = req.locals.client_id;
-	const whatsapp = WhatsappProvider.getInstance(client_id);
+	const { account, client_id, device } = req.locals;
+
+	const whatsapp = WhatsappProvider.getInstance(account, client_id);
 	const whatsappUtils = new WhatsappUtils(whatsapp);
 	if (!whatsapp.isReady()) {
-		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+		return next(new APIError(USER_ERRORS.WHATSAPP_NOT_READY));
 	}
 
-	const taskService = new TaskService(req.locals.user);
+	const taskService = new TaskService(req.locals.account);
 	const options = {
 		saved_contacts: true,
 		non_saved_contacts: true,
@@ -99,7 +106,7 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 	});
 	try {
 		const { saved, non_saved, saved_chat } = await getOrCache(
-			CACHE_TOKEN_GENERATOR.CONTACTS(req.locals.user._id),
+			CACHE_TOKEN_GENERATOR.CONTACTS(device._id),
 			() => whatsappUtils.getContacts()
 		);
 
@@ -142,25 +149,29 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 		await FileUtils.writeFile(file_path, data);
 
 		taskService.markCompleted(task_id, file_name);
-		whatsapp.sendToClient(SOCKET_RESPONSES.TASK_COMPLETED, task_id.toString());
+		SocketServerProvider.attachedSockets
+			.get(account.phone)
+			?.emit(SOCKET_RESPONSES.TASK_COMPLETED, task_id.toString());
 	} catch (err) {
 		taskService.markFailed(task_id);
-		whatsapp.sendToClient(SOCKET_RESPONSES.TASK_FAILED, task_id.toString());
+		SocketServerProvider.attachedSockets
+			.get(account.phone)
+			?.emit(SOCKET_RESPONSES.TASK_FAILED, task_id.toString());
 	}
 }
 
 async function countContacts(req: Request, res: Response, next: NextFunction) {
-	const client_id = req.locals.client_id;
+	const { account, client_id, device } = req.locals;
 
-	const whatsapp = WhatsappProvider.getInstance(client_id);
+	const whatsapp = WhatsappProvider.getInstance(account, client_id);
 	const whatsappUtils = new WhatsappUtils(whatsapp);
 	if (!whatsapp.isReady()) {
-		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+		return next(new APIError(USER_ERRORS.WHATSAPP_NOT_READY));
 	}
 
 	try {
 		const { saved, non_saved, saved_chat, groups } = await getOrCache(
-			CACHE_TOKEN_GENERATOR.CONTACTS(req.locals.user._id),
+			CACHE_TOKEN_GENERATOR.CONTACTS(device._id),
 			async () => whatsappUtils.getContacts()
 		);
 
@@ -176,17 +187,17 @@ async function countContacts(req: Request, res: Response, next: NextFunction) {
 			},
 		});
 	} catch (err) {
-		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+		return next(new APIError(USER_ERRORS.SESSION_INVALIDATED));
 	}
 }
 
 export async function validate(req: Request, res: Response, next: NextFunction) {
-	const client_id = req.locals.client_id;
+	const { account, client_id, device, accountService } = req.locals;
 
-	const whatsapp = WhatsappProvider.getInstance(client_id);
+	const whatsapp = WhatsappProvider.getInstance(account, client_id);
 	const whatsappUtils = new WhatsappUtils(whatsapp);
 	if (!whatsapp.isReady()) {
-		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+		return next(new APIError(USER_ERRORS.WHATSAPP_NOT_READY));
 	}
 	const {
 		type,
@@ -194,10 +205,10 @@ export async function validate(req: Request, res: Response, next: NextFunction) 
 		numbers: requestedNumberList,
 	} = req.locals.data as ValidateNumbersValidationResult;
 
-	const { isSubscribed, isNew } = new UserService(req.locals.user).isSubscribed();
+	const { isSubscribed, isNew } = await accountService.isSubscribed(device._id);
 
 	if (!isSubscribed && !isNew) {
-		return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_REQUIRED));
+		return next(new APIError(PAYMENT_ERRORS.PAYMENT_REQUIRED));
 	}
 
 	let numbers_to_be_checked: string[] = [];
@@ -205,12 +216,12 @@ export async function validate(req: Request, res: Response, next: NextFunction) 
 	if (type === 'CSV') {
 		const csvFilePath = __basedir + CSV_PATH + csv_file;
 		if (!fs.existsSync(csvFilePath)) {
-			return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
+			return next(new APIError(COMMON_ERRORS.NOT_FOUND));
 		}
 		const parsed_csv = await csv().fromFile(csvFilePath);
 
 		if (!parsed_csv) {
-			return next(new APIError(API_ERRORS.COMMON_ERRORS.ERROR_PARSING_CSV));
+			return next(new APIError(COMMON_ERRORS.ERROR_PARSING_CSV));
 		}
 
 		numbers_to_be_checked = parsed_csv.map((item) => item.number);
@@ -241,7 +252,7 @@ export async function validate(req: Request, res: Response, next: NextFunction) 
 			data: CSVParser.exportContacts(valid_contacts as TContact[]),
 		});
 	} catch (e) {
-		next(new APIError(API_ERRORS.WHATSAPP_ERROR.MESSAGE_SENDING_FAILED, e));
+		next(new APIError(WHATSAPP_ERRORS.MESSAGE_SENDING_FAILED, e));
 	}
 }
 

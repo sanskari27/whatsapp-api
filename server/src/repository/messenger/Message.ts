@@ -5,7 +5,12 @@ import { IMessage } from '../../types/messenger';
 const messageSchema = new mongoose.Schema<IMessage>({
 	sender: {
 		type: Schema.Types.ObjectId,
-		ref: 'User',
+		ref: 'Account',
+		required: true,
+	},
+	device: {
+		type: Schema.Types.ObjectId,
+		ref: 'WADevice',
 		required: true,
 	},
 	receiver: {

@@ -5,9 +5,9 @@ import { UserDetailsState } from '../types/UserDetails';
 const initialState: UserDetailsState = {
 	name: '',
 	phoneNumber: '',
-	isSubscribed: false,
 	subscriptionExpiration: '',
-	userType: 'PERSONAL',
+	current_profile_type: 'PERSONAL',
+	isSubscribed: false,
 	canSendMessage: false,
 
 	groups: [],
@@ -17,6 +17,7 @@ const initialState: UserDetailsState = {
 
 	current_profile: '',
 	profiles: [],
+	max_profiles: 0,
 
 	ui_config: {
 		load_preview: true,
@@ -31,10 +32,10 @@ const UserDetailsSlice = createSlice({
 		reset: (state) => {
 			state.name = initialState.name;
 			state.phoneNumber = initialState.phoneNumber;
-			state.isSubscribed = initialState.isSubscribed;
 			state.canSendMessage = initialState.canSendMessage;
+			state.isSubscribed = initialState.isSubscribed;
 			state.subscriptionExpiration = initialState.subscriptionExpiration;
-			state.userType = initialState.userType;
+			state.current_profile_type = initialState.current_profile_type;
 
 			state.groups = initialState.groups;
 			state.labels = initialState.labels;
@@ -58,8 +59,11 @@ const UserDetailsSlice = createSlice({
 			if (action.payload.subscriptionExpiration) {
 				state.subscriptionExpiration = action.payload.subscriptionExpiration;
 			}
-			if (action.payload.userType) {
-				state.userType = action.payload.userType;
+			if (action.payload.current_profile_type) {
+				state.current_profile_type = action.payload.current_profile_type;
+			}
+			if (action.payload.max_profiles) {
+				state.max_profiles = action.payload.max_profiles;
 			}
 
 			if (action.payload.groups) {
@@ -76,9 +80,13 @@ const UserDetailsSlice = createSlice({
 			}
 			if (action.payload.profiles !== undefined) {
 				state.profiles = action.payload.profiles;
+				state.current_profile_type =
+					state.profiles.find((e) => e.client_id === state.current_profile)?.userType ?? 'PERSONAL';
 			}
 			if (action.payload.current_profile !== undefined) {
 				state.current_profile = action.payload.current_profile;
+				state.current_profile_type =
+					state.profiles.find((e) => e.client_id === state.current_profile)?.userType ?? 'PERSONAL';
 			}
 		},
 		setName: (state, action: PayloadAction<typeof initialState.name>) => {
@@ -96,8 +104,8 @@ const UserDetailsSlice = createSlice({
 		) => {
 			state.subscriptionExpiration = action.payload;
 		},
-		setUserType: (state, action: PayloadAction<typeof initialState.userType>) => {
-			state.userType = action.payload;
+		setUserType: (state, action: PayloadAction<typeof initialState.current_profile_type>) => {
+			state.current_profile_type = action.payload;
 		},
 		setGroups: (state, action: PayloadAction<typeof initialState.groups>) => {
 			state.groups = action.payload;
@@ -113,6 +121,25 @@ const UserDetailsSlice = createSlice({
 		},
 		setCurrentProfile: (state, action: PayloadAction<typeof initialState.current_profile>) => {
 			state.current_profile = action.payload;
+			state.current_profile_type =
+				state.profiles.find((e) => e.client_id === action.payload)?.userType ?? 'PERSONAL';
+		},
+		removeProfile: (state, action: PayloadAction<string>) => {
+			const id = action.payload;
+			state.profiles = state.profiles.filter((p) => p.client_id !== id);
+			if (state.current_profile === id) {
+				if (state.profiles.length === 0) {
+					state.canSendMessage = false;
+					state.current_profile = '';
+					return;
+				}
+				const profile = state.profiles[0];
+				state.current_profile = profile.client_id;
+				state.current_profile_type = profile.userType;
+				state.canSendMessage = profile.canSendMessage;
+			}
+			state.current_profile_type =
+				state.profiles.find((e) => e.client_id === action.payload)?.userType ?? 'PERSONAL';
 		},
 
 		setUserConfig: (state, action: PayloadAction<Partial<typeof initialState.ui_config>>) => {
@@ -140,6 +167,7 @@ export const {
 	setDataLoaded,
 	setCurrentProfile,
 	setUserConfig,
+	removeProfile,
 } = UserDetailsSlice.actions;
 
 export default UserDetailsSlice.reducer;

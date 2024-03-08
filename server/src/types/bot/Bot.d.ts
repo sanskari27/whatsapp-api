@@ -1,11 +1,13 @@
 import { Document } from 'mongoose';
 import { BOT_TRIGGER_OPTIONS, BOT_TRIGGER_TO } from '../../config/const';
+import { IAccount, IWADevice } from '../account';
 import IContactCard from '../contact-cards';
 import IUpload from '../uploads';
-import { IUser } from '../users';
 
 export default interface IBot extends Document {
-	user: IUser;
+	_id: Types.ObjectId;
+	user: IAccount;
+	device: IWADevice;
 
 	respond_to: BOT_TRIGGER_TO;
 

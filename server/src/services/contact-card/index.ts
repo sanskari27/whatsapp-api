@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import ContactCardDB from '../../repository/contact-cards';
-import { IUser } from '../../types/user';
+import { IAccount } from '../../types/account';
 
 type ContactCardType = {
 	first_name?: string;
@@ -32,19 +32,19 @@ type ContactCardType = {
 };
 
 export default class ContactCardService {
-	private user: IUser;
+	private user: IAccount;
 
-	public constructor(user: IUser) {
+	public constructor(user: IAccount) {
 		this.user = user;
 	}
 
 	async createContactCard(details: ContactCardType) {
 		const contactCard = await ContactCardDB.create({
-			user: this.user.id,
+			user: this.user._id,
 			...details,
 		});
 		return {
-			id: contactCard._id as string,
+			id: contactCard._id.toString(),
 			first_name: contactCard.first_name,
 			middle_name: contactCard.middle_name,
 			last_name: contactCard.last_name,
@@ -79,7 +79,7 @@ export default class ContactCardService {
 
 		const updatedContactCard = await contact_card.save();
 		return {
-			id: updatedContactCard._id as string,
+			id: updatedContactCard._id.toString(),
 			first_name: updatedContactCard.first_name,
 			middle_name: updatedContactCard.middle_name,
 			last_name: updatedContactCard.last_name,
@@ -102,15 +102,15 @@ export default class ContactCardService {
 
 	async deleteContactCard(id: Types.ObjectId) {
 		await ContactCardDB.deleteOne({
-			user: this.user.id,
+			user: this.user._id,
 			_id: id,
 		});
 	}
 
 	async listContacts() {
-		const contact_cards = await ContactCardDB.find({ user: this.user.id });
+		const contact_cards = await ContactCardDB.find({ user: this.user._id });
 		return contact_cards.map((contact_card) => ({
-			id: contact_card._id as string,
+			id: contact_card._id.toString(),
 			first_name: contact_card.first_name,
 			middle_name: contact_card.middle_name,
 			last_name: contact_card.last_name,

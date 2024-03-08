@@ -2,6 +2,7 @@ import { Document } from 'mongoose';
 import { AccessLevel } from '../../config/const';
 
 export default interface IAccount extends Document {
+	_id: Types.ObjectId;
 	username: string;
 	password: string;
 	name: string;

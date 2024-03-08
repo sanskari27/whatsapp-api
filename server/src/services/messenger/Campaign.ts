@@ -2,8 +2,8 @@ import { Types } from 'mongoose';
 import { CAMPAIGN_STATUS, MESSAGE_SCHEDULER_TYPE, MESSAGE_STATUS } from '../../config/const';
 import { CampaignDB, MessageDB } from '../../repository/messenger';
 import TimeGenerator from '../../structures/TimeGenerator';
+import { IAccount, IWADevice } from '../../types/account';
 import { IMessage } from '../../types/messenger';
-import { IUser } from '../../types/user';
 import DateUtils from '../../utils/DateUtils';
 import MessageService from './Message';
 
@@ -39,15 +39,21 @@ type Batch = {
 };
 
 export default class CampaignService {
-	private user: IUser;
+	private user: IAccount;
+	private device: IWADevice;
 	private messageService: MessageService;
 
-	public constructor(user: IUser) {
+	public constructor(user: IAccount, device: IWADevice) {
 		this.user = user;
-		this.messageService = new MessageService(user);
+		this.device = device;
+		this.messageService = new MessageService(user, device);
 	}
 	async alreadyExists(name: string) {
-		const exists = await CampaignDB.exists({ user: this.user, campaign_name: name });
+		const exists = await CampaignDB.exists({
+			user: this.user,
+			device: this.device,
+			campaign_name: name,
+		});
 		return exists !== null;
 	}
 
@@ -55,6 +61,7 @@ export default class CampaignService {
 		const campaign = await CampaignDB.create({
 			name: opts.campaign_name,
 			description: opts.description,
+			device: this.device,
 			user: this.user,
 		});
 		const _messages: IMessage[] = [];

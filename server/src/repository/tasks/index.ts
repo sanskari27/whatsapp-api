@@ -5,7 +5,7 @@ import ITask from '../../types/tasks';
 const schema = new mongoose.Schema<ITask>({
 	user: {
 		type: Schema.Types.ObjectId,
-		ref: 'User',
+		ref: 'Account',
 	},
 	type: {
 		type: String,
@@ -23,7 +23,7 @@ const schema = new mongoose.Schema<ITask>({
 		required: true,
 	},
 	data: String,
-	description:String,
+	description: String,
 });
 
 const TaskDB = mongoose.model<ITask>('Task', schema);

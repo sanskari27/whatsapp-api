@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { Types } from 'mongoose';
 import { z } from 'zod';
-import APIError from '../../errors/api-errors';
+import { APIError } from '../../errors';
 
 export type ScheduleMessageValidationResult = {
 	type: 'CSV' | 'GROUP' | 'NUMBERS' | 'GROUP_INDIVIDUAL' | 'LABEL';

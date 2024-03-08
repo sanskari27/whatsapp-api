@@ -1,13 +1,13 @@
 import { Types } from 'mongoose';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import UploadDB from '../../repository/uploads';
+import { IAccount } from '../../types/account';
 import IUpload from '../../types/uploads';
-import { IUser } from '../../types/user';
 
 export default class UploadService {
-	private user: IUser;
+	private user: IAccount;
 
-	public constructor(user: IUser) {
+	public constructor(user: IAccount) {
 		this.user = user;
 	}
 
@@ -25,7 +25,7 @@ export default class UploadService {
 		const csv_docs = await UploadDB.findById(id);
 		return csv_docs?.filename || null;
 	}
-	
+
 	async addCSV(name: string, filename: string, headers: string[]) {
 		const exists = await UploadDB.exists({ name, user: this.user, type: 'NUMBERS' });
 		if (exists) {

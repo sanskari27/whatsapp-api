@@ -14,26 +14,28 @@ import { BotResponseDB } from '../../repository/bot';
 import BotDB from '../../repository/bot/Bot';
 import ContactCardDB from '../../repository/contact-cards';
 import TimeGenerator from '../../structures/TimeGenerator';
+import { IAccount, IWADevice } from '../../types/account';
 import IUpload from '../../types/uploads';
-import { IUser } from '../../types/user';
 import DateUtils from '../../utils/DateUtils';
 import { Delay } from '../../utils/ExpressUtils';
 import VCardBuilder from '../../utils/VCardBuilder';
+import { AccountService } from '../account';
 import { MessageService } from '../messenger';
 import TokenService from '../token';
 import UploadService from '../uploads';
-import UserService from '../user';
 
 export default class BotService {
-	private user: IUser;
-	private userService: UserService;
+	private user: IAccount;
+	private device: IWADevice;
+	private userService: AccountService;
 	private messageSchedulerService: MessageService;
 	private whatsapp: WhatsappProvider | undefined;
 
-	public constructor(user: IUser) {
+	public constructor(user: IAccount, device: IWADevice) {
 		this.user = user;
-		this.userService = new UserService(user);
-		this.messageSchedulerService = new MessageService(user);
+		this.device = device;
+		this.userService = new AccountService(user);
+		this.messageSchedulerService = new MessageService(user, device);
 	}
 
 	public attachWhatsappProvider(whatsapp_provider: WhatsappProvider) {
@@ -43,6 +45,7 @@ export default class BotService {
 	public async allBots() {
 		const bots = await BotDB.find({
 			user: this.user,
+			device: this.device,
 		}).populate('attachments shared_contact_cards ');
 		return bots.map((bot) => ({
 			bot_id: bot._id as Types.ObjectId,
@@ -192,9 +195,6 @@ export default class BotService {
 			if (bot.trigger === '') {
 				return true;
 			}
-			if (bot.options === BOT_TRIGGER_OPTIONS.EXACT_IGNORE_CASE) {
-				return message_body.toLowerCase() === bot.trigger.toLowerCase();
-			}
 			if (bot.options === BOT_TRIGGER_OPTIONS.EXACT_MATCH_CASE) {
 				return message_body === bot.trigger;
 			}
@@ -246,7 +246,7 @@ export default class BotService {
 			throw new Error('Whatsapp Provider not attached.');
 		}
 
-		const { isSubscribed, isNew } = this.userService.isSubscribed();
+		const { isSubscribed, isNew } = await this.userService.isSubscribed(this.device._id);
 		if (!isSubscribed && !isNew) {
 			return;
 		}
@@ -477,6 +477,7 @@ export default class BotService {
 		const bot = new BotDB({
 			...data,
 			user: this.user,
+			device: this.device,
 		});
 
 		bot.save();

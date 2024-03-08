@@ -3,6 +3,7 @@ import { IUser } from '../users';
 import IBot from './Bot';
 
 export default interface IBotResponse extends Document {
+	_id: Types.ObjectId;
 	user: IUser;
 	recipient: string;
 	bot: IBot;

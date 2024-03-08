@@ -90,7 +90,9 @@ function RecipientFromSelector({ fetchRecipients }: { fetchRecipients: (text: st
 
 	const { details } = useSelector((state: StoreState) => state[StoreNames.SCHEDULER]);
 
-	const { userType } = useSelector((state: StoreState) => state[StoreNames.USER]);
+	const { current_profile_type: userType } = useSelector(
+		(state: StoreState) => state[StoreNames.USER]
+	);
 
 	return (
 		<FormControl flex={1}>

@@ -1,45 +1,75 @@
 import APIInstance from '../config/APIInstance';
 
+type ContactCard = {
+	id: string;
+	first_name: string;
+	middle_name: string;
+	last_name: string;
+	title: string;
+	organization: string;
+	email_personal: string;
+	email_work: string;
+	links: string[];
+	street: string;
+	city: string;
+	state: string;
+	country: string;
+	pincode: string;
+	base64: string;
+	contact_details_phone?: {
+		country_code: string;
+		number: string;
+	};
+	contact_details_work?: {
+		country_code: string;
+		number: string;
+	};
+	contact_details_other: {
+		country_code: string;
+		number: string;
+	}[];
+};
+
 export default class ContactCardService {
 	static async ListContactCards() {
 		try {
 			const { data } = await APIInstance.get(`/contact-card`);
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			return data.contact_cards.map((card: any) => ({
-				id: card.id as string,
-				first_name: card.first_name as string,
-				middle_name: card.middle_name as string,
-				last_name: card.last_name as string,
-				title: card.title as string,
-				organization: card.organization as string,
-				email_personal: card.email_personal as string,
-				email_work: card.email_work as string,
+				id: card.id,
+				first_name: card.first_name,
+				middle_name: card.middle_name,
+				last_name: card.last_name,
+				title: card.title,
+				organization: card.organization,
+				email_personal: card.email_personal,
+				email_work: card.email_work,
 				links: (card.links ?? []).map((link: string) =>
 					link.includes('://') ? link.split('://')[1] : link
 				),
-				street: card.street as string,
-				city: card.city as string,
-				state: card.state as string,
-				country: card.country as string,
-				pincode: card.pincode as string,
-				base64: card.base64 as string,
+				street: card.street,
+				city: card.city,
+				state: card.state,
+				country: card.country,
+				pincode: card.pincode,
+				base64: card.base64,
 				contact_details_phone: card.contact_details_phone.contact_number && {
-					country_code: card.contact_details_phone.contact_number.slice(1, -10) as string,
-					number: card.contact_details_phone.contact_number.slice(-10) as string,
+					country_code: card.contact_details_phone.contact_number.slice(1, -10),
+					number: card.contact_details_phone.contact_number.slice(-10),
 				},
 				contact_details_work: card.contact_details_work.contact_number && {
-					country_code: card.contact_details_work.contact_number.slice(1, -10) as string,
-					number: card.contact_details_work.contact_number.slice(-10) as string,
+					country_code: card.contact_details_work.contact_number.slice(1, -10),
+					number: card.contact_details_work.contact_number.slice(-10),
 				},
 				contact_details_other: card.contact_details_other.map(
 					(contact: { contact_number: string }) => ({
-						country_code: contact.contact_number.slice(1, -10) as string,
-						number: contact.contact_number.slice(-10) as string,
+						country_code: contact.contact_number.slice(1, -10),
+						number: contact.contact_number.slice(-10),
 					})
 				),
-			}));
+			})) as ContactCard[];
 		} catch (err) {
-			return [];
+			return [] as ContactCard[];
 		}
 	}
 

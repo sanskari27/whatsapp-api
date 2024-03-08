@@ -6,7 +6,7 @@ import VCardBuilder from '../../utils/VCardBuilder';
 const contactCardSchema = new mongoose.Schema<IContactCard>({
 	user: {
 		type: Schema.Types.ObjectId,
-		ref: 'User',
+		ref: 'Account',
 	},
 	first_name: String,
 	middle_name: String,

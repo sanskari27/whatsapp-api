@@ -6,7 +6,7 @@ export type UserDetailsState = {
 	isSubscribed: boolean;
 	canSendMessage: boolean;
 	subscriptionExpiration: string;
-	userType: 'BUSINESS' | 'PERSONAL';
+	current_profile_type: 'BUSINESS' | 'PERSONAL';
 
 	groups: {
 		id: string;
@@ -28,7 +28,8 @@ export type UserDetailsState = {
 	data_loaded: boolean;
 
 	current_profile: string;
-	profiles: string[];
+	profiles: Profile[];
+	max_profiles: number;
 
 	ui_config: {
 		load_preview: boolean;
@@ -39,4 +40,20 @@ export type UserDetailsState = {
 export type PaymentRecords = {
 	subscriptions: [];
 	payments: [];
+};
+
+export type Profile = {
+	phone: string;
+	name: string;
+	userType: 'BUSINESS' | 'PERSONAL';
+	business_details: {
+		description: string;
+		email: string;
+		websites: string[];
+		latitude: number;
+		longitude: number;
+		address: string;
+	};
+	client_id: string;
+	canSendMessage: boolean;
 };

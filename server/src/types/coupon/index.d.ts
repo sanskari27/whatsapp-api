@@ -2,6 +2,7 @@ import { Document } from 'mongoose';
 import { IPlan } from '../payment';
 
 export default interface ICoupon extends Document {
+	_id: Types.ObjectId;
 	code: string;
 	offer_id: string;
 	plan: IPlan;

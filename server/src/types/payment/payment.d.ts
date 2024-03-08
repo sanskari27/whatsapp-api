@@ -2,6 +2,7 @@ import { Document } from 'mongoose';
 import IPaymentBucket from './payment-bucket';
 
 export default interface IPayment extends Document {
+	_id: Types.ObjectId;
 	bucket: IPaymentBucket;
 	amount: number;
 	expires_at: Date;

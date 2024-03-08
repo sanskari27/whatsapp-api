@@ -1,35 +1,35 @@
 import { NextFunction, Request, Response } from 'express';
-import APIError, { API_ERRORS } from '../errors/api-errors';
-import { UserService } from '../services';
+import { APIError, PAYMENT_ERRORS } from '../errors';
+import { AccountService } from '../services/account';
 
 export async function isSubscribed(req: Request, res: Response, next: NextFunction) {
 	try {
-		const { isSubscribed } = new UserService(req.locals.user).isSubscribed();
+		const { isSubscribed } = await new AccountService(req.locals.account).isSubscribed(
+			req.locals.device._id
+		);
 
 		if (!isSubscribed) {
-			return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_REQUIRED));
+			return next(new APIError(PAYMENT_ERRORS.PAYMENT_REQUIRED));
 		}
 
 		next();
 	} catch (e: unknown) {
-		return next(new APIError(API_ERRORS.USER_ERRORS.AUTHORIZATION_ERROR));
+		return next(new APIError(PAYMENT_ERRORS.PAYMENT_REQUIRED));
 	}
 }
 
 export async function isPseudoSubscribed(req: Request, res: Response, next: NextFunction) {
 	try {
-		const { isSubscribed, isNew } = new UserService(req.locals.user).isSubscribed();
-		if (isSubscribed) {
+		const { isSubscribed, isNew } = await new AccountService(req.locals.account).isSubscribed(
+			req.locals.device._id
+		);
+		if (isSubscribed || isNew) {
 			return next();
 		}
 
-		if (isNew) {
-			return next();
-		}
-
-		return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_REQUIRED));
+		return next(new APIError(PAYMENT_ERRORS.PAYMENT_REQUIRED));
 	} catch (e: unknown) {
-		return next(new APIError(API_ERRORS.USER_ERRORS.AUTHORIZATION_ERROR));
+		return next(new APIError(PAYMENT_ERRORS.PAYMENT_REQUIRED));
 	}
 }
 

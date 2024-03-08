@@ -1,5 +1,6 @@
 import express from 'express';
-import { VerifyAdmin } from '../../middleware';
+import { AccessLevel } from '../../config/const';
+import VerifyAccount, { verifyAccess } from '../../middleware/VerifyAccount';
 import { IDValidator } from '../../middleware/idValidator';
 import UserController from './user.controller';
 import { PaymentRemainderValidator } from './user.validator';
@@ -8,16 +9,19 @@ const router = express.Router();
 
 router
 	.route('/:id/extend-expiry')
-	.all(VerifyAdmin, IDValidator)
+	.all(VerifyAccount, verifyAccess(AccessLevel.Admin), IDValidator)
 	.post(UserController.extendUserExpiry);
 
 router
 	.route('/:id/payment-remainder')
-	.all(VerifyAdmin, IDValidator, PaymentRemainderValidator)
+	.all(VerifyAccount, verifyAccess(AccessLevel.Admin), IDValidator, PaymentRemainderValidator)
 	.post(UserController.paymentRemainder);
 
-router.route('/:id/logout').all(VerifyAdmin, IDValidator).post(UserController.logoutUsers);
+router
+	.route('/:id/logout')
+	.all(VerifyAccount, verifyAccess(AccessLevel.Admin), IDValidator)
+	.post(UserController.logoutUsers);
 
-router.route('/').all(VerifyAdmin).get(UserController.listUsers);
+router.route('/').all(VerifyAccount, verifyAccess(AccessLevel.Admin)).get(UserController.listUsers);
 
 export default router;

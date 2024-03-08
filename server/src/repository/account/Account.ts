@@ -13,7 +13,10 @@ import { generateHashedPassword } from '../../utils/ExpressUtils';
 
 const accountSchema = new Schema<IAccount>({
 	name: String,
-	phone: String,
+	phone: {
+		type: String,
+		unique: true,
+	},
 	avatar: String,
 	username: {
 		type: String,
@@ -26,9 +29,13 @@ const accountSchema = new Schema<IAccount>({
 	},
 	access_level: {
 		type: String,
-		enum: Object.keys(AccessLevel),
+		enum: Object.values(AccessLevel),
 		required: true,
 		default: AccessLevel.User,
+	},
+	max_devices: {
+		type: Number,
+		default: 1,
 	},
 	subscription_expiry: Date,
 });

@@ -31,7 +31,9 @@ const Groups = () => {
 	const createGroupDialogRef = useRef<CreateGroupDialogHandler>(null);
 	const assignLabelDialogRef = useRef<AssignLabelDialogHandler>(null);
 
-	const { userType } = useSelector((state: StoreState) => state[StoreNames.USER]);
+	const { current_profile_type: userType } = useSelector(
+		(state: StoreState) => state[StoreNames.USER]
+	);
 
 	return (
 		<>

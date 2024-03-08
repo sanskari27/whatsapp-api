@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { SHORTNER_REDIRECT } from '../../config/const';
-import APIError, { API_ERRORS } from '../../errors/api-errors';
+import { APIError, COMMON_ERRORS } from '../../errors';
 import ShortnerDB from '../../repository/shortner';
 import { Respond } from '../../utils/ExpressUtils';
 import {
@@ -16,7 +16,7 @@ async function createWhatsappLink(req: Request, res: Response, next: NextFunctio
 	const doc = await ShortnerDB.create({
 		title,
 		link,
-		user: req.locals.user,
+		user: req.locals.account,
 	});
 
 	return Respond({
@@ -37,7 +37,7 @@ async function createLink(req: Request, res: Response, next: NextFunction) {
 
 	const doc = await ShortnerDB.create({
 		link,
-		user: req.locals.user,
+		user: req.locals.account,
 		title,
 	});
 
@@ -58,11 +58,11 @@ async function updateLink(req: Request, res: Response, next: NextFunction) {
 	const { link, title, number, message } = req.locals.data as UpdateLinkValidationResult;
 	const doc = await ShortnerDB.findOne({
 		_id: req.locals.id,
-		user: req.locals.user,
+		user: req.locals.account,
 	});
 
 	if (!doc) {
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
+		return next(new APIError(COMMON_ERRORS.NOT_FOUND));
 	}
 	if (!link) {
 		doc.link = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
@@ -89,11 +89,11 @@ async function updateLink(req: Request, res: Response, next: NextFunction) {
 async function deleteLink(req: Request, res: Response, next: NextFunction) {
 	const doc = await ShortnerDB.findOne({
 		_id: req.locals.id,
-		user: req.locals.user,
+		user: req.locals.account,
 	});
 
 	if (!doc) {
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
+		return next(new APIError(COMMON_ERRORS.NOT_FOUND));
 	}
 	await doc.remove();
 
@@ -114,7 +114,7 @@ async function open(req: Request, res: Response, next: NextFunction) {
 }
 
 async function listAll(req: Request, res: Response, next: NextFunction) {
-	const docs = await ShortnerDB.find({ user: req.locals.user });
+	const docs = await ShortnerDB.find({ user: req.locals.account });
 
 	const promises = docs.map((doc) => ({
 		id: doc._id,

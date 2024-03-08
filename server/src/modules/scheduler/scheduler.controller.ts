@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import APIError, { API_ERRORS } from '../../errors/api-errors';
+import { APIError, COMMON_ERRORS } from '../../errors';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import SchedulerService from '../../services/scheduler';
 import UploadService from '../../services/uploads';
@@ -8,7 +8,8 @@ import { Respond, RespondCSV } from '../../utils/ExpressUtils';
 import { CreateSchedulerValidationResult } from './scheduler.validator';
 
 async function allSchedulers(req: Request, res: Response, next: NextFunction) {
-	const service = new SchedulerService(req.locals.user);
+	const { account, device } = req.locals;
+	const service = new SchedulerService(account, device);
 	const schedulers = await service.allScheduler();
 
 	return Respond({
@@ -25,7 +26,8 @@ async function allSchedulers(req: Request, res: Response, next: NextFunction) {
 }
 
 async function schedulerById(req: Request, res: Response, next: NextFunction) {
-	const service = new SchedulerService(req.locals.user);
+	const { account, device } = req.locals;
+	const service = new SchedulerService(account, device);
 
 	try {
 		const scheduler = await service.schedulerByID(req.locals.id);
@@ -41,19 +43,18 @@ async function schedulerById(req: Request, res: Response, next: NextFunction) {
 			},
 		});
 	} catch (err) {
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
+		return next(new APIError(COMMON_ERRORS.NOT_FOUND));
 	}
 }
 
 async function createScheduler(req: Request, res: Response, next: NextFunction) {
 	const data = req.locals.data as CreateSchedulerValidationResult;
 
-	const schedulerService = new SchedulerService(req.locals.user);
-	const [_, media_attachments] = await new UploadService(req.locals.user).listAttachments(
-		data.attachments
-	);
+	const { account, device } = req.locals;
+	const service = new SchedulerService(account, device);
+	const [_, media_attachments] = await new UploadService(account).listAttachments(data.attachments);
 
-	const scheduler = schedulerService.createScheduler({
+	const scheduler = service.createScheduler({
 		...data,
 		attachments: media_attachments,
 	});
@@ -72,13 +73,12 @@ async function createScheduler(req: Request, res: Response, next: NextFunction) 
 
 async function updateScheduler(req: Request, res: Response, next: NextFunction) {
 	const data = req.locals.data as CreateSchedulerValidationResult;
-	const schedulerService = new SchedulerService(req.locals.user);
-	const [_, media_attachments] = await new UploadService(req.locals.user).listAttachments(
-		data.attachments
-	);
+	const { account, device } = req.locals;
+	const service = new SchedulerService(account, device);
+	const [_, media_attachments] = await new UploadService(account).listAttachments(data.attachments);
 
 	try {
-		const bot = await schedulerService.modifyScheduler(req.locals.id, {
+		const bot = await service.modifyScheduler(req.locals.id, {
 			...data,
 			attachments: media_attachments,
 		});
@@ -95,15 +95,16 @@ async function updateScheduler(req: Request, res: Response, next: NextFunction) 
 			},
 		});
 	} catch (err) {
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
+		return next(new APIError(COMMON_ERRORS.NOT_FOUND));
 	}
 }
 
 async function toggleActive(req: Request, res: Response, next: NextFunction) {
 	try {
-		const schedulerService = new SchedulerService(req.locals.user);
+		const { account, device } = req.locals;
+		const service = new SchedulerService(account, device);
 
-		const scheduler = await schedulerService.toggleActive(req.locals.id);
+		const scheduler = await service.toggleActive(req.locals.id);
 
 		return Respond({
 			res,
@@ -115,16 +116,17 @@ async function toggleActive(req: Request, res: Response, next: NextFunction) {
 	} catch (err) {
 		if (err instanceof InternalError) {
 			if (err.isSameInstanceof(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND)) {
-				return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
+				return next(new APIError(COMMON_ERRORS.NOT_FOUND));
 			}
 		}
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR));
+		return next(new APIError(COMMON_ERRORS.INTERNAL_SERVER_ERROR));
 	}
 }
 
 async function deleteScheduler(req: Request, res: Response, next: NextFunction) {
-	const schedulerService = new SchedulerService(req.locals.user);
-	schedulerService.deleteBot(req.locals.id);
+	const { account, device } = req.locals;
+	const service = new SchedulerService(account, device);
+	service.deleteBot(req.locals.id);
 
 	return Respond({
 		res,
@@ -135,8 +137,9 @@ async function deleteScheduler(req: Request, res: Response, next: NextFunction) 
 
 async function downloadSchedulerReport(req: Request, res: Response, next: NextFunction) {
 	try {
-		const schedulerService = new SchedulerService(req.locals.user);
-		const reports = await schedulerService.generateReport(req.locals.id);
+		const { account, device } = req.locals;
+		const service = new SchedulerService(account, device);
+		const reports = await service.generateReport(req.locals.id);
 
 		return RespondCSV({
 			res,
@@ -144,7 +147,7 @@ async function downloadSchedulerReport(req: Request, res: Response, next: NextFu
 			data: CSVParser.exportSchedulerReport(reports),
 		});
 	} catch (err) {
-		next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
+		next(new APIError(COMMON_ERRORS.NOT_FOUND));
 	}
 }
 

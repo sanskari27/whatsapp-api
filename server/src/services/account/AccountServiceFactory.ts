@@ -1,8 +1,7 @@
 import { Types } from 'mongoose';
 import { AccessLevel } from '../../config/const';
-import { USER_ERRORS } from '../../errors';
-import InternalError from '../../errors/internal-errors';
-import { AccountDB } from '../../repository/account';
+import { InternalError, USER_ERRORS } from '../../errors';
+import { AccountDB, WADeviceDB } from '../../repository/account';
 import AccountService from './AccountService';
 
 export default class AccountServiceFactory {
@@ -54,5 +53,58 @@ export default class AccountServiceFactory {
 		} catch (err) {
 			throw new InternalError(USER_ERRORS.USERNAME_ALREADY_EXISTS);
 		}
+	}
+
+	static async createDevice({
+		name,
+		phone,
+		isBusiness,
+		business_details,
+	}: {
+		name?: string;
+		phone: string;
+		isBusiness?: boolean;
+		business_details?: {
+			description: string;
+			email: string;
+			websites: string[];
+			latitude: number;
+			longitude: number;
+			address: string;
+		};
+	}) {
+		const user = await WADeviceDB.findOne({ phone });
+
+		if (user) {
+			user.userType = isBusiness ? 'BUSINESS' : 'PERSONAL';
+			user.name = name ?? '';
+			user.business_details = business_details ?? {
+				description: '',
+				email: '',
+				websites: [] as string[],
+				latitude: 0,
+				longitude: 0,
+				address: '',
+			};
+			await user.save();
+
+			return user;
+		}
+
+		const createdUser = await WADeviceDB.create({
+			name,
+			phone,
+			userType: isBusiness ? 'BUSINESS' : 'PERSONAL',
+			business_details: business_details ?? {
+				description: '',
+				email: '',
+				websites: [] as string[],
+				latitude: 0,
+				longitude: 0,
+				address: '',
+			},
+		});
+
+		return createdUser;
 	}
 }

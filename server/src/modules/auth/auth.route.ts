@@ -1,24 +1,22 @@
 import express from 'express';
-import { VerifyAdmin, VerifyClientID } from '../../middleware';
+import VerifyAccount from '../../middleware/VerifyAccount';
 import AuthController from './auth.controller';
-import { AdminLoginValidator } from './auth.validator';
+import { CreateAccountValidator, LoginValidator } from './auth.validator';
 
 const router = express.Router();
 
-router.route('/validate').get(AuthController.validateClientID);
-router.route('/details').all(VerifyClientID).get(AuthController.details);
-
-router.route('/logout').all(VerifyClientID).post(AuthController.logout);
-
 router
-	.route('/admin/client-id')
-	.all(VerifyAdmin)
-	.get(AuthController.getAdminClientID)
-	.post(AuthController.setAdminClientID);
-    
-router.route('/admin/validate').all(VerifyAdmin).get(AuthController.validateAdmin);
-router.route('/admin/validate').all(VerifyAdmin).get(AuthController.validateAdmin);
-router.route('/admin/login').all(AdminLoginValidator).post(AuthController.adminLogin);
-router.route('/admin/logout').all(VerifyAdmin).post(AuthController.adminLogout);
+	.route('/account/is-username-available')
+	.all(VerifyAccount)
+	.get(AuthController.isUsernameAvailable);
+
+router.route('/account/add-device').all(VerifyAccount).post(AuthController.addDevice);
+router.route('/account/remove-device').all(VerifyAccount).post(AuthController.removeDevice);
+router.route('/account/profiles').all(VerifyAccount).get(AuthController.profiles);
+router.route('/account/validate').all(VerifyAccount).get(AuthController.validateAuth);
+
+router.route('/account/login').all(LoginValidator).post(AuthController.login);
+router.route('/account/create-account').all(CreateAccountValidator).post(AuthController.signup);
+router.route('/account/logout').all(VerifyAccount).post(AuthController.logout);
 
 export default router;

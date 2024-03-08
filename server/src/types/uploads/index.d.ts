@@ -1,8 +1,9 @@
 import { Document } from 'mongoose';
-import { IUser } from '../user';
+import { IAccount } from '../account';
 
 export default interface IUpload extends Document {
-	user: IUser;
+	_id: Types.ObjectId;
+	user: IAccount;
 	name: string;
 	filename: string;
 	caption?: string;

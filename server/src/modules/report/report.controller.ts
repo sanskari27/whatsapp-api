@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import APIError, { API_ERRORS } from '../../errors/api-errors';
+import { APIError, COMMON_ERRORS } from '../../errors';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import { CampaignService } from '../../services/messenger';
 import VoteResponseService from '../../services/vote-response';
@@ -7,7 +7,8 @@ import CSVParser from '../../utils/CSVParser';
 import { Respond, RespondCSV } from '../../utils/ExpressUtils';
 
 async function listCampaigns(req: Request, res: Response, next: NextFunction) {
-	const messages = await new CampaignService(req.locals.user).allCampaigns();
+	const { account, device } = req.locals;
+	const messages = await new CampaignService(account, device).allCampaigns();
 	return Respond({
 		res,
 		status: 200,
@@ -17,7 +18,9 @@ async function listCampaigns(req: Request, res: Response, next: NextFunction) {
 	});
 }
 async function pauseCampaign(req: Request, res: Response, next: NextFunction) {
-	new CampaignService(req.locals.user).pauseCampaign(req.locals.id);
+	const { account, device } = req.locals;
+
+	new CampaignService(account, device).pauseCampaign(req.locals.id);
 
 	return Respond({
 		res,
@@ -26,7 +29,9 @@ async function pauseCampaign(req: Request, res: Response, next: NextFunction) {
 	});
 }
 async function deleteCampaign(req: Request, res: Response, next: NextFunction) {
-	new CampaignService(req.locals.user).deleteCampaign(req.locals.id);
+	const { account, device } = req.locals;
+
+	new CampaignService(account, device).deleteCampaign(req.locals.id);
 
 	return Respond({
 		res,
@@ -35,7 +40,9 @@ async function deleteCampaign(req: Request, res: Response, next: NextFunction) {
 	});
 }
 async function resumeCampaign(req: Request, res: Response, next: NextFunction) {
-	new CampaignService(req.locals.user).resumeCampaign(req.locals.id);
+	const { account, device } = req.locals;
+
+	new CampaignService(account, device).resumeCampaign(req.locals.id);
 
 	return Respond({
 		res,
@@ -45,8 +52,10 @@ async function resumeCampaign(req: Request, res: Response, next: NextFunction) {
 }
 
 async function generateReport(req: Request, res: Response, next: NextFunction) {
+	const { account, device } = req.locals;
+
 	try {
-		const scheduler = new CampaignService(req.locals.user);
+		const scheduler = new CampaignService(account, device);
 		const reports = await scheduler.generateReport(req.locals.id);
 		return RespondCSV({
 			res,
@@ -56,15 +65,17 @@ async function generateReport(req: Request, res: Response, next: NextFunction) {
 	} catch (err) {
 		if (err instanceof InternalError) {
 			if (err.isSameInstanceof(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND)) {
-				return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
+				return next(new APIError(COMMON_ERRORS.NOT_FOUND));
 			}
 		}
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
+		return next(new APIError(COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
 	}
 }
 
 async function listPolls(req: Request, res: Response, next: NextFunction) {
-	const service = new VoteResponseService(req.locals.user);
+	const { account } = req.locals;
+
+	const service = new VoteResponseService(account);
 	const { title, options, isMultiSelect, export_csv } = req.query;
 
 	if (!title || !options || !isMultiSelect) {

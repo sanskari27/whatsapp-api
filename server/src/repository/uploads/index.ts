@@ -4,7 +4,7 @@ import IUpload from '../../types/uploads';
 const uploadSchema = new mongoose.Schema<IUpload>({
 	user: {
 		type: Schema.Types.ObjectId,
-		ref: 'User',
+		ref: 'Account',
 	},
 	filename: {
 		type: String,

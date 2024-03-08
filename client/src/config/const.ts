@@ -6,10 +6,11 @@ export const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
 export const DATA_LOADED_DELAY = import.meta.env.VITE_DATA_LOADED_DELAY;
 
 export const NAVIGATION = {
-	DASHBOARD: '/dashboard',
 	CAMPAIGNS: '/campaigns',
+	DASHBOARD: '/dashboard',
 	MEDIA: '/media',
 	AUDIENCE: '/audience',
+	SETTINGS: '/settings',
 
 	CAMPAIGN_REPORTS: '/campaign-reports',
 	POLL_RESPONSES: '/poll-responses',
@@ -26,9 +27,12 @@ export const NAVIGATION = {
 	GROUP: '/group',
 	EXPORT_CONTACTS: '/export-contacts',
 
+	USER_SETTINGS: '/user-details',
+	PROFILES: '/profiles',
+	PAYMENTS: '/payments',
+
 	WELCOME: '/welcome',
 	HOME: '/',
-	SETTINGS: '/settings',
 	NETWORK_ERROR: '/network-error',
 };
 

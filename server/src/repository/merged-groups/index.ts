@@ -4,7 +4,11 @@ import IMergedGroup from '../../types/merged-group';
 const mergedGroupSchema = new mongoose.Schema<IMergedGroup>({
 	user: {
 		type: Schema.Types.ObjectId,
-		ref: 'User',
+		ref: 'Account',
+	},
+	device: {
+		type: Schema.Types.ObjectId,
+		ref: 'WADevice',
 	},
 	name: String,
 	groups: [String],

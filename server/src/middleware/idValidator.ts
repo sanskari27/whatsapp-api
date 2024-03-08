@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import APIError from '../errors/api-errors';
+import { APIError } from '../errors';
 import { idValidator } from '../utils/ExpressUtils';
 
 export async function IDValidator(req: Request, res: Response, next: NextFunction) {

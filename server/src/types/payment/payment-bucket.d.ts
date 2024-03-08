@@ -3,6 +3,7 @@ import { TRANSACTION_STATUS } from '../../config/const';
 import IPlan from './plan';
 
 export default interface IPaymentBucket extends Document {
+	_id: Types.ObjectId;
 	phone_number: string;
 	name: string;
 	email: string;

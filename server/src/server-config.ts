@@ -18,7 +18,7 @@ import {
 	TASK_PATH,
 	UPLOADS_PATH,
 } from './config/const';
-import APIError from './errors/api-errors';
+import {APIError} from './errors';
 import { WhatsappProvider } from './provider/whatsapp_provider';
 import { MessageService } from './services/messenger';
 import SchedulerService from './services/scheduler';

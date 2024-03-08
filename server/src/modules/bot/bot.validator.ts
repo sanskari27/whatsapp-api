@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { Types } from 'mongoose';
 import { z } from 'zod';
 import { BOT_TRIGGER_OPTIONS, BOT_TRIGGER_TO } from '../../config/const';
-import APIError from '../../errors/api-errors';
+import { APIError } from '../../errors';
 
 export type CreateBotValidationResult = {
 	respond_to: BOT_TRIGGER_TO;
@@ -70,8 +70,8 @@ export async function CreateBotValidator(req: Request, res: Response, next: Next
 			.refine((attachments) => !attachments.some((value) => !Types.ObjectId.isValid(value)))
 			.transform((attachments) => attachments.map((value) => new Types.ObjectId(value))),
 		group_respond: z.boolean().default(false),
-		startAt: z.string().default("00:01"),
-		endAt: z.string().default("23:59"),
+		startAt: z.string().default('00:01'),
+		endAt: z.string().default('23:59'),
 		polls: z
 			.object({
 				title: z.string(),

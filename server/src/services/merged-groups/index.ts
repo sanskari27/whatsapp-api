@@ -3,19 +3,22 @@ import Logger from 'n23-logger';
 import WAWebJS from 'whatsapp-web.js';
 import { GroupPrivateReplyDB, GroupReplyDB } from '../../repository/group-reply';
 import MergedGroupDB from '../../repository/merged-groups';
-import { IUser } from '../../types/user';
+import { IAccount, IWADevice } from '../../types/account';
 import { Delay, idValidator } from '../../utils/ExpressUtils';
 
 export default class GroupMergeService {
-	private user: IUser;
+	private user: IAccount;
+	private device: IWADevice;
 
-	public constructor(user: IUser) {
+	public constructor(user: IAccount, device: IWADevice) {
 		this.user = user;
+		this.device = device;
 	}
 
 	async listGroups() {
 		const merged_groups = await MergedGroupDB.find({
 			user: this.user,
+			device: this.device,
 		});
 
 		return merged_groups.map((group) => ({
@@ -47,6 +50,7 @@ export default class GroupMergeService {
 	) {
 		const group = await MergedGroupDB.create({
 			user: this.user,
+			device: this.device,
 			name,
 			groups: group_ids,
 			group_reply,
@@ -160,10 +164,14 @@ export default class GroupMergeService {
 		const group_id = chat.id._serialized;
 
 		const group_reply_docs = await MergedGroupDB.findOne({
+			user: this.user,
+			device: this.device,
 			groups: group_id,
 			group_reply: { $exists: true, $ne: null },
 		});
 		const private_reply_docs = await MergedGroupDB.findOne({
+			user: this.user,
+			device: this.device,
 			groups: group_id,
 			private_reply: { $exists: true, $ne: null },
 		});
@@ -177,7 +185,7 @@ export default class GroupMergeService {
 			return;
 		}
 
-		const create_docs_data = { user: this.user, from: contact.id._serialized };
+		const create_docs_data = { user: this.user, device: this.device, from: contact.id._serialized };
 
 		const sendReply = async (
 			model: Model<any, {}, {}, {}, any>,

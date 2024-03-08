@@ -1,8 +1,9 @@
 import { Document } from 'mongoose';
-import { IUser } from '../user';
+import { IAccount } from '../account';
 
 export default interface IShortner extends Document {
-	user: IUser;
+	_id: Types.ObjectId;
+	user: IAccount;
 	title: string;
 	key: string;
 	link: string;

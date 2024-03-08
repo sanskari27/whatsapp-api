@@ -18,7 +18,7 @@ import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { useSelector } from 'react-redux';
 import GroupService from '../../../../../services/group.service';
 import LabelService from '../../../../../services/label.service';
-import { StoreState, StoreNames } from '../../../../../store';
+import { StoreNames, StoreState } from '../../../../../store';
 
 export type AssignLabelDialogHandler = {
 	open: () => void;
@@ -105,8 +105,6 @@ const AssignLabelDialog = forwardRef<AssignLabelDialogHandler>((_, ref) => {
 					<FormControl>
 						<FormLabel>Select Label to Assign</FormLabel>
 						<Select
-							className='!bg-[#ECECEC] dark:!bg-[#535353] rounded-md w-full text-black dark:text-white '
-							border={'none'}
 							value={labelDetails.label_id}
 							onChange={(e) => handleChange('label_id', e.target.value)}
 						>
@@ -117,11 +115,7 @@ const AssignLabelDialog = forwardRef<AssignLabelDialogHandler>((_, ref) => {
 								Select Label
 							</option>
 							{labels.map(({ id, name }) => (
-								<option
-									className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] '
-									value={id}
-									key={id}
-								>
+								<option value={id} key={id}>
 									{name}
 								</option>
 							))}
@@ -187,13 +181,10 @@ const AssignLabelDialog = forwardRef<AssignLabelDialogHandler>((_, ref) => {
 							}))}
 							style={{
 								searchBox: {
-									border: 'none',
-								},
-								inputField: {
-									width: '100%',
+									// border: 'none',
 								},
 							}}
-							className='  bg-[#ECECEC] dark:bg-[#535353] rounded-md border-none '
+							className='!w-[full] !mr-2  rounded-md border-none '
 						/>
 					</FormControl>
 				</ModalBody>

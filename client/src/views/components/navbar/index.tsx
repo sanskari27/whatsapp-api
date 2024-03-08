@@ -1,4 +1,4 @@
-import { ChevronDownIcon, DeleteIcon } from '@chakra-ui/icons';
+import { ChevronDownIcon } from '@chakra-ui/icons';
 import {
 	Avatar,
 	Button,
@@ -95,8 +95,9 @@ export default function Navbar() {
 							_hover={object_none}
 							_expanded={object_none}
 							_focus={object_none}
+							isDisabled={!profiles.find((p) => p.client_id === current_profile)}
 						>
-							Profile {profiles.findIndex((profile) => profile === current_profile) + 1}
+							Profile {profiles.findIndex((profile) => profile.client_id === current_profile) + 1}
 						</MenuButton>
 						<MenuList bg={Colors.ACCENT_LIGHT} rounded={'lg'}>
 							{profiles.length > 0 ? (
@@ -110,7 +111,7 @@ export default function Navbar() {
 											_focus={object_border}
 											width={'250px'}
 											height={'40px'}
-											onClick={() => dispatch(setCurrentProfile(profile))}
+											onClick={() => dispatch(setCurrentProfile(profile.client_id))}
 										>
 											Profile {index + 1}
 										</MenuItem>
@@ -133,12 +134,14 @@ export default function Navbar() {
 					</Menu>
 				</Flex>
 				<Flex gap={'1rem'} alignItems={'center'}>
-					<Avatar
-						size='sm'
-						bgColor={Colors.ACCENT_DARK}
-						src='https://bit.ly/broken-link'
-						cursor={'pointer'}
-					/>
+					<Link to={NAVIGATION.SETTINGS + NAVIGATION.PROFILES}>
+						<Avatar
+							size='sm'
+							bgColor={Colors.ACCENT_DARK}
+							src='https://bit.ly/broken-link'
+							cursor={'pointer'}
+						/>
+					</Link>
 				</Flex>
 			</Flex>
 		</Flex>
@@ -156,31 +159,14 @@ function NavElement({ to, title }: { to: string; title?: string }) {
 	);
 }
 
-export function NavbarDeleteElement({
-	isLoading = false,
-	isDisabled,
-	onClick,
-}: {
-	isLoading?: boolean;
-	isDisabled: boolean;
-	onClick: () => void;
-}) {
-	return (
-		<IconButton
-			aria-label='delete'
-			isDisabled={isDisabled}
-			icon={<Icon as={DeleteIcon} height={4} width={4} />}
-			colorScheme={'red'}
-			size={'sm'}
-			isLoading={isLoading}
-			onClick={onClick}
-		/>
-	);
-}
-
 function NotificationButton() {
 	const { tasks, downloadTask, removeTask } = useTask();
 	const ref = useRef(null);
+
+	const removeAll = () => {
+		tasks.forEach((task) => removeTask(task.id));
+	};
+
 	return (
 		<Popover initialFocusRef={ref} isLazy placement='bottom-end' closeOnBlur={true}>
 			<PopoverTrigger>
@@ -202,16 +188,23 @@ function NotificationButton() {
 						ref={ref}
 						textAlign={'right'}
 						fontSize={'sm'}
-						cursor={'pointer'}
+						cursor={tasks.length > 0 ? 'pointer' : 'not-allowed'}
 						textColor='black'
 						textDecoration={'underline dashed'}
 						textUnderlineOffset={'5px'}
+						onClick={removeAll}
+						opacity={tasks.length > 0 ? 1 : 0.6}
 					>
 						Clear All
 					</Text>
 				</PopoverHeader>
 				<PopoverArrow bg='blue.800' />
-				<PopoverBody maxHeight={'400px'} overflowY={'scroll'} py={'1rem'}>
+				<PopoverBody maxHeight={'400px'} overflowY={'scroll'} pt={'0.5rem'} pb={'1.5rem'}>
+					{tasks.length === 0 && (
+						<Text fontWeight={'medium'} textAlign={'center'}>
+							No new notifications
+						</Text>
+					)}
 					<Each
 						items={tasks}
 						render={(task) => (

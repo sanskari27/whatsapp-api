@@ -1,4 +1,4 @@
-import { Document, Schema } from 'mongoose';
+import { Document } from 'mongoose';
 
 export interface IStorageModel extends IStorage, Document {
 	getString(key: string): Promise<string | null>;
@@ -8,6 +8,7 @@ export interface IStorageModel extends IStorage, Document {
 }
 
 export default interface IStorage extends Document {
+	_id: Types.ObjectId;
 	key: string;
 	value: string | undefined;
 	object: object | undefined;

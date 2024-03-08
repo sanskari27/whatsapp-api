@@ -1,9 +1,10 @@
 import { Document } from 'mongoose';
 import { TASK_RESULT_TYPE, TASK_STATUS, TASK_TYPE } from '../../config/const';
-import { IUser } from '../users';
+import { IAccount } from '../account';
 
 export default interface ITask extends Document {
-	user: IUser;
+	_id: Types.ObjectId;
+	user: IAccount;
 	type: TASK_TYPE;
 	status: TASK_STATUS;
 	data: string;

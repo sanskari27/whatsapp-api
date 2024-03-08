@@ -61,9 +61,13 @@ export default function ExportContacts() {
 		navigate(NAVIGATION.AUDIENCE + NAVIGATION.GROUP);
 	};
 
-	const { groups, labels, isSubscribed, contactsCount, userType } = useSelector(
-		(state: StoreState) => state[StoreNames.USER]
-	);
+	const {
+		groups,
+		labels,
+		isSubscribed,
+		contactsCount,
+		current_profile_type: userType,
+	} = useSelector((state: StoreState) => state[StoreNames.USER]);
 
 	useEffect(() => {
 		if (contactsCount !== null || generatingCount.current) {

@@ -1,9 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
 import { INVOICE_PATH } from '../../config/const';
-import APIError, { API_ERRORS } from '../../errors/api-errors';
+import { APIError, COMMON_ERRORS, PAYMENT_ERRORS } from '../../errors';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import PaymentDB from '../../repository/payments/payment';
-import { UserService } from '../../services';
 import PaymentBucketService from '../../services/payments/payment-bucket';
 import CSVParser from '../../utils/CSVParser';
 import { Respond, RespondCSV, RespondFile, idValidator } from '../../utils/ExpressUtils';
@@ -31,10 +30,10 @@ async function fetchTransactionDetail(req: Request, res: Response, next: NextFun
 	} catch (err) {
 		if (err instanceof InternalError) {
 			if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND)) {
-				return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_NOT_FOUND));
+				return next(new APIError(PAYMENT_ERRORS.PAYMENT_NOT_FOUND));
 			}
 		}
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
+		return next(new APIError(COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
 	}
 }
 
@@ -46,30 +45,29 @@ async function fetchUserTransactions(req: Request, res: Response, next: NextFunc
 		options.csv = true;
 	}
 	try {
-		const payments = await PaymentBucketService.getPaymentRecords(req.locals.user);
-
-		if (options.csv) {
-			return RespondCSV({
-				res,
-				filename: 'Exported Contacts',
-				data: CSVParser.exportPayments(payments),
-			});
-		} else {
-			return Respond({
-				res,
-				status: 200,
-				data: {
-					payments,
-				},
-			});
-		}
+		// const payments = await PaymentBucketService.getPaymentRecords(req.locals.user);
+		// if (options.csv) {
+		// 	return RespondCSV({
+		// 		res,
+		// 		filename: 'Exported Contacts',
+		// 		data: CSVParser.exportPayments(payments),
+		// 	});
+		// } else {
+		// 	return Respond({
+		// 		res,
+		// 		status: 200,
+		// 		data: {
+		// 			payments,
+		// 		},
+		// 	});
+		// }
 	} catch (err) {
 		if (err instanceof InternalError) {
 			if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND)) {
-				return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_NOT_FOUND));
+				return next(new APIError(PAYMENT_ERRORS.PAYMENT_NOT_FOUND));
 			}
 		}
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
+		return next(new APIError(COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
 	}
 }
 
@@ -101,10 +99,10 @@ async function fetchAllTransactions(req: Request, res: Response, next: NextFunct
 	} catch (err) {
 		if (err instanceof InternalError) {
 			if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND)) {
-				return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_NOT_FOUND));
+				return next(new APIError(PAYMENT_ERRORS.PAYMENT_NOT_FOUND));
 			}
 		}
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
+		return next(new APIError(COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
 	}
 }
 
@@ -128,7 +126,7 @@ async function createPaymentBucket(req: Request, res: Response, next: NextFuncti
 			},
 		});
 	} catch (err) {
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
+		return next(new APIError(COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
 	}
 }
 
@@ -153,14 +151,14 @@ async function applyCoupon(req: Request, res: Response, next: NextFunction) {
 	} catch (err) {
 		if (err instanceof InternalError) {
 			if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND)) {
-				return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_NOT_FOUND));
+				return next(new APIError(PAYMENT_ERRORS.PAYMENT_NOT_FOUND));
 			} else if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.COUPON_NOT_FOUND)) {
-				return next(new APIError(API_ERRORS.PAYMENT_ERRORS.COUPON_NOT_FOUND));
+				return next(new APIError(PAYMENT_ERRORS.COUPON_NOT_FOUND));
 			} else if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.COUPON_EXPIRED)) {
-				return next(new APIError(API_ERRORS.PAYMENT_ERRORS.COUPON_EXPIRED));
+				return next(new APIError(PAYMENT_ERRORS.COUPON_EXPIRED));
 			}
 		}
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
+		return next(new APIError(COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
 	}
 }
 async function removeCoupon(req: Request, res: Response, next: NextFunction) {
@@ -184,14 +182,14 @@ async function removeCoupon(req: Request, res: Response, next: NextFunction) {
 	} catch (err) {
 		if (err instanceof InternalError) {
 			if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND)) {
-				return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_NOT_FOUND));
+				return next(new APIError(PAYMENT_ERRORS.PAYMENT_NOT_FOUND));
 			} else if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.COUPON_NOT_FOUND)) {
-				return next(new APIError(API_ERRORS.PAYMENT_ERRORS.COUPON_NOT_FOUND));
+				return next(new APIError(PAYMENT_ERRORS.COUPON_NOT_FOUND));
 			} else if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.COUPON_EXPIRED)) {
-				return next(new APIError(API_ERRORS.PAYMENT_ERRORS.COUPON_EXPIRED));
+				return next(new APIError(PAYMENT_ERRORS.COUPON_EXPIRED));
 			}
 		}
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
+		return next(new APIError(COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
 	}
 }
 
@@ -209,10 +207,10 @@ async function initializeBucketPayment(req: Request, res: Response, next: NextFu
 	} catch (err) {
 		if (err instanceof InternalError) {
 			if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND)) {
-				return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_NOT_FOUND));
+				return next(new APIError(PAYMENT_ERRORS.PAYMENT_NOT_FOUND));
 			}
 		}
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
+		return next(new APIError(COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
 	}
 }
 
@@ -278,53 +276,53 @@ async function confirmTransaction(req: Request, res: Response, next: NextFunctio
 	} catch (err) {
 		if (err instanceof InternalError) {
 			if (err.isSameInstanceof(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND)) {
-				return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
+				return next(new APIError(COMMON_ERRORS.NOT_FOUND));
 			} else if (err.isSameInstanceof(INTERNAL_ERRORS.RAZORPAY_ERRORS.ORDER_PENDING)) {
-				return next(new APIError(API_ERRORS.PAYMENT_ERRORS.ORDER_PENDING));
+				return next(new APIError(PAYMENT_ERRORS.ORDER_PENDING));
 			}
 		}
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
+		return next(new APIError(COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
 	}
 }
 
 async function pauseSubscription(req: Request, res: Response, next: NextFunction) {
 	try {
-		const userService = new UserService(req.locals.user);
-		await userService.pauseSubscription(req.locals.data);
-		return Respond({
-			res,
-			status: 200,
-		});
+		// const userService = new UserService(req.locals.user);
+		// await userService.pauseSubscription(req.locals.data);
+		// return Respond({
+		// 	res,
+		// 	status: 200,
+		// });
 	} catch (err) {
 		if (err instanceof InternalError) {
 			if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND)) {
-				return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_NOT_FOUND));
+				return next(new APIError(PAYMENT_ERRORS.PAYMENT_NOT_FOUND));
 			} else if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.ACCESS_DENIED)) {
-				return next(new APIError(API_ERRORS.PAYMENT_ERRORS.ACCESS_DENIED));
+				return next(new APIError(PAYMENT_ERRORS.ACCESS_DENIED));
 			}
 		}
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
+		return next(new APIError(COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
 	}
 }
 
 async function resumeSubscription(req: Request, res: Response, next: NextFunction) {
 	try {
-		const userService = new UserService(req.locals.user);
-		await userService.resumeSubscription(req.locals.data);
-		return Respond({
-			res,
-			status: 200,
-		});
+		// const userService = new UserService(req.locals.user);
+		// await userService.resumeSubscription(req.locals.data);
+		// return Respond({
+		// 	res,
+		// 	status: 200,
+		// });
 	} catch (err) {
 		if (err instanceof InternalError) {
 			if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.PAYMENT_NOT_FOUND)) {
-				return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_NOT_FOUND));
+				return next(new APIError(PAYMENT_ERRORS.PAYMENT_NOT_FOUND));
 			} else if (err.isSameInstanceof(INTERNAL_ERRORS.PAYMENT_ERROR.ACCESS_DENIED)) {
-				return next(new APIError(API_ERRORS.PAYMENT_ERRORS.ACCESS_DENIED));
+				return next(new APIError(PAYMENT_ERRORS.ACCESS_DENIED));
 			}
 		}
 
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
+		return next(new APIError(COMMON_ERRORS.INTERNAL_SERVER_ERROR, err));
 	}
 }
 

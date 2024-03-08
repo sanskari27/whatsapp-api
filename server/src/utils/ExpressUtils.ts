@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 import fs from 'fs';
 import mime from 'mime';
 import { Types } from 'mongoose';
-import { z } from 'zod';
+import { ZodIssue, z } from 'zod';
 import { SALT_FACTOR, SUBSCRIPTION_STATUS } from '../config/const';
 import DateUtils from './DateUtils';
 
@@ -139,4 +139,12 @@ export function validatePhoneNumber(num: string) {
 
 export async function generateHashedPassword(password: string) {
 	return await bcrypt.hash(password, SALT_FACTOR);
+}
+
+export function generateErrorMessage(issues: ZodIssue[]) {
+	return issues
+		.map((err) => err.path)
+		.flat()
+		.filter((item, pos, arr) => arr.indexOf(item) == pos)
+		.join(', ');
 }

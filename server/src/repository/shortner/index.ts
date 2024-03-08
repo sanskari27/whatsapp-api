@@ -6,7 +6,7 @@ import QRUtils from '../../utils/QRUtils';
 const ShortnerSchema = new mongoose.Schema<IShortner>({
 	user: {
 		type: Types.ObjectId,
-		ref: 'User',
+		ref: 'Account',
 	},
 	key: {
 		type: String,

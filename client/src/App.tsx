@@ -14,9 +14,11 @@ import UploadCSV from './views/pages/audience/csv/upload-csv';
 import Groups from './views/pages/audience/groups';
 import ExportContacts from './views/pages/audience/groups/export-contacts';
 import AttachmentDetails from './views/pages/media/attachments/attachment-details';
+import Profiles from './views/pages/settings/profiles';
 
 const Welcome = lazy(() => import('./views/pages/welcome'));
 const Home = lazy(() => import('./views/pages/home'));
+const Settings = lazy(() => import('./views/pages/settings'));
 
 const Dashboard = lazy(() => import('./views/pages/dashboard'));
 const CampaignReport = lazy(() => import('./views/pages/dashboard/campaign-report'));
@@ -36,7 +38,6 @@ const Contacts = lazy(() => import('./views/pages/media/contacts'));
 const ContactDetailsDialog = lazy(() => import('./views/pages/media/contacts/contact-details'));
 const Attachments = lazy(() => import('./views/pages/media/attachments'));
 
-const GroupMergePage = lazy(() => import('./views/pages/merge-group'));
 const NetworkError = lazy(() => import('./views/pages/network-error'));
 
 function App() {
@@ -108,9 +109,11 @@ function App() {
 								</Route>
 							</Route>
 
-							<Route path={NAVIGATION.POLL_RESPONSES} element={<PollReport />} />
-							<Route path={NAVIGATION.GROUP} element={<GroupMergePage />} />
+							<Route path={NAVIGATION.SETTINGS} element={<Settings />}>
+								<Route path={NAVIGATION.PROFILES.substring(1)} element={<Profiles />} />
+							</Route>
 						</Route>
+
 						<Route path={NAVIGATION.NETWORK_ERROR} element={<NetworkError />} />
 						{/* <Route path='*' element={<Navigate to={NAVIGATION.WELCOME} />} /> */}
 					</Routes>

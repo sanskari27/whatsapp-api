@@ -1,7 +1,7 @@
-import { useBoolean, useToast } from '@chakra-ui/react';
 import { useCallback, useEffect, useState } from 'react';
-import { DATA_LOADED_DELAY } from '../config/const';
+import { useSelector } from 'react-redux';
 import AttachmentService from '../services/attachment.service';
+import AuthService from '../services/auth.service';
 import BotService from '../services/bot.service';
 import ContactCardService from '../services/contact-card.service';
 import GroupService from '../services/group.service';
@@ -9,8 +9,7 @@ import LabelService from '../services/label.service';
 import MessageService from '../services/message.service';
 import ShortenerService from '../services/shortener.service';
 import UploadsService from '../services/uploads.service';
-import UserService from '../services/user.service';
-import { store } from '../store';
+import { StoreNames, StoreState, store } from '../store';
 import { setAttachments } from '../store/reducers/AttachmentReducers';
 import { setBots } from '../store/reducers/BotReducers';
 import { setCSVFileList } from '../store/reducers/CSVFileReducers';
@@ -23,80 +22,93 @@ import { useAuth } from './useAuth';
 
 export default function useUserData() {
 	const [hasError, setError] = useState(false);
-	const [dataLoaded, setDataLoaded] = useBoolean(false);
-	const { isSocketInitialized } = useAuth();
-	const toast = useToast();
+	const { isAuthenticated } = useAuth();
 
-	const fetchUserDetails = useCallback(async () => {
+	const { current_profile } = useSelector((state: StoreState) => state[StoreNames.USER]);
+
+	const fetchProfileData = useCallback(async () => {
 		try {
-			// toast.promise(GroupService.listGroups(), {
-			// 	success: (res) => {
-			// 		store.dispatch(
-			// 			setUserDetails({
-			// 				groups: res,
-			// 			})
-			// 		);
-			// 		return {
-			// 			title: 'Groups loaded.',
-			// 			duration: 3000,
-			// 		};
-			// 	},
-			// 	error: {
-			// 		title: 'Error loading groups.',
-			// 		duration: 3000,
-			// 	},
-			// 	loading: {
-			// 		title: 'Loading groups.',
-			// 	},
-			// });
-
 			const promises = [
-				UserService.getUserDetails(),
-				ContactCardService.ListContactCards(),
-				AttachmentService.getAttachments(),
-				UploadsService.listCSV(),
-				LabelService.listLabels(),
 				BotService.listBots(),
-				ShortenerService.listAll(),
+				GroupService.listGroups(),
+				LabelService.listLabels(),
+				MessageService.getScheduledMessengers(),
 				GroupService.mergedGroups(),
-				MessageService.getScheduledMessages(),
-				addDelay(DATA_LOADED_DELAY),
+				addDelay(2000),
 			];
 
 			const results = await Promise.all(promises);
 
 			store.dispatch(
 				setUserDetails({
-					...results[0],
-					labels: results[4],
-					contactsCount: null,
+					groups: results[1],
+					labels: results[2],
 					data_loaded: true,
 				})
 			);
-			store.dispatch(setContactList(results[1]));
-			store.dispatch(setAttachments(results[2]));
-			store.dispatch(setCSVFileList(results[3]));
-			store.dispatch(setBots(results[5]));
-			store.dispatch(setLinksList(results[6]));
-			store.dispatch(setMergedGroupList(results[7]));
-			store.dispatch(setAllSchedulers(results[8]));
-			setDataLoaded.on();
+			store.dispatch(setBots(results[0]));
+			store.dispatch(setAllSchedulers(results[3]));
+			store.dispatch(setMergedGroupList(results[4]));
 		} catch (e) {
 			setError(true);
-			setDataLoaded.on();
 			return;
 		}
-	}, [setDataLoaded, toast]);
+	}, []);
+
+	const fetchProfiles = useCallback(async () => {
+		try {
+			const { profiles, max_profiles } = await AuthService.profiles();
+			if (profiles.length === 0) {
+				store.dispatch(
+					setUserDetails({
+						data_loaded: true,
+						current_profile: '',
+						profiles: [],
+						name: '',
+						phoneNumber: '',
+						isSubscribed: false,
+						canSendMessage: false,
+						subscriptionExpiration: '',
+						current_profile_type: 'PERSONAL',
+						max_profiles: max_profiles,
+					})
+				);
+				return;
+			}
+			store.dispatch(
+				setUserDetails({
+					...profiles[0],
+					profiles,
+					current_profile: profiles[0].client_id,
+					max_profiles: max_profiles,
+				})
+			);
+		} catch (e) {
+			setError(true);
+			return;
+		}
+	}, []);
 
 	useEffect(() => {
-		if (isSocketInitialized) {
-			setDataLoaded.off();
-			fetchUserDetails();
+		if (!isAuthenticated) {
+			return;
 		}
-	}, [fetchUserDetails, setDataLoaded, isSocketInitialized]);
+
+		ContactCardService.ListContactCards().then((res) => store.dispatch(setContactList(res)));
+		ShortenerService.listAll().then((res) => store.dispatch(setLinksList(res)));
+		AttachmentService.getAttachments().then((res) => store.dispatch(setAttachments(res)));
+		UploadsService.listCSV().then((res) => store.dispatch(setCSVFileList(res)));
+		fetchProfiles();
+	}, [fetchProfiles, isAuthenticated]);
+
+	useEffect(() => {
+		if (!current_profile) {
+			return;
+		}
+		fetchProfileData();
+	}, [current_profile, fetchProfileData]);
 
 	return {
-		loading: !dataLoaded,
 		error: hasError,
 	};
 }
@@ -107,4 +119,28 @@ function addDelay(delay: number) {
 			resolve();
 		}, delay);
 	});
+}
+
+export async function fetchProfileData() {
+	const promises = [
+		BotService.listBots(),
+		GroupService.listGroups(),
+		LabelService.listLabels(),
+		MessageService.getScheduledMessengers(),
+		GroupService.mergedGroups(),
+		addDelay(2000),
+	];
+
+	const results = await Promise.all(promises);
+
+	store.dispatch(
+		setUserDetails({
+			groups: results[1],
+			labels: results[2],
+			data_loaded: true,
+		})
+	);
+	store.dispatch(setBots(results[0]));
+	store.dispatch(setAllSchedulers(results[3]));
+	store.dispatch(setMergedGroupList(results[4]));
 }

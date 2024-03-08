@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import { recheckNetwork } from '../hooks/useNetwork';
-import UserService from '../services/user.service';
-import { getClientID } from '../utils/ChromeUtils';
+import AuthService from '../services/auth.service';
+import { store } from '../store';
 import { NAVIGATION, SERVER_URL } from './const';
 
 const socket = io(SERVER_URL);
@@ -12,12 +12,13 @@ const APIInstance = axios.create({
 		'Content-Type': 'application/json',
 		Accept: 'application/json',
 	},
+	withCredentials: true,
 });
 
 APIInstance.interceptors.request.use(async (request) => {
-	const client_id = await getClientID();
-	if (client_id) {
-		request.headers['client-id'] = client_id;
+	const device_id = store.getState().user.current_profile;
+	if (device_id) {
+		request.headers['device-id'] = device_id;
 	}
 	return request;
 });
@@ -37,8 +38,8 @@ APIInstance.interceptors.response.use(
 
 		if (error.response?.data?.title === 'SESSION_INVALIDATED' && !originalRequest._retry) {
 			originalRequest._retry = true;
-			const { whatsapp_ready } = await UserService.isAuthenticated();
-			if (whatsapp_ready) {
+			const isAuthenticated = await AuthService.isAuthenticated();
+			if (isAuthenticated) {
 				return APIInstance(originalRequest);
 			} else {
 				window.location.assign(NAVIGATION.WELCOME);

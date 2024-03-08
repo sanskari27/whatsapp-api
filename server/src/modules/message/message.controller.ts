@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
 import { SOCKET_RESPONSES, TASK_RESULT_TYPE, TASK_TYPE } from '../../config/const';
-import APIError, { API_ERRORS } from '../../errors/api-errors';
+import { APIError, PAYMENT_ERRORS, USER_ERRORS } from '../../errors';
+import SocketServerProvider from '../../provider/socket';
 import { WhatsappProvider } from '../../provider/whatsapp_provider';
-import { UserService } from '../../services';
 import GroupMergeService from '../../services/merged-groups';
 import CampaignService from '../../services/messenger/Campaign';
 import TaskService from '../../services/task';
@@ -14,7 +14,7 @@ import { FileUtils } from '../../utils/files';
 import { ScheduleMessageValidationResult } from './message.validator';
 
 export async function scheduleMessage(req: Request, res: Response, next: NextFunction) {
-	const client_id = req.locals.client_id;
+	const { account, client_id, device } = req.locals;
 
 	const req_data = req.locals.data as ScheduleMessageValidationResult;
 	const {
@@ -40,19 +40,19 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 		  }[][]
 		| null = null;
 
-	const { isSubscribed, isNew } = new UserService(req.locals.user).isSubscribed();
+	const { isSubscribed, isNew } = await req.locals.accountService.isSubscribed(device._id);
 
 	if (!isSubscribed && !isNew) {
-		return next(new APIError(API_ERRORS.PAYMENT_ERRORS.PAYMENT_REQUIRED));
+		return next(new APIError(PAYMENT_ERRORS.PAYMENT_REQUIRED));
 	}
 
-	const whatsapp = WhatsappProvider.getInstance(client_id);
+	const whatsapp = WhatsappProvider.getInstance(account, client_id);
 	const whatsappUtils = new WhatsappUtils(whatsapp);
 	if (!whatsapp.isReady()) {
-		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
+		return next(new APIError(USER_ERRORS.WHATSAPP_NOT_READY));
 	}
 
-	const taskService = new TaskService(req.locals.user);
+	const taskService = new TaskService(account);
 	const task_id = await taskService.createTask(TASK_TYPE.SCHEDULE_CAMPAIGN, TASK_RESULT_TYPE.NONE, {
 		description: req_data.campaign_name,
 	});
@@ -62,9 +62,9 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 		status: 201,
 	});
 
-	const groupMergeService = new GroupMergeService(req.locals.user);
+	const groupMergeService = new GroupMergeService(account, device);
 
-	const uploadService = new UploadService(req.locals.user);
+	const uploadService = new UploadService(account);
 	const [uploaded_attachments] = await uploadService.listAttachments(attachments);
 
 	if (type === 'NUMBERS') {
@@ -132,7 +132,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 	});
 
 	try {
-		const campaignService = new CampaignService(req.locals.user);
+		const campaignService = new CampaignService(account, device);
 		const campaign_exists = await campaignService.alreadyExists(req_data.campaign_name);
 		if (campaign_exists) {
 			return taskService.markFailed(task_id);
@@ -146,9 +146,14 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 		});
 
 		taskService.markCompleted(task_id, campaign._id);
-		whatsapp.sendToClient(SOCKET_RESPONSES.TASK_COMPLETED, task_id.toString());
+		SocketServerProvider.attachedSockets
+			.get(account.phone)
+			?.emit(SOCKET_RESPONSES.TASK_COMPLETED, task_id.toString());
 	} catch (err) {
-		return taskService.markFailed(task_id);
+		taskService.markFailed(task_id);
+		SocketServerProvider.attachedSockets
+			.get(account.phone)
+			?.emit(SOCKET_RESPONSES.TASK_FAILED, task_id.toString());
 	}
 }
 

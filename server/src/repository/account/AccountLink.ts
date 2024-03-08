@@ -14,7 +14,6 @@ const schema = new Schema<IAccountLink>({
 	},
 	client_id: {
 		type: String,
-		required: true,
 	},
 });
 

@@ -1,9 +1,10 @@
 import APIInstance from '../config/APIInstance';
+import { Attachment } from '../store/types/AttachmentState';
 export default class AttachmentService {
 	static async getAttachments() {
 		try {
 			const { data } = await APIInstance.get(`/uploads/attachment`);
-			return data.attachments;
+			return data.attachments as Attachment[];
 		} catch (err) {
 			return [];
 		}
@@ -78,7 +79,7 @@ export default class AttachmentService {
 				caption: attachment_details.caption,
 				custom_caption: attachment_details.custom_caption,
 			});
-			return data.attachment;
+			return data.attachment as Attachment;
 		} catch (err) {
 			return false;
 		}

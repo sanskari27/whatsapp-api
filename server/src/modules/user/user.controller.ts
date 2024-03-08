@@ -1,47 +1,41 @@
 import { NextFunction, Request, Response } from 'express';
-import Logger from 'n23-logger';
-import APIError, { API_ERRORS } from '../../errors/api-errors';
-import { WhatsappProvider } from '../../provider/whatsapp_provider';
-import { UserService } from '../../services';
-import AdminService from '../../services/user/admin-service';
-import CSVParser from '../../utils/CSVParser';
+import { APIError, COMMON_ERRORS } from '../../errors';
+import { AccountServiceFactory } from '../../services/account';
 import DateUtils from '../../utils/DateUtils';
-import { Respond, RespondCSV } from '../../utils/ExpressUtils';
+import { Respond } from '../../utils/ExpressUtils';
 
 async function listUsers(req: Request, res: Response, next: NextFunction) {
-	const userService = new AdminService(req.locals.admin);
-
-	const options = {
-		csv: false,
-	};
-	if (req.query.csv === 'true') {
-		options.csv = true;
-	}
-
-	if (options.csv) {
-		return RespondCSV({
-			res,
-			filename: 'Exported Contacts',
-			data: CSVParser.exportUsersDetails(await userService.allUsers()),
-		});
-	} else {
-		return Respond({
-			res,
-			status: 200,
-			data: {
-				users: await userService.allUsers(),
-			},
-		});
-	}
+	// const userService = new AccountService(req.locals.account);
+	// const options = {
+	// 	csv: false,
+	// };
+	// if (req.query.csv === 'true') {
+	// 	options.csv = true;
+	// }
+	// if (options.csv) {
+	// 	return RespondCSV({
+	// 		res,
+	// 		filename: 'Exported Contacts',
+	// 		data: CSVParser.exportUsersDetails(await userService.allUsers()),
+	// 	});
+	// } else {
+	// 	return Respond({
+	// 		res,
+	// 		status: 200,
+	// 		data: {
+	// 			users: await userService.allUsers(),
+	// 		},
+	// 	});
+	// }
 }
 
 async function extendUserExpiry(req: Request, res: Response, next: NextFunction) {
 	try {
 		if (!req.body.date) {
-			return next(new APIError(API_ERRORS.COMMON_ERRORS.INVALID_FIELDS));
+			return next(new APIError(COMMON_ERRORS.INVALID_FIELDS));
 		}
-		const userService = await UserService.getService(req.locals.id);
-		userService.setExpiry(DateUtils.getMoment(req.body.date, 'YYYY-MM-DD'));
+		const accountService = await AccountServiceFactory.createByID(req.locals.id);
+		accountService.setExpiry(DateUtils.getMoment(req.body.date, 'YYYY-MM-DD'));
 
 		return Respond({
 			res,
@@ -49,14 +43,14 @@ async function extendUserExpiry(req: Request, res: Response, next: NextFunction)
 			data: {},
 		});
 	} catch (err) {
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
+		return next(new APIError(COMMON_ERRORS.NOT_FOUND));
 	}
 }
 
 async function logoutUsers(req: Request, res: Response, next: NextFunction) {
-	const userService = await UserService.getService(req.locals.id);
-	const client_ids = await userService.logout();
-	client_ids.forEach((id) => WhatsappProvider.getInstance(id).logoutClient());
+	// const userService = await UserService.getService(req.locals.id);
+	// const client_ids = await userService.logout();
+	// client_ids.forEach((id) => WhatsappProvider.getInstance(id).logoutClient());
 	return Respond({
 		res,
 		status: 200,
@@ -65,24 +59,21 @@ async function logoutUsers(req: Request, res: Response, next: NextFunction) {
 }
 
 async function paymentRemainder(req: Request, res: Response, next: NextFunction) {
-	const adminService = new AdminService(req.locals.admin);
-
-	const whatsapp = WhatsappProvider.getInstance(adminService.getClientID());
-	if (!whatsapp.isReady()) {
-		return next(new APIError(API_ERRORS.USER_ERRORS.WHATSAPP_NOT_READY));
-	}
-	const userService = await UserService.getService(req.locals.id);
-
-	whatsapp
-		.getClient()
-		.sendMessage(userService.getPhoneNumber() + '@c.us', req.locals.data)
-		.catch((err) => Logger.error('Error sending message:', err));
-
-	return Respond({
-		res,
-		status: 200,
-		data: {},
-	});
+	// const adminService = new AdminService(req.locals.admin);
+	// const whatsapp = WhatsappProvider.getInstance(adminService.getClientID());
+	// if (!whatsapp.isReady()) {
+	// 	return next(new APIError(USER_ERRORS.WHATSAPP_NOT_READY));
+	// }
+	// const userService = await UserService.getService(req.locals.id);
+	// whatsapp
+	// 	.getClient()
+	// 	.sendMessage(userService.getPhoneNumber() + '@c.us', req.locals.data)
+	// 	.catch((err) => Logger.error('Error sending message:', err));
+	// return Respond({
+	// 	res,
+	// 	status: 200,
+	// 	data: {},
+	// });
 }
 
 const AuthController = {

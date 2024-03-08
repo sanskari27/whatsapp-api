@@ -1,7 +1,14 @@
 import { NextFunction, Request, Response } from 'express';
 import { z } from 'zod';
 import { AccessLevel } from '../../config/const';
-import APIError from '../../errors/api-errors';
+import { APIError } from '../../errors';
+import { generateErrorMessage } from '../../utils/ExpressUtils';
+
+export type UsernameValidationResult = {
+	username: string;
+	password: string;
+	access_level: AccessLevel;
+};
 
 export type LoginValidationResult = {
 	username: string;
@@ -9,7 +16,33 @@ export type LoginValidationResult = {
 	access_level: AccessLevel;
 };
 
-export async function AdminLoginValidator(req: Request, res: Response, next: NextFunction) {
+export type CreateAccountValidationResult = {
+	name: string;
+	phone: string;
+	username: string;
+	password: string;
+};
+
+export async function UsernameValidator(req: Request, res: Response, next: NextFunction) {
+	const validator = z.object({
+		username: z.string(),
+	});
+	const validationResult = validator.safeParse(req.body);
+	if (validationResult.success) {
+		req.locals.data = validationResult.data;
+		return next();
+	}
+
+	return next(
+		new APIError({
+			STATUS: 400,
+			TITLE: 'INVALID_FIELDS',
+			MESSAGE: generateErrorMessage(validationResult.error.issues),
+		})
+	);
+}
+
+export async function LoginValidator(req: Request, res: Response, next: NextFunction) {
 	const validator = z.object({
 		username: z.string(),
 		password: z.string(),
@@ -25,7 +58,29 @@ export async function AdminLoginValidator(req: Request, res: Response, next: Nex
 		new APIError({
 			STATUS: 400,
 			TITLE: 'INVALID_FIELDS',
-			MESSAGE: 'Invalid username, password or access_level.',
+			MESSAGE: generateErrorMessage(validationResult.error.issues),
+		})
+	);
+}
+
+export async function CreateAccountValidator(req: Request, res: Response, next: NextFunction) {
+	const validator = z.object({
+		name: z.string(),
+		phone: z.string(),
+		username: z.string(),
+		password: z.string(),
+	});
+	const validationResult = validator.safeParse(req.body);
+	if (validationResult.success) {
+		req.locals.data = validationResult.data;
+		return next();
+	}
+
+	return next(
+		new APIError({
+			STATUS: 400,
+			TITLE: 'INVALID_FIELDS',
+			MESSAGE: generateErrorMessage(validationResult.error.issues),
 		})
 	);
 }

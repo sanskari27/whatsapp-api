@@ -4,6 +4,7 @@ import IPaymentBucket from './payment-bucket';
 import IPlan from './plan';
 
 export default interface ISubscription extends Document {
+	_id: Types.ObjectId;
 	bucket: IPaymentBucket;
 	subscription_id: string;
 	subscription_link: string;

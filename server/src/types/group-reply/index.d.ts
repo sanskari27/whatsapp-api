@@ -1,7 +1,9 @@
 import { Document } from 'mongoose';
-import { IUser } from '../users';
+import { IAccount, IWADevice } from '../account';
 export default interface IGroupReply extends Document {
-	user: IUser;
+	_id: Types.ObjectId;
+	user: IAccount;
+	device: IWADevice;
 	from: string;
 	createdAt: Date;
 	updatedAt: Date;

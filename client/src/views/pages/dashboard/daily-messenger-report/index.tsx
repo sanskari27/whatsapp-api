@@ -63,7 +63,7 @@ const DailyMessengerReport = () => {
 	const fetchMessengers = useCallback(() => {
 		dispatch(setCampaignLoading(true));
 		dispatch(reset());
-		MessageService.getScheduledMessages()
+		MessageService.getScheduledMessengers()
 			.then((res) => dispatch(setAllSchedulers(res)))
 			.finally(() => dispatch(setCampaignLoading(false)));
 	}, [dispatch]);

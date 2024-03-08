@@ -1,7 +1,8 @@
-import { Document } from 'mongoose';
-import { IUser } from '../users';
+import { Document, Types } from 'mongoose';
+import { IAccount } from '../account';
 export default interface IContactCard extends Document {
-	user: IUser;
+	_id: Types.ObjectId;
+	user: IAccount;
 	first_name: string;
 	middle_name: string;
 	last_name: string;

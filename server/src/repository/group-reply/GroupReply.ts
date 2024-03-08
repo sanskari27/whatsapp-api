@@ -7,6 +7,10 @@ const schema = new mongoose.Schema<IGroupReply>(
 			type: Schema.Types.ObjectId,
 			ref: 'User',
 		},
+		device: {
+			type: Schema.Types.ObjectId,
+			ref: 'WADevice',
+		},
 		from: {
 			type: String,
 		},

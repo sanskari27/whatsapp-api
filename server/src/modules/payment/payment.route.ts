@@ -1,8 +1,8 @@
 import express from 'express';
-import { VerifyClientID } from '../../middleware';
 import { IDValidator } from '../../middleware/idValidator';
 import PaymentController from './payment.controller';
 import { CouponValidator, CreateBucketValidator } from './payment.validator';
+import VerifyAccount from '../../middleware/VerifyAccount';
 
 const router = express.Router();
 
@@ -28,16 +28,16 @@ router
 
 router
 	.route('/:id/pause')
-	.all(VerifyClientID, IDValidator)
+	.all(VerifyAccount, IDValidator)
 	.post(PaymentController.pauseSubscription);
 
 router
 	.route('/:id/resume')
-	.all(VerifyClientID, IDValidator)
+	.all(VerifyAccount, IDValidator)
 	.post(PaymentController.resumeSubscription);
 
-router.route('/:id/invoice').all(VerifyClientID).get(PaymentController.downloadInvoice);
+router.route('/:id/invoice').all(VerifyAccount).get(PaymentController.downloadInvoice);
 
-router.route('/').all(VerifyClientID).get(PaymentController.fetchUserTransactions);
+router.route('/').all(VerifyAccount).get(PaymentController.fetchUserTransactions);
 
 export default router;

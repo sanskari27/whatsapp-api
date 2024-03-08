@@ -5,7 +5,11 @@ const schema = new mongoose.Schema<IGroupPrivateReply>(
 	{
 		user: {
 			type: Schema.Types.ObjectId,
-			ref: 'User',
+			ref: 'Account',
+		},
+		device: {
+			type: Schema.Types.ObjectId,
+			ref: 'WADevice',
 		},
 		from: {
 			type: String,

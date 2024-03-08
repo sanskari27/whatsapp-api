@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import APIError, { API_ERRORS } from '../../errors/api-errors';
+import { APIError, COMMON_ERRORS } from '../../errors';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import { TemplateService } from '../../services';
 import { Respond } from '../../utils/ExpressUtils';
@@ -9,7 +9,7 @@ import {
 } from './template.validator';
 
 async function listMessageTemplates(req: Request, res: Response, next: NextFunction) {
-	const templateService = new TemplateService(req.locals.user);
+	const templateService = new TemplateService(req.locals.account);
 
 	return Respond({
 		res,
@@ -22,7 +22,7 @@ async function listMessageTemplates(req: Request, res: Response, next: NextFunct
 async function addMessageTemplate(req: Request, res: Response, next: NextFunction) {
 	const { name, message } = req.locals.data as MessageTemplateValidationResult;
 
-	const templateService = new TemplateService(req.locals.user);
+	const templateService = new TemplateService(req.locals.account);
 	const template = templateService.addMessageTemplate(name, message);
 
 	return Respond({
@@ -36,7 +36,7 @@ async function addMessageTemplate(req: Request, res: Response, next: NextFunctio
 async function updateMessageTemplate(req: Request, res: Response, next: NextFunction) {
 	const { name, message } = req.locals.data as MessageTemplateValidationResult;
 
-	const templateService = new TemplateService(req.locals.user);
+	const templateService = new TemplateService(req.locals.account);
 	try {
 		await templateService.updateMessageTemplate(req.locals.id, name, message);
 
@@ -54,15 +54,15 @@ async function updateMessageTemplate(req: Request, res: Response, next: NextFunc
 	} catch (err) {
 		if (err instanceof InternalError) {
 			if (err.isSameInstanceof(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND)) {
-				return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
+				return next(new APIError(COMMON_ERRORS.NOT_FOUND));
 			}
 		}
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR));
+		return next(new APIError(COMMON_ERRORS.INTERNAL_SERVER_ERROR));
 	}
 }
 
 async function listPollTemplates(req: Request, res: Response, next: NextFunction) {
-	const templateService = new TemplateService(req.locals.user);
+	const templateService = new TemplateService(req.locals.account);
 
 	return Respond({
 		res,
@@ -75,7 +75,7 @@ async function listPollTemplates(req: Request, res: Response, next: NextFunction
 async function addPollTemplate(req: Request, res: Response, next: NextFunction) {
 	const { name, poll } = req.locals.data as PollTemplateValidationResult;
 
-	const templateService = new TemplateService(req.locals.user);
+	const templateService = new TemplateService(req.locals.account);
 	const template = templateService.addPollTemplate(name, poll);
 
 	return Respond({
@@ -89,7 +89,7 @@ async function addPollTemplate(req: Request, res: Response, next: NextFunction) 
 async function updatePollTemplate(req: Request, res: Response, next: NextFunction) {
 	const { name, poll } = req.locals.data as PollTemplateValidationResult;
 
-	const templateService = new TemplateService(req.locals.user);
+	const templateService = new TemplateService(req.locals.account);
 	try {
 		await templateService.updatePollTemplate(req.locals.id, name, poll);
 
@@ -107,14 +107,14 @@ async function updatePollTemplate(req: Request, res: Response, next: NextFunctio
 	} catch (err) {
 		if (err instanceof InternalError) {
 			if (err.isSameInstanceof(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND)) {
-				return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
+				return next(new APIError(COMMON_ERRORS.NOT_FOUND));
 			}
 		}
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR));
+		return next(new APIError(COMMON_ERRORS.INTERNAL_SERVER_ERROR));
 	}
 }
 async function deleteTemplate(req: Request, res: Response, next: NextFunction) {
-	const templateService = new TemplateService(req.locals.user);
+	const templateService = new TemplateService(req.locals.account);
 	try {
 		await templateService.deleteTemplate(req.locals.id);
 
@@ -126,10 +126,10 @@ async function deleteTemplate(req: Request, res: Response, next: NextFunction) {
 	} catch (err) {
 		if (err instanceof InternalError) {
 			if (err.isSameInstanceof(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND)) {
-				return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
+				return next(new APIError(COMMON_ERRORS.NOT_FOUND));
 			}
 		}
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR));
+		return next(new APIError(COMMON_ERRORS.INTERNAL_SERVER_ERROR));
 	}
 }
 

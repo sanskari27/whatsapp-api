@@ -1,12 +1,12 @@
 import { Types } from 'mongoose';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import TemplateDB from '../../repository/template';
-import { IUser } from '../../types/user';
+import { IAccount } from '../../types/account';
 
 export default class TemplateService {
-	private user: IUser;
+	private user: IAccount;
 
-	public constructor(user: IUser) {
+	public constructor(user: IAccount) {
 		this.user = user;
 	}
 

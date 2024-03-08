@@ -1,13 +1,13 @@
 import Logger from 'n23-logger';
 import WAWebJS from 'whatsapp-web.js';
 import VoteResponseDB from '../../repository/vote-response';
-import { IUser } from '../../types/user';
+import { IAccount } from '../../types/account';
 import DateUtils from '../../utils/DateUtils';
 
 export default class VoteResponseService {
-	private user: IUser;
+	private user: IAccount;
 
-	public constructor(user: IUser) {
+	public constructor(user: IAccount) {
 		this.user = user;
 	}
 

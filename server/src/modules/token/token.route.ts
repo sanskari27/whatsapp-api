@@ -1,18 +1,19 @@
 import express from 'express';
-import { VerifyAdmin } from '../../middleware';
+import { AccessLevel } from '../../config/const';
+import VerifyAccount, { verifyAccess } from '../../middleware/VerifyAccount';
 import TokenController from './token.controller';
 
 const router = express.Router();
 
 router
 	.route('/promotional')
-	.all(VerifyAdmin)
+	.all(VerifyAccount, verifyAccess(AccessLevel.Admin))
 	.get(TokenController.getPromotionalMessage)
 	.post(TokenController.setPromotionalMessage);
 
 router
 	.route('/')
-	.all(VerifyAdmin)
+	.all(VerifyAccount, verifyAccess(AccessLevel.Admin))
 	.get(TokenController.getToken)
 	.post(TokenController.generateToken);
 

@@ -1,8 +1,8 @@
-import { Box, Flex, Text } from '@chakra-ui/react';
+import { Alert, AlertIcon, Box, Flex, Text } from '@chakra-ui/react';
 import Lottie from 'lottie-react';
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { Navigate, useNavigate, useOutlet } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useOutlet } from 'react-router-dom';
 import { LOTTIE_LOADER } from '../../../assets/Lottie';
 import { NAVIGATION } from '../../../config/const';
 import { useAuth } from '../../../hooks/useAuth';
@@ -17,7 +17,7 @@ export default function Home() {
 	const navigate = useNavigate();
 	const status = useNetwork();
 	const outlet = useOutlet();
-	const { isAuthenticated, isAuthenticating, qrGenerated } = useAuth();
+	const { isAuthenticated, isAuthenticating } = useAuth();
 
 	const { data_loaded } = useSelector((state: StoreState) => state[StoreNames.USER]);
 
@@ -27,9 +27,6 @@ export default function Home() {
 		}
 	}, [status, navigate]);
 
-	if (isAuthenticating && qrGenerated) {
-		return <Navigate to={NAVIGATION.WELCOME} />;
-	}
 	if (isAuthenticating) {
 		return <LoadingPage />;
 	}
@@ -46,6 +43,7 @@ export default function Home() {
 				{outlet ? outlet : <Navigate to={NAVIGATION.DASHBOARD + NAVIGATION.CAMPAIGN_REPORTS} />}
 				<Loading isLoaded={data_loaded} />
 			</Box>
+			<DevicesAlert />
 		</Box>
 	);
 }
@@ -92,5 +90,32 @@ function Loading({ isLoaded }: { isLoaded: boolean }) {
 				</Text>
 			</Flex>
 		</Flex>
+	);
+}
+
+function DevicesAlert() {
+	const { profiles } = useSelector((state: StoreState) => state[StoreNames.USER]);
+	return (
+		<Alert
+			position={'absolute'}
+			bottom={0}
+			left={0}
+			hidden={profiles.length !== 0}
+			status='warning'
+			rounded={'md'}
+		>
+			<Flex justifyContent={'space-between'} width={'full'}>
+				<Flex>
+					<AlertIcon />
+					Seems no profile has been added.
+				</Flex>
+				<Link
+					to={NAVIGATION.SETTINGS + NAVIGATION.PROFILES}
+					className='transition-all hover:text-black hover:font-medium hover:no-underline'
+				>
+					Add Profile
+				</Link>
+			</Flex>
+		</Alert>
 	);
 }

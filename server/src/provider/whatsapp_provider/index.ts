@@ -1,16 +1,17 @@
 import { Types } from 'mongoose';
 import QRCode from 'qrcode';
-import { Socket } from 'socket.io';
 import WAWebJS, { BusinessContact, Client, GroupChat, LocalAuth } from 'whatsapp-web.js';
 import { CHROMIUM_PATH, SOCKET_RESPONSES } from '../../config/const';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
-import { UserService } from '../../services';
+import { AccountService, AccountServiceFactory } from '../../services/account';
 import BotService from '../../services/bot';
 import GroupMergeService from '../../services/merged-groups';
 import VoteResponseService from '../../services/vote-response';
+import { IAccount, IWADevice } from '../../types/account';
 import DateUtils from '../../utils/DateUtils';
 import { Delay } from '../../utils/ExpressUtils';
 import WhatsappUtils from '../../utils/WhatsappUtils';
+import SocketServerProvider from '../socket';
 
 type ClientID = string;
 
@@ -42,11 +43,11 @@ export class WhatsappProvider {
 	private client_id: ClientID;
 	private static clientsMap = new Map<ClientID, WhatsappProvider>();
 
+	private device: IWADevice | undefined;
+	private account: IAccount;
 	private qrCode: string | undefined;
 	private number: string | undefined;
 	private contact: WAWebJS.Contact | undefined;
-	private user_service: UserService | undefined;
-	private socket: Socket | undefined;
 	private bot_service: BotService | undefined;
 	private group_service: GroupMergeService | undefined;
 	private vote_response_service: VoteResponseService | undefined;
@@ -57,8 +58,9 @@ export class WhatsappProvider {
 		onDestroy: (client_id: ClientID) => void;
 	};
 
-	private constructor(cid: ClientID) {
+	private constructor(account: IAccount, cid: ClientID) {
 		this.client_id = cid;
+		this.account = account;
 
 		this.client = new Client({
 			restartOnAuthFail: true,
@@ -83,15 +85,15 @@ export class WhatsappProvider {
 		WhatsappProvider.clientsMap.set(this.client_id, this);
 	}
 
-	public static getInstance(client_id: ClientID) {
-		if (!client_id) {
+	public static getInstance(account: IAccount, client_id: ClientID) {
+		if (!client_id || !account) {
 			throw new Error();
 		}
 		if (WhatsappProvider.clientsMap.has(client_id)) {
 			return WhatsappProvider.clientsMap.get(client_id)!;
 		}
 
-		return new WhatsappProvider(client_id);
+		return new WhatsappProvider(account, client_id);
 	}
 
 	public getClient() {
@@ -139,20 +141,20 @@ export class WhatsappProvider {
 						address: '',
 				  };
 
-			this.user_service = await UserService.createUser({
+			this.device = await AccountServiceFactory.createDevice({
 				name: this.client.info.pushname,
 				phone: this.number,
 				isBusiness: this.contact.isBusiness,
 				business_details,
 			});
 
-			await this.user_service.login(this.client_id);
+			await new AccountService(this.account).addProfile(this.device, this.client_id);
 			this.status = STATUS.READY;
 
-			this.bot_service = new BotService(this.user_service.getUser());
-			this.group_service = new GroupMergeService(this.user_service.getUser());
+			this.bot_service = new BotService(this.account, this.device);
+			this.group_service = new GroupMergeService(this.account, this.device);
 			this.bot_service.attachWhatsappProvider(this);
-			this.vote_response_service = new VoteResponseService(this.user_service.getUser());
+			this.vote_response_service = new VoteResponseService(this.account);
 
 			this.sendToClient(SOCKET_RESPONSES.WHATSAPP_READY);
 		});
@@ -197,10 +199,9 @@ export class WhatsappProvider {
 		this.client.on('disconnected', () => {
 			this.status = STATUS.DISCONNECTED;
 
-			this.user_service?.logout(this.client_id);
+			const accountService = new AccountService(this.account);
+			accountService.deviceLogout(this.client_id);
 			this.logoutClient();
-
-			this.sendToClient(SOCKET_RESPONSES.WHATSAPP_CLOSED);
 		});
 
 		this.client.on('message', async (message) => {
@@ -222,14 +223,13 @@ export class WhatsappProvider {
 		});
 	}
 
-	sendToClient(event: SOCKET_RESPONSES, data: string | null = null) {
-		if (!this.socket) return;
-		this.socket.emit(event, data);
+	private sendToClient(event: SOCKET_RESPONSES, data: string | null = null) {
+		const io = SocketServerProvider.getDeviceSocket();
+		if (!io) return;
+		io.to(this.client_id).emit(event, data);
 	}
 
-	public attachToSocket(socket: Socket) {
-		this.socket = socket;
-
+	public sendWhatsappStatus() {
 		if (this.status === STATUS.UNINITIALIZED) {
 			return;
 		} else if (this.status === STATUS.INITIALIZED) {
@@ -318,10 +318,10 @@ export class WhatsappProvider {
 		return WhatsappProvider.clientsMap.size;
 	}
 
-	static clientByUser(id: Types.ObjectId) {
+	static clientByDevice(id: Types.ObjectId) {
 		for (const [cid, client] of WhatsappProvider.clientsMap.entries()) {
-			if (!client.user_service || !client.isReady()) continue;
-			if (client.user_service.getID().toString() === id.toString()) {
+			if (!client.device || !client.isReady()) continue;
+			if (client.device._id.toString() === id.toString()) {
 				return cid;
 			}
 		}

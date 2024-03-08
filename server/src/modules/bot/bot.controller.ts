@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import APIError, { API_ERRORS } from '../../errors/api-errors';
+import { APIError, COMMON_ERRORS } from '../../errors';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import BotService from '../../services/bot';
 import UploadService from '../../services/uploads';
@@ -8,7 +8,9 @@ import { Respond, RespondCSV } from '../../utils/ExpressUtils';
 import { CreateBotValidationResult } from './bot.validator';
 
 async function allBots(req: Request, res: Response, next: NextFunction) {
-	const botService = new BotService(req.locals.user);
+	const { account, device } = req.locals;
+
+	const botService = new BotService(account, device);
 	const bots = await botService.allBots();
 
 	return Respond({
@@ -25,8 +27,9 @@ async function allBots(req: Request, res: Response, next: NextFunction) {
 }
 
 async function botById(req: Request, res: Response, next: NextFunction) {
-	const botService = new BotService(req.locals.user);
+	const { account, device } = req.locals;
 
+	const botService = new BotService(account, device);
 	try {
 		const bot = await botService.boyByID(req.locals.id);
 
@@ -41,17 +44,17 @@ async function botById(req: Request, res: Response, next: NextFunction) {
 			},
 		});
 	} catch (err) {
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
+		return next(new APIError(COMMON_ERRORS.NOT_FOUND));
 	}
 }
 
 async function createBot(req: Request, res: Response, next: NextFunction) {
 	const data = req.locals.data as CreateBotValidationResult;
 
-	const botService = new BotService(req.locals.user);
-	const [_, media_attachments] = await new UploadService(req.locals.user).listAttachments(
-		data.attachments
-	);
+	const { account, device } = req.locals;
+
+	const botService = new BotService(account, device);
+	const [_, media_attachments] = await new UploadService(account).listAttachments(data.attachments);
 
 	const bot = botService.createBot({
 		...data,
@@ -72,10 +75,11 @@ async function createBot(req: Request, res: Response, next: NextFunction) {
 
 async function updateBot(req: Request, res: Response, next: NextFunction) {
 	const data = req.locals.data as CreateBotValidationResult;
-	const botService = new BotService(req.locals.user);
-	const [_, media_attachments] = await new UploadService(req.locals.user).listAttachments(
-		data.attachments
-	);
+
+	const { account, device } = req.locals;
+
+	const botService = new BotService(account, device);
+	const [_, media_attachments] = await new UploadService(account).listAttachments(data.attachments);
 
 	try {
 		const bot = await botService.modifyBot(req.locals.id, {
@@ -95,13 +99,18 @@ async function updateBot(req: Request, res: Response, next: NextFunction) {
 			},
 		});
 	} catch (err) {
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
+		return next(new APIError(COMMON_ERRORS.NOT_FOUND));
 	}
 }
 
 async function toggleActive(req: Request, res: Response, next: NextFunction) {
 	try {
-		const botService = new BotService(req.locals.user);
+		const {
+			accountService: { account },
+			device,
+		} = req.locals;
+
+		const botService = new BotService(account, device);
 		const bot = await botService.toggleActive(req.locals.id);
 
 		return Respond({
@@ -114,15 +123,17 @@ async function toggleActive(req: Request, res: Response, next: NextFunction) {
 	} catch (err) {
 		if (err instanceof InternalError) {
 			if (err.isSameInstanceof(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND)) {
-				return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
+				return next(new APIError(COMMON_ERRORS.NOT_FOUND));
 			}
 		}
-		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR));
+		return next(new APIError(COMMON_ERRORS.INTERNAL_SERVER_ERROR));
 	}
 }
 
 async function deleteBot(req: Request, res: Response, next: NextFunction) {
-	const botService = new BotService(req.locals.user);
+	const { account, device } = req.locals;
+
+	const botService = new BotService(account, device);
 	botService.deleteBot(req.locals.id);
 
 	return Respond({
@@ -133,7 +144,9 @@ async function deleteBot(req: Request, res: Response, next: NextFunction) {
 }
 
 async function downloadResponses(req: Request, res: Response, next: NextFunction) {
-	const botService = new BotService(req.locals.user);
+	const { account, device } = req.locals;
+
+	const botService = new BotService(account, device);
 	const responses = await botService.botResponses(req.locals.id);
 
 	return RespondCSV({

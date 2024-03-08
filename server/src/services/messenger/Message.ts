@@ -7,11 +7,11 @@ import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import { WhatsappProvider } from '../../provider/whatsapp_provider';
 import { MessageDB } from '../../repository/messenger';
 import UploadDB from '../../repository/uploads';
+import { IAccount, IWADevice } from '../../types/account';
 import { IMessage } from '../../types/messenger';
-import { IUser } from '../../types/user';
 import DateUtils from '../../utils/DateUtils';
+import { AccountService } from '../account';
 import TokenService from '../token';
-import UserService from '../user';
 
 export type Message = {
 	receiver: string;
@@ -38,15 +38,18 @@ type MessageSchedulerOptions = {
 type TextMessage = string;
 
 export default class MessageService {
-	private user: IUser;
+	private user: IAccount;
+	private device: IWADevice;
 
-	public constructor(user: IUser) {
+	public constructor(user: IAccount, device: IWADevice) {
 		this.user = user;
+		this.device = device;
 	}
 
 	scheduleMessage(message: Message, opts: MessageSchedulerOptions) {
 		const msg = new MessageDB({
 			sender: this.user,
+			sender_device: this.device,
 			receiver: message.receiver,
 			message: message.message ?? '',
 			attachments: message.attachments ?? [],
@@ -86,6 +89,7 @@ export default class MessageService {
 		for (const message of messages) {
 			await MessageDB.create({
 				sender: this.user,
+				sender_device: this.device,
 				receiver: message.receiver,
 				message: message.message,
 				attachments: message.attachments ?? [],
@@ -104,22 +108,26 @@ export default class MessageService {
 		const scheduledMessages = await MessageDB.find({
 			sendAt: { $lte: DateUtils.getMomentNow().toDate() },
 			status: MESSAGE_STATUS.PENDING,
-		}).populate('attachments sender shared_contact_cards');
+		}).populate('attachments sender device shared_contact_cards');
 
 		const { message_1: PROMOTIONAL_MESSAGE_1, message_2: PROMOTIONAL_MESSAGE_2 } =
 			await TokenService.getPromotionalMessage();
 
 		scheduledMessages.forEach(async (msg) => {
-			const cid = WhatsappProvider.clientByUser(msg.sender._id);
+			if (!msg.device || !msg.sender) {
+				msg.status = MESSAGE_STATUS.FAILED;
+				msg.save();
+			}
+			const cid = WhatsappProvider.clientByDevice(msg.device._id);
 			if (!cid) {
-				msg.sendAt = DateUtils.getMoment(msg.sendAt).add(1, 'hour').toDate();
+				msg.sendAt = DateUtils.getMoment(msg.sendAt).add(5, 'minutes').toDate();
 				msg.save();
 				return;
 			}
-			const whatsapp = WhatsappProvider.getInstance(cid);
+			const whatsapp = WhatsappProvider.getInstance(msg.sender, cid);
 
-			const userService = new UserService(msg.sender);
-			const { isSubscribed, isNew } = userService.isSubscribed();
+			const userService = new AccountService(msg.sender);
+			const { isSubscribed, isNew } = await userService.isSubscribed(msg.device._id);
 
 			if (!isSubscribed && !isNew) {
 				msg.status = MESSAGE_STATUS.FAILED;
