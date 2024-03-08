@@ -361,7 +361,18 @@ export default function Scheduler() {
 								>
 									Campaign Details
 								</Heading>
-								<Button colorScheme='blue' leftIcon={<InfoOutlineIcon />}>
+								<Button
+									colorScheme='blue'
+									leftIcon={<InfoOutlineIcon />}
+									onClick={() =>
+										window
+											?.open(
+												'https://docs.google.com/spreadsheets/d/1qj7u0e8OhrFHYj6bHlPAnORC5uRpKI3xoxW7PRAjxWM/edit#gid=0',
+												'_blank'
+											)
+											?.focus()
+									}
+								>
 									See CSV example
 								</Button>
 							</HStack>
@@ -481,7 +492,18 @@ export default function Scheduler() {
 								>
 									Message Details
 								</Heading>
-								<Button colorScheme='blue' leftIcon={<InfoOutlineIcon />}>
+								<Button
+									colorScheme='blue'
+									leftIcon={<InfoOutlineIcon />}
+									onClick={() =>
+										window
+											?.open(
+												'https://docs.google.com/spreadsheets/d/1qj7u0e8OhrFHYj6bHlPAnORC5uRpKI3xoxW7PRAjxWM/edit#gid=0',
+												'_blank'
+											)
+											?.focus()
+									}
+								>
 									See CSV example
 								</Button>
 							</HStack>
