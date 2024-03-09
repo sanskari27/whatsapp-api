@@ -160,10 +160,12 @@ export default class GroupMergeService {
 		const group_id = chat.id._serialized;
 
 		const group_reply_docs = await MergedGroupDB.findOne({
+			user: this.user._id,
 			groups: group_id,
 			group_reply: { $exists: true, $ne: null },
 		});
 		const private_reply_docs = await MergedGroupDB.findOne({
+			user: this.user._id,
 			groups: group_id,
 			private_reply: { $exists: true, $ne: null },
 		});
