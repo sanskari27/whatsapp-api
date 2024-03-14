@@ -191,7 +191,7 @@ export default class GroupMergeService {
 			if (!reply_text) {
 				return;
 			}
-			await Delay(Math.random() * 5000 + 2000);
+			await Delay(Math.random() * 5 + 2);
 			model
 				.create(create_docs_data)
 				.then(() => {
