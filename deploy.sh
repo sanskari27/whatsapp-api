@@ -12,11 +12,11 @@ pm2 save
 cd ../client
 npm install
 npm run build
-sudo cp -r dist/* /var/www/app.wpautomation.in/
+sudo cp -r dist/* /var/www/app.wpautomation.tech/
 
 
 # Server
 cd ../admin
 npm install
 npm run build
-sudo cp -r dist/* /var/www/admin.wpautomation.in/
+sudo cp -r dist/* /var/www/admin.wpautomation.tech/
