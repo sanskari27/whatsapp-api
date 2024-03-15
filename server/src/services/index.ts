@@ -1,5 +1,10 @@
+export { AccountService, AccountServiceFactory } from './account';
 export { default as BotService } from './bot';
+export { default as ContactCardService } from './contact-card';
+export { default as GroupMergeService } from './merged-groups';
 export { CampaignService, MessageService } from './messenger';
-export { default as PaymentService } from './payments/payment';
+export { default as SchedulerService } from './messenger/Scheduler';
+export { default as TaskService } from './task';
 export { default as TemplateService } from './template';
-export { default as TokenService } from './token';
+export { default as UploadService } from './uploads';
+export { default as VoteResponseService } from './vote-response';

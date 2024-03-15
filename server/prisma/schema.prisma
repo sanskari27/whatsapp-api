@@ -1,0 +1,419 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//-----------------------------------------Account---------------------------------
+
+model Account {
+  username            String   @id
+  password            String
+  phone               String?
+  name                String?
+  avatar              String?
+  user_type           UserType @default(USER)
+  max_devices         Int      @default(1)
+  subscription_expiry DateTime @default(now())
+  createdAt           DateTime @default(now())
+
+  UserDevices    UserDevices[]
+  Bot            Bot[]
+  Upload         Upload[]
+  ContactCard    ContactCard[]
+  BotResponse    BotResponse[]
+  MergedGroups   MergedGroups[]
+  GroupReply     GroupReply[]
+  Campaign       Campaign[]
+  Message        Message[]
+  DailyScheduler DailyScheduler[]
+  Task           Task[]
+  Shortner       Shortner[]
+  Template       Template[]
+  VoteResponse   VoteResponse[]
+}
+
+model WADevice {
+  phone       String      @id
+  name        String
+  user_type   WA_UserType @default(PERSONAL)
+  description String      @default("")
+  email       String      @default("")
+  websites    String[]    @default([])
+  latitude    Int         @default(0)
+  longitude   Int         @default(0)
+  address     String      @default("")
+  first_login DateTime    @default(now())
+
+  UserDevices UserDevices[]
+}
+
+model UserDevices {
+  client_id String   @id
+  user      Account  @relation(fields: [username], references: [username])
+  username  String
+  device    WADevice @relation(fields: [phone], references: [phone])
+  phone     String
+
+  bots            Bot[]
+  campaigns       Campaign[]
+  messages        Message[]
+  dailySchedulers DailyScheduler[]
+}
+
+//-----------------------------------------Bot---------------------------------
+
+model Bot {
+  id       String        @id @default(uuid())
+  user     Account       @relation(fields: [username], references: [username])
+  username String
+  devices  UserDevices[]
+
+  respond_to             BotRespond   @default(ALL)
+  trigger                String
+  trigger_gap_seconds    Int
+  response_delay_seconds Int
+  startAt                String       @default("00:01")
+  endAt                  String       @default("23:59")
+  options                BotCondition @default(EXACT_MATCH_CASE)
+  forward_to_number      String
+  forward_to_message     String
+  active                 Boolean      @default(true)
+
+  message       String  @default("")
+  group_respond Boolean @default(false)
+  polls         Json[]  @default([])
+
+  attachments Upload[]
+  contacts    ContactCard[]
+  nurturing   Nurturing[]
+  BotResponse BotResponse[]
+}
+
+model BotResponse {
+  id       String  @id @default(uuid())
+  user     Account @relation(fields: [username], references: [username])
+  username String
+
+  bot   Bot    @relation(fields: [botId], references: [id])
+  botId String
+
+  recipient         String
+  last_message      DateTime   @default(now())
+  triggered_by_bot  DateTime[] @default([])
+  triggered_by_poll DateTime[] @default([])
+
+  @@unique([username, botId, recipient])
+}
+
+//----------------------------------------- Merged Groups---------------------------
+
+model MergedGroups {
+  id       String  @id @default(uuid())
+  user     Account @relation(fields: [username], references: [username])
+  username String
+
+  name                  String
+  groups                String[] @default([])
+  chat_reply_saved      String
+  chat_reply_unsaved    String
+  private_reply_saved   String
+  private_reply_unsaved String
+}
+
+model GroupReply {
+  id       String  @id @default(uuid())
+  user     Account @relation(fields: [username], references: [username])
+  username String
+
+  replied_to String
+  replied_at DateTime       @default(now())
+  reply_type GroupReplyType
+
+  @@unique([username, replied_to, reply_type])
+}
+
+//-----------------------------------------Messenger ---------------------------
+
+model Campaign {
+  id       String  @id @default(uuid())
+  user     Account @relation(fields: [username], references: [username])
+  username String
+
+  devices UserDevices[]
+
+  name        String
+  description String         @default("")
+  status      CampaignStatus @default(CREATED)
+
+  messages Message[]
+
+  min_delay   Int      @default(5)
+  max_delay   Int      @default(10)
+  batch_size  Int      @default(10)
+  batch_delay Int      @default(20)
+  startAt     String   @default("00:01")
+  endAt       String   @default("23:59")
+  startDate   DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@unique([username, name])
+}
+
+model Message {
+  id       String  @id @default(uuid())
+  user     Account @relation(fields: [username], references: [username])
+  username String
+
+  devices UserDevices[]
+
+  recipient   String
+  message     String
+  attachments Upload[]
+  captions    String[]
+  contacts    ContactCard[]
+  polls       Json[]
+
+  scheduledBy   MessageScheduledBy
+  scheduledById String
+  status        MessageStatus      @default(PENDING)
+  sendAt        DateTime           @default(now())
+  scheduledAt   DateTime           @default(now())
+
+  Campaign Campaign[]
+}
+
+model Template {
+  id       String       @id @default(uuid())
+  user     Account      @relation(fields: [username], references: [username])
+  username String
+  name     String
+  message  String?
+  poll     Json?
+  type     TemplateType
+}
+
+model DailyScheduler {
+  id       String  @id @default(uuid())
+  user     Account @relation(fields: [username], references: [username])
+  username String
+
+  devices UserDevices[]
+
+  name        String @unique
+  description String @default("")
+  csv         String
+
+  startAt String @default("00:01")
+  endAt   String @default("23:59")
+
+  message     String
+  attachments Upload[]
+  contacts    ContactCard[]
+  polls       Json[]
+
+  active Boolean @default(false)
+}
+
+//-----------------------------------------Nurturing ---------------------------
+
+model Nurturing {
+  id          String        @id @default(uuid())
+  message     String        @default("")
+  after       Int           @default(5)
+  startAt     String        @default("00:01")
+  endAt       String        @default("23:59")
+  polls       Json[]        @default([])
+  attachments Upload[]
+  contacts    ContactCard[]
+
+  bots Bot[]
+}
+
+//-----------------------------------------Attahcments---------------------------
+
+model Upload {
+  id             String     @id @default(uuid())
+  user           Account    @relation(fields: [username], references: [username])
+  username       String
+  filename       String
+  name           String
+  caption        String?
+  headers        String[]
+  custom_caption Boolean    @default(false)
+  type           UploadType
+
+  bots        Bot[]
+  messages    Message[]
+  schedulers  DailyScheduler[]
+  Nurturing   Nurturing?       @relation(fields: [nurturingId], references: [id])
+  nurturingId String?
+}
+
+//-----------------------------------------Contact Card---------------------------
+
+model ContactCard {
+  id             String   @id @default(uuid())
+  user           Account  @relation(fields: [username], references: [username])
+  username       String
+  first_name     String
+  middle_name    String?
+  last_name      String?
+  title          String?
+  organization   String?
+  email_personal String?
+  email_work     String?
+  links          String[]
+
+  street  String?
+  city    String?
+  state   String?
+  country String?
+  pincode String?
+
+  contact_phone Json?
+  contact_work  Json?
+  contact_other Json[]
+
+  vCardString String
+  qrString    String?
+
+  bots        Bot[]
+  messages    Message[]
+  schedulers  DailyScheduler[]
+  Nurturing   Nurturing?       @relation(fields: [nurturingId], references: [id])
+  nurturingId String?
+}
+
+//-----------------------------------------Attahcments---------------------------
+
+model VoteResponse {
+  id            String   @id @default(uuid())
+  user          Account  @relation(fields: [username], references: [username])
+  username      String
+  title         String
+  options       String[]
+  isMultiSelect Boolean
+
+  chat_id String
+
+  voter_number String
+  voter_name   String
+  group_name   String
+  voted_at     DateTime
+
+  selected_option String[]
+
+  @@unique([username, title, options, isMultiSelect, chat_id, voter_number])
+}
+
+//-----------------------------------------Shortner---------------------------
+
+model Shortner {
+  id       String  @id @default(uuid())
+  user     Account @relation(fields: [username], references: [username])
+  username String
+  title    String
+  key      String
+  link     String
+  qrString String
+}
+
+//-----------------------------------------Tasks---------------------------
+
+model Task {
+  id               String         @id @default(uuid())
+  user             Account        @relation(fields: [username], references: [username])
+  username         String
+  type             TaskType
+  status           TaskStatus     @default(PENDING)
+  data_result_type TaskResultType
+  data             String?
+  description      String?
+}
+
+//-----------------------------------------ENUMS---------------------------
+
+enum UserType {
+  USER
+  ADMIN
+}
+
+enum WA_UserType {
+  BUSINESS
+  PERSONAL
+}
+
+enum BotRespond {
+  ALL
+  SAVED_CONTACTS
+  NON_SAVED_CONTACTS
+}
+
+enum BotCondition {
+  INCLUDES_IGNORE_CASE
+  INCLUDES_MATCH_CASE
+  EXACT_IGNORE_CASE
+  EXACT_MATCH_CASE
+}
+
+enum UploadType {
+  NUMBERS
+  ATTACHMENT
+}
+
+enum GroupReplyType {
+  CHAT
+  PRIVATE
+}
+
+enum TemplateType {
+  MESSAGE
+  POLL
+}
+
+enum CampaignStatus {
+  CREATED
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
+
+enum MessageStatus {
+  SENT
+  FAILED
+  PENDING
+  PAUSED
+}
+
+enum MessageScheduledBy {
+  CAMPAIGN
+  SCHEDULER
+  BOT
+}
+
+enum TaskType {
+  EXPORT_ALL_CONTACTS
+  EXPORT_CHAT_CONTACTS
+  EXPORT_SAVED_CONTACTS
+  EXPORT_UNSAVED_CONTACTS
+  EXPORT_GROUP_CONTACTS
+  EXPORT_LABEL_CONTACTS
+  SCHEDULE_CAMPAIGN
+}
+
+enum TaskStatus {
+  COMPLETED
+  PENDING
+  FAILED
+}
+
+enum TaskResultType {
+  CSV
+  VCF
+  NONE
+}

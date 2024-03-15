@@ -1,23 +1,20 @@
 import { NextFunction, Request, Response } from 'express';
-import { Types } from 'mongoose';
 import { z } from 'zod';
 import { APIError } from '../../errors';
+import { TPoll } from '../../types/poll';
 
 export type ScheduleMessageValidationResult = {
+	devices: string[];
 	type: 'CSV' | 'GROUP' | 'NUMBERS' | 'GROUP_INDIVIDUAL' | 'LABEL';
 	message: string;
 	numbers: string[];
-	csv_file: Types.ObjectId;
+	csv_file: string;
 	group_ids: string[];
 	label_ids: string[];
 	variables: string[];
-	shared_contact_cards: Types.ObjectId[];
-	attachments: Types.ObjectId[];
-	polls: {
-		title: string;
-		options: string[];
-		isMultiSelect: boolean;
-	}[];
+	contacts: string[];
+	attachments: string[];
+	polls: TPoll[];
 
 	campaign_name: string;
 	description: string;
@@ -33,29 +30,16 @@ export type ScheduleMessageValidationResult = {
 export async function ScheduleMessageValidator(req: Request, res: Response, next: NextFunction) {
 	const reqValidator = z
 		.object({
+			devices: z.string().array(),
 			type: z.enum(['NUMBERS', 'CSV', 'GROUP_INDIVIDUAL', 'GROUP', 'LABEL']),
 			numbers: z.string().array().default([]),
-			csv_file: z
-				.string()
-				.refine((txt) => Types.ObjectId.isValid(txt))
-				.transform((txt) => new Types.ObjectId(txt))
-				.optional(),
+			csv_file: z.string().optional(),
 			group_ids: z.string().array().default([]),
 			label_ids: z.string().array().default([]),
 			message: z.string().default(''),
 			variables: z.string().array().default([]),
-			shared_contact_cards: z
-				.string()
-				.array()
-				.default([])
-				.refine((attachments) => !attachments.some((value) => !Types.ObjectId.isValid(value)))
-				.transform((attachments) => attachments.map((value) => new Types.ObjectId(value))),
-			attachments: z
-				.string()
-				.array()
-				.default([])
-				.refine((attachments) => !attachments.some((value) => !Types.ObjectId.isValid(value)))
-				.transform((attachments) => attachments.map((value) => new Types.ObjectId(value))),
+			contacts: z.string().array().default([]),
+			attachments: z.string().array().default([]),
 			polls: z
 				.object({
 					title: z.string(),
@@ -89,7 +73,7 @@ export async function ScheduleMessageValidator(req: Request, res: Response, next
 			if (
 				obj.message.length === 0 &&
 				obj.attachments.length === 0 &&
-				obj.shared_contact_cards.length === 0 &&
+				obj.contacts.length === 0 &&
 				obj.polls.length === 0
 			) {
 				return false;

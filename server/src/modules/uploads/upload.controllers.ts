@@ -106,9 +106,9 @@ export async function addAttachment(req: Request, res: Response, next: NextFunct
 
 		const name = req.body.name as string;
 		const caption = req.body.caption as string;
-		const custom_caption = req.body.custom_caption as boolean;
+		const custom_caption = Boolean(req.body.custom_caption);
 
-		const attachment = new UploadService(req.locals.account).addAttachment(
+		const attachment =await  new UploadService(req.locals.account).addAttachment(
 			name,
 			caption,
 			uploadedFile.filename,
@@ -227,7 +227,7 @@ export async function attachmentById(req: Request, res: Response, next: NextFunc
 }
 
 export async function listAttachments(req: Request, res: Response, next: NextFunction) {
-	const [attachments] = await new UploadService(req.locals.account).listAttachments();
+	const attachments = await new UploadService(req.locals.account).listAttachments();
 	return Respond({
 		res,
 		status: 200,

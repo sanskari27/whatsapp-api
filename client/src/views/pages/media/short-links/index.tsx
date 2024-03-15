@@ -102,12 +102,7 @@ const ShortLinks = () => {
 												onClick={() => navigator.clipboard.writeText(link.shorten_link)}
 											/>
 											<Link to={NAVIGATION.MEDIA + NAVIGATION.SHORT_LINKS + `/${link.id}`}>
-												<IconButton
-													aria-label='Edit'
-													size={'sm'}
-													icon={<EditIcon />}
-													onClick={() => confirmationDialogRef.current?.open(link.id)}
-												/>
+												<IconButton aria-label='Edit' size={'sm'} icon={<EditIcon />} />
 											</Link>
 											<IconButton
 												aria-label='Delete'

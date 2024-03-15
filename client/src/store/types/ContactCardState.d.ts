@@ -9,15 +9,15 @@ export type ContactCardState = {
 		organization?: string;
 		email_personal?: string;
 		email_work?: string;
-		contact_details_phone?: {
+		contact_phone?: {
 			country_code: string;
 			number: string;
 		};
-		contact_details_work?: {
+		contact_work?: {
 			country_code: string;
 			number: string;
 		};
-		contact_details_other?: {
+		contact_other?: {
 			country_code: string;
 			number: string;
 		}[];
@@ -37,15 +37,15 @@ export type ContactCardState = {
 		organization?: string;
 		email_personal?: string;
 		email_work?: string;
-		contact_details_phone?: {
+		contact_phone?: {
 			country_code: string;
 			number: string;
 		};
-		contact_details_work?: {
+		contact_work?: {
 			country_code: string;
 			number: string;
 		};
-		contact_details_other?: {
+		contact_other?: {
 			country_code: string;
 			number: string;
 		}[];

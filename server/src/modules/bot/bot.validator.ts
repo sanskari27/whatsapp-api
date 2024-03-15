@@ -1,10 +1,11 @@
 import { NextFunction, Request, Response } from 'express';
-import { Types } from 'mongoose';
 import { z } from 'zod';
 import { BOT_TRIGGER_OPTIONS, BOT_TRIGGER_TO } from '../../config/const';
 import { APIError } from '../../errors';
+import { TPoll } from '../../types/poll';
 
 export type CreateBotValidationResult = {
+	devices: string[];
 	respond_to: BOT_TRIGGER_TO;
 	trigger_gap_seconds: number;
 	response_delay_seconds: number;
@@ -13,14 +14,10 @@ export type CreateBotValidationResult = {
 	message: string;
 	startAt: string;
 	endAt: string;
-	shared_contact_cards: Types.ObjectId[];
-	attachments: Types.ObjectId[];
+	contacts: string[];
+	attachments: string[];
 	group_respond: boolean;
-	polls: {
-		title: string;
-		options: string[];
-		isMultiSelect: boolean;
-	}[];
+	polls: TPoll[];
 	forward: {
 		number: string;
 		message: string;
@@ -30,18 +27,15 @@ export type CreateBotValidationResult = {
 		after: number;
 		start_from: string;
 		end_at: string;
-		shared_contact_cards?: Types.ObjectId[];
-		attachments?: Types.ObjectId[];
-		polls?: {
-			title: string;
-			options: string[];
-			isMultiSelect: boolean;
-		}[];
+		contacts?: string[];
+		attachments?: string[];
+		polls?: TPoll[];
 	}[];
 };
 
 export async function CreateBotValidator(req: Request, res: Response, next: NextFunction) {
 	const reqValidator = z.object({
+		devices: z.string().array(),
 		trigger: z.string().default(''),
 		message: z.string().trim().default(''),
 		respond_to: z.enum([
@@ -57,18 +51,8 @@ export async function CreateBotValidator(req: Request, res: Response, next: Next
 			BOT_TRIGGER_OPTIONS.INCLUDES_IGNORE_CASE,
 			BOT_TRIGGER_OPTIONS.INCLUDES_MATCH_CASE,
 		]),
-		shared_contact_cards: z
-			.string()
-			.array()
-			.default([])
-			.refine((attachments) => !attachments.some((value) => !Types.ObjectId.isValid(value)))
-			.transform((attachments) => attachments.map((value) => new Types.ObjectId(value))),
-		attachments: z
-			.string()
-			.array()
-			.default([])
-			.refine((attachments) => !attachments.some((value) => !Types.ObjectId.isValid(value)))
-			.transform((attachments) => attachments.map((value) => new Types.ObjectId(value))),
+		contacts: z.string().array().default([]),
+		attachments: z.string().array().default([]),
 		group_respond: z.boolean().default(false),
 		startAt: z.string().default('00:01'),
 		endAt: z.string().default('23:59'),
@@ -95,18 +79,8 @@ export async function CreateBotValidator(req: Request, res: Response, next: Next
 				message: z.string(),
 				start_from: z.string().trim().default('00:01'),
 				end_at: z.string().trim().default('23:59'),
-				shared_contact_cards: z
-					.string()
-					.array()
-					.default([])
-					.refine((attachments) => !attachments.some((value) => !Types.ObjectId.isValid(value)))
-					.transform((attachments) => attachments.map((value) => new Types.ObjectId(value))),
-				attachments: z
-					.string()
-					.array()
-					.default([])
-					.refine((attachments) => !attachments.some((value) => !Types.ObjectId.isValid(value)))
-					.transform((attachments) => attachments.map((value) => new Types.ObjectId(value))),
+				contacts: z.string().array().default([]),
+				attachments: z.string().array().default([]),
 				polls: z
 					.object({
 						title: z.string(),
@@ -137,25 +111,6 @@ export async function CreateBotValidator(req: Request, res: Response, next: Next
 			STATUS: 400,
 			TITLE: 'INVALID_FIELDS',
 			MESSAGE: message,
-		})
-	);
-}
-
-export async function CouponValidator(req: Request, res: Response, next: NextFunction) {
-	const couponValidator = z.object({
-		coupon_code: z.string(),
-	});
-	const validationResult = couponValidator.safeParse(req.body);
-	if (validationResult.success) {
-		req.locals.data = validationResult.data.coupon_code;
-		return next();
-	}
-
-	return next(
-		new APIError({
-			STATUS: 400,
-			TITLE: 'INVALID_FIELDS',
-			MESSAGE: 'Invalid Bucket ID or coupon code',
 		})
 	);
 }

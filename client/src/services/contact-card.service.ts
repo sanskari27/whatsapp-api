@@ -16,15 +16,15 @@ type ContactCard = {
 	country: string;
 	pincode: string;
 	base64: string;
-	contact_details_phone?: {
+	contact_phone?: {
 		country_code: string;
 		number: string;
 	};
-	contact_details_work?: {
+	contact_work?: {
 		country_code: string;
 		number: string;
 	};
-	contact_details_other: {
+	contact_other: {
 		country_code: string;
 		number: string;
 	}[];
@@ -53,22 +53,22 @@ export default class ContactCardService {
 				country: card.country,
 				pincode: card.pincode,
 				base64: card.base64,
-				contact_details_phone: card.contact_details_phone.contact_number && {
-					country_code: card.contact_details_phone.contact_number.slice(1, -10),
-					number: card.contact_details_phone.contact_number.slice(-10),
+				contact_phone: card.contact_phone && {
+					country_code: card.contact_phone.contact_number.slice(1, -10),
+					number: card.contact_phone.contact_number.slice(-10),
 				},
-				contact_details_work: card.contact_details_work.contact_number && {
-					country_code: card.contact_details_work.contact_number.slice(1, -10),
-					number: card.contact_details_work.contact_number.slice(-10),
+				contact_work: card.contact_work && {
+					country_code: card.contact_work.contact_number.slice(1, -10),
+					number: card.contact_work.contact_number.slice(-10),
 				},
-				contact_details_other: card.contact_details_other.map(
-					(contact: { contact_number: string }) => ({
-						country_code: contact.contact_number.slice(1, -10),
-						number: contact.contact_number.slice(-10),
-					})
-				),
+				contact_other: card.contact_other.map((contact: { contact_number: string }) => ({
+					country_code: contact.contact_number.slice(1, -10),
+					number: contact.contact_number.slice(-10),
+				})),
 			})) as ContactCard[];
 		} catch (err) {
+			console.log(err);
+
 			return [] as ContactCard[];
 		}
 	}
@@ -81,9 +81,9 @@ export default class ContactCardService {
 		organization?: string;
 		email_personal?: string;
 		email_work?: string;
-		contact_details_phone?: string | undefined;
-		contact_details_work?: string | undefined;
-		contact_details_other?: (string | undefined)[];
+		contact_phone?: string | undefined;
+		contact_work?: string | undefined;
+		contact_other?: (string | undefined)[];
 		links?: string[];
 		street?: string;
 		city?: string;
@@ -117,23 +117,20 @@ export default class ContactCardService {
 				country: response.contact_card.country as string,
 				pincode: response.contact_card.pincode as string,
 				base64: response.contact_card.base64 as string,
-				contact_details_phone: response.contact_card.contact_details_phone &&
-					response.contact_card.contact_details_phone.contact_number && {
-						country_code: response.contact_card.contact_details_phone.contact_number.slice(
+				contact_phone: response.contact_card.contact_phone &&
+					response.contact_card.contact_phone.contact_number && {
+						country_code: response.contact_card.contact_phone.contact_number.slice(
 							1,
 							-10
 						) as string,
-						number: response.contact_card.contact_details_phone.contact_number.slice(-10) as string,
+						number: response.contact_card.contact_phone.contact_number.slice(-10) as string,
 					},
-				contact_details_work: response.contact_card.contact_details_work &&
-					response.contact_card.contact_details_work.contact_number && {
-						country_code: response.contact_card.contact_details_work.contact_number.slice(
-							1,
-							-10
-						) as string,
-						number: response.contact_card.contact_details_work.contact_number.slice(-10) as string,
+				contact_work: response.contact_card.contact_work &&
+					response.contact_card.contact_work.contact_number && {
+						country_code: response.contact_card.contact_work.contact_number.slice(1, -10) as string,
+						number: response.contact_card.contact_work.contact_number.slice(-10) as string,
 					},
-				contact_details_other: response.contact_card.contact_details_other.map(
+				contact_other: response.contact_card.contact_other.map(
 					(contact: { contact_number: string }) => ({
 						country_code: contact.contact_number.slice(1, -10) as string,
 						number: contact.contact_number.slice(-10) as string,
@@ -162,9 +159,9 @@ export default class ContactCardService {
 		organization?: string;
 		email_personal?: string;
 		email_work?: string;
-		contact_details_phone?: string | undefined;
-		contact_details_work?: string | undefined;
-		contact_details_other?: (string | undefined)[];
+		contact_phone?: string | undefined;
+		contact_work?: string | undefined;
+		contact_other?: (string | undefined)[];
 		links?: string[];
 		street?: string;
 		city?: string;
@@ -198,21 +195,15 @@ export default class ContactCardService {
 				country: response.contact_card.country as string,
 				pincode: response.contact_card.pincode as string,
 				base64: response.contact_card.base64 as string,
-				contact_details_phone: response.contact_card.contact_details_phone && {
-					country_code: response.contact_card.contact_details_phone.contact_number.slice(
-						1,
-						-10
-					) as string,
-					number: response.contact_card.contact_details_phone.contact_number.slice(-10) as string,
+				contact_phone: response.contact_card.contact_phone && {
+					country_code: response.contact_card.contact_phone.contact_number.slice(1, -10) as string,
+					number: response.contact_card.contact_phone.contact_number.slice(-10) as string,
 				},
-				contact_details_work: response.contact_card.contact_details_work && {
-					country_code: response.contact_card.contact_details_work.contact_number.slice(
-						1,
-						-10
-					) as string,
-					number: response.contact_card.contact_details_work.contact_number.slice(-10) as string,
+				contact_work: response.contact_card.contact_work && {
+					country_code: response.contact_card.contact_work.contact_number.slice(1, -10) as string,
+					number: response.contact_card.contact_work.contact_number.slice(-10) as string,
 				},
-				contact_details_other: response.contact_card.contact_details_other.map(
+				contact_other: response.contact_card.contact_other.map(
 					(contact: { contact_number: string }) => ({
 						country_code: contact.contact_number.slice(1, -10) as string,
 						number: contact.contact_number.slice(-10) as string,

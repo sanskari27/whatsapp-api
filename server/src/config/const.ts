@@ -34,7 +34,7 @@ export const ATTACHMENTS_PATH = '/static/attachments/';
 export const INVOICE_PATH = '/static/invoices/';
 export const MISC_PATH = '/static/misc/';
 export const TASK_PATH = '/static/task/';
-export const LOGO_PATH = '/static/assets/logo.png';
+export const LOGO_PATH = '/static/assets/logo-wp.png';
 
 // ========================================= Redis =========================================
 

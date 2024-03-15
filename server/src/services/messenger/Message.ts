@@ -1,167 +1,161 @@
 import fs from 'fs';
-import { Types } from 'mongoose';
-import Logger from 'n23-logger';
 import { MessageMedia, Poll } from 'whatsapp-web.js';
 import { ATTACHMENTS_PATH, MESSAGE_SCHEDULER_TYPE, MESSAGE_STATUS } from '../../config/const';
-import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
+import { messageDB } from '../../config/postgres';
 import { WhatsappProvider } from '../../provider/whatsapp_provider';
-import { MessageDB } from '../../repository/messenger';
-import UploadDB from '../../repository/uploads';
-import { IAccount, IWADevice } from '../../types/account';
-import { IMessage } from '../../types/messenger';
+import { TPoll } from '../../types/poll';
 import DateUtils from '../../utils/DateUtils';
-import { AccountService } from '../account';
-import TokenService from '../token';
+import { randomDevice } from '../../utils/ExpressUtils';
+import { AccountService, AccountServiceFactory } from '../account';
 
 export type Message = {
 	receiver: string;
 	message: TextMessage;
 	attachments: {
-		name: string;
-		filename: string;
+		id: string;
 		caption: string | undefined;
 	}[];
-	polls: {
-		title: string;
-		options: string[];
-		isMultiSelect: boolean;
-	}[];
-	shared_contact_cards: Types.ObjectId[];
+	polls: TPoll[];
+	contacts: string[];
 	sendAt: Date;
 };
 
 type MessageSchedulerOptions = {
 	scheduled_by: MESSAGE_SCHEDULER_TYPE;
-	scheduler_id: Types.ObjectId;
+	scheduler_id: string;
+	devices: string[];
 };
 
 type TextMessage = string;
 
 export default class MessageService {
-	private user: IAccount;
-	private device: IWADevice;
+	private _user: AccountService;
 
-	public constructor(user: IAccount, device: IWADevice) {
-		this.user = user;
-		this.device = device;
+	public constructor(user: AccountService) {
+		this._user = user;
 	}
 
-	scheduleMessage(message: Message, opts: MessageSchedulerOptions) {
-		const msg = new MessageDB({
-			sender: this.user,
-			sender_device: this.device,
-			receiver: message.receiver,
-			message: message.message ?? '',
-			attachments: message.attachments ?? [],
-			shared_contact_cards: message.shared_contact_cards ?? [],
-			polls: message.polls ?? [],
-			sendAt: message.sendAt,
-			scheduled_by: {
-				type: opts.scheduled_by,
-				id: opts.scheduler_id,
+	async scheduleMessage(message: Message, opts: MessageSchedulerOptions) {
+		const msg = await messageDB.create({
+			data: {
+				...message,
+				username: this._user.username,
+				recipient: message.receiver,
+				devices: {
+					connect: opts.devices.map((client_id) => ({ client_id })),
+				},
+				attachments: {
+					connect: message.attachments.map(({ id }) => ({ id })),
+				},
+				contacts: {
+					connect: message.contacts.map((id) => ({ id })),
+				},
+				captions: message.attachments.map((a) => a.caption ?? ''),
+				scheduledBy: opts.scheduled_by,
+				scheduledById: opts.scheduler_id,
 			},
 		});
-		msg.save();
-		return msg;
+		return msg.id;
 	}
 
-	async isAttachmentInUse(id: Types.ObjectId) {
-		const attachment = await UploadDB.findById(id);
-		if (!attachment) {
-			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
-		}
-		const messages: IMessage[] = await MessageDB.aggregate([
-			{
-				$match: {
-					attachments: {
-						$elemMatch: {
-							filename: attachment.filename,
-						},
-					},
-					status: { $in: [MESSAGE_STATUS.PAUSED, MESSAGE_STATUS.PENDING] },
+	async isAttachmentInUse(id: string) {
+		const messages = await messageDB.count({
+			where: {
+				attachments: {
+					some: { id },
 				},
 			},
-		]);
-		return messages.length > 0;
+		});
+
+		return messages > 0;
 	}
 
 	async scheduleLeadNurturingMessage(messages: Message[], opts: MessageSchedulerOptions) {
 		for (const message of messages) {
-			await MessageDB.create({
-				sender: this.user,
-				sender_device: this.device,
-				receiver: message.receiver,
-				message: message.message,
-				attachments: message.attachments ?? [],
-				shared_contact_cards: message.shared_contact_cards ?? [],
-				polls: message.polls ?? [],
-				sendAt: message.sendAt,
-				scheduled_by: {
-					type: opts.scheduled_by,
-					id: opts.scheduler_id,
+			await messageDB.create({
+				data: {
+					...message,
+					username: this._user.username,
+					recipient: message.receiver,
+					devices: {
+						connect: opts.devices.map((client_id) => ({ client_id })),
+					},
+					attachments: {
+						connect: message.attachments.map(({ id }) => ({ id })),
+					},
+					contacts: {
+						connect: message.contacts.map((id) => ({ id })),
+					},
+					captions: message.attachments.map((a) => a.caption ?? ''),
+					scheduledBy: opts.scheduled_by,
+					scheduledById: opts.scheduler_id,
 				},
 			});
 		}
 	}
 
 	static async sendScheduledMessage() {
-		const scheduledMessages = await MessageDB.find({
-			sendAt: { $lte: DateUtils.getMomentNow().toDate() },
-			status: MESSAGE_STATUS.PENDING,
-		}).populate('attachments sender device shared_contact_cards');
-
-		const { message_1: PROMOTIONAL_MESSAGE_1, message_2: PROMOTIONAL_MESSAGE_2 } =
-			await TokenService.getPromotionalMessage();
+		const scheduledMessages = await messageDB.findMany({
+			where: {
+				sendAt: {
+					lte: DateUtils.getMomentNow().toDate(),
+				},
+				status: 'PENDING',
+			},
+			include: {
+				devices: true,
+				attachments: true,
+				contacts: true,
+			},
+		});
 
 		scheduledMessages.forEach(async (msg) => {
-			if (!msg.device || !msg.sender) {
-				msg.status = MESSAGE_STATUS.FAILED;
-				msg.save();
-			}
-			const cid = WhatsappProvider.clientByDevice(msg.device._id);
-			if (!cid) {
-				msg.sendAt = DateUtils.getMoment(msg.sendAt).add(5, 'minutes').toDate();
-				msg.save();
+			if (msg.devices.length === 0) {
+				messageDB.update({
+					where: { id: msg.id },
+					data: { status: 'FAILED' },
+				});
 				return;
 			}
-			const whatsapp = WhatsappProvider.getInstance(msg.sender, cid);
+			const cid = randomDevice(msg.devices).client_id;
+			if (!cid) {
+				messageDB.update({
+					where: { id: msg.id },
+					data: {
+						sendAt: DateUtils.getMoment(msg.sendAt).add(5, 'minutes').toDate(),
+					},
+				});
+				return;
+			}
+			const user = await AccountServiceFactory.findByUsername(msg.username);
+			const whatsapp = WhatsappProvider.getInstance(user, cid);
 
-			const userService = new AccountService(msg.sender);
-			const { isSubscribed, isNew } = await userService.isSubscribed(msg.device._id);
+			const { isSubscribed } = await user.isSubscribed();
 
-			if (!isSubscribed && !isNew) {
-				msg.status = MESSAGE_STATUS.FAILED;
-				msg.save();
-				return null;
+			if (!isSubscribed) {
+				messageDB.update({
+					where: { id: msg.id },
+					data: { status: 'FAILED' },
+				});
+				return;
 			}
 			let message = msg.message;
 			msg.status = MESSAGE_STATUS.SENT;
-			await msg.save();
-
-			if (message) {
-				whatsapp
-					.getClient()
-					.sendMessage(msg.receiver, message)
-					.catch((err) => {
-						msg.status = MESSAGE_STATUS.FAILED;
-						msg.save();
-						Logger.error('Error sending message:', err);
-					});
-			}
-
-			msg.shared_contact_cards.forEach(async (card) => {
-				whatsapp
-					.getClient()
-					.sendMessage(msg.receiver, card.vCardString)
-					.catch((err) => {
-						msg.status = MESSAGE_STATUS.FAILED;
-						msg.save();
-						Logger.error('Error sending message:', err);
-					});
+			messageDB.update({
+				where: { id: msg.id },
+				data: { status: 'SENT' },
 			});
 
-			msg.attachments.forEach(async (attachment) => {
-				const { filename, caption, name } = attachment;
+			if (message) {
+				whatsapp.getClient().sendMessage(msg.recipient, message);
+			}
+			msg.contacts.forEach(async (card) => {
+				whatsapp.getClient().sendMessage(msg.recipient, card.vCardString);
+			});
+
+			msg.attachments.forEach(async (attachment, index) => {
+				const { filename, name } = attachment;
+				const caption = msg.captions.length <= index ? '' : msg.captions[index];
 				const path = __basedir + ATTACHMENTS_PATH + filename;
 				if (!fs.existsSync(path)) {
 					return null;
@@ -171,54 +165,20 @@ export default class MessageService {
 				if (name) {
 					media.filename = name + path.substring(path.lastIndexOf('.'));
 				}
-				whatsapp
-					.getClient()
-					.sendMessage(msg.receiver, media, {
-						caption,
-					})
-					.catch((err) => {
-						msg.status = MESSAGE_STATUS.FAILED;
-						msg.save();
-						Logger.error('Error sending message:', err);
-					});
+				whatsapp.getClient().sendMessage(msg.recipient, media, {
+					caption,
+				});
 			});
 
 			msg.polls.forEach(async (poll) => {
-				const { title, options, isMultiSelect } = poll;
-				whatsapp
-					.getClient()
-					.sendMessage(
-						msg.receiver,
-						new Poll(title, options, {
-							allowMultipleAnswers: isMultiSelect,
-						})
-					)
-					.catch((err) => {
-						msg.status = MESSAGE_STATUS.FAILED;
-						msg.save();
-						Logger.error('Error sending message:', err);
-					});
+				const { title, options, isMultiSelect } = poll as unknown as TPoll;
+				whatsapp.getClient().sendMessage(
+					msg.recipient,
+					new Poll(title, options, {
+						allowMultipleAnswers: isMultiSelect,
+					})
+				);
 			});
-
-			if (msg.shared_contact_cards && msg.shared_contact_cards.length > 0) {
-				whatsapp
-					.getClient()
-					.sendMessage(msg.receiver, PROMOTIONAL_MESSAGE_2)
-					.catch((err) => {
-						msg.status = MESSAGE_STATUS.FAILED;
-						msg.save();
-						Logger.error('Error sending message:', err);
-					});
-			} else if (!isSubscribed && isNew) {
-				whatsapp
-					.getClient()
-					.sendMessage(msg.receiver, PROMOTIONAL_MESSAGE_1)
-					.catch((err) => {
-						msg.status = MESSAGE_STATUS.FAILED;
-						msg.save();
-						Logger.error('Error sending message:', err);
-					});
-			}
 		});
 	}
 }

@@ -1,26 +1,20 @@
-import { Types } from 'mongoose';
-import { CAMPAIGN_STATUS, MESSAGE_SCHEDULER_TYPE, MESSAGE_STATUS } from '../../config/const';
-import { CampaignDB, MessageDB } from '../../repository/messenger';
+import { MESSAGE_SCHEDULER_TYPE } from '../../config/const';
+import { campaignDB, messageDB } from '../../config/postgres';
+import { ERRORS, InternalError } from '../../errors';
 import TimeGenerator from '../../structures/TimeGenerator';
-import { IAccount, IWADevice } from '../../types/account';
-import { IMessage } from '../../types/messenger';
+import { TPoll } from '../../types/poll';
 import DateUtils from '../../utils/DateUtils';
+import { generateBatchID } from '../../utils/ExpressUtils';
+import { AccountService } from '../account';
 import MessageService from './Message';
 
 export type Message = {
 	number: string;
 	message: TextMessage;
-	attachments: {
-		name: string;
-		filename: string;
-		caption: string | undefined;
-	}[];
-	polls: {
-		title: string;
-		options: string[];
-		isMultiSelect: boolean;
-	}[];
-	shared_contact_cards: Types.ObjectId[];
+	attachments: string[];
+	captions: string[];
+	polls: TPoll[];
+	contacts: string[];
 };
 
 type TextMessage = string;
@@ -28,6 +22,7 @@ type TextMessage = string;
 type Batch = {
 	campaign_name: string;
 	description: string;
+	devices: string[];
 	min_delay: number;
 	max_delay: number;
 	batch_size: number;
@@ -39,190 +34,187 @@ type Batch = {
 };
 
 export default class CampaignService {
-	private user: IAccount;
-	private device: IWADevice;
+	private _user: AccountService;
 	private messageService: MessageService;
 
-	public constructor(user: IAccount, device: IWADevice) {
-		this.user = user;
-		this.device = device;
-		this.messageService = new MessageService(user, device);
+	public constructor(user: AccountService) {
+		this._user = user;
+		this.messageService = new MessageService(user);
 	}
 	async alreadyExists(name: string) {
-		const exists = await CampaignDB.exists({
-			user: this.user,
-			device: this.device,
-			campaign_name: name,
+		const exists = await campaignDB.findUnique({
+			where: {
+				username_name: {
+					username: this._user.username,
+					name,
+				},
+			},
 		});
 		return exists !== null;
 	}
 
 	async scheduleCampaign(messages: Message[], opts: Batch) {
-		const campaign = await CampaignDB.create({
-			name: opts.campaign_name,
-			description: opts.description,
-			device: this.device,
-			user: this.user,
-		});
-		const _messages: IMessage[] = [];
+		if (await this.alreadyExists(opts.campaign_name)) {
+			throw new InternalError(ERRORS.COMMON_ERRORS.ALREADY_EXISTS);
+		}
+		const campaign_id = generateBatchID();
+		const _messages: string[] = [];
 		const dateGenerator = new TimeGenerator(opts);
 		for (const message of messages) {
-			const msg = this.messageService.scheduleMessage(
+			const msg = await this.messageService.scheduleMessage(
 				{
 					receiver: message.number,
 					message: message.message ?? '',
-					attachments: message.attachments ?? [],
-					shared_contact_cards: message.shared_contact_cards ?? [],
+					attachments: (message.attachments ?? []).map((a, i) => ({
+						id: a,
+						caption: message.captions[i],
+					})),
+					contacts: message.contacts ?? [],
 					polls: message.polls ?? [],
 					sendAt: dateGenerator.next().value,
 				},
 				{
 					scheduled_by: MESSAGE_SCHEDULER_TYPE.CAMPAIGN,
-					scheduler_id: campaign._id,
+					scheduler_id: campaign_id,
+					devices: opts.devices,
 				}
 			);
 			_messages.push(msg);
 		}
 
-		campaign.messages = _messages;
-		await campaign.save();
+		const campaign = await campaignDB.create({
+			data: {
+				...opts,
+				id: campaign_id,
+				username: this._user.username,
+				name: opts.campaign_name,
+				messages: {
+					connect: _messages.map((id) => ({ id })),
+				},
+				startAt: opts.startTime,
+				endAt: opts.endTime,
+				startDate: opts.startDate,
+				devices: {
+					connect: opts.devices.map((client_id) => ({ client_id })),
+				},
+			},
+		});
 		return campaign;
 	}
 
 	async allCampaigns() {
-		const campaigns = await CampaignDB.aggregate([
-			{ $match: { user: this.user._id } },
-			{
-				$lookup: {
-					from: MessageDB.collection.name, // Name of the OtherModel collection
-					localField: 'messages',
-					foreignField: '_id',
-					as: 'messagesInfo',
-				},
-			},
-			{
-				$unwind: '$messagesInfo', // If messages is an array, unwind it to separate documents
-			},
-			{
-				$group: {
-					_id: '$_id', // Group by the campaign ID
-					name: { $first: '$name' },
-					description: { $first: '$description' },
-					status: { $first: '$status' },
-					startTime: { $first: '$startTime' },
-					endTime: { $first: '$endTime' },
-					createdAt: { $first: '$createdAt' },
-					sent: { $sum: { $cond: [{ $eq: ['$messagesInfo.status', MESSAGE_STATUS.SENT] }, 1, 0] } },
-					failed: {
-						$sum: { $cond: [{ $eq: ['$messagesInfo.status', MESSAGE_STATUS.FAILED] }, 1, 0] },
-					},
-					pending: {
-						$sum: {
-							$cond: [{ $in: ['$messagesInfo.status', [MESSAGE_STATUS.PENDING]] }, 1, 0],
-						},
+		const campaigns = await campaignDB.findMany({
+			where: { username: this._user.username },
+			include: {
+				messages: {
+					select: {
+						status: true,
 					},
 				},
 			},
-			{
-				$project: {
-					campaign_id: '$_id',
-					_id: 0,
-					name: 1,
-					description: 1,
-					status: 1,
-					sent: 1,
-					failed: 1,
-					pending: 1,
-					createdAt: 1,
-					startTime: 1,
-					endTime: 1,
-					isPaused: { $eq: ['$status', CAMPAIGN_STATUS.PAUSED] },
+		});
+
+		return campaigns.map((campaign) => {
+			const { sent, failed, pending } = campaign.messages.reduce(
+				(acc, item) => {
+					if (item.status === 'SENT') {
+						acc.sent += 1;
+					} else if (item.status === 'FAILED') {
+						acc.failed += 1;
+					} else {
+						acc.pending += 1;
+					}
+					return acc;
 				},
-			},
-		]);
-		return campaigns
-			.sort((a, b) =>
-				DateUtils.getMoment(a.createdAt).isAfter(DateUtils.getMoment(b.createdAt)) ? -1 : 1
-			)
-			.map((message) => ({
-				campaign_id: message.campaign_id as string,
-				campaignName: message.name as string,
-				description: message.description as string,
-				status: message.status as string,
-				sent: message.sent as number,
-				failed: message.failed as number,
-				pending: message.pending as number,
-				createdAt: DateUtils.format(message.createdAt, 'DD-MM-YYYY HH:mm') as string,
-				isPaused: message.isPaused as boolean,
-			}));
-	}
-
-	async deleteCampaign(campaign_id: Types.ObjectId) {
-		try {
-			const campaign = await CampaignDB.findById(campaign_id);
-			if (!campaign) {
-				return;
-			}
-			await MessageDB.deleteMany({ _id: campaign.messages });
-			await campaign.remove();
-		} catch (err) {}
-	}
-
-	async pauseCampaign(campaign_id: Types.ObjectId) {
-		try {
-			const campaign = await CampaignDB.findById(campaign_id);
-			if (!campaign) {
-				return;
-			}
-			await MessageDB.updateMany(
-				{ _id: campaign.messages, status: MESSAGE_STATUS.PENDING },
 				{
-					$set: {
-						status: MESSAGE_STATUS.PAUSED,
-					},
+					sent: 0,
+					failed: 0,
+					pending: 0,
 				}
 			);
-			campaign.status = CAMPAIGN_STATUS.PAUSED;
-			await campaign.save();
-		} catch (err) {}
+			return {
+				campaign_id: campaign.id,
+				campaignName: campaign.name,
+				description: campaign.description,
+				status: campaign.status,
+				sent,
+				failed,
+				pending,
+				createdAt: DateUtils.format(campaign.createdAt, 'DD-MM-YYYY HH:mm') as string,
+				isPaused: campaign.status === 'PAUSED',
+			};
+		});
 	}
-	async resumeCampaign(campaign_id: Types.ObjectId) {
+
+	async deleteCampaign(id: string) {
 		try {
-			const campaign = await CampaignDB.findById(campaign_id);
-			if (!campaign) {
-				return;
-			}
-			await MessageDB.updateMany(
-				{ _id: campaign.messages, status: MESSAGE_STATUS.PAUSED },
-				{
-					$set: {
-						status: MESSAGE_STATUS.PENDING,
-					},
-				}
-			);
-			campaign.status = CAMPAIGN_STATUS.ACTIVE;
-			await campaign.save();
+			await messageDB.deleteMany({
+				where: { scheduledById: id },
+			});
+			await campaignDB.findUnique({ where: { id } });
 		} catch (err) {}
 	}
 
-	async generateReport(campaign_id: Types.ObjectId) {
-		const campaign = await CampaignDB.findById(campaign_id);
+	async pauseCampaign(id: string) {
+		try {
+			await campaignDB.update({
+				where: { id },
+				data: {
+					status: 'PAUSED',
+				},
+			});
+			await messageDB.updateMany({
+				where: { scheduledById: id },
+				data: {
+					status: 'PAUSED',
+				},
+			});
+		} catch (err) {}
+	}
+
+	async resumeCampaign(id: string) {
+		try {
+			await campaignDB.update({
+				where: { id },
+				data: {
+					status: 'ACTIVE',
+				},
+			});
+			await messageDB.updateMany({
+				where: { scheduledById: id },
+				data: {
+					status: 'PENDING',
+				},
+			});
+		} catch (err) {}
+	}
+
+	async generateReport(id: string) {
+		const campaign = await campaignDB.findUnique({
+			where: { id },
+		});
 		if (!campaign) {
 			return [];
 		}
-		const messages = await MessageDB.find({ _id: campaign.messages });
+		const messages = await messageDB.findMany({
+			where: {
+				scheduledById: id,
+			},
+			include: {
+				attachments: true,
+				contacts: true,
+			},
+		});
 		return messages.map((message) => ({
 			message: message.message,
-			receiver: message.receiver.split('@')[0],
+			receiver: message.recipient.split('@')[0],
 			attachments: message.attachments.length,
-			contacts: message.shared_contact_cards.length,
+			contacts: message.contacts.length,
 			polls: message.polls.length,
 			campaign_name: campaign.name,
 			description: campaign.description,
 			status: message.status,
-			scheduled_at: message.sendAt
-				? DateUtils.getMoment(message.sendAt).format('DD/MM/YYYY HH:mm:ss')
-				: '',
+			scheduled_at: DateUtils.getMoment(message.sendAt).format('DD/MM/YYYY HH:mm:ss'),
 		}));
 	}
 }

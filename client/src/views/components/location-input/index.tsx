@@ -58,7 +58,7 @@ const LocationInputDialog = forwardRef<LocationInputDialogHandle, Props>(
 		};
 
 		const handleConfirm = () => {
-			onConfirm(`https://www.google.com/maps/place/?q=place_id:${selectedLocation}`);
+			onConfirm(`www.google.com/maps/place/?q=place_id:${selectedLocation}`);
 			onClose();
 		};
 

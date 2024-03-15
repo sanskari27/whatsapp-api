@@ -51,8 +51,8 @@ const Contacts = () => {
 		return filterList(list, _searchText, {
 			first_name: 1,
 			last_name: 1,
-			contact_details_phone: 1,
-			contact_details_work: 1,
+			contact_phone: 1,
+			contact_work: 1,
 		});
 	}, [_searchText, list]);
 
@@ -102,16 +102,16 @@ const Contacts = () => {
 												divider={<StackDivider borderColor={Colors.ACCENT_DARK} />}
 												gap={'0.5rem'}
 											>
-												{contact.contact_details_phone ? (
+												{contact.contact_phone ? (
 													<Text textColor={Colors.ACCENT_DARK}>
-														Contact Phone: +{contact.contact_details_phone.country_code}{' '}
-														{contact.contact_details_phone.number}
+														Contact Phone: +{contact.contact_phone.country_code}{' '}
+														{contact.contact_phone.number}
 													</Text>
 												) : null}
-												{contact.contact_details_work ? (
+												{contact.contact_work ? (
 													<Text textColor={Colors.ACCENT_DARK}>
-														Contact Phone: +{contact.contact_details_work.country_code}{' '}
-														{contact.contact_details_work.number}
+														Contact Phone: +{contact.contact_work.country_code}{' '}
+														{contact.contact_work.number}
 													</Text>
 												) : null}
 											</HStack>

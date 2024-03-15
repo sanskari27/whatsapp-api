@@ -1,4 +1,3 @@
-import { Types } from 'mongoose';
 import QRCode from 'qrcode';
 import WAWebJS, { BusinessContact, Client, GroupChat, LocalAuth } from 'whatsapp-web.js';
 import { CHROMIUM_PATH, SOCKET_RESPONSES } from '../../config/const';
@@ -7,7 +6,6 @@ import { AccountService, AccountServiceFactory } from '../../services/account';
 import BotService from '../../services/bot';
 import GroupMergeService from '../../services/merged-groups';
 import VoteResponseService from '../../services/vote-response';
-import { IAccount, IWADevice } from '../../types/account';
 import DateUtils from '../../utils/DateUtils';
 import { Delay } from '../../utils/ExpressUtils';
 import WhatsappUtils from '../../utils/WhatsappUtils';
@@ -43,8 +41,7 @@ export class WhatsappProvider {
 	private client_id: ClientID;
 	private static clientsMap = new Map<ClientID, WhatsappProvider>();
 
-	private device: IWADevice | undefined;
-	private account: IAccount;
+	private _user: AccountService;
 	private qrCode: string | undefined;
 	private number: string | undefined;
 	private contact: WAWebJS.Contact | undefined;
@@ -58,9 +55,9 @@ export class WhatsappProvider {
 		onDestroy: (client_id: ClientID) => void;
 	};
 
-	private constructor(account: IAccount, cid: ClientID) {
+	private constructor(account: AccountService, cid: ClientID) {
 		this.client_id = cid;
-		this.account = account;
+		this._user = account;
 
 		this.client = new Client({
 			restartOnAuthFail: true,
@@ -85,7 +82,7 @@ export class WhatsappProvider {
 		WhatsappProvider.clientsMap.set(this.client_id, this);
 	}
 
-	public static getInstance(account: IAccount, client_id: ClientID) {
+	public static getInstance(account: AccountService, client_id: ClientID) {
 		if (!client_id || !account) {
 			throw new Error();
 		}
@@ -141,20 +138,20 @@ export class WhatsappProvider {
 						address: '',
 				  };
 
-			this.device = await AccountServiceFactory.createDevice({
+			await AccountServiceFactory.createDevice({
 				name: this.client.info.pushname,
 				phone: this.number,
 				isBusiness: this.contact.isBusiness,
 				business_details,
 			});
 
-			await new AccountService(this.account).addProfile(this.device, this.client_id);
+			await this._user.addProfile(this.number, this.client_id);
 			this.status = STATUS.READY;
 
-			this.bot_service = new BotService(this.account, this.device);
-			this.group_service = new GroupMergeService(this.account, this.device);
+			this.bot_service = new BotService(this._user);
+			this.group_service = new GroupMergeService(this._user);
 			this.bot_service.attachWhatsappProvider(this);
-			this.vote_response_service = new VoteResponseService(this.account);
+			this.vote_response_service = new VoteResponseService(this._user);
 
 			this.sendToClient(SOCKET_RESPONSES.WHATSAPP_READY);
 		});
@@ -189,7 +186,12 @@ export class WhatsappProvider {
 
 			details.selected_option.map((opt) => {
 				if (!this.bot_service) return;
-				this.bot_service.handleMessage(chat.id._serialized, opt, contact, {
+
+				this.bot_service.handleMessage({
+					trigger_chat: chat.id._serialized,
+					body: opt,
+					client_id: this.client_id,
+					contact,
 					fromPoll: true,
 					isGroup: false,
 				});
@@ -199,8 +201,7 @@ export class WhatsappProvider {
 		this.client.on('disconnected', () => {
 			this.status = STATUS.DISCONNECTED;
 
-			const accountService = new AccountService(this.account);
-			accountService.deviceLogout(this.client_id);
+			this._user.deviceLogout(this.client_id);
 			this.logoutClient();
 		});
 
@@ -209,7 +210,11 @@ export class WhatsappProvider {
 			const chat = await message.getChat();
 			const isGroup = chat.isGroup;
 			const contact = await message.getContact();
-			this.bot_service.handleMessage(message.from, message.body, contact, {
+			this.bot_service.handleMessage({
+				trigger_chat: message.from,
+				body: message.body,
+				contact,
+				client_id: this.client_id,
 				isGroup,
 				fromPoll: false,
 			});
@@ -316,15 +321,5 @@ export class WhatsappProvider {
 
 	static getInstancesCount(): number {
 		return WhatsappProvider.clientsMap.size;
-	}
-
-	static clientByDevice(id: Types.ObjectId) {
-		for (const [cid, client] of WhatsappProvider.clientsMap.entries()) {
-			if (!client.device || !client.isReady()) continue;
-			if (client.device._id.toString() === id.toString()) {
-				return cid;
-			}
-		}
-		return null;
 	}
 }

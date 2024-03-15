@@ -1,7 +1,6 @@
 import csv from 'csvtojson/v2';
 import { NextFunction, Request, Response } from 'express';
 import fs from 'fs';
-import { Types } from 'mongoose';
 import { getOrCache } from '../../config/cache';
 import {
 	CACHE_TOKEN_GENERATOR,
@@ -48,7 +47,7 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 		vcf: req.body.vcf ?? false,
 	};
 
-	let task_id: Types.ObjectId | null = null;
+	let task_id: string | null = null;
 	if (req.body.saved_contacts) {
 		options.saved_contacts = true;
 		options.non_saved_contacts = false;
@@ -150,12 +149,12 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 
 		taskService.markCompleted(task_id, file_name);
 		SocketServerProvider.attachedSockets
-			.get(account.phone)
+			.get(account.username)
 			?.emit(SOCKET_RESPONSES.TASK_COMPLETED, task_id.toString());
 	} catch (err) {
 		taskService.markFailed(task_id);
 		SocketServerProvider.attachedSockets
-			.get(account.phone)
+			.get(account.user_type)
 			?.emit(SOCKET_RESPONSES.TASK_FAILED, task_id.toString());
 	}
 }
@@ -192,7 +191,7 @@ async function countContacts(req: Request, res: Response, next: NextFunction) {
 }
 
 export async function validate(req: Request, res: Response, next: NextFunction) {
-	const { account, client_id, device, accountService } = req.locals;
+	const { account, client_id } = req.locals;
 
 	const whatsapp = WhatsappProvider.getInstance(account, client_id);
 	const whatsappUtils = new WhatsappUtils(whatsapp);
@@ -205,9 +204,9 @@ export async function validate(req: Request, res: Response, next: NextFunction) 
 		numbers: requestedNumberList,
 	} = req.locals.data as ValidateNumbersValidationResult;
 
-	const { isSubscribed, isNew } = await accountService.isSubscribed(device._id);
+	const { isSubscribed } = await account.isSubscribed();
 
-	if (!isSubscribed && !isNew) {
+	if (!isSubscribed) {
 		return next(new APIError(PAYMENT_ERRORS.PAYMENT_REQUIRED));
 	}
 

@@ -49,7 +49,7 @@ export default function Welcome() {
 				<Flex alignItems={'center'} gap={'0.5rem'}>
 					<Image src={LOGO} width={'48px'} className=' rounded-full mix-blend-multiply' />
 					<Text color={Colors.PRIMARY_DARK} fontWeight={'bold'} fontSize={'xl'}>
-						whatsleads.in
+						wpautomation.in
 					</Text>
 				</Flex>
 				<Tabs

@@ -37,7 +37,7 @@ import {
 	updateBot,
 } from '../../../../store/reducers/BotReducers';
 import Info from '../../../components/info';
-import { SubscriptionPopup } from '../../../components/subscription-alert';
+import SubscriptionPopup from '../../../components/subscription-alert';
 import { NumberInput, SelectElement, TextAreaElement, TextInput } from './inputs.components';
 import MessageContent from './message-content.component';
 import CampaignDetails from './responder-details.component';
@@ -63,8 +63,6 @@ export default function AutoResponder() {
 		forward,
 	} = details;
 	const { isEditingBot } = ui;
-
-	const { canSendMessage } = useSelector((state: StoreState) => state[StoreNames.USER]);
 
 	useEffect(() => {
 		dispatch(reset());
@@ -201,7 +199,7 @@ export default function AutoResponder() {
 	return (
 		<Flex direction={'column'} padding={'1rem'} justifyContent={'start'}>
 			<Heading color={Colors.PRIMARY_DARK}>Create new auto responder</Heading>
-			<SubscriptionPopup isVisible={!canSendMessage} />
+			<SubscriptionPopup />
 
 			<Flex direction={'column'} marginTop={'1rem'} gap='3rem' maxWidth={'800px'}>
 				<CampaignDetails />

@@ -1,8 +1,7 @@
 /* eslint-disable no-var */
 
-import { Types } from 'mongoose';
 import { AccountService } from '../services/account';
-import { IAccount, IWADevice } from './account';
+import { IWADevice } from './account';
 
 export { APIError } from './server-error';
 
@@ -24,12 +23,11 @@ export interface Locals {
 	// user: IUser;
 	// admin: IAdmin;
 
-	accountService: AccountService;
-	account: IAccount;
+	account: AccountService;
 	device: IWADevice;
 
 	data: any;
-	id: Types.ObjectId;
+	id: string;
 	token: string;
 }
 

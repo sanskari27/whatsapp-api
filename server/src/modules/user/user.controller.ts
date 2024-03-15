@@ -34,7 +34,7 @@ async function extendUserExpiry(req: Request, res: Response, next: NextFunction)
 		if (!req.body.date) {
 			return next(new APIError(COMMON_ERRORS.INVALID_FIELDS));
 		}
-		const accountService = await AccountServiceFactory.createByID(req.locals.id);
+		const accountService = await AccountServiceFactory.findByUsername(req.locals.id);
 		accountService.setExpiry(DateUtils.getMoment(req.body.date, 'YYYY-MM-DD'));
 
 		return Respond({
@@ -68,7 +68,6 @@ async function paymentRemainder(req: Request, res: Response, next: NextFunction)
 	// whatsapp
 	// 	.getClient()
 	// 	.sendMessage(userService.getPhoneNumber() + '@c.us', req.locals.data)
-	// 	.catch((err) => Logger.error('Error sending message:', err));
 	// return Respond({
 	// 	res,
 	// 	status: 200,

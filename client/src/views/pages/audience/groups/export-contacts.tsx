@@ -181,10 +181,6 @@ export default function ExportContacts() {
 		onClose();
 	};
 
-	const handleSubscription = async () => {
-		window.open('https://whatsleads.in/pricing', '_blank');
-	};
-
 	return (
 		<Modal isOpen={isOpen} onClose={onClose} onCloseComplete={handleClose}>
 			<ModalOverlay />
@@ -390,10 +386,9 @@ export default function ExportContacts() {
 								bgColor: 'yellow.500',
 							}}
 							width={'100%'}
-							onClick={handleSubscription}
 						>
 							<Flex gap={'0.5rem'}>
-								<Text color={'white'}>Subscribe</Text>
+								<Text color={'white'}>Contact Admin</Text>
 							</Flex>
 						</Button>
 					) : !uiDetails.exportClicked ? (

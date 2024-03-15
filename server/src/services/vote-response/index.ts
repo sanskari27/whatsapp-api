@@ -1,14 +1,14 @@
 import Logger from 'n23-logger';
 import WAWebJS from 'whatsapp-web.js';
-import VoteResponseDB from '../../repository/vote-response';
-import { IAccount } from '../../types/account';
+import { voteResponseDB } from '../../config/postgres';
 import DateUtils from '../../utils/DateUtils';
+import { AccountService } from '../account';
 
 export default class VoteResponseService {
-	private user: IAccount;
+	private _user: AccountService;
 
-	public constructor(user: IAccount) {
-		this.user = user;
+	public constructor(user: AccountService) {
+		this._user = user;
 	}
 
 	getPollDetails(data: WAWebJS.Message) {
@@ -34,22 +34,35 @@ export default class VoteResponseService {
 		voted_at: Date;
 	}) {
 		try {
-			const voteResponse = await VoteResponseDB.findOne({
-				user: this.user.id,
-				title: details.title,
-				options: details.options,
-				isMultiSelect: details.isMultiSelect,
-				chat_id: details.chat_id,
-				voter_number: details.voter_number,
+			const voteResponse = await voteResponseDB.findUnique({
+				where: {
+					username_title_options_isMultiSelect_chat_id_voter_number: {
+						username: this._user.username,
+						title: details.title,
+						options: details.options,
+						isMultiSelect: details.isMultiSelect,
+						chat_id: details.chat_id,
+						voter_number: details.voter_number,
+					},
+				},
 			});
 
 			if (!voteResponse) {
-				return await VoteResponseDB.create({ user: this.user, ...details });
+				return await voteResponseDB.create({
+					data: {
+						username: this._user.username,
+						...details,
+					},
+				});
 			}
 
-			voteResponse.selected_option = details.selected_option;
-			voteResponse.voted_at = details.voted_at;
-			await voteResponse.save();
+			await voteResponseDB.update({
+				where: { id: voteResponse.id },
+				data: {
+					selected_option: details.selected_option,
+					voted_at: details.voted_at,
+				},
+			});
 			return voteResponse;
 		} catch (err: any) {
 			Logger.error('Error saving poll', err);
@@ -58,35 +71,22 @@ export default class VoteResponseService {
 	}
 
 	async allPolls() {
-		const polls = await VoteResponseDB.aggregate([
-			{ $match: { user: this.user._id } },
-			{
-				$group: {
-					_id: {
-						title: '$title',
-						options: '$options',
-						isMultiSelect: '$isMultiSelect',
-					},
-					responses: { $push: '$$ROOT' },
-					vote_count: { $sum: 1 },
-				},
+		const polls = await voteResponseDB.groupBy({
+			where: {
+				username: this._user.username,
 			},
-			{
-				$project: {
-					_id: 0, // Exclude the default _id field
-					title: '$_id.title',
-					options: '$_id.options',
-					isMultiSelect: '$_id.isMultiSelect',
-					vote_count: 1,
-				},
+			by: ['title', 'options', 'isMultiSelect'],
+			_count: {
+				_all: true,
 			},
-		]);
-		return polls as {
-			title: string;
-			options: string[];
-			isMultiSelect: boolean;
-			vote_count: number;
-		}[];
+		});
+
+		return polls.map((poll) => ({
+			title: poll.title,
+			options: poll.options,
+			isMultiSelect: poll.isMultiSelect,
+			vote_count: poll._count,
+		}));
 	}
 
 	async getPoll({
@@ -98,11 +98,13 @@ export default class VoteResponseService {
 		options: string[];
 		isMultiSelect: boolean;
 	}) {
-		const polls = await VoteResponseDB.find({
-			user: this.user._id,
-			title,
-			options: { $all: options },
-			isMultiSelect,
+		const polls = await voteResponseDB.findMany({
+			where: {
+				username: this._user.username,
+				title,
+				options: { equals: options },
+				isMultiSelect,
+			},
 		});
 
 		return polls.map((poll) => ({
@@ -118,8 +120,8 @@ export default class VoteResponseService {
 	}
 
 	async getPolls() {
-		const polls = await VoteResponseDB.find({
-			user: this.user._id,
+		const polls = await voteResponseDB.findMany({
+			where: { username: this._user.username },
 		});
 
 		return polls.map((poll) => ({

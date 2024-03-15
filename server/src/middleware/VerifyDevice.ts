@@ -9,7 +9,7 @@ export default async function VerifyDevice(req: Request, res: Response, next: Ne
 	}
 
 	try {
-		const device = await req.locals.accountService.isValidDevice(device_id);
+		const device = await req.locals.account.isValidDevice(device_id);
 
 		if (!device) {
 			return next(new APIError(USER_ERRORS.DEVICE_ID_REQUIRED));

@@ -1,71 +1,78 @@
-import { Types } from 'mongoose';
-import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
-import TemplateDB from '../../repository/template';
-import { IAccount } from '../../types/account';
+import { templateDB } from '../../config/postgres';
+import { TPoll } from '../../types/poll';
+import { AccountService } from '../account';
 
 export default class TemplateService {
-	private user: IAccount;
+	private _user: AccountService;
 
-	public constructor(user: IAccount) {
-		this.user = user;
+	public constructor(user: AccountService) {
+		this._user = user;
 	}
 
 	async listMessageTemplates() {
-		const templates = await TemplateDB.find({ user: this.user, type: 'MESSAGE' });
+		const templates = await templateDB.findMany({
+			where: {
+				username: this._user.username,
+				type: 'MESSAGE',
+			},
+		});
 		return templates.map((template) => ({
-			id: template._id as string,
+			id: template.id,
 			name: template.name,
 			message: template.message,
 		}));
 	}
 
-	addMessageTemplate(name: string, message: string) {
-		const template = new TemplateDB({ user: this.user, name, message, type: 'MESSAGE' });
-		template.save();
+	async addMessageTemplate(name: string, message: string) {
+		const template = await templateDB.create({
+			data: {
+				username: this._user.username,
+				name,
+				message,
+				type: 'MESSAGE',
+			},
+		});
 		return {
-			id: template._id as string,
+			id: template.id as string,
 			name: template.name,
 			message: template.message,
 		};
 	}
 
-	async deleteTemplate(id: Types.ObjectId) {
-		const template = await TemplateDB.findById(id);
-		if (!template) {
-			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
-		}
-		template.remove();
+	async deleteTemplate(id: string) {
+		await templateDB.delete({ where: { id } });
 	}
 
-	async updateMessageTemplate(id: Types.ObjectId, name: string, message: string) {
-		const template = await TemplateDB.findOne({ user: this.user, _id: id, type: 'MESSAGE' });
-		if (!template) {
-			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
-		}
-		if (name) {
-			template.name = name;
-		}
-		if (message) {
-			template.message = message;
-		}
-		template.save();
+	async updateMessageTemplate(id: string, name: string, message: string) {
+		const template = await templateDB.update({
+			where: { id },
+			data: {
+				name,
+				message,
+			},
+		});
 		return {
-			id: template._id,
+			id: template.id,
 			name: template.name,
 			message: template.message,
 		};
 	}
 
 	async listPollTemplates() {
-		const templates = await TemplateDB.find({ user: this.user, type: 'POLL' });
+		const templates = await templateDB.findMany({
+			where: {
+				username: this._user.username,
+				type: 'POLL',
+			},
+		});
 		return templates.map((template) => ({
-			id: template._id as string,
+			id: template.id as string,
 			name: template.name,
-			poll: template.poll,
+			poll: template.poll as TPoll,
 		}));
 	}
 
-	addPollTemplate(
+	async addPollTemplate(
 		name: string,
 		poll: {
 			title: string;
@@ -73,17 +80,23 @@ export default class TemplateService {
 			isMultiSelect: boolean;
 		}
 	) {
-		const template = new TemplateDB({ user: this.user, name, poll, type: 'POLL' });
-		template.save();
+		const template = await templateDB.create({
+			data: {
+				username: this._user.username,
+				name,
+				poll,
+				type: 'POLL',
+			},
+		});
 		return {
-			id: template._id as string,
+			id: template.id as string,
 			name: template.name,
 			poll: template.poll,
 		};
 	}
 
 	async updatePollTemplate(
-		id: Types.ObjectId,
+		id: string,
 		name: string,
 		poll: {
 			title: string;
@@ -91,19 +104,17 @@ export default class TemplateService {
 			isMultiSelect: boolean;
 		}
 	) {
-		const template = await TemplateDB.findOne({ user: this.user, _id: id, type: 'POLL' });
-		if (!template) {
-			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
-		}
-		if (name) {
-			template.name = name;
-		}
-		template.poll = poll;
-		template.save();
+		const template = await templateDB.update({
+			where: { id },
+			data: {
+				name,
+				poll,
+			},
+		});
 		return {
-			id: template._id,
+			id: template.id,
 			name: template.name,
-			poll: template.poll,
+			poll: template.poll as TPoll,
 		};
 	}
 }

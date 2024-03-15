@@ -19,14 +19,14 @@ router
 	.get(SchedulerController.schedulerById)
 	.delete(SchedulerController.deleteScheduler)
 	.put(SchedulerController.toggleActive)
-	.all(CreateSchedulerValidator, PaymentValidator.isPseudoSubscribed)
+	.all(CreateSchedulerValidator, PaymentValidator.isSubscribed)
 	.patch(SchedulerController.updateScheduler);
 
 router
 	.route('/')
 	.all(VerifyAccount, VerifyDevice)
 	.get(SchedulerController.allSchedulers)
-	.all(PaymentValidator.isPseudoSubscribed)
+	.all(PaymentValidator.isSubscribed)
 	.all(CreateSchedulerValidator)
 	.post(SchedulerController.createScheduler);
 

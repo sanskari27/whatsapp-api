@@ -1,5 +1,6 @@
 import { Flex, Image, Progress, Text } from '@chakra-ui/react';
 import { LOGO } from '../../../assets/Images';
+import { Colors } from '../../../config/const';
 
 export default function LoadingPage() {
 	return (
@@ -24,9 +25,9 @@ export default function LoadingPage() {
 			>
 				<Flex justifyContent={'center'} alignItems={'center'} direction={'column'} gap={'3rem'}>
 					<Flex justifyContent={'center'} alignItems={'center'} width={'full'} gap={'1rem'}>
-						<Image src={LOGO} width={'48px'} className='shadow-lg rounded-full' />
-						<Text fontSize={'lg'} fontWeight='bold'>
-							WhatsLeads
+						<Image src={LOGO} width={'48px'} />
+						<Text fontSize={'lg'} fontWeight='bold' color={Colors.ACCENT_DARK}>
+							wpautomation.tech
 						</Text>
 					</Flex>
 					<Progress size='xs' isIndeterminate width={'150%'} rounded={'lg'} colorScheme='gray' />

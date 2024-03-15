@@ -1,8 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
-import { APIError, USER_ERRORS } from '../../errors';
-import { WhatsappProvider } from '../../provider/whatsapp_provider';
 import ContactCardService from '../../services/contact-card';
-import { Respond, validatePhoneNumber } from '../../utils/ExpressUtils';
+import { Respond } from '../../utils/ExpressUtils';
 import { CreateContactValidationResult } from './contact-card.validator';
 
 async function listContactCards(req: Request, res: Response, next: NextFunction) {
@@ -18,13 +16,6 @@ async function listContactCards(req: Request, res: Response, next: NextFunction)
 }
 
 async function createContactCard(req: Request, res: Response, next: NextFunction) {
-	const { account, client_id } = req.locals;
-
-	const whatsapp = WhatsappProvider.getInstance(account, client_id);
-	if (!whatsapp.isReady()) {
-		return next(new APIError(USER_ERRORS.WHATSAPP_NOT_READY));
-	}
-
 	const data = req.locals.data as CreateContactValidationResult;
 	const service = new ContactCardService(req.locals.account);
 	const details: {
@@ -45,22 +36,34 @@ async function createContactCard(req: Request, res: Response, next: NextFunction
 	};
 
 	if (data.contact_details_phone) {
-		details.contact_details_phone = await getNumberDetails(whatsapp, data.contact_details_phone);
+		details.contact_details_phone = await getNumberDetails(data.contact_details_phone);
 	}
 
 	if (data.contact_details_work) {
-		details.contact_details_work = await getNumberDetails(whatsapp, data.contact_details_work);
+		details.contact_details_work = await getNumberDetails(data.contact_details_work);
 	}
 
 	for (const number of data.contact_details_other) {
-		const detail = await getNumberDetails(whatsapp, number);
+		const detail = await getNumberDetails(number);
 		details.contact_details_other.push(detail);
 	}
 	const contact_card = await service.createContactCard({
-		...data,
-		contact_details_phone: details.contact_details_phone,
-		contact_details_work: details.contact_details_work,
-		contact_details_other: details.contact_details_other,
+		first_name: data.first_name,
+		middle_name: data.middle_name,
+		last_name: data.last_name,
+		title: data.title,
+		organization: data.organization,
+		email_personal: data.email_personal,
+		email_work: data.email_work,
+		links: data.links,
+		street: data.street,
+		city: data.city,
+		state: data.state,
+		country: data.country,
+		pincode: data.pincode,
+		contact_phone: details.contact_details_phone,
+		contact_work: details.contact_details_work,
+		contact_other: details.contact_details_other,
 	});
 
 	return Respond({
@@ -73,13 +76,6 @@ async function createContactCard(req: Request, res: Response, next: NextFunction
 }
 
 async function updateContactCard(req: Request, res: Response, next: NextFunction) {
-	const { account, client_id } = req.locals;
-
-	const whatsapp = WhatsappProvider.getInstance(account, client_id);
-	if (!whatsapp.isReady()) {
-		return next(new APIError(USER_ERRORS.WHATSAPP_NOT_READY));
-	}
-
 	const data = req.locals.data as CreateContactValidationResult;
 	const service = new ContactCardService(req.locals.account);
 	const details: {
@@ -100,22 +96,34 @@ async function updateContactCard(req: Request, res: Response, next: NextFunction
 	};
 
 	if (data.contact_details_phone) {
-		details.contact_details_phone = await getNumberDetails(whatsapp, data.contact_details_phone);
+		details.contact_details_phone = await getNumberDetails(data.contact_details_phone);
 	}
 
 	if (data.contact_details_work) {
-		details.contact_details_work = await getNumberDetails(whatsapp, data.contact_details_work);
+		details.contact_details_work = await getNumberDetails(data.contact_details_work);
 	}
 
 	for (const number of data.contact_details_other) {
-		const detail = await getNumberDetails(whatsapp, number);
+		const detail = await getNumberDetails(number);
 		details.contact_details_other.push(detail);
 	}
 	const contact_card = await service.updateContactCard(req.locals.id, {
-		...data,
-		contact_details_phone: details.contact_details_phone,
-		contact_details_work: details.contact_details_work,
-		contact_details_other: details.contact_details_other,
+		first_name: data.first_name,
+		middle_name: data.middle_name,
+		last_name: data.last_name,
+		title: data.title,
+		organization: data.organization,
+		email_personal: data.email_personal,
+		email_work: data.email_work,
+		links: data.links,
+		street: data.street,
+		city: data.city,
+		state: data.state,
+		country: data.country,
+		pincode: data.pincode,
+		contact_phone: details.contact_details_phone,
+		contact_work: details.contact_details_work,
+		contact_other: details.contact_details_other,
 	});
 
 	return Respond({
@@ -145,23 +153,10 @@ const ContactCardController = {
 
 export default ContactCardController;
 
-async function getNumberDetails(whatsapp: WhatsappProvider, phone: string) {
+async function getNumberDetails(phone: string) {
 	const number = phone.startsWith('+') ? phone.substring(1) : phone;
-	if (!validatePhoneNumber(number)) {
-		return {
-			contact_number: `+${number}`,
-		};
-	} else {
-		const numberId = await whatsapp.getClient().getNumberId(number);
-		if (numberId) {
-			return {
-				contact_number: `+${numberId.user}`,
-				whatsapp_id: numberId.user,
-			};
-		} else {
-			return {
-				contact_number: `+${number}`,
-			};
-		}
-	}
+	return {
+		contact_number: `+${number}`,
+		whatsapp_id: number,
+	};
 }

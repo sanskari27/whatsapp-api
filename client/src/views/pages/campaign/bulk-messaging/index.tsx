@@ -32,9 +32,10 @@ import {
 	setStartTime,
 	setStateDate,
 } from '../../../../store/reducers/SchedulerReducer';
-import CampaignDetails from './campaign-details.component';
+import SubscriptionPopup from '../../../components/subscription-alert';
 import { DelayInput, TimeInput } from '../components/inputs.component';
 import MessageContent from '../components/message-content.component';
+import CampaignDetails from './campaign-details.component';
 
 export default function BulkMessaging() {
 	const dispatch = useDispatch();
@@ -138,6 +139,7 @@ export default function BulkMessaging() {
 	return (
 		<Flex direction={'column'} padding={'1rem'} justifyContent={'start'}>
 			<Heading color={Colors.PRIMARY_DARK}>Create a new campaign</Heading>
+			<SubscriptionPopup />
 
 			<Flex direction={'column'} marginTop={'1rem'} gap='3rem' maxWidth={'800px'}>
 				<CampaignDetails fetchRecipients={fetchRecipients} />

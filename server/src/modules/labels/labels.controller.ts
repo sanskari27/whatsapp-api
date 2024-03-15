@@ -139,12 +139,12 @@ async function exportLabels(req: Request, res: Response, next: NextFunction) {
 
 		taskService.markCompleted(task_id, file_name);
 		SocketServerProvider.attachedSockets
-			.get(account.phone)
+			.get(account.username)
 			?.emit(SOCKET_RESPONSES.TASK_COMPLETED, task_id.toString());
 	} catch (err) {
 		taskService.markFailed(task_id);
 		SocketServerProvider.attachedSockets
-			.get(account.phone)
+			.get(account.username)
 			?.emit(SOCKET_RESPONSES.TASK_FAILED, task_id.toString());
 	}
 }

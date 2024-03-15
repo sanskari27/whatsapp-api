@@ -86,9 +86,9 @@ const ContactDetailsDialog = () => {
 		pincode,
 		state,
 		street,
-		contact_details_other,
-		contact_details_phone,
-		contact_details_work,
+		contact_other,
+		contact_phone,
+		contact_work,
 		links,
 	} = selectedCard;
 
@@ -109,22 +109,18 @@ const ContactDetailsDialog = () => {
 		dispatch(setError(''));
 		dispatch(savingContactCard());
 		const details = {
-			contact_details_phone: '',
-			contact_details_work: '',
-			contact_details_other: [] as string[],
+			contact_phone: '',
+			contact_work: '',
+			contact_other: [] as string[],
 		};
-		if (contact_details_phone?.number) {
-			details.contact_details_phone = `${contact_details_phone.country_code ?? '91'}${
-				contact_details_phone.number
-			}`;
+		if (contact_phone?.number) {
+			details.contact_phone = `${contact_phone.country_code ?? '91'}${contact_phone.number}`;
 		}
-		if (contact_details_work?.number) {
-			details.contact_details_work = `${contact_details_work.country_code ?? '91'}${
-				contact_details_work.number
-			}`;
+		if (contact_work?.number) {
+			details.contact_work = `${contact_work.country_code ?? '91'}${contact_work.number}`;
 		}
-		if (contact_details_other?.length) {
-			details.contact_details_other = contact_details_other.map(
+		if (contact_other?.length) {
+			details.contact_other = contact_other.map(
 				(number) => `${number.country_code ?? '91'}${number.number}`
 			);
 		}
@@ -166,7 +162,7 @@ const ContactDetailsDialog = () => {
 		if (type === 'PHONE') {
 			dispatch(
 				setContactNumberPhone({
-					...contact_details_phone,
+					...contact_phone,
 					[key]: value,
 				} as { country_code: string; number: string })
 			);
@@ -174,7 +170,7 @@ const ContactDetailsDialog = () => {
 		if (type === 'WORK') {
 			dispatch(
 				setContactNumberWork({
-					...contact_details_work,
+					...contact_work,
 					[key]: value,
 				} as { country_code: string; number: string })
 			);
@@ -184,7 +180,7 @@ const ContactDetailsDialog = () => {
 			dispatch(
 				setContactNumberOther({
 					index,
-					...contact_details_other?.[index],
+					...contact_other?.[index],
 					[key]: value,
 				} as { index: number; country_code: string; number: string })
 			);
@@ -252,15 +248,15 @@ const ContactDetailsDialog = () => {
 
 							<PhoneNumberInput
 								type='PHONE'
-								number={contact_details_phone?.number}
-								country_code={contact_details_phone?.country_code}
+								number={contact_phone?.number}
+								country_code={contact_phone?.country_code}
 								onTextChange={(type, key, text) => updateContactNumber(type, key, text)}
 								placeholder='Primary Phone Number'
 							/>
 							<PhoneNumberInput
 								type='WORK'
-								number={contact_details_work?.number}
-								country_code={contact_details_work?.country_code}
+								number={contact_work?.number}
+								country_code={contact_work?.country_code}
 								onTextChange={(type, key, text) => updateContactNumber(type, key, text)}
 								placeholder='Work Phone Number'
 							/>
@@ -285,7 +281,7 @@ const ContactDetailsDialog = () => {
 									</Button>
 								</HStack>
 								<Each
-									items={contact_details_other ?? []}
+									items={contact_other ?? []}
 									render={(item, index) => (
 										<PhoneNumberInput
 											remove_icon

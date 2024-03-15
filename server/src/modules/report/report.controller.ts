@@ -7,8 +7,8 @@ import CSVParser from '../../utils/CSVParser';
 import { Respond, RespondCSV } from '../../utils/ExpressUtils';
 
 async function listCampaigns(req: Request, res: Response, next: NextFunction) {
-	const { account, device } = req.locals;
-	const messages = await new CampaignService(account, device).allCampaigns();
+	const { account } = req.locals;
+	const messages = await new CampaignService(account).allCampaigns();
 	return Respond({
 		res,
 		status: 200,
@@ -18,9 +18,9 @@ async function listCampaigns(req: Request, res: Response, next: NextFunction) {
 	});
 }
 async function pauseCampaign(req: Request, res: Response, next: NextFunction) {
-	const { account, device } = req.locals;
+	const { account } = req.locals;
 
-	new CampaignService(account, device).pauseCampaign(req.locals.id);
+	new CampaignService(account).pauseCampaign(req.locals.id);
 
 	return Respond({
 		res,
@@ -29,9 +29,9 @@ async function pauseCampaign(req: Request, res: Response, next: NextFunction) {
 	});
 }
 async function deleteCampaign(req: Request, res: Response, next: NextFunction) {
-	const { account, device } = req.locals;
+	const { account } = req.locals;
 
-	new CampaignService(account, device).deleteCampaign(req.locals.id);
+	new CampaignService(account).deleteCampaign(req.locals.id);
 
 	return Respond({
 		res,
@@ -40,9 +40,9 @@ async function deleteCampaign(req: Request, res: Response, next: NextFunction) {
 	});
 }
 async function resumeCampaign(req: Request, res: Response, next: NextFunction) {
-	const { account, device } = req.locals;
+	const { account } = req.locals;
 
-	new CampaignService(account, device).resumeCampaign(req.locals.id);
+	new CampaignService(account).resumeCampaign(req.locals.id);
 
 	return Respond({
 		res,
@@ -52,10 +52,10 @@ async function resumeCampaign(req: Request, res: Response, next: NextFunction) {
 }
 
 async function generateReport(req: Request, res: Response, next: NextFunction) {
-	const { account, device } = req.locals;
+	const { account } = req.locals;
 
 	try {
-		const scheduler = new CampaignService(account, device);
+		const scheduler = new CampaignService(account);
 		const reports = await scheduler.generateReport(req.locals.id);
 		return RespondCSV({
 			res,

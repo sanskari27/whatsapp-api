@@ -72,6 +72,9 @@ export function generateClientID() {
 export function generateBatchID() {
 	return crypto.randomBytes(6).toString('hex');
 }
+export function randomDevice<T>(devices: T[]): T {
+	return devices[Math.floor(Math.random() * devices.length)];
+}
 
 export function generateInvoiceID(id: string) {
 	// 23-24/Saas/000001
@@ -139,6 +142,10 @@ export function validatePhoneNumber(num: string) {
 
 export async function generateHashedPassword(password: string) {
 	return await bcrypt.hash(password, SALT_FACTOR);
+}
+
+export async function comparePasswords(password: string, encrypted: string) {
+	return await bcrypt.compare(password, encrypted);
 }
 
 export function generateErrorMessage(issues: ZodIssue[]) {

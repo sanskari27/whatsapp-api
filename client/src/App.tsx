@@ -42,6 +42,7 @@ const NetworkError = lazy(() => import('./views/pages/network-error'));
 
 function App() {
 	useUserData();
+
 	return (
 		<Flex minHeight={'100vh'} width={'100vw'} className='bg-background'>
 			<Router>

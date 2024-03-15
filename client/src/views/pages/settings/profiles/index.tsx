@@ -6,11 +6,15 @@ import {
 	CardFooter,
 	Divider,
 	Flex,
+	FormControl,
+	FormLabel,
 	HStack,
 	Heading,
 	Image,
 	Stack,
+	Switch,
 	Text,
+	VStack,
 	Wrap,
 	WrapItem,
 } from '@chakra-ui/react';
@@ -21,7 +25,11 @@ import { Colors } from '../../../../config/const';
 import useProfile from '../../../../hooks/useProfile';
 import AuthService from '../../../../services/auth.service';
 import { StoreNames, StoreState } from '../../../../store';
-import { removeProfile, setUserDetails } from '../../../../store/reducers/UserDetailsReducers';
+import {
+	removeProfile,
+	setUserConfig,
+	setUserDetails,
+} from '../../../../store/reducers/UserDetailsReducers';
 import Each from '../../../../utils/Each';
 import AddDeviceDialog, { AddDeviceDialogHandle } from './components/AddDeviceDialog';
 
@@ -29,7 +37,11 @@ export default function Profiles() {
 	const dispatch = useDispatch();
 	const addProfileRef = useRef<AddDeviceDialogHandle | null>(null);
 	const { addDevice, isAuthenticating, qrCode, status } = useProfile();
-	const { max_profiles, profiles } = useSelector((state: StoreState) => state[StoreNames.USER]);
+	const {
+		max_profiles,
+		profiles,
+		ui_config: { load_preview, confirmation_required },
+	} = useSelector((state: StoreState) => state[StoreNames.USER]);
 	const empty_profiles_count = Math.max(0, Math.min(max_profiles - profiles.length, max_profiles));
 
 	const handleRemove = async (id: string) => {
@@ -71,7 +83,32 @@ export default function Profiles() {
 
 	return (
 		<Flex direction={'column'} padding={'1rem'} justifyContent={'start'}>
-			<Heading color={Colors.PRIMARY_DARK}>Setting</Heading>
+			<Heading color={Colors.PRIMARY_DARK}>Settings</Heading>
+			<Heading color={Colors.PRIMARY_DARK} size={'md'} marginTop={'3rem'}>
+				Preferences
+			</Heading>
+			<VStack alignItems={'stretch'}>
+				<FormControl mt={'1rem'} gap={'0.5rem'} display={'flex'}>
+					<FormLabel htmlFor='auto-load' mb='0' mr='0'>
+						Auto load Attachments
+					</FormLabel>
+					<Switch
+						id='auto-load'
+						isChecked={load_preview}
+						onChange={(e) => dispatch(setUserConfig({ load_preview: e.target.checked }))}
+					/>
+				</FormControl>
+				<FormControl mt={'1rem'} gap={'0.5rem'} display={'flex'}>
+					<FormLabel htmlFor='confirmation' mb='0' mr='0'>
+						Ask for Confirmation
+					</FormLabel>
+					<Switch
+						id='confirmation'
+						isChecked={confirmation_required}
+						onChange={(e) => dispatch(setUserConfig({ confirmation_required: e.target.checked }))}
+					/>
+				</FormControl>
+			</VStack>
 			<Heading color={Colors.PRIMARY_DARK} size={'md'} marginTop={'3rem'}>
 				Whatsapp Devices{' '}
 			</Heading>

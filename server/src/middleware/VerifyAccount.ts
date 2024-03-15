@@ -10,7 +10,6 @@ import {
 } from '../config/const';
 import { APIError, USER_ERRORS } from '../errors';
 import { AccountService, AccountServiceFactory } from '../services/account';
-import { idValidator } from '../utils/ExpressUtils';
 
 const JWT_EXPIRE_TIME = 3 * 60 * 1000;
 const REFRESH_EXPIRE_TIME = 30 * 24 * 60 * 60 * 1000;
@@ -35,8 +34,7 @@ export default async function VerifyAccount(req: Request, res: Response, next: N
 		if (!service) {
 			return next(new APIError(USER_ERRORS.AUTHORIZATION_ERROR));
 		}
-		req.locals.accountService = service;
-		req.locals.account = service.account;
+		req.locals.account = service;
 
 		res.cookie(JWT_COOKIE, service.token, {
 			sameSite: 'strict',
@@ -45,7 +43,7 @@ export default async function VerifyAccount(req: Request, res: Response, next: N
 			secure: IS_PRODUCTION,
 		});
 		const t = service.refreshToken;
-		saveRefreshTokens(t, service.id);
+		saveRefreshTokens(t, service.username);
 		res.cookie(JWT_REFRESH_COOKIE, t, {
 			sameSite: 'strict',
 			expires: new Date(Date.now() + REFRESH_EXPIRE_TIME),
@@ -56,15 +54,10 @@ export default async function VerifyAccount(req: Request, res: Response, next: N
 		next();
 		return;
 	}
-	const [isIDValid, valid_id] = idValidator(id);
 
-	if (!isIDValid) {
-		return next(new APIError(USER_ERRORS.AUTHORIZATION_ERROR));
-	}
 	try {
-		const service = await AccountServiceFactory.createByID(valid_id);
-		req.locals.accountService = service;
-		req.locals.account = service.account;
+		const service = await AccountServiceFactory.findByUsername(id);
+		req.locals.account = service;
 
 		res.cookie(JWT_COOKIE, service.token, {
 			sameSite: 'strict',
@@ -80,7 +73,7 @@ export default async function VerifyAccount(req: Request, res: Response, next: N
 
 export function verifyAccess(access_level: AccessLevel) {
 	return (req: Request, res: Response, next: NextFunction) => {
-		if (req.locals.accountService.access_level === access_level) {
+		if (req.locals.account.user_type === access_level) {
 			next();
 		} //TODO
 		return next(new APIError(USER_ERRORS.ACCESS_LEVEL_LOW));

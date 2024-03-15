@@ -9,7 +9,7 @@ const router = express.Router();
 
 router
 	.route('/')
-	.all(VerifyAccount, VerifyDevice, PaymentValidator.isPseudoSubscribed, ScheduleMessageValidator)
+	.all(VerifyAccount, VerifyDevice, PaymentValidator.isSubscribed, ScheduleMessageValidator)
 	.post(MessageController.scheduleMessage);
 
 export default router;

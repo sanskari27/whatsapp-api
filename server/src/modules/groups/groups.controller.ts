@@ -51,7 +51,7 @@ async function groups(req: Request, res: Response, next: NextFunction) {
 			async () => await whatsappUtils.getContacts()
 		);
 
-		const merged_groups = await new GroupMergeService(account, device).listGroups();
+		const merged_groups = await new GroupMergeService(account).listGroups();
 
 		return Respond({
 			res,
@@ -77,7 +77,7 @@ async function refreshGroup(req: Request, res: Response, next: NextFunction) {
 	try {
 		const contacts = await whatsappUtils.getContacts();
 		await saveToCache(CACHE_TOKEN_GENERATOR.CONTACTS(device._id), contacts);
-		const merged_groups = await new GroupMergeService(account, device).listGroups();
+		const merged_groups = await new GroupMergeService(account).listGroups();
 
 		return Respond({
 			res,
@@ -127,7 +127,7 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 		status: 201,
 	});
 	try {
-		const groupMergeService = new GroupMergeService(account, device);
+		const groupMergeService = new GroupMergeService(account);
 		const merged_group_ids = group_ids.filter((id) => idValidator(id)[0]);
 		const merged_group_whatsapp_ids = await groupMergeService.extractWhatsappGroupIds(
 			merged_group_ids
@@ -209,12 +209,12 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 		taskService.markCompleted(task_id, file_name);
 
 		SocketServerProvider.attachedSockets
-			.get(account.phone)
+			.get(account.username)
 			?.emit(SOCKET_RESPONSES.TASK_COMPLETED, task_id.toString());
 	} catch (err) {
 		taskService.markFailed(task_id);
 		SocketServerProvider.attachedSockets
-			.get(account.phone)
+			.get(account.username)
 			?.emit(SOCKET_RESPONSES.TASK_FAILED, task_id.toString());
 	}
 }
@@ -263,7 +263,7 @@ async function createGroup(req: Request, res: Response, next: NextFunction) {
 }
 
 async function mergeGroup(req: Request, res: Response, next: NextFunction) {
-	const { account, client_id, device } = req.locals;
+	const { account, client_id } = req.locals;
 
 	const whatsapp = WhatsappProvider.getInstance(account, client_id);
 
@@ -285,7 +285,7 @@ async function mergeGroup(req: Request, res: Response, next: NextFunction) {
 		)
 	).filter((chat) => chat !== null) as string[];
 
-	const group = await new GroupMergeService(account, device).mergeGroup(group_name, chat_ids, {
+	const group = await new GroupMergeService(account).mergeGroup(group_name, chat_ids, {
 		group_reply,
 		private_reply,
 	});
@@ -300,7 +300,7 @@ async function mergeGroup(req: Request, res: Response, next: NextFunction) {
 }
 
 async function updateMergedGroup(req: Request, res: Response, next: NextFunction) {
-	const { account, client_id, device } = req.locals;
+	const { account, client_id } = req.locals;
 
 	const { group_ids, group_name, group_reply, private_reply } = req.locals
 		.data as MergeGroupValidationResult;
@@ -321,7 +321,7 @@ async function updateMergedGroup(req: Request, res: Response, next: NextFunction
 		)
 	).filter((chat) => chat !== null) as string[];
 
-	const group = await new GroupMergeService(account, device).updateGroup(
+	const group = await new GroupMergeService(account).updateGroup(
 		req.locals.id,
 		{
 			group_ids: chat_ids,
@@ -343,7 +343,7 @@ async function updateMergedGroup(req: Request, res: Response, next: NextFunction
 }
 
 async function mergedGroups(req: Request, res: Response, next: NextFunction) {
-	const { account, client_id, device } = req.locals;
+	const { account, client_id } = req.locals;
 
 	const whatsapp = WhatsappProvider.getInstance(account, client_id);
 	if (!whatsapp.isReady()) {
@@ -351,7 +351,7 @@ async function mergedGroups(req: Request, res: Response, next: NextFunction) {
 	}
 
 	try {
-		const merged_groups = await new GroupMergeService(account, device).listGroups();
+		const merged_groups = await new GroupMergeService(account).listGroups();
 
 		return Respond({
 			res,
@@ -366,9 +366,9 @@ async function mergedGroups(req: Request, res: Response, next: NextFunction) {
 }
 
 async function deleteMergedGroup(req: Request, res: Response, next: NextFunction) {
-	const { account, device } = req.locals;
+	const { account } = req.locals;
 
-	new GroupMergeService(account, device).deleteGroup(req.locals.id);
+	new GroupMergeService(account).deleteGroup(req.locals.id);
 
 	return Respond({
 		res,

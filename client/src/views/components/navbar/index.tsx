@@ -69,9 +69,9 @@ export default function Navbar() {
 			background={Colors.BACKGROUND_LIGHT}
 		>
 			<Flex gap='0.5rem' alignItems={'center'}>
-				<Image src={LOGO} width={'36px'} className='shadow-lg rounded-full' />
+				<Image src={LOGO} width={'36px'} />
 				<Text fontWeight={'bold'} color={Colors.ACCENT_DARK}>
-					whatsleads.in
+					wpautomation.tech
 				</Text>
 			</Flex>
 			<Flex alignItems={'center'} gap={'1rem'}>

@@ -30,6 +30,7 @@ import {
 	setSelectedScheduler,
 	setStartTime,
 } from '../../../../store/reducers/SchedulerReducer';
+import SubscriptionPopup from '../../../components/subscription-alert';
 import { TimeInput } from '../components/inputs.component';
 import MessageContent from '../components/message-content.component';
 import CampaignDetails from './campaign-details.component';
@@ -146,7 +147,7 @@ export default function DailyMessenger() {
 	return (
 		<Flex direction={'column'} padding={'1rem'} justifyContent={'start'}>
 			<Heading color={Colors.PRIMARY_DARK}>Setup a daily messenger</Heading>
-
+			<SubscriptionPopup />
 			<Flex direction={'column'} marginTop={'1rem'} gap='2rem' maxWidth={'800px'}>
 				<CampaignDetails fetchRecipients={fetchRecipients} csv_only />
 				<MessageContent />

@@ -1,41 +1,75 @@
-import { Types } from 'mongoose';
+import { $Enums } from '@prisma/client';
+import jwt from 'jsonwebtoken';
 import { getRefreshTokens, removeRefreshTokens } from '../../config/cache';
-import { ERRORS, InternalError, USER_ERRORS } from '../../errors';
-import { AccountDB, AccountLinkDB, WADeviceDB } from '../../repository/account';
-import { IAccount, IWADevice } from '../../types/account';
+import { JWT_EXPIRE, JWT_SECRET, REFRESH_EXPIRE, REFRESH_SECRET } from '../../config/const';
+import { accountDB, userDevicesDB } from '../../config/postgres';
+import { InternalError, USER_ERRORS } from '../../errors';
 import DateUtils from '../../utils/DateUtils';
-import { idValidator } from '../../utils/ExpressUtils';
 import AccountServiceFactory from './AccountServiceFactory';
 
 export default class AccountService {
-	private _account: IAccount;
+	private _username: string;
+	private _phone: string | null;
+	private _name: string | null;
+	private _avatar: string | null;
+	private _user_type: string;
+	private _max_devices: number;
+	private _subscription_expiry: Date;
 
-	public constructor(account: IAccount) {
-		this._account = account;
+	public constructor(
+		username: string,
+		details: {
+			phone: string | null;
+			name: string | null;
+			avatar: string | null;
+			user_type: $Enums.UserType;
+			max_devices: number;
+			subscription_expiry: Date;
+		}
+	) {
+		this._username = username;
+		this._phone = details.phone;
+		this._name = details.name;
+		this._avatar = details.avatar;
+		this._user_type = details.user_type;
+		this._max_devices = details.max_devices;
+		this._subscription_expiry = details.subscription_expiry;
 	}
 
-	public get id() {
-		return this._account._id;
+	public get username() {
+		return this._username;
 	}
 
-	public get name() {
-		return this._account.name;
+	public get user_type() {
+		return this._user_type;
 	}
 
-	public get account() {
-		return this._account;
+	public get max_devices() {
+		return this._max_devices;
 	}
 
-	public get access_level() {
-		return this._account.access_level;
+	public get details() {
+		return {
+			username: this._username,
+			phone: this._phone,
+			name: this._name,
+			avatar: this._avatar,
+			user_type: this._user_type,
+			max_devices: this._max_devices,
+			subscription_expiry: this._subscription_expiry,
+		};
 	}
 
 	public get token() {
-		return this._account.getSignedToken();
+		return jwt.sign({ id: this._username }, JWT_SECRET, {
+			expiresIn: JWT_EXPIRE,
+		});
 	}
 
 	public get refreshToken() {
-		return this._account.getRefreshToken();
+		return jwt.sign({ id: this._username }, REFRESH_SECRET, {
+			expiresIn: REFRESH_EXPIRE,
+		});
 	}
 
 	static async logout(refreshToken: string) {
@@ -46,190 +80,130 @@ export default class AccountService {
 		}
 	}
 
-	async isSubscribed(deviceID: Types.ObjectId | null) {
-		const isPaymentValid = this._account.subscription_expiry
-			? DateUtils.getMoment(this._account.subscription_expiry).isAfter(DateUtils.getMomentNow())
-			: false;
-
-		let isNew = false;
-
-		if (deviceID) {
-			const device = await WADeviceDB.findById(deviceID);
-			isNew = device
-				? DateUtils.getMoment(device.createdAt).add(28, 'days').isAfter(DateUtils.getMomentNow())
-				: false;
-		}
+	async isSubscribed() {
+		const isPaymentValid = DateUtils.getMoment(this._subscription_expiry).isAfter(
+			DateUtils.getMomentNow()
+		);
 
 		return {
 			isSubscribed: isPaymentValid,
-			isNew: isNew,
 		};
 	}
 
 	static async isValidAuth(refreshToken: string): Promise<AccountService | null> {
 		const refreshTokens = await getRefreshTokens();
 
-		const [isIDValid, id] = idValidator(refreshTokens[refreshToken] ?? '');
-
 		try {
-			if (!isIDValid) {
-				throw new Error('Invalid ID');
-			}
-			return await AccountServiceFactory.createByID(id);
+			const username = refreshTokens[refreshToken];
+			return await AccountServiceFactory.findByUsername(username);
 		} catch (e) {
 			return null;
 		}
 	}
 
-	async isValidDevice(device_id: string) {
-		const link = await AccountLinkDB.findOne({
-			account: this._account._id,
-			client_id: device_id,
-		}).populate('device');
+	async isValidDevice(client_id: string) {
+		const link = await userDevicesDB.findUnique({
+			where: {
+				client_id: client_id,
+			},
+		});
 
 		if (!link) {
 			return null;
 		}
 
 		return {
-			device: link.device,
+			device: link.phone,
 			client_id: link.client_id,
 		};
 	}
 
 	async deviceLogout(client_id: string) {
-		await AccountLinkDB.updateOne(
-			{ client_id },
-			{
-				client_id: '',
-			}
-		);
+		await userDevicesDB.delete({ where: { client_id } });
 	}
 
 	async listProfiles() {
-		const account_links = await AccountLinkDB.find({ account: this._account._id }).populate(
-			'device'
-		);
+		const account_links = await userDevicesDB.findMany({
+			where: { username: this._username },
+			include: { user: true, device: true },
+		});
+
 		return account_links.map((link) => {
-			const { name, phone, userType, business_details: _d } = link.device;
-			const business_details = _d ?? {};
 			return {
-				phone,
-				name,
-				userType,
+				phone: link.phone,
+				name: link.user.name,
+				userType: link.user.user_type,
 				business_details: {
-					description: business_details.description ?? '',
-					email: business_details.email ?? '',
-					websites: business_details.websites ?? [],
-					latitude: business_details.latitude ?? 0,
-					longitude: business_details.longitude ?? 0,
-					address: business_details.address ?? '',
+					description: link.device.description,
+					email: link.device.email,
+					websites: link.device.websites,
+					latitude: link.device.latitude,
+					longitude: link.device.longitude,
+					address: link.device.address,
 				},
-				device_created_at: DateUtils.getMoment(link.device.createdAt),
+				device_created_at: DateUtils.getMoment(link.device.first_login),
 				client_id: link.client_id,
 			};
 		});
 	}
 
 	async canAddProfile() {
-		const listed_count = await AccountLinkDB.countDocuments({ account: this._account._id });
+		const listed_count = await userDevicesDB.count({ where: { username: this._username } });
 
-		if (listed_count >= this._account.max_devices) {
-			return false;
-		}
-		return true;
+		return listed_count < this._max_devices;
 	}
 
-	async addProfile(device: IWADevice, c_id: string) {
-		const listed_count = await AccountLinkDB.countDocuments({ account: this._account._id });
-		console.log(listed_count);
-		console.log(this._account.max_devices);
-
-		if (listed_count >= this._account.max_devices) {
+	async addProfile(phone: string, c_id: string) {
+		if (!this.canAddProfile()) {
 			throw new InternalError(USER_ERRORS.MAX_DEVICE_LIMIT_REACHED);
 		}
 
-		await AccountLinkDB.create({
-			client_id: c_id,
-			account: this._account,
-			device: device,
+		await userDevicesDB.create({
+			data: {
+				client_id: c_id,
+				username: this._username,
+				phone,
+			},
 		});
 	}
 
 	async removeDevice(client_id: string) {
-		try {
-			await AccountLinkDB.deleteOne({ account: this._account._id, client_id });
-			return true;
-		} catch (e) {
-			return false;
-		}
+		await userDevicesDB.delete({ where: { client_id } });
 	}
 
 	async addMonthToExpiry(months: number = 1) {
-		if (this._account.subscription_expiry) {
-			if (
-				DateUtils.getMoment(this._account.subscription_expiry).isAfter(DateUtils.getMomentNow())
-			) {
-				this._account.subscription_expiry = DateUtils.getMoment(this._account.subscription_expiry)
+		if (this._subscription_expiry) {
+			if (DateUtils.getMoment(this._subscription_expiry).isAfter(DateUtils.getMomentNow())) {
+				this._subscription_expiry = DateUtils.getMoment(this._subscription_expiry)
 					.add(months, 'months')
 					.toDate();
 			} else {
-				this._account.subscription_expiry = DateUtils.getMomentNow().add(months, 'months').toDate();
+				this._subscription_expiry = DateUtils.getMomentNow().add(months, 'months').toDate();
 			}
 		} else {
-			this._account.subscription_expiry = DateUtils.getMomentNow().add(months, 'months').toDate();
+			this._subscription_expiry = DateUtils.getMomentNow().add(months, 'months').toDate();
 		}
 
-		await this._account.save();
+		await accountDB.update({
+			where: { username: this.username },
+			data: {
+				subscription_expiry: this._subscription_expiry,
+			},
+		});
 	}
 
 	async setExpiry(date: moment.Moment) {
-		if (this._account.subscription_expiry) {
-			if (DateUtils.getMoment(this._account.subscription_expiry).isBefore(date)) {
-				this._account.subscription_expiry = date.toDate();
-				await this._account.save();
-			}
-		} else {
-			this._account.subscription_expiry = date.toDate();
-			await this._account.save();
-		}
+		this._subscription_expiry = date.toDate();
+		await accountDB.update({
+			where: { username: this.username },
+			data: {
+				subscription_expiry: this._subscription_expiry,
+			},
+		});
 	}
 
 	static async isUsernameTaken(username: string) {
-		const exists = await AccountDB.findOne({ username });
+		const exists = await accountDB.findUnique({ where: { username } });
 		return exists !== null;
-	}
-
-	static async createAccount({
-		name,
-		phone,
-		username,
-		password,
-	}: {
-		name: string;
-		phone: string;
-		username: string;
-		password: string;
-	}) {
-		const exists_username = await AccountDB.findOne({ username });
-		const exists_phone = await AccountDB.findOne({ phone });
-		if (exists_username) {
-			throw new InternalError(ERRORS.USER_ERRORS.USERNAME_ALREADY_EXISTS);
-		} else if (exists_phone) {
-			throw new InternalError(ERRORS.USER_ERRORS.PHONE_ALREADY_EXISTS);
-		}
-
-		try {
-			const account = await AccountDB.create({
-				username,
-				phone,
-				name,
-				password,
-			});
-
-			return new AccountService(account);
-		} catch (err) {
-			throw new InternalError(ERRORS.USER_ERRORS.USERNAME_ALREADY_EXISTS);
-		}
 	}
 }

@@ -28,13 +28,13 @@ async function downloadTask(req: Request, res: Response, next: NextFunction) {
 		if (result_type === TASK_RESULT_TYPE.CSV) {
 			return RespondCSV({
 				res,
-				filename: data.substring(0, data.length - 4),
+				filename: data!.substring(0, data!.length - 4),
 				data: await FileUtils.readFile(file_path),
 			});
 		} else if (result_type === TASK_RESULT_TYPE.VCF) {
 			return RespondVCF({
 				res,
-				filename: data.substring(0, data.length - 4),
+				filename: data!.substring(0, data!.length - 4),
 				data: await FileUtils.readFile(file_path),
 			});
 		}

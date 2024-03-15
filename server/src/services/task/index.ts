@@ -1,20 +1,19 @@
-import { Types } from 'mongoose';
-import { TASK_RESULT_TYPE, TASK_STATUS, TASK_TYPE } from '../../config/const';
+import { TASK_RESULT_TYPE, TASK_TYPE } from '../../config/const';
+import { taskDB } from '../../config/postgres';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
-import TaskDB from '../../repository/tasks';
-import { IAccount } from '../../types/account';
+import { AccountService } from '../account';
 
 export default class TaskService {
-	private user: IAccount;
+	private _user: AccountService;
 
-	public constructor(user: IAccount) {
-		this.user = user;
+	public constructor(user: AccountService) {
+		this._user = user;
 	}
 
 	async listTasks() {
-		const tasks = await TaskDB.find({ user: this.user._id });
+		const tasks = await taskDB.findMany({ where: { username: this._user.username } });
 		return tasks.map((task) => ({
-			id: task._id as string,
+			id: task.id,
 			type: task.type,
 			description: task.description,
 			status: task.status,
@@ -28,52 +27,50 @@ export default class TaskService {
 		response_type: TASK_RESULT_TYPE,
 		{ description }: { description?: string } = {}
 	) {
-		const task = await TaskDB.create({
-			user: this.user,
-			type,
-			data_result_type: response_type,
-			description,
+		const task = await taskDB.create({
+			data: {
+				username: this._user.username,
+				type,
+				data_result_type: response_type,
+				description,
+			},
 		});
-		return task._id as Types.ObjectId;
+		return task.id;
 	}
 
-	async markCompleted(id: Types.ObjectId, data?: string) {
-		await TaskDB.updateOne(
-			{
-				_id: id,
-			},
-			{
+	async markCompleted(id: string, data?: string) {
+		await taskDB.update({
+			where: { id },
+			data: {
 				data,
-				status: TASK_STATUS.COMPLETED,
-			}
-		);
-	}
-
-	async markFailed(id: Types.ObjectId) {
-		await TaskDB.updateOne(
-			{
-				_id: id,
+				status: 'COMPLETED',
 			},
-			{
-				status: TASK_STATUS.FAILED,
-			}
-		);
+		});
 	}
 
-	async getFile(id: Types.ObjectId) {
-		const task = await TaskDB.findById(id);
-		if (!task || ![TASK_RESULT_TYPE.CSV, TASK_RESULT_TYPE.VCF].includes(task.data_result_type)) {
+	async markFailed(id: string) {
+		await taskDB.update({
+			where: { id },
+			data: {
+				status: 'FAILED',
+			},
+		});
+	}
+
+	async getFile(id: string) {
+		const task = await taskDB.findUnique({ where: { id } });
+		if (!task || !['VCF', 'CSV'].includes(task.data_result_type)) {
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
 		}
-		return { data: task.data, result_type: task.data_result_type, id: task._id };
+		return { data: task.data, result_type: task.data_result_type, id: task.id };
 	}
 
-	async deleteTask(id: Types.ObjectId) {
-		const task = await TaskDB.findById(id);
+	async deleteTask(id: string) {
+		const task = await taskDB.findUnique({ where: { id } });
 		if (!task) {
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
 		}
-		await TaskDB.deleteOne({ _id: id });
+		await taskDB.delete({ where: { id } });
 		return (
 			id +
 			(task.data_result_type === TASK_RESULT_TYPE.VCF

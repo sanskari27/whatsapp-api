@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from 'express';
+import { z } from 'zod';
 import { APIError } from '../errors';
-import { idValidator } from '../utils/ExpressUtils';
 
 export async function IDValidator(req: Request, res: Response, next: NextFunction) {
-	const [isValid, id] = idValidator(req.params.id);
-
-	if (isValid) {
-		req.locals.id = id;
+	const validator = z.string();
+	const validationResult = validator.safeParse(req.params.id);
+	if (validationResult.success) {
+		req.locals.id = validationResult.data;
 		return next();
 	}
 

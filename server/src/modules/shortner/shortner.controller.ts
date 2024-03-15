@@ -1,8 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
+import { nanoid } from 'nanoid';
 import { SHORTNER_REDIRECT } from '../../config/const';
-import { APIError, COMMON_ERRORS } from '../../errors';
-import ShortnerDB from '../../repository/shortner';
+import { shortnerDB } from '../../config/postgres';
 import { Respond } from '../../utils/ExpressUtils';
+import QRUtils from '../../utils/QRUtils';
 import {
 	CreateLinkValidationResult,
 	CreateWhatsappLinkValidationResult,
@@ -13,10 +14,16 @@ async function createWhatsappLink(req: Request, res: Response, next: NextFunctio
 	const { number, message, title } = req.locals.data as CreateWhatsappLinkValidationResult;
 	const link = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
 
-	const doc = await ShortnerDB.create({
-		title,
-		link,
-		user: req.locals.account,
+	const key = nanoid(6);
+	const qrCodeBuffer = await QRUtils.generateQR(link);
+	const doc = await shortnerDB.create({
+		data: {
+			title,
+			link,
+			username: req.locals.account.username,
+			key,
+			qrString: `data:image/png;base64,${qrCodeBuffer!.toString('base64')}`,
+		},
 	});
 
 	return Respond({
@@ -25,7 +32,7 @@ async function createWhatsappLink(req: Request, res: Response, next: NextFunctio
 		data: {
 			shorten_link: `${SHORTNER_REDIRECT}${doc.key}`,
 			link: doc.link,
-			id: doc._id,
+			id: doc.id,
 			title: doc.title,
 			base64: doc.qrString,
 		},
@@ -35,17 +42,23 @@ async function createWhatsappLink(req: Request, res: Response, next: NextFunctio
 async function createLink(req: Request, res: Response, next: NextFunction) {
 	const { link, title } = req.locals.data as CreateLinkValidationResult;
 
-	const doc = await ShortnerDB.create({
-		link,
-		user: req.locals.account,
-		title,
+	const key = nanoid(6);
+	const qrCodeBuffer = await QRUtils.generateQR(`https://open.whatsleads.in/${key}`);
+	const doc = await shortnerDB.create({
+		data: {
+			title,
+			link,
+			username: req.locals.account.username,
+			key,
+			qrString: `data:image/png;base64,${qrCodeBuffer!.toString('base64')}`,
+		},
 	});
 
 	return Respond({
 		res,
 		status: 200,
 		data: {
-			id: doc._id,
+			id: doc.id,
 			shorten_link: `${SHORTNER_REDIRECT}${doc.key}`,
 			title: doc.title,
 			link: doc.link,
@@ -56,28 +69,33 @@ async function createLink(req: Request, res: Response, next: NextFunction) {
 
 async function updateLink(req: Request, res: Response, next: NextFunction) {
 	const { link, title, number, message } = req.locals.data as UpdateLinkValidationResult;
-	const doc = await ShortnerDB.findOne({
-		_id: req.locals.id,
-		user: req.locals.account,
-	});
-
-	if (!doc) {
-		return next(new APIError(COMMON_ERRORS.NOT_FOUND));
-	}
+	let doc;
 	if (!link) {
-		doc.link = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
-		doc.qrString = '';
+		const _link = `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+		const qrCodeBuffer = await QRUtils.generateQR(_link);
+		doc = await shortnerDB.update({
+			where: { id: req.locals.id },
+			data: {
+				title,
+				link: _link,
+				qrString: `data:image/png;base64,${qrCodeBuffer!.toString('base64')}`,
+			},
+		});
 	} else {
-		doc.link = link;
+		doc = await shortnerDB.update({
+			where: { id: req.locals.id },
+			data: {
+				title,
+				link: link,
+			},
+		});
 	}
-	doc.title = title;
-	await doc.save();
 
 	return Respond({
 		res,
 		status: 200,
 		data: {
-			id: doc._id,
+			id: doc.id,
 			shorten_link: `${SHORTNER_REDIRECT}${doc.key}`,
 			link: doc.link,
 			title: doc.title,
@@ -87,15 +105,9 @@ async function updateLink(req: Request, res: Response, next: NextFunction) {
 }
 
 async function deleteLink(req: Request, res: Response, next: NextFunction) {
-	const doc = await ShortnerDB.findOne({
-		_id: req.locals.id,
-		user: req.locals.account,
+	await shortnerDB.delete({
+		where: { id: req.locals.id },
 	});
-
-	if (!doc) {
-		return next(new APIError(COMMON_ERRORS.NOT_FOUND));
-	}
-	await doc.remove();
 
 	return Respond({
 		res,
@@ -106,7 +118,9 @@ async function deleteLink(req: Request, res: Response, next: NextFunction) {
 
 async function open(req: Request, res: Response, next: NextFunction) {
 	const id = req.params.id;
-	const doc = await ShortnerDB.findOne({ key: id });
+	const doc = await shortnerDB.findUnique({
+		where: { id },
+	});
 	if (!doc) {
 		return res.send();
 	}
@@ -114,10 +128,12 @@ async function open(req: Request, res: Response, next: NextFunction) {
 }
 
 async function listAll(req: Request, res: Response, next: NextFunction) {
-	const docs = await ShortnerDB.find({ user: req.locals.account });
+	const docs = await shortnerDB.findMany({
+		where: { username: req.locals.account.username },
+	});
 
 	const promises = docs.map((doc) => ({
-		id: doc._id,
+		id: doc.id,
 		title: doc.title,
 		shorten_link: `${SHORTNER_REDIRECT}${doc.key}`,
 		link: doc.link,

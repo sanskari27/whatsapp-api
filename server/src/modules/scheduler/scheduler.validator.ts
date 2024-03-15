@@ -1,18 +1,15 @@
 import { NextFunction, Request, Response } from 'express';
-import { Types } from 'mongoose';
 import { z } from 'zod';
 import { APIError } from '../../errors';
+import { TPoll } from '../../types/poll';
 
 export type CreateSchedulerValidationResult = {
-	csv: Types.ObjectId;
+	devices: string[];
+	csv: string;
 	message: string;
-	shared_contact_cards: Types.ObjectId[];
-	attachments: Types.ObjectId[];
-	polls: {
-		title: string;
-		options: string[];
-		isMultiSelect: boolean;
-	}[];
+	contacts: string[];
+	attachments: string[];
+	polls: TPoll[];
 	title: string;
 	description: string;
 	start_from: string;
@@ -21,27 +18,15 @@ export type CreateSchedulerValidationResult = {
 
 export async function CreateSchedulerValidator(req: Request, res: Response, next: NextFunction) {
 	const reqValidator = z.object({
-		csv: z
-			.string()
-			.refine((value) => Types.ObjectId.isValid(value))
-			.transform((value) => new Types.ObjectId(value)),
+		devices: z.string().array().default([]),
+		csv: z.string(),
 		message: z.string().trim().default(''),
 		title: z.string().trim().default(''),
 		description: z.string().trim().default(''),
 		start_from: z.string().trim().default(''),
 		end_at: z.string().trim().default(''),
-		shared_contact_cards: z
-			.string()
-			.array()
-			.default([])
-			.refine((attachments) => !attachments.some((value) => !Types.ObjectId.isValid(value)))
-			.transform((attachments) => attachments.map((value) => new Types.ObjectId(value))),
-		attachments: z
-			.string()
-			.array()
-			.default([])
-			.refine((attachments) => !attachments.some((value) => !Types.ObjectId.isValid(value)))
-			.transform((attachments) => attachments.map((value) => new Types.ObjectId(value))),
+		contacts: z.string().array().default([]),
+		attachments: z.string().array().default([]),
 		polls: z
 			.object({
 				title: z.string(),

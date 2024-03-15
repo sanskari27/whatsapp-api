@@ -13,7 +13,7 @@ function formatMessageText(
 	return _message;
 }
 
-type Attachment = { id: string; caption: string; filename: string; name: string };
+type Attachment = { id: string; caption: string | null; filename: string; name: string };
 
 function formatAttachments(
 	attachments: Attachment[],
@@ -23,15 +23,14 @@ function formatAttachments(
 	}
 ) {
 	return attachments.map((attachment) => {
-		let _caption = attachment.caption;
+		let _caption = attachment.caption ?? '';
 		for (const variable of variables) {
 			const _variable = `{{${variable}}}`;
 			_caption = _caption.replace(new RegExp(_variable, 'g'), extract_from[variable] ?? '');
 		}
 		return {
-			filename: attachment.filename,
+			id: attachment.id,
 			caption: _caption,
-			name: attachment.name,
 		};
 	});
 }

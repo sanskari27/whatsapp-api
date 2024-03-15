@@ -10,12 +10,12 @@ const router = express.Router();
 
 router
 	.route('/:id/responses')
-	.all(VerifyAccount, VerifyDevice, PaymentValidator.isPseudoSubscribed, IDValidator)
+	.all(VerifyAccount, VerifyDevice, PaymentValidator.isSubscribed, IDValidator)
 	.get(BotController.downloadResponses);
 
 router
 	.route('/:id')
-	.all(VerifyAccount, VerifyDevice, PaymentValidator.isPseudoSubscribed, IDValidator)
+	.all(VerifyAccount, VerifyDevice, PaymentValidator.isSubscribed, IDValidator)
 	.get(BotController.botById)
 	.delete(BotController.deleteBot)
 	.put(BotController.toggleActive)
@@ -24,7 +24,7 @@ router
 
 router
 	.route('/')
-	.all(VerifyAccount, VerifyDevice, PaymentValidator.isPseudoSubscribed)
+	.all(VerifyAccount, VerifyDevice, PaymentValidator.isSubscribed)
 	.get(BotController.allBots)
 	.all(CreateBotValidator)
 	.post(BotController.createBot);

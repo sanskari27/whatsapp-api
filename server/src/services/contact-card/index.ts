@@ -1,10 +1,11 @@
-import { Types } from 'mongoose';
+import { contactsDB } from '../../config/postgres';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
-import ContactCardDB from '../../repository/contact-cards';
-import { IAccount } from '../../types/account';
+import QRUtils from '../../utils/QRUtils';
+import VCardBuilder from '../../utils/VCardBuilder';
+import { AccountService } from '../account';
 
 type ContactCardType = {
-	first_name?: string;
+	first_name: string;
 	middle_name?: string;
 	last_name?: string;
 	title?: string;
@@ -17,34 +18,44 @@ type ContactCardType = {
 	state?: string;
 	country?: string;
 	pincode?: string;
-	contact_details_phone?: {
+	contact_phone?: {
 		whatsapp_id?: string;
 		contact_number: string;
 	};
-	contact_details_work?: {
+	contact_work?: {
 		whatsapp_id?: string;
 		contact_number: string;
 	};
-	contact_details_other?: {
+	contact_other?: {
 		whatsapp_id?: string;
 		contact_number: string;
 	}[];
 };
 
 export default class ContactCardService {
-	private user: IAccount;
+	private _user: AccountService;
 
-	public constructor(user: IAccount) {
-		this.user = user;
+	public constructor(user: AccountService) {
+		this._user = user;
 	}
 
 	async createContactCard(details: ContactCardType) {
-		const contactCard = await ContactCardDB.create({
-			user: this.user._id,
-			...details,
+		const vCardString = new VCardBuilder(details).build();
+		const qrCodeBuffer = await QRUtils.generateQR(vCardString);
+
+		const contactCard = await contactsDB.create({
+			data: {
+				...details,
+				username: this._user.username,
+				contact_phone: details.contact_phone,
+				contact_work: details.contact_work,
+				contact_other: details.contact_other,
+				qrString: `data:image/png;base64,${qrCodeBuffer?.toString('base64')}`,
+				vCardString,
+			},
 		});
 		return {
-			id: contactCard._id.toString(),
+			id: contactCard.id,
 			first_name: contactCard.first_name,
 			middle_name: contactCard.middle_name,
 			last_name: contactCard.last_name,
@@ -58,28 +69,32 @@ export default class ContactCardService {
 			state: contactCard.state,
 			country: contactCard.country,
 			pincode: contactCard.pincode,
-			contact_details_phone: contactCard.contact_details_phone,
-			contact_details_work: contactCard.contact_details_work,
-			contact_details_other: contactCard.contact_details_other,
+			contact_phone: contactCard.contact_phone,
+			contact_work: contactCard.contact_work,
+			contact_other: contactCard.contact_other,
 			base64: contactCard.qrString,
 		};
 	}
 
-	async updateContactCard(id: Types.ObjectId, details: Partial<ContactCardType>) {
-		const contact_card = await ContactCardDB.findById(id);
+	async updateContactCard(id: string, details: Partial<ContactCardType>) {
+		const contact_card = await contactsDB.findUnique({ where: { id } });
 		if (!contact_card) {
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
 		}
-		Object.keys(details).forEach((key) => {
-			if (key in contact_card) {
-				// @ts-ignore
-				contact_card[key] = details[key];
-			}
+		const vCardString = new VCardBuilder(details).build();
+		const qrCodeBuffer = await QRUtils.generateQR(vCardString);
+
+		const updatedContactCard = await contactsDB.update({
+			where: { id: contact_card.id },
+			data: {
+				...details,
+				qrString: `data:image/png;base64,${qrCodeBuffer?.toString('base64')}`,
+				vCardString,
+			},
 		});
 
-		const updatedContactCard = await contact_card.save();
 		return {
-			id: updatedContactCard._id.toString(),
+			id: updatedContactCard.id,
 			first_name: updatedContactCard.first_name,
 			middle_name: updatedContactCard.middle_name,
 			last_name: updatedContactCard.last_name,
@@ -93,24 +108,26 @@ export default class ContactCardService {
 			state: updatedContactCard.state,
 			country: updatedContactCard.country,
 			pincode: updatedContactCard.pincode,
-			contact_details_phone: updatedContactCard.contact_details_phone,
-			contact_details_work: updatedContactCard.contact_details_work,
-			contact_details_other: updatedContactCard.contact_details_other,
+			contact_phone: updatedContactCard.contact_phone,
+			contact_work: updatedContactCard.contact_work,
+			contact_other: updatedContactCard.contact_other,
 			base64: updatedContactCard.qrString,
 		};
 	}
 
-	async deleteContactCard(id: Types.ObjectId) {
-		await ContactCardDB.deleteOne({
-			user: this.user._id,
-			_id: id,
+	async deleteContactCard(id: string) {
+		await contactsDB.delete({
+			where: {
+				id: id,
+				username: this._user.username,
+			},
 		});
 	}
 
 	async listContacts() {
-		const contact_cards = await ContactCardDB.find({ user: this.user._id });
+		const contact_cards = await contactsDB.findMany({ where: { username: this._user.username } });
 		return contact_cards.map((contact_card) => ({
-			id: contact_card._id.toString(),
+			id: contact_card.id,
 			first_name: contact_card.first_name,
 			middle_name: contact_card.middle_name,
 			last_name: contact_card.last_name,
@@ -124,9 +141,9 @@ export default class ContactCardService {
 			state: contact_card.state,
 			country: contact_card.country,
 			pincode: contact_card.pincode,
-			contact_details_phone: contact_card.contact_details_phone,
-			contact_details_work: contact_card.contact_details_work,
-			contact_details_other: contact_card.contact_details_other,
+			contact_phone: contact_card.contact_phone,
+			contact_work: contact_card.contact_work,
+			contact_other: contact_card.contact_other,
 			base64: contact_card.qrString,
 		}));
 	}

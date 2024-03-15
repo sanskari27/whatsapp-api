@@ -1,33 +1,35 @@
-import { Model, Types } from 'mongoose';
-import Logger from 'n23-logger';
 import WAWebJS from 'whatsapp-web.js';
-import { GroupPrivateReplyDB, GroupReplyDB } from '../../repository/group-reply';
-import MergedGroupDB from '../../repository/merged-groups';
-import { IAccount, IWADevice } from '../../types/account';
+import { groupReplyDB, mergedGroupsDB } from '../../config/postgres';
 import { Delay, idValidator } from '../../utils/ExpressUtils';
+import { AccountService } from '../account';
 
 export default class GroupMergeService {
-	private user: IAccount;
-	private device: IWADevice;
+	private _user: AccountService;
 
-	public constructor(user: IAccount, device: IWADevice) {
-		this.user = user;
-		this.device = device;
+	public constructor(user: AccountService) {
+		this._user = user;
 	}
 
 	async listGroups() {
-		const merged_groups = await MergedGroupDB.find({
-			user: this.user,
-			device: this.device,
+		const merged_groups = await mergedGroupsDB.findMany({
+			where: {
+				username: this._user.username,
+			},
 		});
 
 		return merged_groups.map((group) => ({
-			id: group._id as string,
-			name: (group.name as string) ?? '',
+			id: group.id,
+			name: group.name ?? 'Unnamed Group',
 			isMergedGroup: true,
 			groups: group.groups,
-			group_reply: group.group_reply,
-			private_reply: group.private_reply,
+			group_reply: {
+				saved: group.chat_reply_saved,
+				unsaved: group.chat_reply_unsaved,
+			},
+			private_reply: {
+				saved: group.private_reply_saved,
+				unsaved: group.private_reply_unsaved,
+			},
 		}));
 	}
 
@@ -48,27 +50,36 @@ export default class GroupMergeService {
 			} | null;
 		}
 	) {
-		const group = await MergedGroupDB.create({
-			user: this.user,
-			device: this.device,
-			name,
-			groups: group_ids,
-			group_reply,
-			private_reply,
+		const group = await mergedGroupsDB.create({
+			data: {
+				username: this._user.username,
+				name,
+				groups: group_ids,
+				chat_reply_saved: group_reply?.saved ?? '',
+				chat_reply_unsaved: group_reply?.unsaved ?? '',
+				private_reply_saved: private_reply?.saved ?? '',
+				private_reply_unsaved: private_reply?.unsaved ?? '',
+			},
 		});
 
 		return {
-			id: group._id as string,
-			name: group.name as string,
+			id: group.id,
+			name: group.name,
 			isMergedGroup: true,
 			groups: group.groups,
-			group_reply: group.group_reply,
-			private_reply: group.private_reply,
+			group_reply: {
+				saved: group.chat_reply_saved,
+				unsaved: group.chat_reply_unsaved,
+			},
+			private_reply: {
+				saved: group.private_reply_saved,
+				unsaved: group.private_reply_unsaved,
+			},
 		};
 	}
 
 	async updateGroup(
-		id: Types.ObjectId,
+		id: string,
 		{ name, group_ids }: { name?: string; group_ids?: string[] },
 		{
 			group_reply,
@@ -84,42 +95,55 @@ export default class GroupMergeService {
 			} | null;
 		}
 	) {
-		const merged_group = await MergedGroupDB.findById(id);
+		const exists = await mergedGroupsDB.findUnique({ where: { id } });
 
-		if (!merged_group) {
+		if (!exists) {
 			return false;
 		}
-		if (name) {
-			merged_group.name = name;
-		}
-		if (group_ids) {
-			merged_group.groups = group_ids;
-		}
-		if (group_reply !== undefined) {
-			merged_group.group_reply = group_reply;
-		}
-		if (private_reply !== undefined) {
-			merged_group.private_reply = private_reply;
-		}
 
-		await merged_group.save();
+		const merged_group = await mergedGroupsDB.update({
+			where: { id },
+			data: {
+				name,
+				groups: group_ids,
+				chat_reply_saved: group_reply?.saved ?? '',
+				chat_reply_unsaved: group_reply?.unsaved ?? '',
+				private_reply_saved: private_reply?.saved ?? '',
+				private_reply_unsaved: private_reply?.unsaved ?? '',
+			},
+		});
+
 		return {
-			id: merged_group._id as string,
-			name: merged_group.name as string,
+			id: merged_group.id,
+			name: merged_group.name,
 			isMergedGroup: true,
 			groups: merged_group.groups,
-			group_reply: merged_group.group_reply,
-			private_reply: merged_group.private_reply,
+			group_reply: {
+				saved: merged_group.chat_reply_saved,
+				unsaved: merged_group.chat_reply_unsaved,
+			},
+			private_reply: {
+				saved: merged_group.private_reply_saved,
+				unsaved: merged_group.private_reply_unsaved,
+			},
 		};
 	}
-	async deleteGroup(group_id: Types.ObjectId) {
-		await MergedGroupDB.deleteOne({ _id: group_id });
+	async deleteGroup(id: string) {
+		await mergedGroupsDB.delete({ where: { id } });
 	}
-	async removeFromGroup(id: Types.ObjectId, group_ids: string[]) {
-		const mergedGroup = await MergedGroupDB.findById(id);
-		if (!mergedGroup) return;
-		mergedGroup.groups = mergedGroup.groups.filter((id) => !group_ids.includes(id));
-		await mergedGroup.save();
+	async removeFromGroup(id: string, group_ids: string[]) {
+		const exists = await mergedGroupsDB.findUnique({ where: { id } });
+
+		if (!exists) {
+			return;
+		}
+
+		mergedGroupsDB.update({
+			where: { id },
+			data: {
+				groups: exists.groups.filter((id) => !group_ids.includes(id)),
+			},
+		});
 	}
 
 	async extractWhatsappGroupIds(ids: string | string[]) {
@@ -140,9 +164,13 @@ export default class GroupMergeService {
 			}
 		);
 
-		const merged_groups = await MergedGroupDB.find({
-			user: this.user,
-			_id: { $in: merged_group_ids },
+		const merged_groups = await mergedGroupsDB.findMany({
+			where: {
+				username: this._user.username,
+				id: {
+					in: merged_group_ids,
+				},
+			},
 		});
 
 		const whatsapp_extracted_ids = merged_groups.map((group) => group.groups).flat();
@@ -163,20 +191,16 @@ export default class GroupMergeService {
 	) {
 		const group_id = chat.id._serialized;
 
-		const group_reply_docs = await MergedGroupDB.findOne({
-			user: this.user,
-			device: this.device,
-			groups: group_id,
-			group_reply: { $exists: true, $ne: null },
-		});
-		const private_reply_docs = await MergedGroupDB.findOne({
-			user: this.user,
-			device: this.device,
-			groups: group_id,
-			private_reply: { $exists: true, $ne: null },
+		const mergedGroup = await mergedGroupsDB.findFirst({
+			where: {
+				username: this._user.username,
+				groups: {
+					has: group_id,
+				},
+			},
 		});
 
-		if (!group_reply_docs && !private_reply_docs) {
+		if (!mergedGroup) {
 			return;
 		}
 
@@ -185,56 +209,36 @@ export default class GroupMergeService {
 			return;
 		}
 
-		const create_docs_data = { user: this.user, device: this.device, from: contact.id._serialized };
-
-		const sendReply = async (
-			model: Model<any, {}, {}, {}, any>,
-			to: string,
-			reply_text: string,
-			message: WAWebJS.Message,
-			private_reply: boolean = false
-		) => {
+		const sendReply = async (reply_text: string, private_reply: boolean = false) => {
 			if (!reply_text) {
 				return;
 			}
-			await Delay(Math.random() * 5000 + 2000);
-			model
-				.create(create_docs_data)
+			await Delay(Math.random() * 5 + 2);
+			groupReplyDB
+				.create({
+					data: {
+						username: this._user.username,
+						replied_to: contact.id._serialized,
+						reply_type: private_reply ? 'PRIVATE' : 'CHAT',
+					},
+				})
 				.then(() => {
 					if (private_reply) {
-						whatsapp
-							.sendMessage(to, reply_text, {
-								quotedMessageId: message.id._serialized,
-							})
-							.catch((err) => Logger.error('Error sending message:', err));
+						whatsapp.sendMessage(contact.id._serialized, reply_text, {
+							quotedMessageId: message.id._serialized,
+						});
 					} else {
-						message.reply(reply_text).catch((err) => Logger.error('Error sending message:', err));
+						message.reply(reply_text);
 					}
 				})
 				.catch(() => {});
 		};
 
-		if (group_reply_docs && group_reply_docs.group_reply !== null) {
-			sendReply(
-				GroupReplyDB,
-				contact.id._serialized,
-				contact.isMyContact
-					? group_reply_docs.group_reply.saved
-					: group_reply_docs.group_reply.unsaved,
-				message
-			);
-		}
+		sendReply(contact.isMyContact ? mergedGroup.chat_reply_saved : mergedGroup.chat_reply_unsaved);
 
-		if (private_reply_docs && private_reply_docs.private_reply !== null) {
-			sendReply(
-				GroupPrivateReplyDB,
-				contact.id._serialized,
-				contact.isMyContact
-					? private_reply_docs.private_reply.saved
-					: private_reply_docs.private_reply.unsaved,
-				message,
-				true
-			);
-		}
+		sendReply(
+			contact.isMyContact ? mergedGroup.private_reply_saved : mergedGroup.chat_reply_unsaved,
+			true
+		);
 	}
 }

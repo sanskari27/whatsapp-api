@@ -6,7 +6,6 @@ import express from 'express';
 import configServer from './server-config';
 
 import Logger from 'n23-logger';
-import connectDB from './config/DB';
 import cache from './config/cache';
 import { PORT } from './config/const';
 import SocketServerProvider from './provider/socket';
@@ -15,15 +14,6 @@ import SocketServerProvider from './provider/socket';
 const app = express();
 
 configServer(app);
-
-connectDB()
-	.then(() => {
-		Logger.info('Running Status', 'Database connected');
-	})
-	.catch((err) => {
-		Logger.critical('Database Connection Failed', err);
-		process.exit();
-	});
 
 const server = app.listen(PORT, async () => {
 	SocketServerProvider.getInstance(server);

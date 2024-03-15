@@ -16,9 +16,9 @@ const JWT_EXPIRE_TIME = 3 * 60 * 1000;
 const REFRESH_EXPIRE_TIME = 30 * 24 * 60 * 60 * 1000;
 
 async function addDevice(req: Request, res: Response, next: NextFunction) {
-	const { account, accountService } = req.locals;
+	const { account } = req.locals;
 
-	if (!accountService.canAddProfile()) {
+	if (!account.canAddProfile()) {
 		return next(new APIError(ERRORS.USER_ERRORS.MAX_DEVICE_LIMIT_REACHED));
 	}
 
@@ -57,7 +57,7 @@ async function isUsernameAvailable(req: Request, res: Response, next: NextFuncti
 async function signup(req: Request, res: Response, next: NextFunction) {
 	const { username, password, name, phone } = req.locals.data as CreateAccountValidationResult;
 	try {
-		const service = await AccountService.createAccount({ username, password, name, phone });
+		const service = await AccountServiceFactory.createAccount({ username, password, name, phone });
 
 		res.cookie(JWT_COOKIE, service.token, {
 			sameSite: 'strict',
@@ -67,7 +67,7 @@ async function signup(req: Request, res: Response, next: NextFunction) {
 		});
 
 		const t = service.refreshToken;
-		saveRefreshTokens(t, service.id);
+		saveRefreshTokens(t, service.username);
 
 		res.cookie(JWT_REFRESH_COOKIE, t, {
 			sameSite: 'strict',
@@ -110,7 +110,7 @@ async function login(req: Request, res: Response, next: NextFunction) {
 		});
 
 		const t = service.refreshToken;
-		saveRefreshTokens(t, service.id);
+		saveRefreshTokens(t, service.username);
 
 		res.cookie(JWT_REFRESH_COOKIE, t, {
 			sameSite: 'strict',
@@ -160,13 +160,13 @@ async function validateAuth(req: Request, res: Response, next: NextFunction) {
 }
 
 async function profiles(req: Request, res: Response, next: NextFunction) {
-	const { accountService, account } = req.locals;
+	const { account } = req.locals;
 
 	return Respond({
 		res,
 		status: 200,
 		data: {
-			profiles: await accountService.listProfiles(),
+			profiles: await account.listProfiles(),
 			max_profiles: account.max_devices ?? 0,
 		},
 	});
@@ -179,9 +179,9 @@ async function removeDevice(req: Request, res: Response, next: NextFunction) {
 		return next(new APIError(COMMON_ERRORS.INVALID_FIELDS));
 	}
 
-	const { accountService, account } = req.locals;
+	const { account } = req.locals;
 
-	await accountService.removeDevice(client_id);
+	await account.removeDevice(client_id);
 	const provider = WhatsappProvider.getInstance(account, client_id);
 	provider.logoutClient();
 	return Respond({

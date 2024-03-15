@@ -120,7 +120,7 @@ const ContactSelectorDialog = forwardRef<ContactDialogHandle, Props>(
 											<Td>{item.first_name}</Td>
 											<Td>{item.last_name}</Td>
 											<Td>
-												{`+${item.contact_details_phone?.country_code} ${item.contact_details_phone?.number}`}
+												{`+${item.contact_phone?.country_code} ${item.contact_phone?.number}`}
 											</Td>
 										</Tr>
 									))}

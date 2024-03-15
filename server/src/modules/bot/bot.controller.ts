@@ -2,15 +2,14 @@ import { NextFunction, Request, Response } from 'express';
 import { APIError, COMMON_ERRORS } from '../../errors';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import BotService from '../../services/bot';
-import UploadService from '../../services/uploads';
 import CSVParser from '../../utils/CSVParser';
 import { Respond, RespondCSV } from '../../utils/ExpressUtils';
 import { CreateBotValidationResult } from './bot.validator';
 
 async function allBots(req: Request, res: Response, next: NextFunction) {
-	const { account, device } = req.locals;
+	const { account } = req.locals;
 
-	const botService = new BotService(account, device);
+	const botService = new BotService(account);
 	const bots = await botService.allBots();
 
 	return Respond({
@@ -19,17 +18,17 @@ async function allBots(req: Request, res: Response, next: NextFunction) {
 		data: {
 			bots: bots.map((bot) => ({
 				...bot,
-				attachments: bot.attachments.map((attachments) => attachments.id),
-				shared_contact_cards: bot.shared_contact_cards.map((cards) => cards._id),
+				attachments: bot.attachments.map(({ id }) => id),
+				contacts: bot.contacts.map(({ id }) => id),
 			})),
 		},
 	});
 }
 
 async function botById(req: Request, res: Response, next: NextFunction) {
-	const { account, device } = req.locals;
+	const { account } = req.locals;
 
-	const botService = new BotService(account, device);
+	const botService = new BotService(account);
 	try {
 		const bot = await botService.boyByID(req.locals.id);
 
@@ -40,6 +39,7 @@ async function botById(req: Request, res: Response, next: NextFunction) {
 				bot: {
 					...bot,
 					attachments: bot.attachments.map((attachments) => attachments.id),
+					contacts: bot.contacts.map(({ id }) => id),
 				},
 			},
 		});
@@ -51,15 +51,11 @@ async function botById(req: Request, res: Response, next: NextFunction) {
 async function createBot(req: Request, res: Response, next: NextFunction) {
 	const data = req.locals.data as CreateBotValidationResult;
 
-	const { account, device } = req.locals;
+	const { account } = req.locals;
 
-	const botService = new BotService(account, device);
-	const [_, media_attachments] = await new UploadService(account).listAttachments(data.attachments);
+	const botService = new BotService(account);
 
-	const bot = botService.createBot({
-		...data,
-		attachments: media_attachments,
-	});
+	const bot = await botService.createBot(data);
 
 	return Respond({
 		res,
@@ -67,7 +63,8 @@ async function createBot(req: Request, res: Response, next: NextFunction) {
 		data: {
 			bot: {
 				...bot,
-				attachments: bot.attachments.map((attachments) => attachments.id),
+				attachments: bot.attachments.map((a) => a.id),
+				contacts: bot.contacts.map((c) => c.id),
 			},
 		},
 	});
@@ -76,15 +73,13 @@ async function createBot(req: Request, res: Response, next: NextFunction) {
 async function updateBot(req: Request, res: Response, next: NextFunction) {
 	const data = req.locals.data as CreateBotValidationResult;
 
-	const { account, device } = req.locals;
+	const { account } = req.locals;
 
-	const botService = new BotService(account, device);
-	const [_, media_attachments] = await new UploadService(account).listAttachments(data.attachments);
+	const botService = new BotService(account);
 
 	try {
 		const bot = await botService.modifyBot(req.locals.id, {
 			...data,
-			attachments: media_attachments,
 		});
 
 		return Respond({
@@ -94,7 +89,7 @@ async function updateBot(req: Request, res: Response, next: NextFunction) {
 				bot: {
 					...bot,
 					attachments: bot.attachments.map((attachments) => attachments.id),
-					shared_contact_cards: bot.shared_contact_cards.map((cards) => cards._id),
+					contacts: bot.contacts.map((cards) => cards.id),
 				},
 			},
 		});
@@ -105,19 +100,20 @@ async function updateBot(req: Request, res: Response, next: NextFunction) {
 
 async function toggleActive(req: Request, res: Response, next: NextFunction) {
 	try {
-		const {
-			accountService: { account },
-			device,
-		} = req.locals;
+		const { account } = req.locals;
 
-		const botService = new BotService(account, device);
+		const botService = new BotService(account);
 		const bot = await botService.toggleActive(req.locals.id);
 
 		return Respond({
 			res,
 			status: 200,
 			data: {
-				bot: bot,
+				bot: {
+					...bot,
+					attachments: bot.attachments.map((attachments) => attachments.id),
+					contacts: bot.contacts.map(({ id }) => id),
+				},
 			},
 		});
 	} catch (err) {
@@ -131,9 +127,9 @@ async function toggleActive(req: Request, res: Response, next: NextFunction) {
 }
 
 async function deleteBot(req: Request, res: Response, next: NextFunction) {
-	const { account, device } = req.locals;
+	const { account } = req.locals;
 
-	const botService = new BotService(account, device);
+	const botService = new BotService(account);
 	botService.deleteBot(req.locals.id);
 
 	return Respond({
@@ -144,9 +140,9 @@ async function deleteBot(req: Request, res: Response, next: NextFunction) {
 }
 
 async function downloadResponses(req: Request, res: Response, next: NextFunction) {
-	const { account, device } = req.locals;
+	const { account } = req.locals;
 
-	const botService = new BotService(account, device);
+	const botService = new BotService(account);
 	const responses = await botService.botResponses(req.locals.id);
 
 	return RespondCSV({

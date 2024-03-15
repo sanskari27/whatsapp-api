@@ -14,15 +14,15 @@ const initialState: ContactCardState = {
 		organization: '',
 		email_personal: '',
 		email_work: '',
-		contact_details_phone: {
+		contact_phone: {
 			country_code: '91',
 			number: '',
 		},
-		contact_details_work: {
+		contact_work: {
 			country_code: '91',
 			number: '',
 		},
-		contact_details_other: [],
+		contact_other: [],
 		links: [],
 		street: '',
 		city: '',
@@ -108,15 +108,15 @@ const ContactCardReducers = createSlice({
 		},
 		setContactNumberPhone: (
 			state,
-			action: PayloadAction<typeof initialState.selectedCard.contact_details_phone>
+			action: PayloadAction<typeof initialState.selectedCard.contact_phone>
 		) => {
-			state.selectedCard.contact_details_phone = action.payload;
+			state.selectedCard.contact_phone = action.payload;
 		},
 		setContactNumberWork: (
 			state,
-			action: PayloadAction<typeof initialState.selectedCard.contact_details_work>
+			action: PayloadAction<typeof initialState.selectedCard.contact_work>
 		) => {
-			state.selectedCard.contact_details_work = action.payload;
+			state.selectedCard.contact_work = action.payload;
 		},
 		setContactNumberOther: (
 			state,
@@ -126,7 +126,7 @@ const ContactCardReducers = createSlice({
 				number: string;
 			}>
 		) => {
-			state.selectedCard.contact_details_other![action.payload.index] = {
+			state.selectedCard.contact_other![action.payload.index] = {
 				country_code: action.payload.country_code,
 				number: action.payload.number,
 			};
@@ -135,10 +135,10 @@ const ContactCardReducers = createSlice({
 			state,
 			action: PayloadAction<{ country_code: string; number: string }>
 		) => {
-			state.selectedCard.contact_details_other?.push(action.payload);
+			state.selectedCard.contact_other?.push(action.payload);
 		},
 		removeContactNumberOther: (state, action: PayloadAction<number>) => {
-			state.selectedCard.contact_details_other = state.selectedCard.contact_details_other?.filter(
+			state.selectedCard.contact_other = state.selectedCard.contact_other?.filter(
 				(_, index) => index !== action.payload
 			);
 		},
