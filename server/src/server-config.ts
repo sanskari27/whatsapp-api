@@ -26,8 +26,8 @@ import WhatsappUtils from './utils/WhatsappUtils';
 
 const allowlist = [
 	'http://localhost:5173',
-	'https://app.whatsleads.in',
-	'https://admin.whatsleads.in',
+	'https://app.wpautomation.tech',
+	'https://admin.wpautomation.tech',
 ];
 
 const corsOptionsDelegate = (req: any, callback: any) => {
