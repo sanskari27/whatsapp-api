@@ -67,8 +67,6 @@ export default class ContactCardService {
 				})),
 			})) as ContactCard[];
 		} catch (err) {
-			console.log(err);
-
 			return [] as ContactCard[];
 		}
 	}

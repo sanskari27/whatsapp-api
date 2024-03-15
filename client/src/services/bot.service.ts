@@ -172,7 +172,6 @@ export default class BotService {
 					polls: { title: string; options: string[]; isMultiSelect: boolean }[];
 				}[];
 			};
-			console.log(res);
 			return {
 				bot_id: res.bot_id ?? '',
 				trigger: res.trigger ?? '',

@@ -12,7 +12,6 @@ import {
 import { forwardRef, useRef } from 'react';
 import { HiEye, HiEyeOff } from 'react-icons/hi';
 import { Colors } from '../../../../config/const';
-import { useTheme } from '../../../../hooks/useTheme';
 
 export const PasswordInput = forwardRef<
 	HTMLInputElement,
@@ -22,7 +21,6 @@ export const PasswordInput = forwardRef<
 >((props, ref) => {
 	const { isOpen, onToggle } = useDisclosure();
 	const inputRef = useRef<HTMLInputElement>(null);
-	const theme = useTheme();
 
 	const mergeRef = useMergeRefs(inputRef, ref);
 	const onClickReveal = () => {
@@ -34,7 +32,7 @@ export const PasswordInput = forwardRef<
 
 	return (
 		<FormControl>
-			<FormLabel htmlFor='password' color={theme === 'dark' ? 'gray' : 'black'}>
+			<FormLabel htmlFor='password' color={Colors.PRIMARY_DARK}>
 				{props.label || 'Password'}
 			</FormLabel>
 			<InputGroup>
@@ -53,7 +51,7 @@ export const PasswordInput = forwardRef<
 					type={isOpen ? 'text' : 'password'}
 					autoComplete='current-password'
 					required
-					color={theme === 'dark' ? 'white' : 'black'}
+					color={Colors.PRIMARY_DARK}
 					variant='unstyled'
 					bgColor={Colors.ACCENT_LIGHT}
 					_placeholder={{

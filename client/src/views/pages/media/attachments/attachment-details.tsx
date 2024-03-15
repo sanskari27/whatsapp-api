@@ -105,8 +105,6 @@ export default function AttachmentDetails() {
 	};
 
 	const handleAttachmentInput = (file: File) => {
-		console.log(file);
-
 		if (file === null) return;
 		if (file.size > 62914560) return dispatch(setError('File size should be less than 60MB'));
 		const url = window.URL.createObjectURL(file);
