@@ -4,24 +4,24 @@ export default class ContactService {
 	static async contactCount() {
 		const { data } = await APIInstance.get(`/whatsapp/contacts/count`);
 		return {
-			saved: data.saved_contacts as number,
-			unsaved: data.non_saved_contacts as number,
-			total: data.total_contacts as number,
-			saved_chat: data.saved_chat_contacts as number,
+			phonebook_contacts: (data.phonebook_contacts as number) ?? 0,
+			non_saved_contacts: (data.non_saved_contacts as number) ?? 0,
+			chat_contacts: (data.chat_contacts as number) ?? 0,
+			groups: (data.groups as number) ?? 0,
 		};
 	}
 	static async contacts({
 		saved_contacts = false,
-		saved_chat_contacts = false,
 		non_saved_contacts = false,
+		saved_chat_contacts = false,
 		vcf_only = false,
 		business_contacts_only = false,
 	}) {
 		try {
 			await APIInstance.post(`/whatsapp/contacts`, {
-				saved_contacts,
-				saved_chat_contacts,
-				non_saved_contacts,
+				chat_contacts: saved_chat_contacts,
+				saved: saved_contacts,
+				unsaved: non_saved_contacts,
 				business_contacts_only,
 				vcf: vcf_only,
 			});

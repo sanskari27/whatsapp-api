@@ -31,12 +31,22 @@ export default class GroupService {
 			return [];
 		}
 	}
-	static async fetchGroup(ids: string[], { vcf_only = false, business_contacts_only = false }) {
+	static async fetchGroup(
+		ids: string[],
+		{
+			vcf_only = false,
+			business_contacts_only = false,
+			saved_contacts = false,
+			non_saved_contacts = false,
+		}
+	) {
 		try {
 			await APIInstance.post(`/whatsapp/groups/export`, {
 				vcf: vcf_only,
 				business_contacts_only,
 				group_ids: ids,
+				saved: saved_contacts,
+				unsaved: non_saved_contacts,
 			});
 			return true;
 		} catch (err) {

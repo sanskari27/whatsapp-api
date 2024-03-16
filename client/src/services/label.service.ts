@@ -15,12 +15,22 @@ export default class LabelService {
 			return [];
 		}
 	}
-	static async fetchLabel(ids: string[], { vcf_only = false, business_contacts_only = false }) {
+	static async fetchLabel(
+		ids: string[],
+		{
+			vcf_only = false,
+			business_contacts_only = false,
+			saved_contacts = false,
+			non_saved_contacts = false,
+		}
+	) {
 		try {
 			await APIInstance.post(`/whatsapp/labels/export`, {
 				business_contacts_only,
 				vcf: vcf_only,
 				label_ids: ids,
+				saved: saved_contacts,
+				unsaved: non_saved_contacts,
 			});
 			return true;
 		} catch (err) {
