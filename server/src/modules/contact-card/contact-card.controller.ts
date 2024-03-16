@@ -19,33 +19,33 @@ async function createContactCard(req: Request, res: Response, next: NextFunction
 	const data = req.locals.data as CreateContactValidationResult;
 	const service = new ContactCardService(req.locals.account);
 	const details: {
-		contact_details_phone?: {
+		contact_phone?: {
 			contact_number: string;
 			whatsapp_id?: string;
 		};
-		contact_details_work?: {
+		contact_work?: {
 			contact_number: string;
 			whatsapp_id?: string;
 		};
-		contact_details_other: {
+		contact_other: {
 			contact_number: string;
 			whatsapp_id?: string;
 		}[];
 	} = {
-		contact_details_other: [],
+		contact_other: [],
 	};
 
-	if (data.contact_details_phone) {
-		details.contact_details_phone = await getNumberDetails(data.contact_details_phone);
+	if (data.contact_phone) {
+		details.contact_phone = await getNumberDetails(data.contact_phone);
 	}
 
-	if (data.contact_details_work) {
-		details.contact_details_work = await getNumberDetails(data.contact_details_work);
+	if (data.contact_work) {
+		details.contact_work = await getNumberDetails(data.contact_work);
 	}
 
-	for (const number of data.contact_details_other) {
+	for (const number of data.contact_other) {
 		const detail = await getNumberDetails(number);
-		details.contact_details_other.push(detail);
+		details.contact_other.push(detail);
 	}
 	const contact_card = await service.createContactCard({
 		first_name: data.first_name,
@@ -61,9 +61,9 @@ async function createContactCard(req: Request, res: Response, next: NextFunction
 		state: data.state,
 		country: data.country,
 		pincode: data.pincode,
-		contact_phone: details.contact_details_phone,
-		contact_work: details.contact_details_work,
-		contact_other: details.contact_details_other,
+		contact_phone: details.contact_phone,
+		contact_work: details.contact_work,
+		contact_other: details.contact_other,
 	});
 
 	return Respond({
@@ -79,33 +79,33 @@ async function updateContactCard(req: Request, res: Response, next: NextFunction
 	const data = req.locals.data as CreateContactValidationResult;
 	const service = new ContactCardService(req.locals.account);
 	const details: {
-		contact_details_phone?: {
+		contact_phone?: {
 			contact_number: string;
 			whatsapp_id?: string;
 		};
-		contact_details_work?: {
+		contact_work?: {
 			contact_number: string;
 			whatsapp_id?: string;
 		};
-		contact_details_other: {
+		contact_other: {
 			contact_number: string;
 			whatsapp_id?: string;
 		}[];
 	} = {
-		contact_details_other: [],
+		contact_other: [],
 	};
 
-	if (data.contact_details_phone) {
-		details.contact_details_phone = await getNumberDetails(data.contact_details_phone);
+	if (data.contact_phone) {
+		details.contact_phone = await getNumberDetails(data.contact_phone);
 	}
 
-	if (data.contact_details_work) {
-		details.contact_details_work = await getNumberDetails(data.contact_details_work);
+	if (data.contact_work) {
+		details.contact_work = await getNumberDetails(data.contact_work);
 	}
 
-	for (const number of data.contact_details_other) {
+	for (const number of data.contact_other) {
 		const detail = await getNumberDetails(number);
-		details.contact_details_other.push(detail);
+		details.contact_other.push(detail);
 	}
 	const contact_card = await service.updateContactCard(req.locals.id, {
 		first_name: data.first_name,
@@ -121,9 +121,9 @@ async function updateContactCard(req: Request, res: Response, next: NextFunction
 		state: data.state,
 		country: data.country,
 		pincode: data.pincode,
-		contact_phone: details.contact_details_phone,
-		contact_work: details.contact_details_work,
-		contact_other: details.contact_details_other,
+		contact_phone: details.contact_phone,
+		contact_work: details.contact_work,
+		contact_other: details.contact_other,
 	});
 
 	return Respond({

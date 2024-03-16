@@ -4,6 +4,7 @@ import { Bot } from '../store/types/BotState';
 export default class BotService {
 	static async createBot(data: {
 		trigger: string;
+		devices: string[];
 		message: string;
 		respond_to: string;
 		trigger_gap_seconds: number;
@@ -11,7 +12,7 @@ export default class BotService {
 		options: string;
 		startAt: string;
 		endAt: string;
-		shared_contact_cards?: string[];
+		contacts?: string[];
 		attachments: string[];
 		polls: {
 			title: string;
@@ -32,6 +33,7 @@ export default class BotService {
 			const res = response.bot;
 			return {
 				bot_id: res.bot_id ?? '',
+				devices: res.devices ?? [],
 				trigger: res.trigger ?? '',
 				options: res.options ?? '',
 				startAt: res.startAt ?? '',
@@ -39,7 +41,7 @@ export default class BotService {
 				respond_to: res.respond_to ?? '',
 				message: res.message ?? '',
 				attachments: res.attachments ?? [],
-				shared_contact_cards: res.shared_contact_cards ?? [],
+				contacts: res.contacts ?? [],
 				trigger_gap_seconds: res.trigger_gap_seconds ?? 0,
 				response_delay_seconds: res.response_delay_seconds ?? 0,
 				isActive: res.isActive ?? false,
@@ -59,6 +61,7 @@ export default class BotService {
 
 			return {
 				bot_id: res.bot_id ?? '',
+				devices: res.devices ?? [],
 				trigger: res.trigger ?? '',
 				options: res.options ?? '',
 				startAt: res.startAt ?? '',
@@ -66,7 +69,7 @@ export default class BotService {
 				respond_to: res.respond_to ?? '',
 				message: res.message ?? '',
 				attachments: res.attachments ?? [],
-				shared_contact_cards: res.shared_contact_cards ?? [],
+				contacts: res.contacts ?? [],
 				trigger_gap_seconds: res.trigger_gap_seconds ?? 0,
 				response_delay_seconds: res.response_delay_seconds ?? 0,
 				isActive: res.isActive ?? false,
@@ -84,6 +87,7 @@ export default class BotService {
 			const { data: response } = await APIInstance.get(`/whatsapp/bot`);
 			return response.bots.map((res: Bot) => ({
 				bot_id: res.bot_id ?? '',
+				devices: res.devices ?? [],
 				trigger: res.trigger ?? '',
 				options: res.options ?? '',
 				startAt: res.startAt ?? '',
@@ -91,7 +95,7 @@ export default class BotService {
 				respond_to: res.respond_to ?? '',
 				message: res.message ?? '',
 				attachments: res.attachments ?? [],
-				shared_contact_cards: res.shared_contact_cards ?? [],
+				contacts: res.contacts ?? [],
 				trigger_gap_seconds: res.trigger_gap_seconds ?? 0,
 				response_delay_seconds: res.response_delay_seconds ?? 0,
 				isActive: res.isActive ?? false,
@@ -116,6 +120,7 @@ export default class BotService {
 	static async updateBot(
 		id: string,
 		data: {
+			devices: string[];
 			trigger: string;
 			message: string;
 			respond_to: string;
@@ -123,7 +128,7 @@ export default class BotService {
 			options: string;
 			startAt: string;
 			endAt: string;
-			shared_contact_cards?: string[];
+			contacts?: string[];
 			attachments: string[];
 			polls: {
 				title: string;
@@ -144,6 +149,7 @@ export default class BotService {
 			const { data: response } = await APIInstance.patch(`/whatsapp/bot/${id}`, data);
 			const res = response.bot as {
 				bot_id: string;
+				devices: string[];
 				trigger: string;
 				options: string;
 				startAt: string;
@@ -151,7 +157,7 @@ export default class BotService {
 				respond_to: string;
 				message: string;
 				attachments: string[];
-				shared_contact_cards: string[];
+				contacts: string[];
 				trigger_gap_seconds: number;
 				response_delay_seconds: number;
 				isActive: boolean;
@@ -168,12 +174,13 @@ export default class BotService {
 					message: string;
 					after: number;
 					attachments: { _id: string }[];
-					shared_contact_cards: { _id: string }[];
+					contacts: { _id: string }[];
 					polls: { title: string; options: string[]; isMultiSelect: boolean }[];
 				}[];
 			};
 			return {
 				bot_id: res.bot_id ?? '',
+				devices: res.devices ?? [],
 				trigger: res.trigger ?? '',
 				options: res.options ?? '',
 				startAt: res.startAt ?? '',
@@ -181,7 +188,7 @@ export default class BotService {
 				respond_to: res.respond_to ?? '',
 				message: res.message ?? '',
 				attachments: res.attachments ?? [],
-				shared_contact_cards: res.shared_contact_cards ?? [],
+				contacts: res.contacts ?? [],
 				trigger_gap_seconds: res.trigger_gap_seconds ?? 0,
 				response_delay_seconds: res.response_delay_seconds ?? 0,
 				isActive: res.isActive ?? false,
@@ -195,7 +202,7 @@ export default class BotService {
 							attachments: (nurturing.attachments ?? []).map(
 								(attachment) => (attachment as unknown as { _id: string })._id as string
 							),
-							shared_contact_cards: (nurturing ?? []).shared_contact_cards.map(
+							contacts: (nurturing ?? []).contacts.map(
 								(contact) => (contact as unknown as { _id: string })._id as string
 							),
 							polls: nurturing.polls ?? [],

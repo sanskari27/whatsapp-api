@@ -29,12 +29,10 @@ export default function useUserData() {
 	const fetchProfileData = useCallback(async () => {
 		try {
 			const promises = [
-				BotService.listBots(),
+				addDelay(2000),
 				GroupService.listGroups(),
 				LabelService.listLabels(),
-				MessageService.getScheduledMessengers(),
 				GroupService.mergedGroups(),
-				addDelay(2000),
 			];
 
 			const results = await Promise.all(promises);
@@ -46,9 +44,7 @@ export default function useUserData() {
 					data_loaded: true,
 				})
 			);
-			store.dispatch(setBots(results[0]));
-			store.dispatch(setAllSchedulers(results[3]));
-			store.dispatch(setMergedGroupList(results[4]));
+			store.dispatch(setMergedGroupList(results[3]));
 		} catch (e) {
 			setError(true);
 			return;
@@ -57,7 +53,7 @@ export default function useUserData() {
 
 	const fetchProfiles = useCallback(async () => {
 		try {
-			const { profiles, max_profiles } = await AuthService.profiles();
+			const { profiles, max_profiles, isSubscribed, username } = await AuthService.profiles();
 			if (profiles.length === 0) {
 				store.dispatch(
 					setUserDetails({
@@ -66,11 +62,11 @@ export default function useUserData() {
 						profiles: [],
 						name: '',
 						phoneNumber: '',
-						isSubscribed: false,
-						canSendMessage: false,
+						isSubscribed: isSubscribed,
 						subscriptionExpiration: '',
 						current_profile_type: 'PERSONAL',
 						max_profiles: max_profiles,
+						username,
 					})
 				);
 				return;
@@ -81,6 +77,8 @@ export default function useUserData() {
 					profiles,
 					current_profile: profiles[0].client_id,
 					max_profiles: max_profiles,
+					isSubscribed: isSubscribed,
+					username,
 				})
 			);
 		} catch (e) {
@@ -98,6 +96,8 @@ export default function useUserData() {
 		ShortenerService.listAll().then((res) => store.dispatch(setLinksList(res)));
 		AttachmentService.getAttachments().then((res) => store.dispatch(setAttachments(res)));
 		UploadsService.listCSV().then((res) => store.dispatch(setCSVFileList(res)));
+		BotService.listBots().then((res) => store.dispatch(setBots(res)));
+		MessageService.getDailyMessenger().then((res) => store.dispatch(setAllSchedulers(res)));
 		fetchProfiles();
 	}, [fetchProfiles, isAuthenticated]);
 
@@ -123,12 +123,11 @@ function addDelay(delay: number) {
 
 export async function fetchProfileData() {
 	const promises = [
+		addDelay(2000),
 		BotService.listBots(),
 		GroupService.listGroups(),
 		LabelService.listLabels(),
-		MessageService.getScheduledMessengers(),
 		GroupService.mergedGroups(),
-		addDelay(2000),
 	];
 
 	const results = await Promise.all(promises);
@@ -141,6 +140,5 @@ export async function fetchProfileData() {
 		})
 	);
 	store.dispatch(setBots(results[0]));
-	store.dispatch(setAllSchedulers(results[3]));
-	store.dispatch(setMergedGroupList(results[4]));
+	store.dispatch(setMergedGroupList(results[3]));
 }

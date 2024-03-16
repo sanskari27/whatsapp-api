@@ -18,7 +18,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 		type,
 		group_ids,
 		label_ids,
-		csv_file,
+		csv: csv_file,
 		variables,
 		message,
 		attachments,
@@ -36,7 +36,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 		  }[][]
 		| null = null;
 
-	const { isSubscribed } = await req.locals.account.isSubscribed();
+	const { isSubscribed } = req.locals.account.isSubscribed();
 
 	if (!isSubscribed) {
 		return next(new APIError(PAYMENT_ERRORS.PAYMENT_REQUIRED));
@@ -50,7 +50,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 
 	const taskService = new TaskService(account);
 	const task_id = await taskService.createTask(TASK_TYPE.SCHEDULE_CAMPAIGN, TASK_RESULT_TYPE.NONE, {
-		description: req_data.campaign_name,
+		description: req_data.name,
 	});
 
 	Respond({
@@ -130,7 +130,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 
 	try {
 		const campaignService = new CampaignService(account);
-		const campaign_exists = await campaignService.alreadyExists(req_data.campaign_name);
+		const campaign_exists = await campaignService.alreadyExists(req_data.name);
 		if (campaign_exists) {
 			return taskService.markFailed(task_id);
 		}
@@ -141,6 +141,7 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 			startTime: req_data.startTime,
 			endTime: req_data.endTime,
 			devices: req_data.devices,
+			campaign_name: req_data.name,
 		});
 
 		taskService.markCompleted(task_id, campaign.id);
@@ -148,6 +149,8 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 			.get(account.username)
 			?.emit(SOCKET_RESPONSES.TASK_COMPLETED, task_id.toString());
 	} catch (err) {
+		console.log(err);
+
 		taskService.markFailed(task_id);
 		SocketServerProvider.attachedSockets
 			.get(account.username)

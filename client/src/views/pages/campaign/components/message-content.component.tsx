@@ -212,7 +212,7 @@ export default function MessageContent(props: Props) {
 			<AddOns
 				width={'full'}
 				attachments={details.attachments}
-				shared_contact_cards={details.shared_contact_cards}
+				contacts={details.contacts}
 				polls={details.polls}
 				onAttachmentsSelected={(ids) => dispatch(setAttachments(ids))}
 				onContactsSelected={(ids) => dispatch(setContactCards(ids))}

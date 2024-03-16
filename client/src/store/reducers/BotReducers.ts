@@ -5,6 +5,7 @@ import { Bot, BotState } from '../types/BotState';
 const initialState: BotState = {
 	all_bots: [],
 	details: {
+		devices: [],
 		bot_id: '',
 		trigger: '',
 		message: '',
@@ -13,7 +14,7 @@ const initialState: BotState = {
 		startAt: '00:01',
 		endAt: '23:59',
 		attachments: [],
-		shared_contact_cards: [],
+		contacts: [],
 		isActive: false,
 		response_delay_seconds: 1,
 		trigger_gap_seconds: 1,
@@ -73,12 +74,13 @@ const BotSlice = createSlice({
 				return;
 			}
 			state.details.bot_id = state.all_bots[index].bot_id;
+			state.details.devices = state.all_bots[index].devices;
 			state.details.trigger = state.all_bots[index].trigger;
 			state.details.message = state.all_bots[index].message;
 			state.details.respond_to = state.all_bots[index].respond_to;
 			state.details.options = state.all_bots[index].options;
 			state.details.attachments = state.all_bots[index].attachments;
-			state.details.shared_contact_cards = state.all_bots[index].shared_contact_cards;
+			state.details.contacts = state.all_bots[index].contacts;
 			state.details.isActive = state.all_bots[index].isActive;
 			state.details.response_delay_seconds = state.all_bots[index].response_delay_seconds;
 			state.details.trigger_gap_seconds = state.all_bots[index].trigger_gap_seconds;
@@ -149,11 +151,8 @@ const BotSlice = createSlice({
 			state.details.attachments = action.payload;
 			state.ui.attachmentError = '';
 		},
-		setContactCards: (
-			state,
-			action: PayloadAction<typeof initialState.details.shared_contact_cards>
-		) => {
-			state.details.shared_contact_cards = action.payload;
+		setContactCards: (state, action: PayloadAction<typeof initialState.details.contacts>) => {
+			state.details.contacts = action.payload;
 			state.ui.contactCardsError = '';
 		},
 		setResponseDelayTime: (state, action: PayloadAction<number>) => {
@@ -229,6 +228,12 @@ const BotSlice = createSlice({
 		) => {
 			state.ui[action.payload.type] = action.payload.error;
 		},
+		addDevice: (state, action: PayloadAction<string>) => {
+			state.details.devices.push(action.payload);
+		},
+		removeDevice: (state, action: PayloadAction<string>) => {
+			state.details.devices = state.details.devices.filter((f) => f !== action.payload);
+		},
 
 		setSearchText: (state, action: PayloadAction<string>) => {
 			state.ui.searchText = action.payload;
@@ -267,6 +272,8 @@ export const {
 	setStartAt,
 	setSearchText,
 	setCondition,
+	addDevice,
+	removeDevice,
 } = BotSlice.actions;
 
 export default BotSlice.reducer;

@@ -18,8 +18,14 @@ async function allBots(req: Request, res: Response, next: NextFunction) {
 		data: {
 			bots: bots.map((bot) => ({
 				...bot,
+				devices: bot.devices.map((d) => d.client_id),
 				attachments: bot.attachments.map(({ id }) => id),
 				contacts: bot.contacts.map(({ id }) => id),
+				nurturing: bot.nurturing.map((item) => ({
+					...item,
+					attachments: item.attachments.map(({ id }) => id),
+					contacts: item.contacts.map(({ id }) => id),
+				})),
 			})),
 		},
 	});
@@ -38,8 +44,14 @@ async function botById(req: Request, res: Response, next: NextFunction) {
 			data: {
 				bot: {
 					...bot,
-					attachments: bot.attachments.map((attachments) => attachments.id),
-					contacts: bot.contacts.map(({ id }) => id),
+					devices: bot.devices.map((d) => d.client_id),
+					attachments: bot.attachments,
+					contacts: bot.contacts,
+					nurturing: bot.nurturing.map((item) => ({
+						...item,
+						attachments: item.attachments.map(({ id }) => id),
+						contacts: item.contacts.map(({ id }) => id),
+					})),
 				},
 			},
 		});
@@ -63,8 +75,7 @@ async function createBot(req: Request, res: Response, next: NextFunction) {
 		data: {
 			bot: {
 				...bot,
-				attachments: bot.attachments.map((a) => a.id),
-				contacts: bot.contacts.map((c) => c.id),
+				devices: bot.devices.map((d) => d.client_id),
 			},
 		},
 	});
@@ -88,12 +99,15 @@ async function updateBot(req: Request, res: Response, next: NextFunction) {
 			data: {
 				bot: {
 					...bot,
-					attachments: bot.attachments.map((attachments) => attachments.id),
-					contacts: bot.contacts.map((cards) => cards.id),
+					devices: bot.devices.map((d) => d.client_id),
+					attachments: bot.attachments,
+					contacts: bot.contacts,
 				},
 			},
 		});
 	} catch (err) {
+		console.log(err);
+
 		return next(new APIError(COMMON_ERRORS.NOT_FOUND));
 	}
 }
@@ -111,8 +125,8 @@ async function toggleActive(req: Request, res: Response, next: NextFunction) {
 			data: {
 				bot: {
 					...bot,
-					attachments: bot.attachments.map((attachments) => attachments.id),
-					contacts: bot.contacts.map(({ id }) => id),
+					attachments: bot.attachments,
+					contacts: bot.contacts,
 				},
 			},
 		});

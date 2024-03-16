@@ -4,7 +4,6 @@ import { ERRORS, InternalError } from '../../errors';
 import TimeGenerator from '../../structures/TimeGenerator';
 import { TPoll } from '../../types/poll';
 import DateUtils from '../../utils/DateUtils';
-import { generateBatchID } from '../../utils/ExpressUtils';
 import { AccountService } from '../account';
 import MessageService from './Message';
 
@@ -57,7 +56,27 @@ export default class CampaignService {
 		if (await this.alreadyExists(opts.campaign_name)) {
 			throw new InternalError(ERRORS.COMMON_ERRORS.ALREADY_EXISTS);
 		}
-		const campaign_id = generateBatchID();
+
+		const { id: campaign_id } = await campaignDB.create({
+			data: {
+				description: opts.description,
+				min_delay: opts.min_delay,
+				max_delay: opts.max_delay,
+				batch_size: opts.batch_size,
+				batch_delay: opts.batch_delay,
+				username: this._user.username,
+				name: opts.campaign_name,
+				startAt: opts.startTime,
+				endAt: opts.endTime,
+				startDate: opts.startDate
+					? DateUtils.getMoment(opts.startDate, 'YYYY-MM-DD').toDate()
+					: DateUtils.getDate(),
+				devices: {
+					connect: opts.devices.map((client_id) => ({ client_id })),
+				},
+			},
+		});
+
 		const _messages: string[] = [];
 		const dateGenerator = new TimeGenerator(opts);
 		for (const message of messages) {
@@ -82,23 +101,15 @@ export default class CampaignService {
 			_messages.push(msg);
 		}
 
-		const campaign = await campaignDB.create({
+		const campaign = await campaignDB.update({
+			where: { id: campaign_id },
 			data: {
-				...opts,
-				id: campaign_id,
-				username: this._user.username,
-				name: opts.campaign_name,
 				messages: {
 					connect: _messages.map((id) => ({ id })),
 				},
-				startAt: opts.startTime,
-				endAt: opts.endTime,
-				startDate: opts.startDate,
-				devices: {
-					connect: opts.devices.map((client_id) => ({ client_id })),
-				},
 			},
 		});
+
 		return campaign;
 	}
 
@@ -134,7 +145,7 @@ export default class CampaignService {
 			);
 			return {
 				campaign_id: campaign.id,
-				campaignName: campaign.name,
+				name: campaign.name,
 				description: campaign.description,
 				status: campaign.status,
 				sent,
@@ -151,7 +162,7 @@ export default class CampaignService {
 			await messageDB.deleteMany({
 				where: { scheduledById: id },
 			});
-			await campaignDB.findUnique({ where: { id } });
+			await campaignDB.delete({ where: { id } });
 		} catch (err) {}
 	}
 

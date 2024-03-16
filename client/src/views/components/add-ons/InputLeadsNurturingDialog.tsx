@@ -39,9 +39,9 @@ const initialState = [
 	{
 		message: '',
 		after: 60,
-		start_from: '10:00',
-		end_at: '18:00',
-		shared_contact_cards: [],
+		startAt: '10:00',
+		endAt: '18:00',
+		contacts: [],
 		attachments: [],
 		polls: [],
 	},
@@ -50,9 +50,9 @@ const blankNurturing = {
 	message: '',
 	delay: '1',
 	unit: 'MINUTES' as 'MINUTES' | 'HOURS' | 'DAYS',
-	start_from: '10:00',
-	end_at: '18:00',
-	shared_contact_cards: [] as string[],
+	startAt: '10:00',
+	endAt: '18:00',
+	contacts: [] as string[],
 	attachments: [] as string[],
 	polls: [] as Poll[],
 };
@@ -62,9 +62,9 @@ export type InputLeadsNurturingDialogHandle = {
 		nurturing?: {
 			message: string;
 			after: number;
-			start_from: string;
-			end_at: string;
-			shared_contact_cards: string[];
+			startAt: string;
+			endAt: string;
+			contacts: string[];
 			attachments: string[];
 			polls: Poll[];
 		}[]
@@ -77,9 +77,9 @@ type Props = {
 		nurturing: {
 			message: string;
 			after: number;
-			start_from: string;
-			end_at: string;
-			shared_contact_cards: string[];
+			startAt: string;
+			endAt: string;
+			contacts: string[];
 			attachments: string[];
 			polls: Poll[];
 		}[]
@@ -140,7 +140,7 @@ const InputLeadsNurturingDialog = forwardRef<InputLeadsNurturingDialogHandle, Pr
 				if (
 					nurturing[i].message.trim().length === 0 &&
 					nurturing[i].attachments.length === 0 &&
-					nurturing[i].shared_contact_cards.length === 0 &&
+					nurturing[i].contacts.length === 0 &&
 					nurturing[i].polls.length === 0
 				) {
 					setError({ message: 'Message is required', type: 'message', index: i });
@@ -158,9 +158,9 @@ const InputLeadsNurturingDialog = forwardRef<InputLeadsNurturingDialogHandle, Pr
 							: nurturing.unit === 'HOURS'
 							? Number(nurturing.delay) * 3600
 							: Number(nurturing.delay) * 60,
-					start_from: nurturing.start_from,
-					end_at: nurturing.end_at,
-					shared_contact_cards: nurturing.shared_contact_cards,
+					startAt: nurturing.startAt,
+					endAt: nurturing.endAt,
+					contacts: nurturing.contacts,
 					attachments: nurturing.attachments,
 					polls: nurturing.polls,
 				}))
@@ -195,8 +195,8 @@ const InputLeadsNurturingDialog = forwardRef<InputLeadsNurturingDialogHandle, Pr
 						...el,
 						delay: delay.toString(),
 						unit,
-						end_at: el.end_at,
-						start_from: el.start_from,
+						endAt: el.endAt,
+						startAt: el.startAt,
 						after: undefined,
 					};
 				});
@@ -257,15 +257,15 @@ const InputLeadsNurturingDialog = forwardRef<InputLeadsNurturingDialogHandle, Pr
 														<Input
 															width={'fit-content'}
 															type='time'
-															value={nurturing.start_from}
-															onChange={(e) => handleChange('start_from', e.target.value, index)}
+															value={nurturing.startAt}
+															onChange={(e) => handleChange('startAt', e.target.value, index)}
 														/>
 														<Text fontSize={'lg'}>to</Text>
 														<Input
 															width={'fit-content'}
 															type='time'
-															value={nurturing.end_at}
-															onChange={(e) => handleChange('end_at', e.target.value, index)}
+															value={nurturing.endAt}
+															onChange={(e) => handleChange('endAt', e.target.value, index)}
 														/>
 													</Flex>
 												</FormControl>
@@ -313,12 +313,10 @@ const InputLeadsNurturingDialog = forwardRef<InputLeadsNurturingDialogHandle, Pr
 															variant={'outline'}
 															colorScheme='green'
 															onClick={() =>
-																contactSelectorRef.current[index]?.open(
-																	nurturing.shared_contact_cards
-																)
+																contactSelectorRef.current[index]?.open(nurturing.contacts)
 															}
 														>
-															Select Contacts ({nurturing.shared_contact_cards.length}) Selected
+															Select Contacts ({nurturing.contacts.length}) Selected
 														</Button>
 													</Box>
 													<Box flex={1}>
@@ -363,7 +361,7 @@ const InputLeadsNurturingDialog = forwardRef<InputLeadsNurturingDialogHandle, Pr
 										/>
 										<ContactSelectorDialog
 											ref={(elRef) => (contactSelectorRef.current[index] = elRef)}
-											onConfirm={(ids) => handleChange('shared_contact_cards', ids, index)}
+											onConfirm={(ids) => handleChange('contacts', ids, index)}
 										/>
 										<PollInputDialog
 											ref={(elRef) => (pollInputRef.current[index] = elRef)}

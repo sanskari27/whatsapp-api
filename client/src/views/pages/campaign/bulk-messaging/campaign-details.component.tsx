@@ -15,6 +15,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Colors } from '../../../../config/const';
 import { StoreNames, StoreState } from '../../../../store';
 import {
+	addDevice,
+	removeDevice,
 	setCSVFile,
 	setCampaignName,
 	setCampaignNameError,
@@ -25,6 +27,7 @@ import {
 	setRecipientsFrom,
 	setVariables,
 } from '../../../../store/reducers/SchedulerReducer';
+import ProfileSelector from '../../../components/profiles-selector';
 import NumberInputDialog from './numbers-input.component';
 
 export default function CampaignDetails({
@@ -45,7 +48,7 @@ export default function CampaignDetails({
 				<Input
 					type='text'
 					variant='unstyled'
-					value={details.campaign_name}
+					value={details.name}
 					onChange={(e) => {
 						dispatch(setCampaignNameError(false));
 						dispatch(setCampaignName(e.target.value));
@@ -81,6 +84,12 @@ export default function CampaignDetails({
 			</FormControl>
 			<RecipientFromSelector fetchRecipients={fetchRecipients} />
 			<RecipientToSelector />
+
+			<ProfileSelector
+				selectedProfiles={details.devices}
+				onProfileSelected={(text) => dispatch(addDevice(text))}
+				onProfileRemoved={(text) => dispatch(removeDevice(text))}
+			/>
 		</VStack>
 	);
 }
@@ -188,7 +197,7 @@ function RecipientToSelector() {
 						color={recipientsError ? 'red' : Colors.ACCENT_DARK}
 						bgColor={Colors.ACCENT_LIGHT}
 						border={'none'}
-						value={details.csv_file}
+						value={details.csv}
 						onChange={(e) => {
 							dispatch(setRecipientsError(false));
 							dispatch(setCSVFile(e.target.value));

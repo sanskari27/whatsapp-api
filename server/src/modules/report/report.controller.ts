@@ -31,7 +31,7 @@ async function pauseCampaign(req: Request, res: Response, next: NextFunction) {
 async function deleteCampaign(req: Request, res: Response, next: NextFunction) {
 	const { account } = req.locals;
 
-	new CampaignService(account).deleteCampaign(req.locals.id);
+	await new CampaignService(account).deleteCampaign(req.locals.id);
 
 	return Respond({
 		res,
@@ -57,6 +57,7 @@ async function generateReport(req: Request, res: Response, next: NextFunction) {
 	try {
 		const scheduler = new CampaignService(account);
 		const reports = await scheduler.generateReport(req.locals.id);
+
 		return RespondCSV({
 			res,
 			filename: 'Campaign Reports',

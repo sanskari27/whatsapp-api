@@ -111,6 +111,8 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 	const taskService = new TaskService(req.locals.account);
 	const options = {
 		business_contacts_only: req.body.business_contacts_only ?? false,
+		saved: req.body.saved ?? false,
+		unsaved: req.body.unsaved ?? false,
 		vcf: req.body.vcf ?? false,
 	};
 
@@ -146,6 +148,7 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 				).saved.map(async (contact) => ({
 					...(await whatsappUtils.getContactDetails(contact)),
 					...WhatsappUtils.getBusinessDetails(contact),
+					isSaved: contact.isMyContact,
 				}))
 			)
 		).reduce((acc, contact) => {
@@ -161,6 +164,7 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 				latitude: contact.latitude ?? 0,
 				longitude: contact.longitude ?? 0,
 				address: contact.address ?? '',
+				isSaved: contact.isSaved,
 			};
 			return acc;
 		}, {} as MappedContacts);
@@ -185,6 +189,8 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 			await Promise.all(
 				groups.map((groupChat) =>
 					whatsappUtils.getGroupContacts(groupChat, {
+						saved: options.saved,
+						unsaved: options.unsaved,
 						business_details: options.business_contacts_only,
 						mapped_contacts: saved_contacts,
 					})

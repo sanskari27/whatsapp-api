@@ -15,15 +15,15 @@ type VCardDetails = {
 	state: string;
 	country: string;
 	pincode: string;
-	contact_details_phone: {
+	contact_phone: {
 		whatsapp_id?: string;
 		contact_number: string;
 	};
-	contact_details_work: {
+	contact_work: {
 		whatsapp_id?: string;
 		contact_number: string;
 	};
-	contact_details_other: {
+	contact_other: {
 		whatsapp_id?: string;
 		contact_number: string;
 	}[];
@@ -37,15 +37,15 @@ export default class VCardBuilder {
 	private title: string;
 	private organization: string;
 
-	private contact_details_phone?: {
+	private contact_phone?: {
 		whatsapp_id?: string;
 		contact_number: string;
 	};
-	private contact_details_work?: {
+	private contact_work?: {
 		whatsapp_id?: string;
 		contact_number: string;
 	};
-	private contact_details_other: {
+	private contact_other: {
 		whatsapp_id?: string;
 		contact_number: string;
 	}[];
@@ -75,9 +75,9 @@ export default class VCardBuilder {
 		this.state = details.state ?? '';
 		this.country = details.country ?? '';
 		this.pincode = details.pincode ?? '';
-		this.contact_details_other = details.contact_details_other ?? [];
-		this.contact_details_phone = details.contact_details_phone ?? undefined;
-		this.contact_details_work = details.contact_details_work ?? undefined;
+		this.contact_other = details.contact_other ?? [];
+		this.contact_phone = details.contact_phone ?? undefined;
+		this.contact_work = details.contact_work ?? undefined;
 	}
 
 	public build(): string {
@@ -101,8 +101,8 @@ export default class VCardBuilder {
 		vCardString += `N:${this.last_name};${this.first_name};${this.middle_name};;\n`;
 
 		// Add Contact details
-		if (this.contact_details_phone) {
-			const { whatsapp_id: waid, contact_number: c_no } = this.contact_details_phone;
+		if (this.contact_phone) {
+			const { whatsapp_id: waid, contact_number: c_no } = this.contact_phone;
 			vCardString += 'TEL;TYPE=PHONE';
 			if (waid) {
 				vCardString += `;waid=${waid}:${c_no}`;
@@ -112,8 +112,8 @@ export default class VCardBuilder {
 			vCardString += '\n';
 		}
 
-		if (this.contact_details_work) {
-			const { whatsapp_id: waid, contact_number: c_no } = this.contact_details_work;
+		if (this.contact_work) {
+			const { whatsapp_id: waid, contact_number: c_no } = this.contact_work;
 			vCardString += 'TEL;TYPE=WORK';
 			if (waid) {
 				vCardString += `;waid=${waid}:${c_no}`;
@@ -123,7 +123,7 @@ export default class VCardBuilder {
 			vCardString += '\n';
 		}
 
-		for (const contact of this.contact_details_other) {
+		for (const contact of this.contact_other) {
 			const { whatsapp_id: waid, contact_number: c_no } = contact;
 			vCardString += 'TEL;TYPE=OTHER';
 			if (waid) {
@@ -184,21 +184,21 @@ export default class VCardBuilder {
 	}
 
 	public setContactPhone(contact_number: string, whatsapp_id?: string) {
-		this.contact_details_phone = {
+		this.contact_phone = {
 			contact_number,
 			whatsapp_id,
 		};
 		return this;
 	}
 	public setContactWork(contact_number: string, whatsapp_id?: string) {
-		this.contact_details_work = {
+		this.contact_work = {
 			contact_number,
 			whatsapp_id,
 		};
 		return this;
 	}
 	public addContactOther(contact_number: string, whatsapp_id?: string) {
-		this.contact_details_other.push({
+		this.contact_other.push({
 			contact_number,
 			whatsapp_id,
 		});

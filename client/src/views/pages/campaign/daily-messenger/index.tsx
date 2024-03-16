@@ -67,35 +67,26 @@ export default function DailyMessenger() {
 
 	const validate = () => {
 		let hasError = false;
-		if (!details.campaign_name) {
+		if (details.devices.length === 0) {
+			toast({
+				title: 'Select 1 Profile.',
+				status: 'error',
+			});
+			hasError = true;
+		}
+		if (!details.name) {
 			dispatch(setCampaignNameError(true));
 			hasError = true;
 		}
 
-		if (details.type === 'NUMBERS' && details.numbers?.length === 0) {
-			dispatch(setRecipientsError(true));
-			hasError = true;
-		}
-		if (details.type === 'CSV' && details.csv_file === '') {
-			dispatch(setRecipientsError(true));
-			hasError = true;
-		}
-		if (details.type === 'GROUP' && details.group_ids.length === 0) {
-			dispatch(setRecipientsError(true));
-			hasError = true;
-		}
-		if (details.type === 'GROUP_INDIVIDUAL' && details.group_ids.length === 0) {
-			dispatch(setRecipientsError(true));
-			hasError = true;
-		}
-		if (details.type === 'LABEL' && details.label_ids.length === 0) {
+		if (details.csv === '') {
 			dispatch(setRecipientsError(true));
 			hasError = true;
 		}
 		if (
 			!details.message &&
 			details.attachments.length === 0 &&
-			details.shared_contact_cards.length === 0 &&
+			details.contacts.length === 0 &&
 			details.polls.length === 0
 		) {
 			dispatch(setMessageError(true));
@@ -124,11 +115,15 @@ export default function DailyMessenger() {
 		if (!validate()) {
 			return;
 		}
-		MessageService.scheduleCampaign(details).then(() => {
+		const promise = id
+			? MessageService.updateDailyMessenger(details.message_scheduler_id, details)
+			: MessageService.createDailyMessenger(details);
+
+		promise.then(() => {
 			dispatch(reset());
 			toast({
-				title: 'Campaign scheduler.',
-				description: 'Campaign is being Scheduled',
+				title: 'Daily Messenger scheduled.',
+				description: 'Messages will be scheduled at mid night.',
 				status: 'info',
 				duration: 3000,
 				isClosable: true,

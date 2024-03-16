@@ -67,7 +67,14 @@ export default function BulkMessaging() {
 
 	const validate = () => {
 		let hasError = false;
-		if (!details.campaign_name) {
+		if (details.devices.length === 0) {
+			toast({
+				title: 'Select 1 Profile.',
+				status: 'error',
+			});
+			hasError = true;
+		}
+		if (!details.name) {
 			dispatch(setCampaignNameError(true));
 			hasError = true;
 		}
@@ -76,7 +83,7 @@ export default function BulkMessaging() {
 			dispatch(setRecipientsError(true));
 			hasError = true;
 		}
-		if (details.type === 'CSV' && details.csv_file === '') {
+		if (details.type === 'CSV' && details.csv === '') {
 			dispatch(setRecipientsError(true));
 			hasError = true;
 		}
@@ -95,7 +102,7 @@ export default function BulkMessaging() {
 		if (
 			!details.message &&
 			details.attachments.length === 0 &&
-			details.shared_contact_cards.length === 0 &&
+			details.contacts.length === 0 &&
 			details.polls.length === 0
 		) {
 			dispatch(setMessageError(true));

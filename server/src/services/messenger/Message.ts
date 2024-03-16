@@ -6,7 +6,7 @@ import { WhatsappProvider } from '../../provider/whatsapp_provider';
 import { TPoll } from '../../types/poll';
 import DateUtils from '../../utils/DateUtils';
 import { randomDevice } from '../../utils/ExpressUtils';
-import { AccountService, AccountServiceFactory } from '../account';
+import { AccountService } from '../account';
 
 export type Message = {
 	receiver: string;
@@ -36,21 +36,22 @@ export default class MessageService {
 	}
 
 	async scheduleMessage(message: Message, opts: MessageSchedulerOptions) {
+		const { receiver, attachments, contacts, ..._message } = message;
 		const msg = await messageDB.create({
 			data: {
-				...message,
+				..._message,
 				username: this._user.username,
-				recipient: message.receiver,
+				recipient: receiver,
 				devices: {
 					connect: opts.devices.map((client_id) => ({ client_id })),
 				},
 				attachments: {
-					connect: message.attachments.map(({ id }) => ({ id })),
+					connect: attachments.map(({ id }) => ({ id })),
 				},
 				contacts: {
-					connect: message.contacts.map((id) => ({ id })),
+					connect: contacts.map((id) => ({ id })),
 				},
-				captions: message.attachments.map((a) => a.caption ?? ''),
+				captions: attachments.map((a) => a.caption ?? ''),
 				scheduledBy: opts.scheduled_by,
 				scheduledById: opts.scheduler_id,
 			},
@@ -72,21 +73,23 @@ export default class MessageService {
 
 	async scheduleLeadNurturingMessage(messages: Message[], opts: MessageSchedulerOptions) {
 		for (const message of messages) {
+			const { receiver, attachments, contacts, ..._message } = message;
+
 			await messageDB.create({
 				data: {
-					...message,
+					..._message,
 					username: this._user.username,
-					recipient: message.receiver,
+					recipient: receiver,
 					devices: {
 						connect: opts.devices.map((client_id) => ({ client_id })),
 					},
 					attachments: {
-						connect: message.attachments.map(({ id }) => ({ id })),
+						connect: attachments.map(({ id }) => ({ id })),
 					},
 					contacts: {
-						connect: message.contacts.map((id) => ({ id })),
+						connect: contacts.map((id) => ({ id })),
 					},
-					captions: message.attachments.map((a) => a.caption ?? ''),
+					captions: attachments.map((a) => a.caption ?? ''),
 					scheduledBy: opts.scheduled_by,
 					scheduledById: opts.scheduler_id,
 				},
@@ -94,11 +97,31 @@ export default class MessageService {
 		}
 	}
 
-	static async sendScheduledMessage() {
+	static async markExpiredMessagesFailed() {
+		await messageDB.updateMany({
+			where: {
+				user: {
+					subscription_expiry: {
+						lt: DateUtils.getMomentNow().toDate(),
+					},
+				},
+			},
+			data: {
+				status: 'FAILED',
+			},
+		});
+	}
+
+	static async sendScheduledMessage(done: () => void = () => {}) {
 		const scheduledMessages = await messageDB.findMany({
 			where: {
 				sendAt: {
 					lte: DateUtils.getMomentNow().toDate(),
+				},
+				user: {
+					subscription_expiry: {
+						gte: DateUtils.getMomentNow().toDate(),
+					},
 				},
 				status: 'PENDING',
 			},
@@ -109,42 +132,41 @@ export default class MessageService {
 			},
 		});
 
+		await messageDB.updateMany({
+			where: {
+				id: {
+					in: scheduledMessages.map((m) => m.id),
+				},
+			},
+			data: {
+				status: 'SENT',
+			},
+		});
+		done();
+
 		scheduledMessages.forEach(async (msg) => {
-			if (msg.devices.length === 0) {
+			const cid = randomDevice(msg.devices);
+
+			const whatsapp = WhatsappProvider.getInstanceByClientID(cid?.client_id ?? '');
+			if (!whatsapp) {
 				messageDB.update({
 					where: { id: msg.id },
 					data: { status: 'FAILED' },
 				});
 				return;
-			}
-			const cid = randomDevice(msg.devices).client_id;
-			if (!cid) {
+			} else if (!whatsapp.isReady()) {
 				messageDB.update({
 					where: { id: msg.id },
 					data: {
 						sendAt: DateUtils.getMoment(msg.sendAt).add(5, 'minutes').toDate(),
+						status: 'PENDING',
 					},
 				});
 				return;
 			}
-			const user = await AccountServiceFactory.findByUsername(msg.username);
-			const whatsapp = WhatsappProvider.getInstance(user, cid);
 
-			const { isSubscribed } = await user.isSubscribed();
-
-			if (!isSubscribed) {
-				messageDB.update({
-					where: { id: msg.id },
-					data: { status: 'FAILED' },
-				});
-				return;
-			}
 			let message = msg.message;
 			msg.status = MESSAGE_STATUS.SENT;
-			messageDB.update({
-				where: { id: msg.id },
-				data: { status: 'SENT' },
-			});
 
 			if (message) {
 				whatsapp.getClient().sendMessage(msg.recipient, message);

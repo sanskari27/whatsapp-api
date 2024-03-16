@@ -72,7 +72,8 @@ export function generateClientID() {
 export function generateBatchID() {
 	return crypto.randomBytes(6).toString('hex');
 }
-export function randomDevice<T>(devices: T[]): T {
+export function randomDevice<T>(devices: T[]): T | null {
+	if (devices.length === 0) return null;
 	return devices[Math.floor(Math.random() * devices.length)];
 }
 

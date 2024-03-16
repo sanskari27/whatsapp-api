@@ -374,7 +374,7 @@ export default class CSVParser {
 
 	static exportSchedulerReport(
 		records: {
-			campaign_name: string;
+			name: string;
 			receiver: string;
 			message: string;
 			attachments: number;
@@ -385,7 +385,7 @@ export default class CSVParser {
 	) {
 		const keys = [
 			{
-				field: 'campaign_name',
+				field: 'name',
 				title: 'Scheduler Name',
 			},
 			{

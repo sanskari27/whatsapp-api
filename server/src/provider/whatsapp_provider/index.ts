@@ -93,6 +93,13 @@ export class WhatsappProvider {
 		return new WhatsappProvider(account, client_id);
 	}
 
+	public static getInstanceByClientID(client_id: ClientID) {
+		if (WhatsappProvider.clientsMap.has(client_id)) {
+			return WhatsappProvider.clientsMap.get(client_id)!;
+		}
+		return null;
+	}
+
 	public getClient() {
 		return this.client;
 	}
@@ -109,123 +116,125 @@ export class WhatsappProvider {
 	}
 
 	private async attachListeners() {
-		this.client.on('qr', async (qrCode) => {
-			try {
-				this.qrCode = await QRCode.toDataURL(qrCode);
-				this.status = STATUS.QR_READY;
+		this.client.on('qr', this.onQRUpdated);
+		this.client.on('authenticated', this.onAuthenticated);
+		this.client.on('ready', this.onWhatsappReady);
+		this.client.on('message', this.onMessage);
+		this.client.on('vote_update', this.onVoteUpdate);
+		this.client.on('disconnected', this.onDisconnect);
+	}
 
-				this.sendToClient(SOCKET_RESPONSES.QR_GENERATED, this.qrCode);
-			} catch (err) {}
+	private async onQRUpdated(qrCode: string) {
+		try {
+			this.qrCode = await QRCode.toDataURL(qrCode);
+			this.status = STATUS.QR_READY;
+			this.sendToClient(SOCKET_RESPONSES.QR_GENERATED, this.qrCode);
+		} catch (err) {}
+	}
+
+	private async onAuthenticated() {
+		this.status = STATUS.AUTHENTICATED;
+		this.sendToClient(SOCKET_RESPONSES.WHATSAPP_AUTHENTICATED);
+	}
+
+	private async onWhatsappReady() {
+		this.number = this.client.info.wid.user;
+		this.contact = await this.client.getContactById(this.client.info.wid._serialized);
+
+		const business_details = this.contact.isBusiness
+			? WhatsappUtils.getBusinessDetails(this.contact as BusinessContact)
+			: {
+					description: '',
+					email: '',
+					websites: [] as string[],
+					latitude: 0,
+					longitude: 0,
+					address: '',
+			  };
+
+		await AccountServiceFactory.createDevice({
+			name: this.client.info.pushname,
+			phone: this.number,
+			isBusiness: this.contact.isBusiness,
+			business_details,
 		});
 
-		this.client.on('authenticated', async () => {
-			this.status = STATUS.AUTHENTICATED;
-			this.sendToClient(SOCKET_RESPONSES.WHATSAPP_AUTHENTICATED);
+		await this._user.addProfile(this.number, this.client_id);
+		this.status = STATUS.READY;
+
+		this.bot_service = new BotService(this._user);
+		this.group_service = new GroupMergeService(this._user);
+		this.vote_response_service = new VoteResponseService(this._user);
+
+		this.sendToClient(SOCKET_RESPONSES.WHATSAPP_READY);
+	}
+
+	private async onMessage(message: WAWebJS.Message) {
+		if (!this.bot_service) return;
+		const chat = await message.getChat();
+		const isGroup = chat.isGroup;
+		const contact = await message.getContact();
+		this.bot_service.handleMessage(this.client, {
+			trigger_chat: message.from,
+			body: message.body,
+			contact,
+			client_id: this.client_id,
+			isGroup,
+			fromPoll: false,
 		});
-
-		this.client.on('ready', async () => {
-			this.number = this.client.info.wid.user;
-			this.contact = await this.client.getContactById(this.client.info.wid._serialized);
-
-			const business_details = this.contact.isBusiness
-				? WhatsappUtils.getBusinessDetails(this.contact as BusinessContact)
-				: {
-						description: '',
-						email: '',
-						websites: [] as string[],
-						latitude: 0,
-						longitude: 0,
-						address: '',
-				  };
-
-			await AccountServiceFactory.createDevice({
-				name: this.client.info.pushname,
-				phone: this.number,
-				isBusiness: this.contact.isBusiness,
-				business_details,
-			});
-
-			await this._user.addProfile(this.number, this.client_id);
-			this.status = STATUS.READY;
-
-			this.bot_service = new BotService(this._user);
-			this.group_service = new GroupMergeService(this._user);
-			this.bot_service.attachWhatsappProvider(this);
-			this.vote_response_service = new VoteResponseService(this._user);
-
-			this.sendToClient(SOCKET_RESPONSES.WHATSAPP_READY);
-		});
-
-		this.client.on('vote_update', async (vote) => {
-			/** The vote that was affected: */
-			if (!this.vote_response_service) return;
-			if (!vote.parentMessage.id?.fromMe) return;
-			const pollDetails = this.vote_response_service.getPollDetails(vote.parentMessage);
-			const contact = await this.client.getContactById(vote.voter);
-			if (!this.contact || contact.id._serialized === this.contact.id._serialized) {
-				return;
-			}
-			const details = {
-				...pollDetails,
-				voter_number: '',
-				voter_name: '',
-				group_name: '',
-				selected_option: vote.selectedOptions.map((opt) => opt.name),
-				voted_at: DateUtils.getMoment(vote.interractedAtTs).toDate(),
-			};
-
-			const chat = await this.client.getChatById(pollDetails.chat_id);
-			if (chat.isGroup) {
-				details.group_name = chat.name;
-			}
-
-			details.voter_number = contact.number;
-			details.voter_name = (contact.name || contact.pushname) ?? '';
-
-			await this.vote_response_service.saveVote(details);
-
-			details.selected_option.map((opt) => {
-				if (!this.bot_service) return;
-
-				this.bot_service.handleMessage({
-					trigger_chat: chat.id._serialized,
-					body: opt,
-					client_id: this.client_id,
-					contact,
-					fromPoll: true,
-					isGroup: false,
-				});
-			});
-		});
-
-		this.client.on('disconnected', () => {
-			this.status = STATUS.DISCONNECTED;
-
-			this._user.deviceLogout(this.client_id);
-			this.logoutClient();
-		});
-
-		this.client.on('message', async (message) => {
-			if (!this.bot_service) return;
-			const chat = await message.getChat();
-			const isGroup = chat.isGroup;
-			const contact = await message.getContact();
-			this.bot_service.handleMessage({
-				trigger_chat: message.from,
-				body: message.body,
+		if (isGroup) {
+			this.group_service?.sendGroupReply(this.client, {
+				chat: chat as GroupChat,
+				message,
 				contact,
-				client_id: this.client_id,
-				isGroup,
-				fromPoll: false,
 			});
-			if (isGroup) {
-				this.group_service?.sendGroupReply(this.client, {
-					chat: chat as GroupChat,
-					message,
-					contact,
-				});
-			}
+		}
+	}
+
+	private async onVoteUpdate(vote: WAWebJS.PollVote) {
+		if (!this.vote_response_service || !this.contact) return;
+		if (!vote.parentMessage.id?.fromMe) return;
+		const pollDetails = this.vote_response_service.getPollDetails(vote.parentMessage);
+		const contact = await this.client.getContactById(vote.voter);
+		if (contact.id._serialized === this.contact.id._serialized) {
+			return;
+		}
+		const details = {
+			...pollDetails,
+			voter_number: '',
+			voter_name: '',
+			group_name: '',
+			selected_option: vote.selectedOptions.map((opt) => opt.name),
+			voted_at: DateUtils.getMoment(vote.interractedAtTs).toDate(),
+		};
+
+		const chat = await this.client.getChatById(pollDetails.chat_id);
+		if (chat.isGroup) {
+			details.group_name = chat.name;
+		}
+
+		details.voter_number = contact.number;
+		details.voter_name = (contact.name || contact.pushname) ?? '';
+
+		await this.vote_response_service.saveVote(details);
+
+		details.selected_option.map((opt) => {
+			if (!this.bot_service) return;
+			this.bot_service.handleMessage(this.client, {
+				trigger_chat: chat.id._serialized,
+				body: opt,
+				client_id: this.client_id,
+				contact,
+				fromPoll: true,
+				isGroup: false,
+			});
 		});
+	}
+
+	private onDisconnect() {
+		this.status = STATUS.DISCONNECTED;
+		this._user.deviceLogout(this.client_id);
+		this.logoutClient();
 	}
 
 	private sendToClient(event: SOCKET_RESPONSES, data: string | null = null) {

@@ -29,6 +29,7 @@ export type BotState = {
 
 export type Bot = {
 	bot_id: string;
+	devices: string[];
 	respond_to: string;
 	trigger: string;
 	trigger_gap_seconds: number;
@@ -38,7 +39,7 @@ export type Bot = {
 	endAt: string;
 	message: string;
 	attachments: string[];
-	shared_contact_cards: string[];
+	contacts: string[];
 	isActive: boolean;
 	polls: {
 		title: string;
@@ -52,9 +53,9 @@ export type Bot = {
 	nurturing: {
 		message: string;
 		after: number;
-		start_from: string;
-		end_at: string;
-		shared_contact_cards: string[];
+		startAt: string;
+		endAt: string;
+		contacts: string[];
 		attachments: string[];
 		polls: Poll[];
 	}[];

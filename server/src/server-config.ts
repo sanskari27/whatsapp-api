@@ -141,16 +141,25 @@ export default function (app: Express) {
 	WhatsappUtils.resumeSessions();
 
 	//0 0 * * *
+
 	cron.schedule('30 0 * * *', function () {
 		SchedulerService.scheduleDailyMessages();
 		WhatsappUtils.removeUnwantedSessions();
+		MessageService.markExpiredMessagesFailed();
 	});
 
 	cron.schedule('0 */3 * * *', function () {
 		WhatsappUtils.removeInactiveSessions();
 	});
+
+	let lock = createLock();
+
 	cron.schedule('* * * * * *', function () {
-		MessageService.sendScheduledMessage();
+		if (lock.isLocked()) {
+			return;
+		}
+		lock.acquire();
+		MessageService.sendScheduledMessage(() => lock.release());
 	});
 	cron.schedule('30 3 * * *', function () {
 		exec('pgrep chrome | xargs kill -9', (error, stdout, stderr) => {
@@ -171,4 +180,23 @@ function createDir() {
 	fs.mkdirSync(__basedir + INVOICE_PATH, { recursive: true });
 	fs.mkdirSync(__basedir + MISC_PATH, { recursive: true });
 	fs.mkdirSync(__basedir + TASK_PATH, { recursive: true });
+}
+
+function createLock() {
+	let _isLocked = false;
+
+	return {
+		isLocked: function () {
+			return _isLocked;
+		},
+		acquire: function () {
+			while (_isLocked) {}
+			_isLocked = true;
+			return _isLocked;
+		},
+		release: function () {
+			_isLocked = false;
+			return _isLocked;
+		},
+	};
 }

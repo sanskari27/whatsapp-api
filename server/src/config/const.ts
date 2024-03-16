@@ -53,7 +53,7 @@ export const CACHE_TOKEN_GENERATOR = {
 // ========================================= Socket =========================================
 
 export enum SOCKET_EVENTS {
-	CONNECT = 'connect',
+	ATTACH_SOCKET = 'attach-socket',
 	INITIALIZE = 'initialize',
 }
 

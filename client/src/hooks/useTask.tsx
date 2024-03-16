@@ -1,8 +1,10 @@
 import { useToast } from '@chakra-ui/react';
 import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { socket } from '../config/APIInstance';
 import { SOCKET_EVENT } from '../config/const';
 import TaskService from '../services/task.service';
+import { StoreNames, StoreState } from '../store';
 
 export enum TASK_STATUS {
 	COMPLETED = 'COMPLETED',
@@ -29,9 +31,15 @@ export default function useTask() {
 		}[]
 	>([]);
 
+	const { username } = useSelector((state: StoreState) => state[StoreNames.USER]);
+
 	useEffect(() => {
 		TaskService.listTasks().then(setTasks);
 	}, []);
+	useEffect(() => {
+		if (!username) return;
+		socket.emit(SOCKET_EVENT.ATTACH_SOCKET, username);
+	}, [username]);
 
 	useEffect(() => {
 		const listenerCompleted = (id: string) => {

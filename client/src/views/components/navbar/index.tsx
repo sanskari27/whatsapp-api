@@ -227,7 +227,18 @@ function NotificationButton() {
 									cursor={'pointer'}
 									onClick={() => task.status === TASK_STATUS.COMPLETED && removeTask(task.id)}
 								/>
-								<Text flexGrow={1} px={'1rem'}>
+								<Text
+									flexGrow={1}
+									px={'1rem'}
+									textTransform={'capitalize'}
+									color={
+										task.status === TASK_STATUS.PENDING
+											? 'yellow.500'
+											: task.status === TASK_STATUS.COMPLETED
+											? 'black'
+											: 'red.400'
+									}
+								>
 									{task.type.toLowerCase().split('_').join(' ')} {task.description}
 								</Text>
 								<IconButton

@@ -60,25 +60,29 @@ const CampaignReport = () => {
 	// add a campaign to the export make a state for it
 
 	const fetchCampaigns = useCallback(() => {
-		dispatch(setCampaignLoading(true));
-		dispatch(reset());
 		ReportsService.generateAllCampaigns()
 			.then((res) => dispatch(setAllCampaigns(res)))
 			.finally(() => dispatch(setCampaignLoading(false)));
 	}, [dispatch]);
 
 	useEffect(() => {
+		dispatch(setCampaignLoading(true));
+		dispatch(reset());
 		fetchCampaigns();
-	}, [fetchCampaigns]);
+	}, [fetchCampaigns, dispatch]);
 
 	const deleteCampaign = async (campaign: string) => {
-		ReportsService.deleteCampaign(campaign).finally(fetchCampaigns);
+		ReportsService.deleteCampaign(campaign).then((res) => {
+			if (res) {
+				fetchCampaigns();
+			}
+		});
 	};
 
 	const _searchText = useDebounce(searchText, 1500);
 	const filtered = useMemo(() => {
 		return filterList(all_campaigns, _searchText, {
-			campaignName: 1,
+			name: 1,
 			customFilter: (item, state) => {
 				const parts = item.createdAt.split(' ')[0].split('-');
 				const createdAt = new Date(
@@ -95,7 +99,7 @@ const CampaignReport = () => {
 					return false;
 				}
 				if (state.condition === 'RUNNING') {
-					return item.pending > 0;
+					return item.pending > 0 && !item.isPaused;
 				} else if (state.condition === 'PAUSED') {
 					return item.isPaused;
 				} else if (state.condition === 'COMPLETED') {
@@ -142,7 +146,7 @@ const CampaignReport = () => {
 									<Flex alignItems={'center'}>
 										<Box flexGrow={1}>
 											<Text fontWeight='medium' className='whitespace-break-spaces'>
-												{campaign.campaignName}
+												{campaign.name}
 											</Text>
 											<HStack
 												divider={<StackDivider borderColor={Colors.ACCENT_DARK} />}

@@ -74,6 +74,7 @@ export enum TRANSACTION_STATUS {
 }
 
 export enum SOCKET_EVENT {
+	ATTACH_SOCKET = 'attach-socket',
 	INITIALIZE = 'initialize',
 	INITIALIZED = 'initialized',
 	QR_GENERATED = 'qr-generated',

@@ -3,12 +3,19 @@ import { Flex, FormControl, FormLabel, IconButton, Select, Text, VStack } from '
 import { useDispatch, useSelector } from 'react-redux';
 import { Colors } from '../../../../config/const';
 import { StoreNames, StoreState } from '../../../../store';
-import { setOptions, setRespondTo, setTrigger } from '../../../../store/reducers/BotReducers';
+import {
+	addDevice,
+	removeDevice,
+	setOptions,
+	setRespondTo,
+	setTrigger,
+} from '../../../../store/reducers/BotReducers';
+import ProfileSelector from '../../../components/profiles-selector';
 import { TextAreaElement } from './inputs.components';
 
 export default function CampaignDetails() {
 	const {
-		details: { trigger },
+		details: { trigger, devices },
 		ui: { triggerError },
 	} = useSelector((state: StoreState) => state[StoreNames.CHATBOT]);
 	const dispatch = useDispatch();
@@ -30,7 +37,6 @@ export default function CampaignDetails() {
 								className={`${
 									!trigger ? '!bg-accent-dark' : '!bg-[#A6A6A6] '
 								} hover:!bg-accent-dark `}
-								
 							/>
 							<Text fontSize='sm' color={Colors.ACCENT_DARK}>
 								Default Message
@@ -49,6 +55,12 @@ export default function CampaignDetails() {
 				<RecipientSelector />
 				<ConditionSelector />
 			</Flex>
+
+			<ProfileSelector
+				selectedProfiles={devices}
+				onProfileSelected={(text) => dispatch(addDevice(text))}
+				onProfileRemoved={(text) => dispatch(removeDevice(text))}
+			/>
 		</VStack>
 	);
 }

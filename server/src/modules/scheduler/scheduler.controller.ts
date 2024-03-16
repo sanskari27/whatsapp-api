@@ -45,7 +45,7 @@ async function createScheduler(req: Request, res: Response, next: NextFunction) 
 	const { account } = req.locals;
 	const service = new SchedulerService(account);
 
-	const scheduler = service.createScheduler(data);
+	const scheduler = await service.createScheduler(data);
 
 	return Respond({
 		res,
@@ -62,13 +62,13 @@ async function updateScheduler(req: Request, res: Response, next: NextFunction) 
 	const service = new SchedulerService(account);
 
 	try {
-		const bot = await service.modifyScheduler(req.locals.id, data);
+		const scheduler = await service.modifyScheduler(req.locals.id, data);
 
 		return Respond({
 			res,
 			status: 200,
 			data: {
-				bot: bot,
+				scheduler,
 			},
 		});
 	} catch (err) {
@@ -103,7 +103,7 @@ async function toggleActive(req: Request, res: Response, next: NextFunction) {
 async function deleteScheduler(req: Request, res: Response, next: NextFunction) {
 	const { account } = req.locals;
 	const service = new SchedulerService(account);
-	service.deleteBot(req.locals.id);
+	service.deleteScheduler(req.locals.id);
 
 	return Respond({
 		res,
@@ -128,7 +128,7 @@ async function downloadSchedulerReport(req: Request, res: Response, next: NextFu
 	}
 }
 
-const BotController = {
+const SchedulerController = {
 	allSchedulers,
 	deleteScheduler,
 	updateScheduler,
@@ -138,4 +138,4 @@ const BotController = {
 	downloadSchedulerReport,
 };
 
-export default BotController;
+export default SchedulerController;

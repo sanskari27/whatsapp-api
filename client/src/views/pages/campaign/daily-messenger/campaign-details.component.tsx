@@ -4,6 +4,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Colors } from '../../../../config/const';
 import { StoreNames, StoreState } from '../../../../store';
 import {
+	addDevice,
+	removeDevice,
 	setCSVFile,
 	setCampaignName,
 	setCampaignNameError,
@@ -12,6 +14,7 @@ import {
 	setRecipientsFrom,
 } from '../../../../store/reducers/SchedulerReducer';
 import Each from '../../../../utils/Each';
+import ProfileSelector from '../../../components/profiles-selector';
 
 export default function CampaignDetails({
 	fetchRecipients,
@@ -41,7 +44,7 @@ export default function CampaignDetails({
 				<Input
 					type='text'
 					variant='unstyled'
-					value={details.campaign_name}
+					value={details.name}
 					onChange={(e) => {
 						dispatch(setCampaignNameError(false));
 						dispatch(setCampaignName(e.target.value));
@@ -77,13 +80,19 @@ export default function CampaignDetails({
 			</FormControl>
 
 			<RecipientToSelector />
+
+			<ProfileSelector
+				selectedProfiles={details.devices}
+				onProfileSelected={(text) => dispatch(addDevice(text))}
+				onProfileRemoved={(text) => dispatch(removeDevice(text))}
+			/>
 		</VStack>
 	);
 }
 
 function RecipientToSelector() {
 	const {
-		details: { csv_file },
+		details: { csv: csv_file },
 		ui: { recipientsError, editingMessage },
 	} = useSelector((state: StoreState) => state[StoreNames.SCHEDULER]);
 	const { list } = useSelector((state: StoreState) => state[StoreNames.CSV]);

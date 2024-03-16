@@ -28,8 +28,9 @@ export type SchedulerState = {
 };
 
 export type Campaign = {
+	devices: string[];
 	campaign_id: string;
-	campaignName: string;
+	name: string;
 	sent: number;
 	failed: number;
 	pending: number;
@@ -38,11 +39,12 @@ export type Campaign = {
 	description: string;
 };
 export type Scheduler = {
+	devices: string[];
 	id: string;
-	title: string;
+	name: string;
 	description: string;
-	end_at: string;
-	start_from: string;
+	endAt: string;
+	startAt: string;
 	isActive: boolean;
 	polls: {
 		title: string;
@@ -50,7 +52,7 @@ export type Scheduler = {
 		isMultiSelect: boolean;
 	}[];
 	attachments: string[];
-	shared_contact_cards: string[];
+	contacts: string[];
 	message: string;
 	csv: string;
 };
@@ -58,15 +60,16 @@ export type Scheduler = {
 export type SchedulerDetails = {
 	message_scheduler_id: string;
 	type: 'NUMBERS' | 'CSV' | 'GROUP' | 'LABEL' | 'GROUP_INDIVIDUAL';
+	devices: string[];
 	numbers?: string[];
-	csv_file: string;
+	csv: string;
 	group_ids: string[];
 	label_ids: string[];
 	message: string;
 	variables: string[];
-	shared_contact_cards: string[];
+	contacts: string[];
 	attachments: string[];
-	campaign_name: string;
+	name: string;
 	min_delay: number;
 	max_delay: number;
 	startDate: string;

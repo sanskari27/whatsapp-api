@@ -6,9 +6,8 @@ import {
 	BOT_TRIGGER_TO,
 	MESSAGE_SCHEDULER_TYPE,
 } from '../../config/const';
-import { botResponseDB, botsDB } from '../../config/postgres';
+import { botResponseDB, botsDB, nurturingDB } from '../../config/postgres';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
-import { WhatsappProvider } from '../../provider/whatsapp_provider';
 import TimeGenerator from '../../structures/TimeGenerator';
 import { TPoll } from '../../types/poll';
 import DateUtils from '../../utils/DateUtils';
@@ -17,18 +16,42 @@ import VCardBuilder from '../../utils/VCardBuilder';
 import { AccountService } from '../account';
 import { MessageService } from '../messenger';
 
+type CreateBotProps = {
+	devices: string[];
+	respond_to: BOT_TRIGGER_TO;
+	trigger_gap_seconds: number;
+	response_delay_seconds: number;
+	options: BOT_TRIGGER_OPTIONS;
+	trigger: string;
+	message: string;
+	startAt: string;
+	endAt: string;
+	contacts: string[];
+	attachments: string[];
+	group_respond: boolean;
+	polls: TPoll[];
+	forward: {
+		number: string;
+		message: string;
+	};
+	nurturing: {
+		message: string;
+		after: number;
+		startAt: string;
+		endAt: string;
+		contacts?: string[];
+		attachments?: string[];
+		polls?: TPoll[];
+	}[];
+};
+
 export default class BotService {
 	private messageSchedulerService: MessageService;
-	private whatsapp: WhatsappProvider | undefined;
 	private _user: AccountService;
 
 	public constructor(_user: AccountService) {
 		this._user = _user;
 		this.messageSchedulerService = new MessageService(_user);
-	}
-
-	public attachWhatsappProvider(whatsapp_provider: WhatsappProvider) {
-		this.whatsapp = whatsapp_provider;
 	}
 
 	public async allBots() {
@@ -76,8 +99,8 @@ export default class BotService {
 			nurturing: (bot.nurturing ?? []).map((el) => ({
 				message: el.message,
 				after: el.after,
-				start_from: el.startAt,
-				end_at: el.endAt,
+				startAt: el.startAt,
+				endAt: el.endAt,
 				contacts: el.contacts,
 				attachments: el.attachments,
 				polls: (el.polls ?? []).map((_: unknown) => {
@@ -126,12 +149,8 @@ export default class BotService {
 			message: bot.message,
 			startAt: bot.startAt,
 			endAt: bot.endAt,
-			attachments: bot.attachments.map((attachment) => ({
-				id: attachment.id,
-				name: attachment.name,
-				filename: attachment.filename,
-				caption: attachment.caption,
-			})),
+			contacts: bot.contacts.map((c) => c.id),
+			attachments: bot.attachments.map((a) => a.id),
 			polls: bot.polls.map((_: unknown) => {
 				const poll: TPoll = _ as TPoll;
 				return {
@@ -153,7 +172,6 @@ export default class BotService {
 					};
 				}),
 			})),
-			contacts: bot.contacts,
 			isActive: bot.active,
 		};
 	}
@@ -267,18 +285,17 @@ export default class BotService {
 		});
 	}
 
-	public async handleMessage(details: {
-		trigger_chat: string;
-		client_id: string;
-		body: string;
-		contact: WAWebJS.Contact;
-		isGroup?: boolean;
-		fromPoll?: boolean;
-	}) {
-		if (!this.whatsapp) {
-			throw new Error('Whatsapp Provider not attached.');
+	public async handleMessage(
+		whatsapp: WAWebJS.Client,
+		details: {
+			trigger_chat: string;
+			client_id: string;
+			body: string;
+			contact: WAWebJS.Contact;
+			isGroup?: boolean;
+			fromPoll?: boolean;
 		}
-
+	) {
 		const { isSubscribed } = await this._user.isSubscribed();
 
 		const message_from = details.trigger_chat.split('@')[0];
@@ -294,8 +311,6 @@ export default class BotService {
 			device: details.client_id,
 		});
 
-		const whatsapp = this.whatsapp;
-
 		botsEngaged.forEach(async (bot) => {
 			if (!bot.group_respond && details.isGroup) {
 				return;
@@ -308,7 +323,7 @@ export default class BotService {
 				if (msg.includes('{{public_name}}')) {
 					msg = msg.replace('{{public_name}}', details.contact.pushname);
 				}
-				whatsapp.getClient().sendMessage(details.trigger_chat, msg);
+				whatsapp.sendMessage(details.trigger_chat, msg);
 			}
 
 			for (const mediaObject of bot.attachments) {
@@ -320,18 +335,18 @@ export default class BotService {
 				if (mediaObject.name) {
 					media.filename = mediaObject.name + path.substring(path.lastIndexOf('.'));
 				}
-				whatsapp.getClient().sendMessage(details.trigger_chat, media, {
+				whatsapp.sendMessage(details.trigger_chat, media, {
 					caption: mediaObject.caption ?? '',
 				});
 			}
 
 			(bot.contacts ?? []).forEach(async (card) => {
-				whatsapp.getClient().sendMessage(details.trigger_chat, card.vCardString);
+				whatsapp.sendMessage(details.trigger_chat, card.vCardString);
 			});
 
 			(bot.polls ?? []).forEach(async (poll) => {
 				const { title, options, isMultiSelect } = poll;
-				whatsapp.getClient().sendMessage(
+				whatsapp.sendMessage(
 					details.trigger_chat,
 					new Poll(title, options, {
 						allowMultipleAnswers: isMultiSelect,
@@ -345,7 +360,7 @@ export default class BotService {
 					.setContactPhone(`+${details.contact.id.user}`, details.contact.id.user)
 					.build();
 
-				whatsapp.getClient().sendMessage(bot.forward.number + '@c.us', vCardString);
+				whatsapp.sendMessage(bot.forward.number + '@c.us', vCardString);
 
 				if (bot.forward.message) {
 					const _variable = '{{public_name}}';
@@ -353,7 +368,7 @@ export default class BotService {
 						_variable,
 						(details.contact.pushname || details.contact.name) ?? ''
 					);
-					whatsapp.getClient().sendMessage(bot.forward.number + '@c.us', custom_message);
+					whatsapp.sendMessage(bot.forward.number + '@c.us', custom_message);
 				}
 			}
 
@@ -368,13 +383,13 @@ export default class BotService {
 							new RegExp(_variable, 'g'),
 							(details.contact.pushname || details.contact.name) ?? ''
 						);
-						dateGenerator.setStartTime(el.start_from).setEndTime(el.end_at);
+						dateGenerator.setStartTime(el.startAt).setEndTime(el.endAt);
 						const dateAt = dateGenerator.next(el.after).value;
 						return {
 							receiver: details.trigger_chat,
 							message: custom_message,
 							sendAt: dateAt,
-							contacts: el.contacts.map((c) => c.vCardString),
+							contacts: el.contacts.map((c) => c.id),
 							polls: el.polls,
 							attachments: el.attachments.map((el) => ({
 								id: el.id,
@@ -453,185 +468,92 @@ export default class BotService {
 		}
 	}
 
-	public async createBot(data: {
-		devices: string[];
-		respond_to: BOT_TRIGGER_TO;
-		trigger_gap_seconds: number;
-		response_delay_seconds: number;
-		options: BOT_TRIGGER_OPTIONS;
-		trigger: string;
-		message: string;
-		startAt: string;
-		endAt: string;
-		contacts: string[];
-		attachments: string[];
-		group_respond: boolean;
-		polls: TPoll[];
-		forward: {
-			number: string;
-			message: string;
-		};
-		nurturing: {
-			message: string;
-			after: number;
-			start_from: string;
-			end_at: string;
-			contacts?: string[];
-			attachments?: string[];
-			polls?: TPoll[];
-		}[];
-	}) {
-		const bot = await botsDB.create({
+	public async createBot(data: CreateBotProps) {
+		const { devices, attachments, contacts, nurturing, forward, ..._data } = data;
+
+		const { id } = await botsDB.create({
 			data: {
-				...data,
+				..._data,
 				username: this._user.username,
 				devices: {
-					connect: data.devices.map((id) => ({ client_id: id })),
+					connect: devices.map((id) => ({ client_id: id })),
 				},
 				attachments: {
-					connect: data.attachments.map((id) => ({ id })),
+					connect: attachments.map((id) => ({ id })),
 				},
 				contacts: {
-					connect: data.contacts.map((id) => ({ id })),
+					connect: contacts.map((id) => ({ id })),
 				},
-				nurturing: {
-					create: data.nurturing.map((nurturing) => {
-						return {
-							...nurturing,
-							attachments: {
-								connect: nurturing.attachments?.map((id) => ({ id })),
-							},
-							contacts: {
-								connect: nurturing.contacts?.map((id) => ({ id })),
-							},
-						};
-					}),
-				},
-				forward_to_number: data.forward.number,
-				forward_to_message: data.forward.message,
-			},
-			include: {
-				attachments: true,
-				contacts: true,
-				devices: true,
-				nurturing: {
-					include: {
-						attachments: true,
-						contacts: true,
-					},
-				},
+				...(forward && {
+					forward_to_number: forward.number,
+					forward_to_message: forward.message,
+				}),
 			},
 		});
 
-		return {
-			bot_id: bot.id,
-			devices: bot.devices,
-			respond_to: bot.respond_to,
-			trigger: bot.trigger,
-			trigger_gap_seconds: bot.trigger_gap_seconds,
-			response_delay_seconds: bot.response_delay_seconds,
-			options: bot.options,
-			message: bot.message,
-			startAt: bot.startAt,
-			endAt: bot.endAt,
-			attachments: bot.attachments.map((attachment) => ({
-				id: attachment.id,
-				name: attachment.name,
-				filename: attachment.filename,
-				caption: attachment.caption,
-			})),
-			polls: bot.polls.map((_: unknown) => {
-				const poll: TPoll = _ as TPoll;
-				return {
-					title: poll.title,
-					options: poll.options,
-					isMultiSelect: poll.isMultiSelect,
-				};
-			}),
-			nurturing: (bot.nurturing ?? []).map((el) => ({
-				...el,
-				contacts: el.contacts,
-				attachments: el.attachments,
-				polls: el.polls.map((_: unknown) => {
-					const poll: TPoll = _ as TPoll;
-					return {
-						title: poll.title,
-						options: poll.options,
-						isMultiSelect: poll.isMultiSelect,
-					};
-				}),
-			})),
-			contacts: bot.contacts,
-			isActive: bot.active,
-		};
+		for (let i = 0; i < nurturing.length; i++) {
+			const item = nurturing[i];
+			const { attachments, contacts, ..._nurturing } = item;
+			await nurturingDB.create({
+				data: {
+					..._nurturing,
+					attachments: {
+						connect: (attachments ?? []).map((id) => ({ id })),
+					},
+					contacts: {
+						connect: (contacts ?? []).map((id) => ({ id })),
+					},
+					botId: id,
+				},
+			});
+		}
+
+		return await this.boyByID(id);
 	}
 
-	public async modifyBot(
-		id: string,
-		data: {
-			devices?: string[];
-			group_respond?: boolean;
-			respond_to?: BOT_TRIGGER_TO;
-			trigger_gap_seconds?: number;
-			response_delay_seconds?: number;
-			options?: BOT_TRIGGER_OPTIONS;
-			trigger?: string;
-			startAt?: string;
-			endAt?: string;
-			message?: string;
-			contacts?: string[];
-			attachments?: string[];
-			polls?: TPoll[];
-			forward?: {
-				number: string;
-				message: string;
-			};
-			nurturing?: {
-				message: string;
-				after: number;
-				start_from: string;
-				end_at: string;
-				contacts?: string[];
-				attachments?: string[];
-				polls?: TPoll[];
-			}[];
-		}
-	) {
-		const exists = await botsDB.findUnique({ where: { id } });
+	public async modifyBot(id: string, data: Partial<CreateBotProps>) {
+		const exists = await botsDB.findUnique({ where: { id }, include: { devices: true } });
 		if (!exists) {
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
 		}
+		const { devices, attachments, contacts, nurturing, forward, ..._data } = data;
 
-		const bot = await botsDB.update({
+		await nurturingDB.deleteMany({ where: { botId: id } });
+		if (nurturing !== undefined) {
+			for (let i = 0; i < nurturing.length; i++) {
+				const item = nurturing[i];
+				const { attachments, contacts, ..._nurturing } = item;
+				await nurturingDB.create({
+					data: {
+						..._nurturing,
+						attachments: {
+							connect: (attachments ?? []).map((id) => ({ id })),
+						},
+						contacts: {
+							connect: (contacts ?? []).map((id) => ({ id })),
+						},
+						botId: id,
+					},
+				});
+			}
+		}
+
+		await botsDB.update({
 			where: { id },
 			data: {
-				...data,
+				..._data,
 				devices: {
-					connect: (data.devices ?? []).map((id) => ({ client_id: id })),
+					set: (devices ?? []).map((id) => ({ client_id: id })),
 				},
 				contacts: {
-					connect: (data.contacts ?? []).map((id) => ({ id })),
+					set: (contacts ?? []).map((id) => ({ id })),
 				},
 				attachments: {
-					connect: (data.attachments ?? []).map((id) => ({ id })),
+					set: (attachments ?? []).map((id) => ({ id })),
 				},
-				nurturing: {
-					create: (data.nurturing ?? []).map((nurturing) => {
-						return {
-							...nurturing,
-							attachments: {
-								connect: nurturing.attachments?.map((id) => ({ id })),
-							},
-							contacts: {
-								connect: nurturing.contacts?.map((id) => ({ id })),
-							},
-						};
-					}),
-				},
-
-				...(data.forward && {
-					forward_to_number: data.forward.number,
-					forward_to_message: data.forward.message,
+				...(forward && {
+					forward_to_number: forward.number,
+					forward_to_message: forward.message,
 				}),
 			},
 			include: {
@@ -646,47 +568,7 @@ export default class BotService {
 				},
 			},
 		});
-		return {
-			bot_id: bot.id,
-			devices: bot.devices,
-			respond_to: bot.respond_to,
-			trigger: bot.trigger,
-			trigger_gap_seconds: bot.trigger_gap_seconds,
-			response_delay_seconds: bot.response_delay_seconds,
-			options: bot.options,
-			message: bot.message,
-			startAt: bot.startAt,
-			endAt: bot.endAt,
-			attachments: bot.attachments.map((attachment) => ({
-				id: attachment.id,
-				name: attachment.name,
-				filename: attachment.filename,
-				caption: attachment.caption,
-			})),
-			polls: bot.polls.map((_: unknown) => {
-				const poll: TPoll = _ as TPoll;
-				return {
-					title: poll.title,
-					options: poll.options,
-					isMultiSelect: poll.isMultiSelect,
-				};
-			}),
-			nurturing: (bot.nurturing ?? []).map((el) => ({
-				...el,
-				contacts: el.contacts,
-				attachments: el.attachments,
-				polls: el.polls.map((_: unknown) => {
-					const poll: TPoll = _ as TPoll;
-					return {
-						title: poll.title,
-						options: poll.options,
-						isMultiSelect: poll.isMultiSelect,
-					};
-				}),
-			})),
-			contacts: bot.contacts,
-			isActive: bot.active,
-		};
+		return await this.boyByID(id);
 	}
 
 	public async toggleActive(id: string) {
@@ -695,64 +577,13 @@ export default class BotService {
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
 		}
 
-		const bot = await botsDB.update({
+		await botsDB.update({
 			where: { id },
 			data: {
 				active: !exists.active,
 			},
-			include: {
-				devices: true,
-				attachments: true,
-				contacts: true,
-				nurturing: {
-					include: {
-						attachments: true,
-						contacts: true,
-					},
-				},
-			},
 		});
-		return {
-			bot_id: bot.id,
-			devices: bot.devices,
-			respond_to: bot.respond_to,
-			trigger: bot.trigger,
-			trigger_gap_seconds: bot.trigger_gap_seconds,
-			response_delay_seconds: bot.response_delay_seconds,
-			options: bot.options,
-			message: bot.message,
-			startAt: bot.startAt,
-			endAt: bot.endAt,
-			attachments: bot.attachments.map((attachment) => ({
-				id: attachment.id,
-				name: attachment.name,
-				filename: attachment.filename,
-				caption: attachment.caption,
-			})),
-			polls: bot.polls.map((_: unknown) => {
-				const poll: TPoll = _ as TPoll;
-				return {
-					title: poll.title,
-					options: poll.options,
-					isMultiSelect: poll.isMultiSelect,
-				};
-			}),
-			nurturing: (bot.nurturing ?? []).map((el) => ({
-				...el,
-				contacts: el.contacts,
-				attachments: el.attachments,
-				polls: el.polls.map((_: unknown) => {
-					const poll: TPoll = _ as TPoll;
-					return {
-						title: poll.title,
-						options: poll.options,
-						isMultiSelect: poll.isMultiSelect,
-					};
-				}),
-			})),
-			contacts: bot.contacts,
-			isActive: bot.active,
-		};
+		return await this.boyByID(id);
 	}
 
 	public async deleteBot(id: string) {

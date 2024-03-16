@@ -63,7 +63,7 @@ const DailyMessengerReport = () => {
 	const fetchMessengers = useCallback(() => {
 		dispatch(setCampaignLoading(true));
 		dispatch(reset());
-		MessageService.getScheduledMessengers()
+		MessageService.getDailyMessenger()
 			.then((res) => dispatch(setAllSchedulers(res)))
 			.finally(() => dispatch(setCampaignLoading(false)));
 	}, [dispatch]);
@@ -75,7 +75,7 @@ const DailyMessengerReport = () => {
 	const _searchText = useDebounce(searchText, 1500);
 	const filtered = useMemo(() => {
 		return filterList(all_schedulers, _searchText, {
-			title: 1,
+			name: 1,
 			customFilter: (item, state) => {
 				if (state.condition === 'RUNNING') {
 					return item.isActive;
@@ -91,21 +91,21 @@ const DailyMessengerReport = () => {
 	}, [_searchText, all_schedulers, condition]);
 
 	const handleSchedulerToggleActive = (id: string) => {
-		MessageService.toggleScheduledMessage(id).then((res) => {
+		MessageService.toggleDailyMessenger(id).then((res) => {
 			if (!res) return;
 			dispatch(editSelectedScheduler(res));
 		});
 	};
 
 	const handleDeleteScheduledMessage = (id: string) => {
-		MessageService.deleteScheduledMessage(id).then((res) => {
+		MessageService.deleteDailyMessenger(id).then((res) => {
 			if (!res) return;
 			dispatch(deleteScheduler(id));
 		});
 	};
 
 	const downloadSchedulerReport = (id: string) => {
-		MessageService.generateScheduledMessagesReport(id);
+		MessageService.generateDailyMessengerReport(id);
 	};
 
 	return (
@@ -134,7 +134,7 @@ const DailyMessengerReport = () => {
 									<Flex alignItems={'center'}>
 										<Box flexGrow={1}>
 											<Text fontWeight='medium' className='whitespace-break-spaces'>
-												{campaign.title}
+												{campaign.name}
 											</Text>
 											<HStack
 												divider={<StackDivider borderColor={Colors.ACCENT_DARK} />}
@@ -142,10 +142,10 @@ const DailyMessengerReport = () => {
 												textColor={Colors.ACCENT_DARK}
 											>
 												<Text>
-													Time Window: [{campaign.start_from} - {campaign.end_at}]
+													Time Window: [{campaign.startAt} - {campaign.endAt}]
 												</Text>
 												<Text>Attachments: {campaign.attachments.length}</Text>
-												<Text>Contacts: {campaign.shared_contact_cards.length}</Text>
+												<Text>Contacts: {campaign.contacts.length}</Text>
 												<Text>Polls: {campaign.polls.length}</Text>
 											</HStack>
 											<Text className='whitespace-break-spaces text-gray-600'>

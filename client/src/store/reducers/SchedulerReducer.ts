@@ -8,15 +8,16 @@ const initialState: SchedulerState = {
 	details: {
 		message_scheduler_id: '',
 		type: 'NUMBERS',
+		devices: [],
 		numbers: [],
-		csv_file: '',
+		csv: '',
 		group_ids: [],
 		label_ids: [],
 		message: '',
 		variables: [],
-		shared_contact_cards: [],
+		contacts: [],
 		attachments: [],
-		campaign_name: '',
+		name: '',
 		min_delay: 1,
 		max_delay: 60,
 		startTime: '10:00',
@@ -53,7 +54,6 @@ const SchedulerSlice = createSlice({
 	initialState,
 	reducers: {
 		reset: (state) => {
-			state.all_campaigns = initialState.all_campaigns;
 			state.details = initialState.details;
 			state.isRecipientsLoading = initialState.isRecipientsLoading;
 			state.recipients = initialState.recipients;
@@ -90,19 +90,20 @@ const SchedulerSlice = createSlice({
 			const scheduler = state.all_schedulers.find((s) => s.id === action.payload);
 			if (!scheduler) return;
 			state.details.message_scheduler_id = scheduler.id;
+			state.details.devices = scheduler.devices;
 			state.details.message = scheduler.message;
-			state.details.campaign_name = scheduler.title;
-			state.details.shared_contact_cards = scheduler.shared_contact_cards;
+			state.details.name = scheduler.name;
+			state.details.contacts = scheduler.contacts;
 			state.details.attachments = scheduler.attachments;
 			state.details.polls = scheduler.polls;
-			state.details.startTime = scheduler.start_from;
-			state.details.endTime = scheduler.end_at;
-			state.details.csv_file = scheduler.csv;
+			state.details.startTime = scheduler.startAt;
+			state.details.endTime = scheduler.endAt;
+			state.details.csv = scheduler.csv;
 			state.details.type = 'CSV';
 			state.ui.editingMessage = true;
 		},
-		setCampaignName: (state, action: PayloadAction<typeof initialState.details.campaign_name>) => {
-			state.details.campaign_name = action.payload;
+		setCampaignName: (state, action: PayloadAction<typeof initialState.details.name>) => {
+			state.details.name = action.payload;
 		},
 		setRecipientsFrom: (state, action: PayloadAction<typeof initialState.details.type>) => {
 			state.details.type = action.payload;
@@ -119,8 +120,8 @@ const SchedulerSlice = createSlice({
 		setNumbers: (state, action: PayloadAction<typeof initialState.details.numbers>) => {
 			state.details.numbers = action.payload;
 		},
-		setCSVFile: (state, action: PayloadAction<typeof initialState.details.csv_file>) => {
-			state.details.csv_file = action.payload;
+		setCSVFile: (state, action: PayloadAction<typeof initialState.details.csv>) => {
+			state.details.csv = action.payload;
 		},
 		setVariables: (state, action: PayloadAction<typeof initialState.details.variables>) => {
 			state.details.variables = action.payload;
@@ -137,11 +138,8 @@ const SchedulerSlice = createSlice({
 		setAttachments: (state, action: PayloadAction<typeof initialState.details.attachments>) => {
 			state.details.attachments = action.payload;
 		},
-		setContactCards: (
-			state,
-			action: PayloadAction<typeof initialState.details.shared_contact_cards>
-		) => {
-			state.details.shared_contact_cards = action.payload;
+		setContactCards: (state, action: PayloadAction<typeof initialState.details.contacts>) => {
+			state.details.contacts = action.payload;
 		},
 		setMinDelay: (state, action: PayloadAction<typeof initialState.details.min_delay>) => {
 			state.details.min_delay = action.payload;
@@ -197,7 +195,12 @@ const SchedulerSlice = createSlice({
 		setAPIError: (state, action: PayloadAction<string>) => {
 			state.ui.apiError = action.payload;
 		},
-
+		addDevice: (state, action: PayloadAction<string>) => {
+			state.details.devices.push(action.payload);
+		},
+		removeDevice: (state, action: PayloadAction<string>) => {
+			state.details.devices = state.details.devices.filter((f) => f !== action.payload);
+		},
 		setSearchText: (state, action: PayloadAction<string>) => {
 			state.ui.searchText = action.payload;
 		},
@@ -255,6 +258,8 @@ export const {
 	setCondition,
 	setFilterDateEnd,
 	setFilterDateStart,
+	addDevice,
+	removeDevice,
 } = SchedulerSlice.actions;
 
 export default SchedulerSlice.reducer;

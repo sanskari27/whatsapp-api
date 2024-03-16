@@ -21,20 +21,22 @@ export default class SchedulerService {
 			include: {
 				attachments: true,
 				contacts: true,
+				devices: true,
 			},
 		});
 		return scheduler.map((e) => ({
 			id: e.id,
-			title: e.name,
+			name: e.name,
 			description: e.description,
 			csv: e.csv,
 			message: e.message,
+			devices: e.devices.map((d) => d.client_id),
 			attachments: e.attachments.map((a) => a.id),
 			contacts: e.contacts.map((c) => c.id),
 			polls: e.polls,
 			isActive: e.active,
-			start_from: e.startAt,
-			end_at: e.endAt,
+			startAt: e.startAt,
+			endAt: e.endAt,
 		}));
 	}
 
@@ -44,6 +46,7 @@ export default class SchedulerService {
 			include: {
 				attachments: true,
 				contacts: true,
+				devices: true,
 			},
 		});
 
@@ -53,53 +56,59 @@ export default class SchedulerService {
 
 		return {
 			id: scheduler.id,
-			title: scheduler.name,
+			name: scheduler.name,
 			description: scheduler.description,
 			csv: scheduler.csv,
 			message: scheduler.message,
+			devices: scheduler.devices.map((d) => d.client_id),
 			attachments: scheduler.attachments.map((a) => a.id),
 			contacts: scheduler.contacts.map((c) => c.id),
 			polls: scheduler.polls,
 			isActive: scheduler.active,
-			start_from: scheduler.startAt,
-			end_at: scheduler.endAt,
+			startAt: scheduler.startAt,
+			endAt: scheduler.endAt,
 		};
 	}
 
 	public async createScheduler(data: {
-		title: string;
+		name: string;
 		description: string;
 		devices: string[];
 		message: string;
-		start_from: string;
-		end_at: string;
+		startTime: string;
+		endTime: string;
 		contacts: string[];
 		attachments: string[];
 		csv: string;
 		polls: TPoll[];
 	}) {
+		const { devices, contacts, attachments, startTime: startAt, endTime: endAt, ..._data } = data;
 		const scheduler = await dailySchedulerDB.create({
 			data: {
-				...data,
+				..._data,
 				username: this._user.username,
-				name: data.title,
 				devices: {
-					connect: data.devices.map((client_id) => ({ client_id })),
+					connect: devices.map((client_id) => ({ client_id })),
 				},
 				contacts: {
-					connect: data.contacts.map((id) => ({ id })),
+					connect: contacts.map((id) => ({ id })),
 				},
 				attachments: {
-					connect: data.attachments.map((id) => ({ id })),
+					connect: attachments.map((id) => ({ id })),
 				},
-				startAt: data.start_from,
-				endAt: data.end_at,
+				startAt: startAt,
+				endAt: endAt,
+				active: true,
+			},
+			include: {
+				devices: true,
 			},
 		});
 
 		return {
 			id: scheduler.id,
-			title: scheduler.name,
+			name: scheduler.name,
+			devices: scheduler.devices.map((d) => d.client_id),
 			description: scheduler.description,
 			csv: scheduler.csv,
 			message: scheduler.message,
@@ -107,56 +116,61 @@ export default class SchedulerService {
 			contacts: data.contacts ?? [],
 			polls: scheduler.polls,
 			isActive: scheduler.active,
-			start_from: scheduler.startAt,
-			end_at: scheduler.endAt,
+			startAt: scheduler.startAt,
+			endAt: scheduler.endAt,
 		};
 	}
 
 	public async modifyScheduler(
 		id: string,
 		data: {
-			title: string;
+			name: string;
 			description: string;
 			devices: string[];
 			message: string;
-			start_from: string;
-			end_at: string;
+			startTime: string;
+			endTime: string;
 			contacts: string[];
 			attachments: string[];
 			polls: TPoll[];
 		}
 	) {
+		const { devices, contacts, attachments, startTime: startAt, endTime: endAt, ..._data } = data;
+
 		const scheduler = await dailySchedulerDB.update({
 			where: { id },
 			data: {
-				...data,
-				name: data.title,
+				..._data,
 				devices: {
-					connect: data.devices.map((client_id) => ({ client_id })),
+					set: devices.map((client_id) => ({ client_id })),
 				},
 				contacts: {
-					connect: data.contacts.map((id) => ({ id })),
+					set: contacts.map((id) => ({ id })),
 				},
 				attachments: {
-					connect: data.attachments.map((id) => ({ id })),
+					set: attachments.map((id) => ({ id })),
 				},
-				startAt: data.start_from,
-				endAt: data.end_at,
+				startAt: data.startTime,
+				endAt: data.endTime,
+			},
+			include: {
+				devices: true,
 			},
 		});
 
 		return {
 			id: scheduler.id,
-			title: scheduler.name,
+			name: scheduler.name,
 			description: scheduler.description,
 			csv: scheduler.csv,
 			message: scheduler.message,
+			devices: scheduler.devices.map((d) => d.client_id),
 			attachments: data.attachments,
 			contacts: data.contacts ?? [],
 			polls: scheduler.polls,
 			isActive: scheduler.active,
-			start_from: scheduler.startAt,
-			end_at: scheduler.endAt,
+			startAt: scheduler.startAt,
+			endAt: scheduler.endAt,
 		};
 	}
 
@@ -166,35 +180,37 @@ export default class SchedulerService {
 			include: {
 				attachments: true,
 				contacts: true,
+				devices: true,
 			},
 		});
 
 		if (!scheduler) {
 			throw new InternalError(COMMON_ERRORS.NOT_FOUND);
 		}
-		await dailySchedulerDB.update({
+		const { active } = await dailySchedulerDB.update({
 			where: { id },
 			data: {
-				active: !scheduler?.active,
+				active: !scheduler.active,
 			},
 		});
 
 		return {
 			id: scheduler.id,
-			title: scheduler.name,
+			name: scheduler.name,
 			description: scheduler.description,
 			csv: scheduler.csv,
 			message: scheduler.message,
+			devices: scheduler.devices.map((d) => d.client_id),
 			attachments: scheduler.attachments.map((a) => a.id),
 			contacts: scheduler.contacts.map((c) => c.id),
 			polls: scheduler.polls,
-			isActive: scheduler.active,
-			start_from: scheduler.startAt,
-			end_at: scheduler.endAt,
+			isActive: active,
+			startAt: scheduler.startAt,
+			endAt: scheduler.endAt,
 		};
 	}
 
-	public async deleteBot(id: string) {
+	public async deleteScheduler(id: string) {
 		await dailySchedulerDB.delete({ where: { id } });
 	}
 
@@ -217,7 +233,7 @@ export default class SchedulerService {
 		});
 
 		return messages.map((message) => ({
-			campaign_name: scheduler.name,
+			name: scheduler.name,
 			description: scheduler.description,
 			message: message.message,
 			receiver: message.recipient.split('@')[0],

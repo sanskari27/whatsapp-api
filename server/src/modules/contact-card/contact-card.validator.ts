@@ -16,9 +16,9 @@ export type CreateContactValidationResult = {
 	state: string;
 	country: string;
 	pincode: string;
-	contact_details_phone: string;
-	contact_details_work: string;
-	contact_details_other: string[];
+	contact_phone: string;
+	contact_work: string;
+	contact_other: string[];
 };
 
 export async function CreateContactValidator(req: Request, res: Response, next: NextFunction) {
@@ -30,9 +30,9 @@ export async function CreateContactValidator(req: Request, res: Response, next: 
 		organization: z.string().default(''),
 		email_personal: z.string().default(''),
 		email_work: z.string().default(''),
-		contact_details_phone: z.string().default(''),
-		contact_details_work: z.string().default(''),
-		contact_details_other: z.string().array().default([]),
+		contact_phone: z.string().default(''),
+		contact_work: z.string().default(''),
+		contact_other: z.string().array().default([]),
 		links: z.string().array().default([]),
 		street: z.string().default(''),
 		city: z.string().default(''),

@@ -10,10 +10,10 @@ export type CreateSchedulerValidationResult = {
 	contacts: string[];
 	attachments: string[];
 	polls: TPoll[];
-	title: string;
+	name: string;
 	description: string;
-	start_from: string;
-	end_at: string;
+	startTime: string;
+	endTime: string;
 };
 
 export async function CreateSchedulerValidator(req: Request, res: Response, next: NextFunction) {
@@ -21,10 +21,10 @@ export async function CreateSchedulerValidator(req: Request, res: Response, next
 		devices: z.string().array().default([]),
 		csv: z.string(),
 		message: z.string().trim().default(''),
-		title: z.string().trim().default(''),
+		name: z.string().trim().default(''),
 		description: z.string().trim().default(''),
-		start_from: z.string().trim().default(''),
-		end_at: z.string().trim().default(''),
+		startTime: z.string().trim().default('00:01'),
+		endTime: z.string().trim().default('23:59'),
 		contacts: z.string().array().default([]),
 		attachments: z.string().array().default([]),
 		polls: z

@@ -41,7 +41,7 @@ async function addDevice(req: Request, res: Response, next: NextFunction) {
 
 async function isUsernameAvailable(req: Request, res: Response, next: NextFunction) {
 	const { username } = req.locals.data as UsernameValidationResult;
-	const taken = await AccountService.isUsernameTaken(username);
+	const taken = await AccountServiceFactory.isUsernameTaken(username);
 
 	if (taken) {
 		return next(new APIError(ERRORS.USER_ERRORS.USERNAME_ALREADY_EXISTS));
@@ -168,6 +168,8 @@ async function profiles(req: Request, res: Response, next: NextFunction) {
 		data: {
 			profiles: await account.listProfiles(),
 			max_profiles: account.max_devices ?? 0,
+			isSubscribed: account.isSubscribed().isSubscribed,
+			username: account.username,
 		},
 	});
 }
@@ -181,7 +183,7 @@ async function removeDevice(req: Request, res: Response, next: NextFunction) {
 
 	const { account } = req.locals;
 
-	await account.removeDevice(client_id);
+	await account.deviceLogout(client_id);
 	const provider = WhatsappProvider.getInstance(account, client_id);
 	provider.logoutClient();
 	return Respond({

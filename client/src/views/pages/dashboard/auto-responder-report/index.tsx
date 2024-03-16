@@ -129,7 +129,7 @@ const AutoResponderReport = () => {
 													Target Audience: {bot.respond_to.toLowerCase().split('_').join(' ')}
 												</Text>
 												<Text> Attachments: {bot.attachments.length}</Text>
-												<Text> Contacts: {bot.shared_contact_cards.length}</Text>
+												<Text> Contacts: {bot.contacts.length}</Text>
 												<Text> Polls: {bot.polls.length}</Text>
 											</HStack>
 											<Text className='whitespace-break-spaces text-gray-600'>{bot.message}</Text>

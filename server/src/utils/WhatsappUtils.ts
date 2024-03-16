@@ -1,8 +1,10 @@
 import fs from 'fs';
+import Logger from 'n23-logger';
 import WAWebJS, { BusinessContact, Contact, GroupChat } from 'whatsapp-web.js';
-import { COUNTRIES, IS_PRODUCTION } from '../config/const';
+import { COUNTRIES, SESSION_STARTUP_WAIT_TIME } from '../config/const';
 import InternalError, { INTERNAL_ERRORS } from '../errors/internal-errors';
 import { WhatsappProvider } from '../provider/whatsapp_provider';
+import { AccountServiceFactory } from '../services';
 import {
 	GroupDetails,
 	TBusinessContact,
@@ -26,6 +28,7 @@ export type MappedContacts = {
 		latitude: number;
 		longitude: number;
 		address: string;
+		isSaved: boolean;
 	};
 };
 
@@ -119,7 +122,7 @@ export default class WhatsappUtils {
 		);
 		const chats = await this.whatsapp.getClient().getChats();
 
-		const { non_saved_contacts, saved_chat, groups } = await chats.reduce(
+		const { non_saved_contacts, chat_contacts, groups } = await chats.reduce(
 			async (accP, chat) => {
 				const acc = await accP;
 				if (chat.isGroup) {
@@ -134,19 +137,25 @@ export default class WhatsappUtils {
 				const contact = await this.whatsapp.getClient().getContactById(chat.id._serialized);
 				if (!contact.isMyContact && !contact.isMe) {
 					acc.non_saved_contacts.push(contact);
-				} else if (contact.isMyContact && !contact.isMe) {
-					acc.saved_chat.push(contact);
+				}
+				if (contact.isMyContact && !contact.isMe) {
+					acc.chat_contacts.push(contact);
 				}
 				return acc;
 			},
 			Promise.resolve({
 				non_saved_contacts: [] as WAWebJS.Contact[],
-				saved_chat: [] as WAWebJS.Contact[],
+				chat_contacts: [] as WAWebJS.Contact[],
 				groups: [] as GroupDetails[],
 			})
 		);
 
-		return { saved: saved_contacts, non_saved: non_saved_contacts, saved_chat: saved_chat, groups };
+		return {
+			saved: saved_contacts,
+			non_saved: non_saved_contacts,
+			chat_contacts: chat_contacts,
+			groups,
+		};
 	}
 
 	async getContactDetails(contact: WAWebJS.Contact) {
@@ -210,7 +219,9 @@ export default class WhatsappUtils {
 	async getGroupContacts<T extends boolean>(
 		groupChat: GroupChat,
 		options: {
-			business_details?: T;
+			saved: boolean;
+			unsaved: boolean;
+			business_details?: boolean;
 			mapped_contacts: MappedContacts;
 		}
 	): Promise<T extends true ? TGroupBusinessContact[] : TGroupContact[]> {
@@ -218,9 +229,11 @@ export default class WhatsappUtils {
 
 		const group_participants = await Promise.all(
 			groupChat.participants.map(async (participant) => {
-				const contact = contacts[participant.id.user];
+				const contact = contacts[participant.id.user] ?? null;
 
-				const contact_details: TGroupContact = {
+				const contact_details: TGroupContact & {
+					isSaved: boolean;
+				} = {
 					group_id: groupChat.id._serialized.split('@')[0],
 					name: contact ? contact.name : '',
 					number: participant.id.user,
@@ -229,6 +242,7 @@ export default class WhatsappUtils {
 					public_name: contact ? contact.public_name : '',
 					group_name: groupChat.name,
 					user_type: participant.isSuperAdmin ? 'CREATOR' : participant.isAdmin ? 'ADMIN' : 'USER',
+					isSaved: contact ? contact.isSaved : false,
 				};
 				let fetchedContact: WAWebJS.Contact | null = null;
 
@@ -241,6 +255,14 @@ export default class WhatsappUtils {
 					contact_details.country = COUNTRIES[country_code as string];
 					contact_details.isBusiness = fetchedContact.isBusiness ? 'Business' : 'Personal';
 					contact_details.public_name = fetchedContact.pushname;
+					contact_details.isSaved = fetchedContact.isMyContact;
+				}
+
+				if (
+					(options.saved && !contact_details.isSaved) ||
+					(options.unsaved && contact_details.isSaved)
+				) {
+					return null;
 				}
 
 				if (!options.business_details) {
@@ -272,9 +294,11 @@ export default class WhatsappUtils {
 			: TGroupContact[];
 	}
 
-	async getContactsByLabel<T extends boolean>(
+	async getContactsByLabel(
 		label_id: string,
 		options: {
+			saved: boolean;
+			unsaved: boolean;
 			business_details?: boolean;
 			mapped_contacts: MappedContacts;
 		}
@@ -285,10 +309,7 @@ export default class WhatsappUtils {
 			const contactsPromises = chats
 				.map(async (chat) => {
 					if (chat.isGroup) {
-						const participants = await this.getGroupContacts(chat as GroupChat, {
-							business_details: options.business_details,
-							mapped_contacts: options.mapped_contacts,
-						});
+						const participants = await this.getGroupContacts(chat as GroupChat, options);
 
 						return participants.map((participant) => ({
 							...participant,
@@ -298,6 +319,14 @@ export default class WhatsappUtils {
 					} else {
 						const contact = await this.whatsapp.getClient().getContactById(chat.id._serialized);
 						const contacts_details = await this.getContactDetails(contact);
+
+						if (
+							(options.saved && !contact.isMyContact) ||
+							(options.unsaved && contact.isMyContact)
+						) {
+							return [];
+						}
+
 						if (!options.business_details) {
 							return [
 								{
@@ -336,38 +365,26 @@ export default class WhatsappUtils {
 			await this.whatsapp.getClient().createGroup(title, participants, {
 				autoSendInviteV4: true,
 			});
-		} catch (error) {
-			//ignored
-		}
+		} catch (error) {}
 	}
 
 	static async removeUnwantedSessions() {
-		// const sessions = await UserService.getRevokedSessions();
-		// for (const session of sessions) {
-		// 	WhatsappProvider.getInstance(session.client_id).logoutClient();
-		// 	const session_deleted = WhatsappUtils.deleteSession(session.client_id);
-		// 	if (session_deleted) {
-		// 		session.remove();
-		// 	}
-		// 	const path = __basedir + '/.wwebjs_auth';
-		// 	if (!fs.existsSync(path)) {
-		// 		return;
-		// 	}
-		// 	const client_ids = (await fs.promises.readdir(path, { withFileTypes: true }))
-		// 		.filter((dirent) => dirent.isDirectory())
-		// 		.map((dirent) => dirent.name.split('session-')[1]);
-		// 	const invalid_sessions_promises = client_ids.map(async (client_id) => {
-		// 		const { valid } = await UserService.isValidAuth(client_id);
-		// 		if (valid) {
-		// 			return null;
-		// 		}
-		// 		return client_id;
-		// 	});
-		// 	const invalid_sessions = await Promise.all(invalid_sessions_promises);
-		// 	invalid_sessions.forEach((id) => id && WhatsappUtils.deleteSession(id));
-		// 	Logger.info('WHATSAPP-HELPER', `Removed ${invalid_sessions.length} unwanted folders`);
-		// }
-		// Logger.info('WHATSAPP-HELPER', `Removed ${sessions.length} unwanted sessions`);
+		const path = __basedir + '/.wwebjs_auth';
+		if (!fs.existsSync(path)) {
+			return;
+		}
+		let client_ids = (await fs.promises.readdir(path, { withFileTypes: true }))
+			.filter((dirent) => dirent.isDirectory())
+			.map((dirent) => dirent.name.split('session-')[1]);
+
+		client_ids = (
+			await Promise.all(
+				client_ids.map(async (id) => ((await AccountServiceFactory.isValidDevice(id)) ? null : id))
+			)
+		).filter((id) => !!id) as string[];
+
+		client_ids.forEach(this.deleteSession);
+		Logger.info('WHATSAPP-HELPER', `Removed ${client_ids.length} unwanted sessions`);
 	}
 
 	static async removeInactiveSessions() {
@@ -392,44 +409,28 @@ export default class WhatsappUtils {
 	}
 
 	static async resumeSessions() {
-		if (!IS_PRODUCTION) return;
-		// const path = __basedir + '/.wwebjs_auth';
-		// if (!fs.existsSync(path)) {
-		// 	return;
-		// }
-		// const client_ids = (await fs.promises.readdir(path, { withFileTypes: true }))
-		// 	.filter((dirent) => dirent.isDirectory())
-		// 	.map((dirent) => dirent.name.split('session-')[1]);
-		// const inactive_client_ids = (await UserService.getInactiveSessions()).map(
-		// 	(session) => session.client_id
-		// );
+		const running_devices = await AccountServiceFactory.runningDevices();
 
-		// const valid_sessions_promises = client_ids.map(async (client_id) => {
-		// 	const { valid } = await UserService.isValidAuth(client_id);
-		// 	if (valid && !inactive_client_ids.includes(client_id)) {
-		// 		return client_id;
-		// 	}
-		// 	return null;
-		// });
+		const path = __basedir + '/.wwebjs_auth';
+		if (!fs.existsSync(path)) {
+			return;
+		}
+		const active_client_ids = running_devices.filter((d) =>
+			fs.existsSync(path + '/session-' + d.client_id)
+		);
 
-		// const active_client_ids = (await Promise.all(valid_sessions_promises)).filter(
-		// 	(client_id) => client_id !== null
-		// ) as string[];
-
-		// active_client_ids.forEach((client_id) => {
-		// 	const instance = WhatsappProvider.getInstance(client_id);
-		// 	instance.initialize();
-
-		// 	setTimeout(() => {
-		// 		if (instance.isReady()) {
-		// 			return;
-		// 		}
-		// 		instance.destroyClient();
-		// 		WhatsappUtils.deleteSession(client_id);
-		// 		UserService.logout(client_id);
-		// 	}, SESSION_STARTUP_WAIT_TIME);
-		// });
-
-		// Logger.info('WHATSAPP-HELPER', `Started ${active_client_ids.length} client sessions`);
+		active_client_ids.forEach(async ({ client_id, username }) => {
+			const service = await AccountServiceFactory.findByUsername(username);
+			const instance = WhatsappProvider.getInstance(service, client_id);
+			instance.initialize();
+			setTimeout(() => {
+				if (instance.isReady()) {
+					return;
+				}
+				instance.destroyClient();
+				WhatsappUtils.deleteSession(client_id);
+			}, SESSION_STARTUP_WAIT_TIME);
+		});
+		Logger.info('WHATSAPP-HELPER', `Started ${active_client_ids.length} client sessions`);
 	}
 }

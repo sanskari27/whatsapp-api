@@ -8,7 +8,7 @@ export type ScheduleMessageValidationResult = {
 	type: 'CSV' | 'GROUP' | 'NUMBERS' | 'GROUP_INDIVIDUAL' | 'LABEL';
 	message: string;
 	numbers: string[];
-	csv_file: string;
+	csv: string;
 	group_ids: string[];
 	label_ids: string[];
 	variables: string[];
@@ -16,7 +16,7 @@ export type ScheduleMessageValidationResult = {
 	attachments: string[];
 	polls: TPoll[];
 
-	campaign_name: string;
+	name: string;
 	description: string;
 	startDate: string;
 	startTime: string;
@@ -33,7 +33,7 @@ export async function ScheduleMessageValidator(req: Request, res: Response, next
 			devices: z.string().array(),
 			type: z.enum(['NUMBERS', 'CSV', 'GROUP_INDIVIDUAL', 'GROUP', 'LABEL']),
 			numbers: z.string().array().default([]),
-			csv_file: z.string().optional(),
+			csv: z.string().optional(),
 			group_ids: z.string().array().default([]),
 			label_ids: z.string().array().default([]),
 			message: z.string().default(''),
@@ -48,7 +48,7 @@ export async function ScheduleMessageValidator(req: Request, res: Response, next
 				})
 				.array()
 				.default([]),
-			campaign_name: z.string().default(''),
+			name: z.string().default(''),
 			description: z.string().default(''),
 			startDate: z.string().optional(),
 			startTime: z.string().optional(),
@@ -61,7 +61,7 @@ export async function ScheduleMessageValidator(req: Request, res: Response, next
 		.refine((obj) => {
 			if (obj.type === 'NUMBERS' && obj.numbers.length === 0) {
 				return false;
-			} else if (obj.type === 'CSV' && !obj.csv_file) {
+			} else if (obj.type === 'CSV' && !obj.csv) {
 				return false;
 			} else if (obj.type === 'GROUP' && obj.group_ids.length === 0) {
 				return false;

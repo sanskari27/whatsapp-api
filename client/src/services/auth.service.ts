@@ -26,11 +26,15 @@ export default class AuthService {
 			return {
 				profiles: data.profiles as Profile[],
 				max_profiles: data.max_profiles as number,
+				isSubscribed: data.isSubscribed as boolean,
+				username: data.username as string,
 			};
 		} catch (err) {
 			return {
 				profiles: [],
 				max_profiles: 0,
+				isSubscribed: false,
+				username: '',
 			};
 		}
 	}

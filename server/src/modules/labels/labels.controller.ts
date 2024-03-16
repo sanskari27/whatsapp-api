@@ -69,6 +69,8 @@ async function exportLabels(req: Request, res: Response, next: NextFunction) {
 	const taskService = new TaskService(req.locals.account);
 	const options = {
 		business_contacts_only: req.body.business_contacts_only ?? false,
+		saved: req.body.saved ?? false,
+		unsaved: req.body.unsaved ?? false,
 		vcf: req.body.vcf ?? false,
 	};
 
@@ -94,6 +96,7 @@ async function exportLabels(req: Request, res: Response, next: NextFunction) {
 				).saved.map(async (contact) => ({
 					...(await whatsappUtils.getContactDetails(contact)),
 					...WhatsappUtils.getBusinessDetails(contact),
+					isSaved: contact.isMyContact,
 				}))
 			)
 		).reduce((acc, contact) => {
@@ -109,12 +112,15 @@ async function exportLabels(req: Request, res: Response, next: NextFunction) {
 				latitude: contact.latitude ?? 0,
 				longitude: contact.longitude ?? 0,
 				address: contact.address ?? '',
+				isSaved: contact.isSaved,
 			};
 			return acc;
 		}, {} as MappedContacts);
 
 		const participants_promise = label_ids.map(async (label_id) => {
 			const label_participants = await whatsappUtils.getContactsByLabel(label_id, {
+				saved: options.saved,
+				unsaved: options.unsaved,
 				business_details: options.business_contacts_only,
 				mapped_contacts: saved_contacts,
 			});

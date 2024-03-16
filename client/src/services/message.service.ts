@@ -1,20 +1,22 @@
 import APIInstance from '../config/APIInstance';
+import { SchedulerDetails } from '../store/types/SchedulerState';
 
 type Scheduler = {
 	id: string;
-	title: string;
+	devices: string[];
+	name: string;
 	description: string;
 	message: string;
 	attachments: string[];
-	shared_contact_cards: string[];
+	contacts: string[];
 	polls: {
 		title: string;
 		options: string[];
 		isMultiSelect: boolean;
 	}[];
 	isActive: boolean;
-	start_from: string;
-	end_at: string;
+	startAt: string;
+	endAt: string;
 	csv: string;
 };
 
@@ -27,9 +29,9 @@ export default class MessageService {
 		label_ids?: string[];
 		message?: string;
 		variables?: string[];
-		shared_contact_cards?: string[];
+		contacts?: string[];
 		attachments?: string[];
-		campaign_name: string;
+		name: string;
 		min_delay: number;
 		max_delay: number;
 		startTime?: string;
@@ -48,19 +50,20 @@ export default class MessageService {
 			//ignored
 		}
 	}
-	static async scheduleMessage(details: Omit<Scheduler, 'id' | 'isActive'>) {
+	static async createDailyMessenger(details: Omit<SchedulerDetails, 'id' | 'isActive'>) {
 		try {
 			const response = await APIInstance.post(`/scheduler`, details);
 			return {
 				id: response.data.scheduler.id ?? '',
-				title: response.data.scheduler.title ?? '',
+				devices: response.data.scheduler.devices ?? [],
+				name: response.data.scheduler.name ?? '',
 				message: response.data.scheduler.message ?? '',
 				attachments: response.data.scheduler.attachments ?? [],
-				shared_contact_cards: response.data.scheduler.shared_contact_cards ?? [],
+				contacts: response.data.scheduler.contacts ?? [],
 				polls: response.data.scheduler.polls ?? [],
 				isActive: response.data.scheduler.isActive,
-				start_from: response.data.scheduler.start_from ?? '',
-				end_at: response.data.scheduler.end_at ?? '',
+				startAt: response.data.scheduler.startAt ?? '',
+				endAt: response.data.scheduler.endAt ?? '',
 				csv: response.data.csv ?? '',
 			} as Scheduler;
 		} catch (err: unknown) {
@@ -68,21 +71,21 @@ export default class MessageService {
 		}
 	}
 
-	static async getScheduledMessengers() {
+	static async getDailyMessenger() {
 		try {
 			const { data } = await APIInstance.get('/scheduler');
-
 			return (data.schedulers as Scheduler[]).map((scheduler) => ({
 				id: scheduler.id ?? '',
-				title: scheduler.title ?? '',
+				devices: scheduler.devices ?? [],
+				name: scheduler.name ?? '',
 				description: scheduler.description ?? '',
 				message: scheduler.message ?? '',
 				attachments: scheduler.attachments ?? [],
-				shared_contact_cards: scheduler.shared_contact_cards ?? [],
+				contacts: scheduler.contacts ?? [],
 				polls: scheduler.polls ?? [],
 				isActive: scheduler.isActive,
-				start_from: scheduler.start_from ?? '',
-				end_at: scheduler.end_at ?? '',
+				startAt: scheduler.startAt ?? '',
+				endAt: scheduler.endAt ?? '',
 				csv: scheduler.csv ?? '',
 			}));
 		} catch (err: unknown) {
@@ -90,7 +93,7 @@ export default class MessageService {
 		}
 	}
 
-	static async generateScheduledMessagesReport(id: string) {
+	static async generateDailyMessengerReport(id: string) {
 		try {
 			const response = await APIInstance.get(`/scheduler/${id}/report`, {
 				responseType: 'blob',
@@ -120,42 +123,44 @@ export default class MessageService {
 		}
 	}
 
-	static async editScheduledMessage(scheduledMessage: Omit<Scheduler, 'isActive'>) {
+	static async updateDailyMessenger(
+		id: string,
+		scheduledMessage: Omit<SchedulerDetails, 'isActive'>
+	) {
 		try {
-			const { data } = await APIInstance.patch(
-				`/scheduler/${scheduledMessage.id}`,
-				scheduledMessage
-			);
+			const { data } = await APIInstance.patch(`/scheduler/${id}`, scheduledMessage);
 			return {
-				id: data.bot.id ?? '',
-				title: data.bot.title ?? '',
-				message: data.bot.message ?? '',
-				attachments: data.bot.attachments ?? [],
-				shared_contact_cards: data.bot.shared_contact_cards ?? [],
-				polls: data.bot.polls ?? [],
-				isActive: data.bot.isActive,
-				start_from: data.bot.start_from ?? '',
-				end_at: data.bot.end_at ?? '',
-				csv: data.bot.csv ?? '',
+				id: data.scheduler.id ?? '',
+				devices: data.scheduler.devices ?? [],
+				name: data.scheduler.name ?? '',
+				message: data.scheduler.message ?? '',
+				attachments: data.scheduler.attachments ?? [],
+				contacts: data.scheduler.contacts ?? [],
+				polls: data.scheduler.polls ?? [],
+				isActive: data.scheduler.isActive,
+				startAt: data.scheduler.startAt ?? '',
+				endAt: data.scheduler.endAt ?? '',
+				csv: data.scheduler.csv ?? '',
 			} as Scheduler;
 		} catch (err) {
 			return null;
 		}
 	}
 
-	static async toggleScheduledMessage(id: string) {
+	static async toggleDailyMessenger(id: string) {
 		try {
 			const { data } = await APIInstance.put(`/scheduler/${id}`);
 			return {
+				devices: data.scheduler.devices ?? [],
 				id: data.scheduler.id ?? '',
-				title: data.scheduler.title ?? '',
+				name: data.scheduler.name ?? '',
 				message: data.scheduler.message ?? '',
 				attachments: data.scheduler.attachments ?? [],
-				shared_contact_cards: data.scheduler.shared_contact_cards ?? [],
+				contacts: data.scheduler.contacts ?? [],
 				polls: data.scheduler.polls ?? [],
 				isActive: data.scheduler.isActive,
-				start_from: data.scheduler.start_from ?? '',
-				end_at: data.scheduler.end_at ?? '',
+				startAt: data.scheduler.startAt ?? '',
+				endAt: data.scheduler.endAt ?? '',
 				csv: data.scheduler.csv ?? '',
 			} as Scheduler;
 		} catch (err: unknown) {
@@ -163,7 +168,7 @@ export default class MessageService {
 		}
 	}
 
-	static async deleteScheduledMessage(id: string) {
+	static async deleteDailyMessenger(id: string) {
 		try {
 			const { data } = await APIInstance.delete(`/scheduler/${id}`);
 			if (data.success) return true;

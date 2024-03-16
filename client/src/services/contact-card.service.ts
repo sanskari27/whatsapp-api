@@ -176,6 +176,7 @@ export default class ContactCardService {
 				links: (data.links ?? []).map((link: string) =>
 					link.includes('://') ? link : 'https://' + link
 				),
+				base64: undefined,
 			});
 			return {
 				id: response.contact_card.id as string,

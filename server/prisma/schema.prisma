@@ -90,8 +90,24 @@ model Bot {
 
   attachments Upload[]
   contacts    ContactCard[]
-  nurturing   Nurturing[]
   BotResponse BotResponse[]
+  nurturing   Nurturing[]
+}
+
+//-----------------------------------------Nurturing ---------------------------
+
+model Nurturing {
+  id          String        @id @default(uuid())
+  message     String        @default("")
+  after       Int           @default(5)
+  startAt     String        @default("00:01")
+  endAt       String        @default("23:59")
+  polls       Json[]        @default([])
+  attachments Upload[]
+  contacts    ContactCard[]
+
+  bot   Bot    @relation(fields: [botId], references: [id])
+  botId String
 }
 
 model BotResponse {
@@ -217,21 +233,6 @@ model DailyScheduler {
   polls       Json[]
 
   active Boolean @default(false)
-}
-
-//-----------------------------------------Nurturing ---------------------------
-
-model Nurturing {
-  id          String        @id @default(uuid())
-  message     String        @default("")
-  after       Int           @default(5)
-  startAt     String        @default("00:01")
-  endAt       String        @default("23:59")
-  polls       Json[]        @default([])
-  attachments Upload[]
-  contacts    ContactCard[]
-
-  bots Bot[]
 }
 
 //-----------------------------------------Attahcments---------------------------

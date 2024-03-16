@@ -1,4 +1,5 @@
 import APIInstance from '../config/APIInstance';
+import { Campaign } from '../store/types/SchedulerState';
 
 type Poll = {
 	title: string;
@@ -10,16 +11,7 @@ export default class ReportsService {
 		try {
 			const { data: response } = await APIInstance.get(`/reports/campaign`);
 
-			return response.report as {
-				campaign_id: string;
-				campaignName: string;
-				sent: number;
-				failed: number;
-				pending: number;
-				isPaused: boolean;
-				createdAt: string;
-				description: string;
-			}[];
+			return response.report as Campaign[];
 		} catch (err) {
 			return [];
 		}
@@ -41,8 +33,9 @@ export default class ReportsService {
 	static async deleteCampaign(id: string) {
 		try {
 			await APIInstance.delete(`/reports/campaign/${id}/delete`);
+			return true;
 		} catch (err) {
-			return null;
+			return false;
 		}
 	}
 	static async generateReport(id: string) {

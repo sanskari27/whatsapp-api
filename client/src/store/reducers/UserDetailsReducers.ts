@@ -5,10 +5,10 @@ import { UserDetailsState } from '../types/UserDetails';
 const initialState: UserDetailsState = {
 	name: '',
 	phoneNumber: '',
+	username: '',
 	subscriptionExpiration: '',
 	current_profile_type: 'PERSONAL',
 	isSubscribed: false,
-	canSendMessage: false,
 
 	groups: [],
 	labels: [],
@@ -32,7 +32,6 @@ const UserDetailsSlice = createSlice({
 		reset: (state) => {
 			state.name = initialState.name;
 			state.phoneNumber = initialState.phoneNumber;
-			state.canSendMessage = initialState.canSendMessage;
 			state.isSubscribed = initialState.isSubscribed;
 			state.subscriptionExpiration = initialState.subscriptionExpiration;
 			state.current_profile_type = initialState.current_profile_type;
@@ -52,9 +51,6 @@ const UserDetailsSlice = createSlice({
 			}
 			if (action.payload.isSubscribed) {
 				state.isSubscribed = action.payload.isSubscribed;
-			}
-			if (action.payload.canSendMessage) {
-				state.canSendMessage = action.payload.canSendMessage;
 			}
 			if (action.payload.subscriptionExpiration) {
 				state.subscriptionExpiration = action.payload.subscriptionExpiration;
@@ -77,6 +73,9 @@ const UserDetailsSlice = createSlice({
 			}
 			if (action.payload.data_loaded !== undefined) {
 				state.data_loaded = action.payload.data_loaded;
+			}
+			if (action.payload.username !== undefined) {
+				state.username = action.payload.username;
 			}
 			if (action.payload.profiles !== undefined) {
 				state.profiles = action.payload.profiles;
@@ -129,14 +128,12 @@ const UserDetailsSlice = createSlice({
 			state.profiles = state.profiles.filter((p) => p.client_id !== id);
 			if (state.current_profile === id) {
 				if (state.profiles.length === 0) {
-					state.canSendMessage = false;
 					state.current_profile = '';
 					return;
 				}
 				const profile = state.profiles[0];
 				state.current_profile = profile.client_id;
 				state.current_profile_type = profile.userType;
-				state.canSendMessage = profile.canSendMessage;
 			}
 			state.current_profile_type =
 				state.profiles.find((e) => e.client_id === action.payload)?.userType ?? 'PERSONAL';

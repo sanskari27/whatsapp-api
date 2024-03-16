@@ -62,7 +62,7 @@ export default class SocketServerProvider {
 		});
 		this.io.on('connection', (socket) => {
 			let conn_id = '';
-			socket.on(SOCKET_EVENTS.CONNECT, (id: string | undefined) => {
+			socket.on(SOCKET_EVENTS.ATTACH_SOCKET, (id: string | undefined) => {
 				if (!id) {
 					return;
 				}

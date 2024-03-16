@@ -2,9 +2,9 @@ import { EXPORTS_TYPE } from '../../config/const';
 
 export type UserDetailsState = {
 	name: string;
+	username: string;
 	phoneNumber: string;
 	isSubscribed: boolean;
-	canSendMessage: boolean;
 	subscriptionExpiration: string;
 	current_profile_type: 'BUSINESS' | 'PERSONAL';
 
@@ -55,5 +55,4 @@ export type Profile = {
 		address: string;
 	};
 	client_id: string;
-	canSendMessage: boolean;
 };

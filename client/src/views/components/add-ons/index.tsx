@@ -14,14 +14,14 @@ import InputLeadsNurturingDialog, {
 
 type Props = {
 	attachments: string[];
-	shared_contact_cards: string[];
+	contacts: string[];
 	polls: Poll[];
 	nurturing?: {
 		message: string;
 		after: number;
-		start_from: string;
-		end_at: string;
-		shared_contact_cards: string[];
+		startAt: string;
+		endAt: string;
+		contacts: string[];
 		attachments: string[];
 		polls: Poll[];
 	}[];
@@ -32,9 +32,9 @@ type Props = {
 		nurturing: {
 			message: string;
 			after: number;
-			start_from: string;
-			end_at: string;
-			shared_contact_cards: string[];
+			startAt: string;
+			endAt: string;
+			contacts: string[];
 			attachments: string[];
 			polls: Poll[];
 		}[]
@@ -51,7 +51,7 @@ const DEFAULT_POLL = [
 export default function AddOns({
 	attachments,
 	polls,
-	shared_contact_cards,
+	contacts,
 	onAttachmentsSelected,
 	onContactsSelected,
 	onPollsSelected,
@@ -79,9 +79,9 @@ export default function AddOns({
 					width={'full'}
 					variant={'outline'}
 					colorScheme='green'
-					onClick={() => contactRef.current?.open(shared_contact_cards)}
+					onClick={() => contactRef.current?.open(contacts)}
 				>
-					Contacts ({shared_contact_cards.length})
+					Contacts ({contacts.length})
 				</Button>
 				<Button
 					width={'full'}

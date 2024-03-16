@@ -1,6 +1,6 @@
 import { $Enums } from '@prisma/client';
 import { AccessLevel } from '../../config/const';
-import { accountDB, deviceDB } from '../../config/postgres';
+import { accountDB, deviceDB, userDevicesDB } from '../../config/postgres';
 import { InternalError, USER_ERRORS } from '../../errors';
 import { comparePasswords, generateHashedPassword } from '../../utils/ExpressUtils';
 import AccountService from './AccountService';
@@ -27,6 +27,11 @@ export default class AccountServiceFactory {
 		}
 
 		return new AccountService(username, { ...account });
+	}
+
+	static async isUsernameTaken(username: string) {
+		const exists = await accountDB.findUnique({ where: { username } });
+		return exists !== null;
 	}
 
 	static async findByUsername(username: string): Promise<AccountService> {
@@ -125,5 +130,13 @@ export default class AccountServiceFactory {
 
 	static async findDevice(phone: string) {
 		return await deviceDB.findUnique({ where: { phone } });
+	}
+
+	static async runningDevices() {
+		return await userDevicesDB.findMany();
+	}
+
+	static async isValidDevice(client_id: string) {
+		return (await userDevicesDB.count({ where: { client_id } })) > 0;
 	}
 }

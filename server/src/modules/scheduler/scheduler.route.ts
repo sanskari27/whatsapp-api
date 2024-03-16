@@ -1,6 +1,5 @@
 import express from 'express';
 import VerifyAccount from '../../middleware/VerifyAccount';
-import VerifyDevice from '../../middleware/VerifyDevice';
 import PaymentValidator from '../../middleware/VerifyPayment';
 import { IDValidator } from '../../middleware/idValidator';
 import SchedulerController from './scheduler.controller';
@@ -10,12 +9,12 @@ const router = express.Router();
 
 router
 	.route('/:id/report')
-	.all(VerifyAccount, VerifyDevice, IDValidator)
+	.all(VerifyAccount, IDValidator)
 	.get(SchedulerController.downloadSchedulerReport);
 
 router
 	.route('/:id')
-	.all(VerifyAccount, VerifyDevice, IDValidator)
+	.all(VerifyAccount, IDValidator)
 	.get(SchedulerController.schedulerById)
 	.delete(SchedulerController.deleteScheduler)
 	.put(SchedulerController.toggleActive)
@@ -24,7 +23,7 @@ router
 
 router
 	.route('/')
-	.all(VerifyAccount, VerifyDevice)
+	.all(VerifyAccount)
 	.get(SchedulerController.allSchedulers)
 	.all(PaymentValidator.isSubscribed)
 	.all(CreateSchedulerValidator)

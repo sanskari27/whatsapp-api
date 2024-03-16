@@ -25,8 +25,8 @@ export type CreateBotValidationResult = {
 	nurturing: {
 		message: string;
 		after: number;
-		start_from: string;
-		end_at: string;
+		startAt: string;
+		endAt: string;
 		contacts?: string[];
 		attachments?: string[];
 		polls?: TPoll[];
@@ -77,8 +77,8 @@ export async function CreateBotValidator(req: Request, res: Response, next: Next
 			.object({
 				after: z.number(),
 				message: z.string(),
-				start_from: z.string().trim().default('00:01'),
-				end_at: z.string().trim().default('23:59'),
+				startAt: z.string().trim().default('00:01'),
+				endAt: z.string().trim().default('23:59'),
 				contacts: z.string().array().default([]),
 				attachments: z.string().array().default([]),
 				polls: z

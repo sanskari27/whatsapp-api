@@ -56,7 +56,7 @@ export default function AutoResponder() {
 		message,
 		options,
 		respond_to,
-		shared_contact_cards,
+		contacts,
 		attachments,
 		response_delay_seconds,
 		trigger_gap_seconds,
@@ -90,6 +90,13 @@ export default function AutoResponder() {
 		};
 
 		let notHasError = true;
+		if (details.devices.length === 0) {
+			toast({
+				title: 'Select 1 Profile.',
+				status: 'error',
+			});
+			notHasError = false;
+		}
 
 		const haveSameTrigger = all_bots.some((bot) => {
 			if (bot.trigger !== trigger) {
@@ -112,7 +119,7 @@ export default function AutoResponder() {
 		if (
 			!message &&
 			attachments.length === 0 &&
-			shared_contact_cards.length === 0 &&
+			contacts.length === 0 &&
 			details.polls.length === 0
 		) {
 			errorPayload.type = 'messageError';

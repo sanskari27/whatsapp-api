@@ -80,7 +80,7 @@ export default class AccountService {
 		}
 	}
 
-	async isSubscribed() {
+	isSubscribed() {
 		const isPaymentValid = DateUtils.getMoment(this._subscription_expiry).isAfter(
 			DateUtils.getMomentNow()
 		);
@@ -130,6 +130,8 @@ export default class AccountService {
 
 		return account_links.map((link) => {
 			return {
+				device_created_at: DateUtils.getMoment(link.device.first_login),
+				client_id: link.client_id,
 				phone: link.phone,
 				name: link.user.name,
 				userType: link.user.user_type,
@@ -141,34 +143,35 @@ export default class AccountService {
 					longitude: link.device.longitude,
 					address: link.device.address,
 				},
-				device_created_at: DateUtils.getMoment(link.device.first_login),
-				client_id: link.client_id,
 			};
 		});
 	}
 
 	async canAddProfile() {
 		const listed_count = await userDevicesDB.count({ where: { username: this._username } });
-
 		return listed_count < this._max_devices;
 	}
 
-	async addProfile(phone: string, c_id: string) {
+	async addProfile(phone: string, client_id: string) {
+		const linkExists = await userDevicesDB.findUnique({
+			where: { client_id, phone },
+		});
+
+		if (linkExists) {
+			return;
+		}
+
 		if (!this.canAddProfile()) {
 			throw new InternalError(USER_ERRORS.MAX_DEVICE_LIMIT_REACHED);
 		}
 
 		await userDevicesDB.create({
 			data: {
-				client_id: c_id,
+				client_id,
 				username: this._username,
 				phone,
 			},
 		});
-	}
-
-	async removeDevice(client_id: string) {
-		await userDevicesDB.delete({ where: { client_id } });
 	}
 
 	async addMonthToExpiry(months: number = 1) {
@@ -200,10 +203,5 @@ export default class AccountService {
 				subscription_expiry: this._subscription_expiry,
 			},
 		});
-	}
-
-	static async isUsernameTaken(username: string) {
-		const exists = await accountDB.findUnique({ where: { username } });
-		return exists !== null;
 	}
 }
