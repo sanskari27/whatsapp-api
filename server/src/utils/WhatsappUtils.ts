@@ -28,6 +28,7 @@ export type MappedContacts = {
 		latitude: number;
 		longitude: number;
 		address: string;
+		isSaved: boolean;
 	};
 };
 
@@ -121,7 +122,7 @@ export default class WhatsappUtils {
 		);
 		const chats = await this.whatsapp.getClient().getChats();
 
-		const { non_saved_contacts, saved_chat, groups } = await chats.reduce(
+		const { non_saved_contacts, chat_contacts, groups } = await chats.reduce(
 			async (accP, chat) => {
 				const acc = await accP;
 				if (chat.isGroup) {
@@ -136,19 +137,25 @@ export default class WhatsappUtils {
 				const contact = await this.whatsapp.getClient().getContactById(chat.id._serialized);
 				if (!contact.isMyContact && !contact.isMe) {
 					acc.non_saved_contacts.push(contact);
-				} else if (contact.isMyContact && !contact.isMe) {
-					acc.saved_chat.push(contact);
+				}
+				if (contact.isMyContact && !contact.isMe) {
+					acc.chat_contacts.push(contact);
 				}
 				return acc;
 			},
 			Promise.resolve({
 				non_saved_contacts: [] as WAWebJS.Contact[],
-				saved_chat: [] as WAWebJS.Contact[],
+				chat_contacts: [] as WAWebJS.Contact[],
 				groups: [] as GroupDetails[],
 			})
 		);
 
-		return { saved: saved_contacts, non_saved: non_saved_contacts, saved_chat: saved_chat, groups };
+		return {
+			saved: saved_contacts,
+			non_saved: non_saved_contacts,
+			chat_contacts: chat_contacts,
+			groups,
+		};
 	}
 
 	async getContactDetails(contact: WAWebJS.Contact) {
@@ -212,7 +219,9 @@ export default class WhatsappUtils {
 	async getGroupContacts<T extends boolean>(
 		groupChat: GroupChat,
 		options: {
-			business_details?: T;
+			saved: boolean;
+			unsaved: boolean;
+			business_details?: boolean;
 			mapped_contacts: MappedContacts;
 		}
 	): Promise<T extends true ? TGroupBusinessContact[] : TGroupContact[]> {
@@ -220,9 +229,11 @@ export default class WhatsappUtils {
 
 		const group_participants = await Promise.all(
 			groupChat.participants.map(async (participant) => {
-				const contact = contacts[participant.id.user];
+				const contact = contacts[participant.id.user] ?? null;
 
-				const contact_details: TGroupContact = {
+				const contact_details: TGroupContact & {
+					isSaved: boolean;
+				} = {
 					group_id: groupChat.id._serialized.split('@')[0],
 					name: contact ? contact.name : '',
 					number: participant.id.user,
@@ -231,6 +242,7 @@ export default class WhatsappUtils {
 					public_name: contact ? contact.public_name : '',
 					group_name: groupChat.name,
 					user_type: participant.isSuperAdmin ? 'CREATOR' : participant.isAdmin ? 'ADMIN' : 'USER',
+					isSaved: contact ? contact.isSaved : false,
 				};
 				let fetchedContact: WAWebJS.Contact | null = null;
 
@@ -243,6 +255,14 @@ export default class WhatsappUtils {
 					contact_details.country = COUNTRIES[country_code as string];
 					contact_details.isBusiness = fetchedContact.isBusiness ? 'Business' : 'Personal';
 					contact_details.public_name = fetchedContact.pushname;
+					contact_details.isSaved = fetchedContact.isMyContact;
+				}
+
+				if (
+					(options.saved && !contact_details.isSaved) ||
+					(options.unsaved && contact_details.isSaved)
+				) {
+					return null;
 				}
 
 				if (!options.business_details) {
@@ -274,9 +294,11 @@ export default class WhatsappUtils {
 			: TGroupContact[];
 	}
 
-	async getContactsByLabel<T extends boolean>(
+	async getContactsByLabel(
 		label_id: string,
 		options: {
+			saved: boolean;
+			unsaved: boolean;
 			business_details?: boolean;
 			mapped_contacts: MappedContacts;
 		}
@@ -287,10 +309,7 @@ export default class WhatsappUtils {
 			const contactsPromises = chats
 				.map(async (chat) => {
 					if (chat.isGroup) {
-						const participants = await this.getGroupContacts(chat as GroupChat, {
-							business_details: options.business_details,
-							mapped_contacts: options.mapped_contacts,
-						});
+						const participants = await this.getGroupContacts(chat as GroupChat, options);
 
 						return participants.map((participant) => ({
 							...participant,
@@ -300,6 +319,14 @@ export default class WhatsappUtils {
 					} else {
 						const contact = await this.whatsapp.getClient().getContactById(chat.id._serialized);
 						const contacts_details = await this.getContactDetails(contact);
+
+						if (
+							(options.saved && !contact.isMyContact) ||
+							(options.unsaved && contact.isMyContact)
+						) {
+							return [];
+						}
+
 						if (!options.business_details) {
 							return [
 								{

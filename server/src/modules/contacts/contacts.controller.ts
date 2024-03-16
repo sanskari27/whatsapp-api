@@ -32,51 +32,22 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 		return next(new APIError(API_ERRORS.USER_ERRORS.SESSION_INVALIDATED));
 	}
 
-	const taskService = new TaskService(req.locals.user);
 	const options = {
-		saved_contacts: true,
-		non_saved_contacts: true,
-		saved_chat_contacts: true,
+		chat_contacts: req.body.chat_contacts ?? false,
+		saved: req.body.saved ?? true,
+		unsaved: req.body.unsaved ?? true,
 		business_contacts_only: req.body.business_contacts_only ?? false,
 		vcf: req.body.vcf ?? false,
 	};
 
+	const taskService = new TaskService(req.locals.user);
 	let task_id: Types.ObjectId | null = null;
-	if (req.body.saved_contacts) {
-		options.saved_contacts = true;
-		options.non_saved_contacts = false;
-		options.saved_chat_contacts = false;
-		task_id = await taskService.createTask(
-			TASK_TYPE.EXPORT_SAVED_CONTACTS,
-			options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV,
-			{
-				description: `Export saved contacts to ${
-					options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV
-				}`,
-			}
-		);
-	} else if (req.body.non_saved_contacts) {
-		options.non_saved_contacts = true;
-		options.saved_contacts = false;
-		options.saved_chat_contacts = false;
-		task_id = await taskService.createTask(
-			TASK_TYPE.EXPORT_UNSAVED_CONTACTS,
-			options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV,
-			{
-				description: `Export non saved contacts to ${
-					options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV
-				}`,
-			}
-		);
-	} else if (req.body.saved_chat_contacts) {
-		options.saved_chat_contacts = true;
-		options.saved_contacts = false;
-		options.non_saved_contacts = false;
+	if (options.chat_contacts) {
 		task_id = await taskService.createTask(
 			TASK_TYPE.EXPORT_CHAT_CONTACTS,
 			options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV,
 			{
-				description: `Export saved chat contacts to ${
+				description: `Export chat contacts to ${
 					options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV
 				}`,
 			}
@@ -86,7 +57,7 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 			TASK_TYPE.EXPORT_ALL_CONTACTS,
 			options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV,
 			{
-				description: `Export all contacts to ${
+				description: `Export phone-book contacts to ${
 					options.vcf ? TASK_RESULT_TYPE.VCF : TASK_RESULT_TYPE.CSV
 				}`,
 			}
@@ -98,34 +69,27 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 		status: 201,
 	});
 	try {
-		const { saved, non_saved, saved_chat } = await getOrCache(
-			CACHE_TOKEN_GENERATOR.CONTACTS(req.locals.user._id),
-			() => whatsappUtils.getContacts()
+		const {
+			saved,
+			non_saved,
+			chat_contacts: saved_chat,
+		} = await getOrCache(CACHE_TOKEN_GENERATOR.CONTACTS(req.locals.user._id), () =>
+			whatsappUtils.getContacts()
 		);
 
 		let listed_contacts = [
-			...(options.saved_contacts ? saved : []),
-			...(options.non_saved_contacts ? non_saved : []),
-			...(options.saved_chat_contacts ? saved_chat : []),
+			...(options.saved ? saved : []),
+			...(options.unsaved ? non_saved : []),
+			...(options.chat_contacts ? saved_chat : []),
 		];
 
-		if (options.business_contacts_only) {
-			listed_contacts = listed_contacts.filter((c) => c.isBusiness);
-		}
+		listed_contacts = listed_contacts.filter(
+			(c) =>
+				((options.saved && c.isMyContact) || (options.unsaved && !c.isMyContact)) &&
+				(!options.business_contacts_only || (options.business_contacts_only && c.isBusiness))
+		);
 
-		const contacts: {
-			name: string | undefined;
-			number: string;
-			isBusiness: string;
-			country: string;
-			public_name: string;
-			description?: string;
-			email?: string;
-			websites?: string[];
-			latitude?: number;
-			longitude?: number;
-			address?: string;
-		}[] = await whatsappUtils.contactsWithCountry(listed_contacts);
+		const contacts = await whatsappUtils.contactsWithCountry(listed_contacts);
 
 		const data = options.vcf
 			? options.business_contacts_only
@@ -159,7 +123,7 @@ async function countContacts(req: Request, res: Response, next: NextFunction) {
 	}
 
 	try {
-		const { saved, non_saved, saved_chat, groups } = await getOrCache(
+		const { saved, chat_contacts, groups } = await getOrCache(
 			CACHE_TOKEN_GENERATOR.CONTACTS(req.locals.user._id),
 			async () => whatsappUtils.getContacts()
 		);
@@ -168,10 +132,8 @@ async function countContacts(req: Request, res: Response, next: NextFunction) {
 			res,
 			status: 200,
 			data: {
-				saved_contacts: saved.length,
-				non_saved_contacts: non_saved.length,
-				saved_chat_contacts: saved_chat.length,
-				total_contacts: saved.length + non_saved.length + saved_chat.length,
+				phonebook_contacts: saved.length,
+				chat_contacts: chat_contacts.length,
 				groups: groups.length,
 			},
 		});
