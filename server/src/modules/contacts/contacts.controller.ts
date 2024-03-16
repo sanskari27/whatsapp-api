@@ -123,7 +123,7 @@ async function countContacts(req: Request, res: Response, next: NextFunction) {
 	}
 
 	try {
-		const { saved, chat_contacts, groups } = await getOrCache(
+		const { saved, non_saved, chat_contacts, groups } = await getOrCache(
 			CACHE_TOKEN_GENERATOR.CONTACTS(req.locals.user._id),
 			async () => whatsappUtils.getContacts()
 		);
@@ -133,6 +133,7 @@ async function countContacts(req: Request, res: Response, next: NextFunction) {
 			status: 200,
 			data: {
 				phonebook_contacts: saved.length,
+				non_saved_contacts: non_saved.length,
 				chat_contacts: chat_contacts.length,
 				groups: groups.length,
 			},
