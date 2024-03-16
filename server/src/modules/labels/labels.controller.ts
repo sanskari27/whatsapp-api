@@ -69,8 +69,8 @@ async function exportLabels(req: Request, res: Response, next: NextFunction) {
 	const taskService = new TaskService(req.locals.account);
 	const options = {
 		business_contacts_only: req.body.business_contacts_only ?? false,
-		saved: req.body.saved ?? false,
-		unsaved: req.body.unsaved ?? false,
+		saved: req.body.saved ?? true,
+		unsaved: req.body.unsaved ?? true,
 		vcf: req.body.vcf ?? false,
 	};
 
