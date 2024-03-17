@@ -118,12 +118,10 @@ model BotResponse {
   bot   Bot    @relation(fields: [botId], references: [id])
   botId String
 
-  recipient         String
-  last_message      DateTime   @default(now())
-  triggered_by_bot  DateTime[] @default([])
-  triggered_by_poll DateTime[] @default([])
-
-  @@unique([username, botId, recipient])
+  sender      String
+  recipient   String
+  triggeredBy BotTriggeredBy
+  triggeredAt DateTime       @default(now())
 }
 
 //----------------------------------------- Merged Groups---------------------------
@@ -187,6 +185,7 @@ model Message {
 
   devices UserDevices[]
 
+  sender      String?
   recipient   String
   message     String
   attachments Upload[]
@@ -417,4 +416,9 @@ enum TaskResultType {
   CSV
   VCF
   NONE
+}
+
+enum BotTriggeredBy {
+  POLL
+  BOT
 }

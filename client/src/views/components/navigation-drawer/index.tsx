@@ -173,17 +173,11 @@ const SHORTCUTS = {
 	],
 };
 
-export default function NavigationDrawer() {
-	// const theme = useTheme();
-
-	// const { onOpen, onClose, isOpen } = useDisclosure();
-
-	// const handleLogout = async () => {
-	// 	logout();
-	// };
+export default function NavigationDrawer({ extraPadding = 0 }: { extraPadding?: number }) {
 	const options = OPTIONS['/' + location.pathname?.split('/')?.[1]] ?? [];
 	const shortcuts = SHORTCUTS['/' + location.pathname?.split('/')?.[1]] ?? [];
 
+	const h = 65 + extraPadding + 'px';
 	return (
 		<Box>
 			<Flex
@@ -191,8 +185,8 @@ export default function NavigationDrawer() {
 				width={'300px'}
 				userSelect={'none'}
 				position={'fixed'}
-				minHeight={'calc(95% - 65px)'}
-				top={'65px'}
+				minHeight={`calc(95% - ${h})`}
+				top={h}
 				paddingLeft={'1.5rem'}
 				zIndex={99}
 				paddingTop={'1rem'}

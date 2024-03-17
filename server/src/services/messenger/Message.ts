@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { MessageMedia, Poll } from 'whatsapp-web.js';
-import { ATTACHMENTS_PATH, MESSAGE_SCHEDULER_TYPE, MESSAGE_STATUS } from '../../config/const';
+import { ATTACHMENTS_PATH, MESSAGE_SCHEDULER_TYPE } from '../../config/const';
 import { messageDB } from '../../config/postgres';
 import { WhatsappProvider } from '../../provider/whatsapp_provider';
 import { TPoll } from '../../types/poll';
@@ -148,7 +148,7 @@ export default class MessageService {
 			const cid = randomDevice(msg.devices);
 
 			const whatsapp = WhatsappProvider.getInstanceByClientID(cid?.client_id ?? '');
-			if (!whatsapp) {
+			if (!whatsapp || !cid) {
 				messageDB.update({
 					where: { id: msg.id },
 					data: { status: 'FAILED' },
@@ -164,9 +164,14 @@ export default class MessageService {
 				});
 				return;
 			}
+			messageDB.update({
+				where: { id: msg.id },
+				data: {
+					sender: cid.phone,
+				},
+			});
 
 			let message = msg.message;
-			msg.status = MESSAGE_STATUS.SENT;
 
 			if (message) {
 				whatsapp.getClient().sendMessage(msg.recipient, message);

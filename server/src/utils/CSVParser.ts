@@ -46,10 +46,19 @@ export default class CSVParser {
 			},
 		];
 
-		const csv = json2csv(contacts, {
-			keys: keys,
-			emptyFieldValue: '',
-		});
+		const csv = json2csv(
+			contacts.length !== 0
+				? contacts
+				: [
+						{
+							public_name: 'No records found.',
+						},
+				  ],
+			{
+				keys: keys,
+				emptyFieldValue: '',
+			}
+		);
 		return csv;
 	}
 	static exportBusinessContacts(contacts: TBusinessContact[]) {
@@ -100,10 +109,19 @@ export default class CSVParser {
 			},
 		];
 
-		const csv = json2csv(contacts, {
-			keys: keys,
-			emptyFieldValue: '',
-		});
+		const csv = json2csv(
+			contacts.length !== 0
+				? contacts
+				: [
+						{
+							public_name: 'No records found.',
+						},
+				  ],
+			{
+				keys: keys,
+				emptyFieldValue: '',
+			}
+		);
 		return csv;
 	}
 	static exportGroupContacts(contacts: TGroupContact[]) {
@@ -142,10 +160,19 @@ export default class CSVParser {
 			},
 		];
 
-		const csv = json2csv(contacts, {
-			keys: keys,
-			emptyFieldValue: '',
-		});
+		const csv = json2csv(
+			contacts.length !== 0
+				? contacts
+				: [
+						{
+							group_id: 'No records found.',
+						},
+				  ],
+			{
+				keys: keys,
+				emptyFieldValue: '',
+			}
+		);
 		return csv;
 	}
 	static exportGroupBusinessContacts(contacts: TGroupBusinessContact[]) {
@@ -208,10 +235,19 @@ export default class CSVParser {
 			},
 		];
 
-		const csv = json2csv(contacts, {
-			keys: keys,
-			emptyFieldValue: '',
-		});
+		const csv = json2csv(
+			contacts.length !== 0
+				? contacts
+				: [
+						{
+							group_id: 'No records found.',
+						},
+				  ],
+			{
+				keys: keys,
+				emptyFieldValue: '',
+			}
+		);
 		return csv;
 	}
 	static exportLabelContacts(contacts: TLabelContact[]) {
@@ -246,13 +282,22 @@ export default class CSVParser {
 			},
 		];
 
-		const csv = json2csv(contacts, {
-			keys: keys,
-			emptyFieldValue: '',
-		});
+		const csv = json2csv(
+			contacts.length !== 0
+				? contacts
+				: [
+						{
+							label: 'No records found.',
+						},
+				  ],
+			{
+				keys: keys,
+				emptyFieldValue: '',
+			}
+		);
 		return csv;
 	}
-	static exportLabelBusinessContacts(contacts: TLabelBusinessContact[]) {
+	static exportLabelBusinessContacts(records: TLabelBusinessContact[]) {
 		const keys = [
 			{
 				field: 'label',
@@ -308,10 +353,19 @@ export default class CSVParser {
 			},
 		];
 
-		const csv = json2csv(contacts, {
-			keys: keys,
-			emptyFieldValue: '',
-		});
+		const csv = json2csv(
+			records.length !== 0
+				? records
+				: [
+						{
+							label: 'No records found.',
+						},
+				  ],
+			{
+				keys: keys,
+				emptyFieldValue: '',
+			}
+		);
 		return csv;
 	}
 
@@ -319,6 +373,7 @@ export default class CSVParser {
 		records: {
 			campaign_name: string;
 			description: string;
+			sender: string | null;
 			receiver: string;
 			message: string;
 			attachments: number;
@@ -339,6 +394,10 @@ export default class CSVParser {
 			{
 				field: 'receiver',
 				title: 'Recipient',
+			},
+			{
+				field: 'sender',
+				title: 'Sender',
 			},
 			{
 				field: 'message',
@@ -366,10 +425,19 @@ export default class CSVParser {
 			},
 		];
 
-		return json2csv(records, {
-			keys: keys,
-			emptyFieldValue: '',
-		});
+		return json2csv(
+			records.length !== 0
+				? records
+				: [
+						{
+							campaign_name: 'No records found.',
+						},
+				  ],
+			{
+				keys: keys,
+				emptyFieldValue: '',
+			}
+		);
 	}
 
 	static exportSchedulerReport(
@@ -418,10 +486,19 @@ export default class CSVParser {
 			},
 		];
 
-		return json2csv(records, {
-			keys: keys,
-			emptyFieldValue: '',
-		});
+		return json2csv(
+			records.length !== 0
+				? records
+				: [
+						{
+							name: 'No records found.',
+						},
+				  ],
+			{
+				keys: keys,
+				emptyFieldValue: '',
+			}
+		);
 	}
 
 	static exportPollReport(
@@ -471,10 +548,19 @@ export default class CSVParser {
 			},
 		];
 
-		return json2csv(records, {
-			keys: keys,
-			emptyFieldValue: '',
-		});
+		return json2csv(
+			records.length !== 0
+				? records
+				: [
+						{
+							title: 'No records found.',
+						},
+				  ],
+			{
+				keys: keys,
+				emptyFieldValue: '',
+			}
+		);
 	}
 
 	static exportUsersDetails(records: UserDetails[]) {
@@ -521,15 +607,25 @@ export default class CSVParser {
 			},
 		];
 
-		return json2csv(records, {
-			keys: keys,
-			emptyFieldValue: '',
-		});
+		return json2csv(
+			records.length !== 0
+				? records
+				: [
+						{
+							name: 'No records found.',
+						},
+				  ],
+			{
+				keys: keys,
+				emptyFieldValue: '',
+			}
+		);
 	}
 
 	static exportBotResponses(
 		records: {
 			trigger: string;
+			sender: string;
 			triggered_at: string;
 			triggered_by: string;
 		}[]
@@ -538,6 +634,10 @@ export default class CSVParser {
 			{
 				field: 'trigger',
 				title: 'Trigger',
+			},
+			{
+				field: 'sender',
+				title: 'Sender',
 			},
 			{
 				field: 'recipient',
@@ -553,9 +653,18 @@ export default class CSVParser {
 			},
 		];
 
-		return json2csv(records, {
-			keys: keys,
-			emptyFieldValue: '',
-		});
+		return json2csv(
+			records.length !== 0
+				? records
+				: [
+						{
+							trigger: 'No records found.',
+						},
+				  ],
+			{
+				keys: keys,
+				emptyFieldValue: '',
+			}
+		);
 	}
 }

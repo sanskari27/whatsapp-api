@@ -175,6 +175,7 @@ export class WhatsappProvider {
 		const isGroup = chat.isGroup;
 		const contact = await message.getContact();
 		this.bot_service.handleMessage(this.client, {
+			sender: this.number!,
 			trigger_chat: message.from,
 			body: message.body,
 			contact,
@@ -221,6 +222,7 @@ export class WhatsappProvider {
 		details.selected_option.map((opt) => {
 			if (!this.bot_service) return;
 			this.bot_service.handleMessage(this.client, {
+				sender: this.number!,
 				trigger_chat: chat.id._serialized,
 				body: opt,
 				client_id: this.client_id,

@@ -218,6 +218,7 @@ export default class CampaignService {
 		});
 		return messages.map((message) => ({
 			message: message.message,
+			sender: message.sender,
 			receiver: message.recipient.split('@')[0],
 			attachments: message.attachments.length,
 			contacts: message.contacts.length,

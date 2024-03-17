@@ -74,9 +74,7 @@ export default function Profiles() {
 	};
 
 	useEffect(() => {
-		if (isAuthenticating) {
-			addProfileRef.current?.open();
-		} else {
+		if (!isAuthenticating) {
 			addProfileRef.current?.close();
 		}
 	}, [isAuthenticating]);
@@ -124,7 +122,12 @@ export default function Profiles() {
 				/>
 				{empty_profiles_count > 0 && (
 					<WrapItem>
-						<EmptyProfile onConnectClicked={addDevice} />
+						<EmptyProfile
+							onConnectClicked={() => {
+								addDevice();
+								addProfileRef.current?.open();
+							}}
+						/>
 					</WrapItem>
 				)}
 			</Wrap>

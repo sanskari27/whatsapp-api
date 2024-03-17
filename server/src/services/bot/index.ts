@@ -190,11 +190,15 @@ export default class BotService {
 					in: ids,
 				},
 			},
+			distinct: 'botId',
+			orderBy: {
+				triggeredAt: 'desc',
+			},
 		});
 
 		return responses.reduce(
 			(acc, item) => {
-				let diff = DateUtils.getMoment(item.last_message).diff(DateUtils.getMomentNow(), 'seconds');
+				let diff = DateUtils.getMoment(item.triggeredAt).diff(DateUtils.getMomentNow(), 'seconds');
 				diff = Math.abs(diff);
 				const bot_id = item.botId.toString();
 				acc[bot_id] = acc[bot_id] ? Math.min(diff, acc[bot_id]) : diff;
@@ -288,6 +292,7 @@ export default class BotService {
 	public async handleMessage(
 		whatsapp: WAWebJS.Client,
 		details: {
+			sender: string;
 			trigger_chat: string;
 			client_id: string;
 			body: string;
@@ -296,7 +301,7 @@ export default class BotService {
 			fromPoll?: boolean;
 		}
 	) {
-		const { isSubscribed } = await this._user.isSubscribed();
+		const { isSubscribed } = this._user.isSubscribed();
 
 		const message_from = details.trigger_chat.split('@')[0];
 
@@ -316,7 +321,7 @@ export default class BotService {
 				return;
 			}
 			await Delay(bot.response_delay_seconds);
-			this.responseSent(bot.bot_id, message_from);
+			this.responseSent(bot.bot_id, details.sender, message_from);
 
 			let msg = bot.message;
 			if (msg) {
@@ -412,6 +417,7 @@ export default class BotService {
 
 	private async responseSent(
 		bot_id: string,
+		sender: string,
 		message_from: string,
 		opts: {
 			fromPoll: boolean;
@@ -419,56 +425,15 @@ export default class BotService {
 			fromPoll: false,
 		}
 	) {
-		const bot_response = await botResponseDB.findUnique({
-			where: {
-				username_botId_recipient: {
-					username: this._user.username,
-					botId: bot_id,
-					recipient: message_from,
-				},
+		await botResponseDB.create({
+			data: {
+				username: this._user.username,
+				recipient: message_from,
+				sender: sender,
+				botId: bot_id,
+				triggeredBy: opts.fromPoll ? 'POLL' : 'BOT',
 			},
 		});
-
-		if (bot_response) {
-			bot_response.last_message = DateUtils.getMomentNow().toDate();
-			if (opts.fromPoll) {
-				botResponseDB.update({
-					where: { id: bot_response.id },
-					data: {
-						last_message: DateUtils.getMomentNow().toDate(),
-						triggered_by_poll: {
-							push: bot_response.last_message,
-						},
-					},
-				});
-			} else {
-				botResponseDB.update({
-					where: { id: bot_response.id },
-					data: {
-						last_message: DateUtils.getMomentNow().toDate(),
-						triggered_by_bot: {
-							push: bot_response.last_message,
-						},
-					},
-				});
-			}
-		} else {
-			await botResponseDB.create({
-				data: {
-					username: this._user.username,
-					recipient: message_from,
-					botId: bot_id,
-					last_message: DateUtils.getMomentNow().toDate(),
-					...(opts.fromPoll
-						? {
-								triggered_by_poll: [DateUtils.getMomentNow().toDate()],
-						  }
-						: {
-								triggered_by_bot: [DateUtils.getMomentNow().toDate()],
-						  }),
-				},
-			});
-		}
 	}
 
 	public async createBot(data: CreateBotProps) {
@@ -606,26 +571,18 @@ export default class BotService {
 		}
 		const result: {
 			trigger: string;
+			sender: string;
 			recipient: string;
 			triggered_at: string;
 			triggered_by: string;
 		}[] = [];
 		responses.forEach((response) => {
-			response.triggered_by_bot.forEach((triggered_at) => {
-				result.push({
-					trigger: response.bot.trigger,
-					recipient: response.recipient,
-					triggered_at: DateUtils.getMoment(triggered_at).format('DD-MM-YYYY HH:mm:ss'),
-					triggered_by: 'BOT',
-				});
-			});
-			response.triggered_by_poll.forEach((triggered_at) => {
-				result.push({
-					trigger: response.bot.trigger,
-					recipient: response.recipient,
-					triggered_at: DateUtils.getMoment(triggered_at).format('DD-MM-YYYY HH:mm:ss'),
-					triggered_by: 'POLL',
-				});
+			result.push({
+				trigger: response.bot.trigger,
+				sender: response.sender,
+				recipient: response.recipient,
+				triggered_at: DateUtils.getMoment(response.triggeredAt).format('DD-MM-YYYY HH:mm:ss'),
+				triggered_by: response.triggeredBy,
 			});
 		});
 		return result;

@@ -133,8 +133,8 @@ export default class AccountService {
 				device_created_at: DateUtils.getMoment(link.device.first_login),
 				client_id: link.client_id,
 				phone: link.phone,
-				name: link.user.name,
-				userType: link.user.user_type,
+				name: link.device.name,
+				userType: link.device.user_type,
 				business_details: {
 					description: link.device.description,
 					email: link.device.email,

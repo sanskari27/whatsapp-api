@@ -1,3 +1,4 @@
+import { DownloadIcon } from '@chakra-ui/icons';
 import {
 	Box,
 	Flex,
@@ -89,6 +90,10 @@ const AutoResponderReport = () => {
 		});
 	};
 
+	const downloadReport = (id: string) => {
+		BotService.downloadResponses(id);
+	};
+
 	return (
 		<Flex direction={'column'} padding={'1rem'} justifyContent={'start'}>
 			<Heading color={Colors.PRIMARY_DARK}>Auto Responders</Heading>
@@ -151,7 +156,12 @@ const AutoResponderReport = () => {
 													colorScheme='gray'
 												/>
 											</Link>
-
+											<IconButton
+												aria-label='download-messages'
+												icon={<DownloadIcon />}
+												onClick={() => downloadReport(bot.bot_id)}
+												size='sm'
+											/>
 											<IconButton
 												aria-label='delete-scheduler'
 												size={'sm'}

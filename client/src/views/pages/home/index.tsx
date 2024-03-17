@@ -19,7 +19,7 @@ export default function Home() {
 	const outlet = useOutlet();
 	const { isAuthenticated, isAuthenticating } = useAuth();
 
-	const { data_loaded } = useSelector((state: StoreState) => state[StoreNames.USER]);
+	const { data_loaded, profiles } = useSelector((state: StoreState) => state[StoreNames.USER]);
 
 	useEffect(() => {
 		if (status === 'NO-NETWORK') {
@@ -37,13 +37,13 @@ export default function Home() {
 
 	return (
 		<Box width='full' className='custom-scrollbar bg-background'>
-			<NavigationDrawer />
+			<NavigationDrawer extraPadding={profiles.length === 0 ? 45 : 0} />
 			<Navbar />
+			<DevicesAlert isVisible={profiles.length === 0} />
 			<Box paddingLeft={'320px'} paddingTop={'65px'} overflowX={'hidden'} className='min-h-screen'>
 				{outlet ? outlet : <Navigate to={NAVIGATION.DASHBOARD + NAVIGATION.CAMPAIGN_REPORTS} />}
 				<Loading isLoaded={data_loaded} />
 			</Box>
-			<DevicesAlert />
 		</Box>
 	);
 }
@@ -93,16 +93,16 @@ function Loading({ isLoaded }: { isLoaded: boolean }) {
 	);
 }
 
-function DevicesAlert() {
-	const { profiles } = useSelector((state: StoreState) => state[StoreNames.USER]);
+function DevicesAlert({ isVisible }: { isVisible: boolean }) {
 	return (
 		<Alert
-			position={'absolute'}
-			bottom={0}
-			left={0}
-			hidden={profiles.length !== 0}
+			// position={'absolute'}
+			top={'65px'}
+			ml={0}
+			hidden={!isVisible}
 			status='warning'
 			rounded={'md'}
+			zIndex={99}
 		>
 			<Flex justifyContent={'space-between'} width={'full'}>
 				<Flex>
