@@ -150,7 +150,7 @@ const Loading = () => {
 					<Flex justifyContent={'center'} alignItems={'center'} width={'full'} gap={'1rem'}>
 						<Image src={LOGO} width={'48px'} className='shadow-lg rounded-full' />
 						<Text className='text-primary-dark' fontSize={'lg'} fontWeight='bold'>
-							WhatsLeads
+							WPautomation
 						</Text>
 					</Flex>
 					<Progress size='xs' isIndeterminate width={'150%'} rounded={'lg'} />

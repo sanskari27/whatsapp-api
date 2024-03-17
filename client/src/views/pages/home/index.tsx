@@ -80,7 +80,7 @@ function Loading({ isLoaded }: { isLoaded: boolean }) {
 			>
 				<Lottie animationData={LOTTIE_LOADER} loop={true} />
 				<Text className='text-black ' fontSize={'lg'} fontWeight='bold'>
-					WhatsLeads
+					WPautomation
 				</Text>
 				<Text mt={'1rem'} className='text-black ' fontSize={'xs'}>
 					Data synchronization in progress.
