@@ -19,7 +19,6 @@ export type UserDetailsState = {
 		name: string;
 	}[];
 	contactsCount: {
-		[EXPORTS_TYPE.ALL]: number;
 		[EXPORTS_TYPE.SAVED]: number;
 		[EXPORTS_TYPE.UNSAVED]: number;
 		[EXPORTS_TYPE.SAVED_CHAT]: number;

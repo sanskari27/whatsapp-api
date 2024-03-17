@@ -69,6 +69,9 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 			}
 		);
 	}
+	SocketServerProvider.attachedSockets
+		.get(account.username)
+		?.emit(SOCKET_RESPONSES.TASK_CREATED, task_id.toString());
 
 	Respond({
 		res,

@@ -1,3 +1,4 @@
+/* eslint-disable no-mixed-spaces-and-tabs */
 import APIInstance from '../config/APIInstance';
 
 type ContactCard = {
@@ -30,6 +31,11 @@ type ContactCard = {
 	}[];
 };
 
+const DEFAULT_NUMBER = {
+	country_code: '91',
+	number: '',
+};
+
 export default class ContactCardService {
 	static async ListContactCards() {
 		try {
@@ -53,14 +59,18 @@ export default class ContactCardService {
 				country: card.country,
 				pincode: card.pincode,
 				base64: card.base64,
-				contact_phone: card.contact_phone && {
-					country_code: card.contact_phone.contact_number.slice(1, -10),
-					number: card.contact_phone.contact_number.slice(-10),
-				},
-				contact_work: card.contact_work && {
-					country_code: card.contact_work.contact_number.slice(1, -10),
-					number: card.contact_work.contact_number.slice(-10),
-				},
+				contact_phone: card.contact_phone
+					? {
+							country_code: card.contact_phone.contact_number.slice(1, -10),
+							number: card.contact_phone.contact_number.slice(-10),
+					  }
+					: DEFAULT_NUMBER,
+				contact_work: card.contact_work
+					? {
+							country_code: card.contact_work.contact_number.slice(1, -10),
+							number: card.contact_work.contact_number.slice(-10),
+					  }
+					: DEFAULT_NUMBER,
 				contact_other: card.contact_other.map((contact: { contact_number: string }) => ({
 					country_code: contact.contact_number.slice(1, -10),
 					number: contact.contact_number.slice(-10),

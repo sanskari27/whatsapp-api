@@ -1,9 +1,9 @@
 import {
 	Box,
 	Button,
-	Center,
 	Checkbox,
 	Flex,
+	HStack,
 	Icon,
 	Modal,
 	ModalBody,
@@ -31,8 +31,8 @@ import CheckButton from '../../../components/check-button';
 
 const initialExportCriteria = {
 	[EXPORTS_TYPE.ALL]: false,
-	[EXPORTS_TYPE.SAVED]: false,
-	[EXPORTS_TYPE.UNSAVED]: false,
+	[EXPORTS_TYPE.SAVED]: true,
+	[EXPORTS_TYPE.UNSAVED]: true,
 	[EXPORTS_TYPE.SAVED_CHAT]: false,
 	[EXPORTS_TYPE.GROUP]: false,
 	[EXPORTS_TYPE.GROUP_ALL]: false,
@@ -77,10 +77,9 @@ export default function ExportContacts() {
 			.then((res) => {
 				dispatch(
 					setContactsCount({
-						[EXPORTS_TYPE.ALL]: res.total,
-						[EXPORTS_TYPE.SAVED]: res.saved,
-						[EXPORTS_TYPE.UNSAVED]: res.unsaved,
-						[EXPORTS_TYPE.SAVED_CHAT]: res.saved_chat,
+						[EXPORTS_TYPE.SAVED]: res.phonebook_contacts,
+						[EXPORTS_TYPE.UNSAVED]: res.non_saved_contacts,
+						[EXPORTS_TYPE.SAVED_CHAT]: res.chat_contacts,
 					})
 				);
 			})
@@ -126,30 +125,19 @@ export default function ExportContacts() {
 		const opts = {
 			vcf_only,
 			business_contacts_only,
+			saved_contacts: SAVED,
+			saved_chat_contacts: false,
+			non_saved_contacts: UNSAVED,
 		};
 
 		if (ALL) {
 			ContactService.contacts(opts);
 		}
 
-		if (SAVED) {
-			ContactService.contacts({
-				saved_contacts: true,
-				...opts,
-			});
-		}
-
 		if (SAVED_CHAT) {
 			ContactService.contacts({
+				...opts,
 				saved_chat_contacts: true,
-				...opts,
-			});
-		}
-
-		if (UNSAVED) {
-			ContactService.contacts({
-				...opts,
-				non_saved_contacts: true,
 			});
 		}
 
@@ -163,9 +151,7 @@ export default function ExportContacts() {
 
 		if (
 			ALL ||
-			SAVED ||
 			SAVED_CHAT ||
-			UNSAVED ||
 			(selectedGroups && selectedGroups.length > 0) ||
 			(selectedLabels && selectedLabels.length > 0)
 		) {
@@ -180,6 +166,10 @@ export default function ExportContacts() {
 
 		onClose();
 	};
+
+	const all_contacts_count = contactsCount
+		? (SAVED ? contactsCount['SAVED'] : 0) + (UNSAVED ? contactsCount['UNSAVED'] : 0)
+		: 0;
 
 	return (
 		<Modal isOpen={isOpen} onClose={onClose} onCloseComplete={handleClose}>
@@ -199,18 +189,18 @@ export default function ExportContacts() {
 								<Flex alignItems='flex-end' justifyContent={'space-between'}>
 									<CheckButton
 										name={'ALL'}
-										label='All Contacts'
+										label='Phonebook Contacts'
 										value={ALL}
 										onChange={handleChange}
 									/>
 									<Text fontSize='xs' className='text-black '>
-										{!contactsCount ? 'Loading...' : `${contactsCount[EXPORTS_TYPE.ALL]} Contacts`}
+										{!contactsCount ? 'Loading...' : all_contacts_count + ' Contacts'}
 									</Text>
 								</Flex>
 								<Flex alignItems='flex-end' justifyContent={'space-between'}>
 									<CheckButton
 										name={'SAVED_CHAT'}
-										label='All Saved Chat Contacts'
+										label='Conversations'
 										value={SAVED_CHAT}
 										onChange={handleChange}
 									/>
@@ -218,32 +208,6 @@ export default function ExportContacts() {
 										{!contactsCount
 											? 'Loading...'
 											: `${contactsCount[EXPORTS_TYPE.SAVED_CHAT]} Contacts`}
-									</Text>
-								</Flex>
-								<Flex alignItems='flex-end' justifyContent={'space-between'}>
-									<CheckButton
-										name={'SAVED'}
-										label='All Phonebook Contacts'
-										value={SAVED}
-										onChange={handleChange}
-									/>
-									<Text fontSize='xs' className='text-black '>
-										{!contactsCount
-											? 'Loading...'
-											: `${contactsCount[EXPORTS_TYPE.SAVED]} Contacts`}
-									</Text>
-								</Flex>
-								<Flex alignItems='flex-end' justifyContent={'space-between'}>
-									<CheckButton
-										name={'UNSAVED'}
-										label='All Unsaved Contacts'
-										value={UNSAVED}
-										onChange={handleChange}
-									/>
-									<Text fontSize='xs' className='text-black '>
-										{!contactsCount
-											? 'Loading...'
-											: `${contactsCount[EXPORTS_TYPE.UNSAVED]} Contacts`}
 									</Text>
 								</Flex>
 								<Flex alignItems='flex-end' justifyContent={'space-between'}>
@@ -362,10 +326,36 @@ export default function ExportContacts() {
 								</Flex>
 							</Flex>
 						</Box>
-						<Center>
+						<HStack alignItems={'center'} spacing={'1rem'} justifyContent={'center'}>
 							<Checkbox
 								colorScheme='green'
-								mr={2}
+								size='sm'
+								isChecked={SAVED}
+								onChange={(e) =>
+									handleChange({
+										name: 'SAVED',
+										value: e.target.checked,
+									})
+								}
+							>
+								Saved
+							</Checkbox>
+							<Checkbox
+								colorScheme='green'
+								size='sm'
+								isChecked={UNSAVED}
+								onChange={(e) =>
+									handleChange({
+										name: 'UNSAVED',
+										value: e.target.checked,
+									})
+								}
+							>
+								Non Saved
+							</Checkbox>
+							<Checkbox
+								colorScheme='green'
+								size='sm'
 								isChecked={BUSINESS_ONLY}
 								onChange={(e) =>
 									handleChange({
@@ -373,9 +363,10 @@ export default function ExportContacts() {
 										value: e.target.checked,
 									})
 								}
-							/>
-							Business Contacts Only
-						</Center>
+							>
+								Business Only
+							</Checkbox>
+						</HStack>
 					</Flex>
 				</ModalBody>
 				<ModalFooter>
@@ -401,9 +392,7 @@ export default function ExportContacts() {
 							isDisabled={
 								!(
 									ALL ||
-									SAVED ||
 									SAVED_CHAT ||
-									UNSAVED ||
 									uiDetails.selectAllGroups ||
 									selectedGroup.length > 0 ||
 									uiDetails.selectAllLabels ||

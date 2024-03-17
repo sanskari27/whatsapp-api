@@ -143,10 +143,14 @@ const ContactCardReducers = createSlice({
 			);
 		},
 		setLinks: (state, action: PayloadAction<{ index: number; url: string }>) => {
-			state.selectedCard.links![action.payload.index] = action.payload.url;
+			const {index,url} = action.payload;
+			const _url = url.includes('://') ? url.split("://")[1] :url;
+			state.selectedCard.links![index] = _url;
 		},
 		addLink: (state, action: PayloadAction<string>) => {
-			state.selectedCard.links?.push(action.payload);
+			const url  = action.payload;
+			const _url = url.includes('://') ? url.split('://')[1] : url;
+			state.selectedCard.links?.push(_url);
 		},
 		removeLink: (state, action: PayloadAction<number>) => {
 			state.selectedCard.links = state.selectedCard.links?.filter(

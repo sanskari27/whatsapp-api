@@ -81,6 +81,9 @@ async function exportLabels(req: Request, res: Response, next: NextFunction) {
 			description: `Export ${label_ids.length} labels.`,
 		}
 	);
+	SocketServerProvider.attachedSockets
+		.get(account.username)
+		?.emit(SOCKET_RESPONSES.TASK_CREATED, task_id.toString());
 
 	Respond({
 		res,

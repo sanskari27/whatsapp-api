@@ -71,12 +71,17 @@ export default function useTask() {
 				isClosable: true,
 			});
 		};
+		const listenerCreated = () => {
+			TaskService.listTasks().then(setTasks);
+		};
 		socket.on(SOCKET_EVENT.TASK_COMPLETED, listenerCompleted);
 		socket.on(SOCKET_EVENT.TASK_FAILED, listenerFailed);
+		socket.on(SOCKET_EVENT.TASK_CREATED, listenerCreated);
 
 		return () => {
 			socket.off(SOCKET_EVENT.TASK_COMPLETED, listenerCompleted);
 			socket.off(SOCKET_EVENT.TASK_FAILED, listenerFailed);
+			socket.off(SOCKET_EVENT.TASK_CREATED, listenerCreated);
 		};
 	}, [toast]);
 

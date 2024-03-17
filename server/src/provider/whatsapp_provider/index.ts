@@ -116,12 +116,12 @@ export class WhatsappProvider {
 	}
 
 	private async attachListeners() {
-		this.client.on('qr', this.onQRUpdated);
-		this.client.on('authenticated', this.onAuthenticated);
-		this.client.on('ready', this.onWhatsappReady);
-		this.client.on('message', this.onMessage);
-		this.client.on('vote_update', this.onVoteUpdate);
-		this.client.on('disconnected', this.onDisconnect);
+		this.client.on('qr', (qr) => this.onQRUpdated(qr));
+		this.client.on('authenticated', () => this.onAuthenticated());
+		this.client.on('ready', () => this.onWhatsappReady());
+		this.client.on('message', (msg) => this.onMessage(msg));
+		this.client.on('vote_update', (v) => this.onVoteUpdate(v));
+		this.client.on('disconnected', () => this.onDisconnect());
 	}
 
 	private async onQRUpdated(qrCode: string) {
