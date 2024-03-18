@@ -74,6 +74,9 @@ export default class VoteResponseService {
 		const polls = await voteResponseDB.groupBy({
 			where: {
 				username: this._user.username,
+				selected_option: {
+					isEmpty: false,
+				},
 			},
 			by: ['title', 'options', 'isMultiSelect'],
 			_count: {
@@ -85,7 +88,7 @@ export default class VoteResponseService {
 			title: poll.title,
 			options: poll.options,
 			isMultiSelect: poll.isMultiSelect,
-			vote_count: poll._count,
+			vote_count: poll._count._all,
 		}));
 	}
 
