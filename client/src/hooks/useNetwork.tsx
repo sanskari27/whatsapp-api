@@ -30,7 +30,7 @@ export const useNetwork = singletonHook(initStatus, () => {
 function checkNetwork() {
 	return new Promise((resolve: (status: boolean) => void) => {
 		axios
-			.get(SERVER_URL + 'api-status1')
+			.get(SERVER_URL + 'api-status')
 			.then(() => resolve(true))
 			.catch(() => resolve(false));
 	});
