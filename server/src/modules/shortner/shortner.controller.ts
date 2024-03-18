@@ -43,7 +43,7 @@ async function createLink(req: Request, res: Response, next: NextFunction) {
 	const { link, title } = req.locals.data as CreateLinkValidationResult;
 
 	const key = nanoid(6);
-	const qrCodeBuffer = await QRUtils.generateQR(`https://open.whatsleads.in/${key}`);
+	const qrCodeBuffer = await QRUtils.generateQR(`https://open.wpautomation.in/${key}`);
 	const doc = await shortnerDB.create({
 		data: {
 			title,

@@ -6,7 +6,7 @@ export const IS_PRODUCTION = process.env.MODE === 'production';
 export const IS_WINDOWS = process.env.OS === 'WINDOWS';
 export const PORT = process.env.PORT !== undefined ? process.env.PORT : undefined;
 
-export const SHORTNER_REDIRECT = 'https://open.whatsleads.in/';
+export const SHORTNER_REDIRECT = 'https://open.wpautomation.in/';
 
 export const SESSION_STARTUP_WAIT_TIME = 5 * 60 * 1000; //milis
 
