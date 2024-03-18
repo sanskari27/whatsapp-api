@@ -2,7 +2,7 @@ import { RepeatIcon } from '@chakra-ui/icons';
 import { Box, Button, Image, Text, VStack } from '@chakra-ui/react';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { NETWORK_ERROR } from '../../../assets/Images';
+import { NETWORK_ERROR_SVG } from '../../../assets/Images';
 import { NAVIGATION } from '../../../config/const';
 import { recheckNetwork, useNetwork } from '../../../hooks/useNetwork';
 
@@ -33,7 +33,6 @@ const NetworkError = () => {
 			<Box
 				zIndex={'1'}
 				width='full'
-				// height="250px"
 				display='flex'
 				gap={'1rem'}
 				justifyContent={'center'}
@@ -41,14 +40,9 @@ const NetworkError = () => {
 				position='relative'
 				marginTop={'150px'}
 			>
-				<Image src={NETWORK_ERROR} className='filter-none' width={'40%'} />
+				<Image src={NETWORK_ERROR_SVG} className='filter-none' width={'40%'} />
 			</Box>
-			<Text
-				className='text-black dark:text-white'
-				fontSize={'large'}
-				fontWeight={'medium'}
-				textAlign={'center'}
-			>
+			<Text className='text-gray-600' fontSize={'large'} fontWeight={'medium'} textAlign={'center'}>
 				Unable to connect to Servers
 			</Text>
 

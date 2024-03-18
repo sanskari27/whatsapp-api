@@ -19,9 +19,11 @@ import {
 	WrapItem,
 } from '@chakra-ui/react';
 import { useEffect, useRef } from 'react';
+import { IoLogOut } from 'react-icons/io5';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { WA_AUTH, WA_DEVICE } from '../../../../assets/Images';
-import { Colors } from '../../../../config/const';
+import { Colors, NAVIGATION } from '../../../../config/const';
 import useProfile from '../../../../hooks/useProfile';
 import AuthService from '../../../../services/auth.service';
 import { StoreNames, StoreState } from '../../../../store';
@@ -35,6 +37,7 @@ import AddDeviceDialog, { AddDeviceDialogHandle } from './components/AddDeviceDi
 
 export default function Profiles() {
 	const dispatch = useDispatch();
+	const navigate = useNavigate();
 	const addProfileRef = useRef<AddDeviceDialogHandle | null>(null);
 	const { addDevice, isAuthenticating, qrCode, status } = useProfile();
 	const {
@@ -73,6 +76,13 @@ export default function Profiles() {
 		);
 	};
 
+	const logout = async () => {
+		const isLoggedOut = await AuthService.logout();
+		if (isLoggedOut) {
+			navigate(NAVIGATION.WELCOME);
+		}
+	};
+
 	useEffect(() => {
 		if (!isAuthenticating) {
 			addProfileRef.current?.close();
@@ -81,7 +91,16 @@ export default function Profiles() {
 
 	return (
 		<Flex direction={'column'} padding={'1rem'} justifyContent={'start'}>
-			<Heading color={Colors.PRIMARY_DARK}>Settings</Heading>
+			<Heading color={Colors.PRIMARY_DARK}>
+				<Flex width={'97%'} justifyContent={'space-between'} alignItems={'flex-end'}>
+					Settings
+					<Flex gap={'0.5rem'}>
+						<Button variant='outline' colorScheme='red' onClick={logout} leftIcon={<IoLogOut />}>
+							Logout
+						</Button>
+					</Flex>
+				</Flex>
+			</Heading>
 			<Heading color={Colors.PRIMARY_DARK} size={'md'} marginTop={'3rem'}>
 				Preferences
 			</Heading>

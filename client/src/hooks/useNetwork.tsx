@@ -7,50 +7,50 @@ type InitialStatusType = 'RUNNING' | 'NO-NETWORK';
 const initStatus: InitialStatusType = 'RUNNING';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let globalSet: any = () => {
-    throw new Error('you must useNetwork before setting its state');
+	throw new Error('you must useNetwork before setting its state');
 };
 
 export const useNetwork = singletonHook(initStatus, () => {
-    const [status, setStatus] = useState<'RUNNING' | 'NO-NETWORK'>(initStatus);
-    globalSet = setStatus;
+	const [status, setStatus] = useState<'RUNNING' | 'NO-NETWORK'>(initStatus);
+	globalSet = setStatus;
 
-    useEffect(() => {
-        checkNetwork().then((res) => {
-            if (res) {
-                setNetworkStatus('RUNNING');
-            } else {
-                setNetworkStatus('NO-NETWORK');
-            }
-        });
-    }, []);
+	useEffect(() => {
+		checkNetwork().then((res) => {
+			if (res) {
+				setNetworkStatus('RUNNING');
+			} else {
+				setNetworkStatus('NO-NETWORK');
+			}
+		});
+	}, []);
 
-    return status;
+	return status;
 });
 
 function checkNetwork() {
-    return new Promise((resolve: (status: boolean) => void) => {
-        axios
-            .get(SERVER_URL + 'api-status')
-            .then(() => resolve(true))
-            .catch(() => resolve(false));
-    });
+	return new Promise((resolve: (status: boolean) => void) => {
+		axios
+			.get(SERVER_URL + 'api-status1')
+			.then(() => resolve(true))
+			.catch(() => resolve(false));
+	});
 }
 
 export const setNetworkStatus = (data: InitialStatusType) => globalSet(data);
 
 export const recheckNetwork = async () => {
-    const status = await checkNetwork();
-    if (status) {
-        setNetworkStatus('RUNNING');
-    } else {
-        setNetworkStatus('NO-NETWORK');
-    }
-    return status;
+	const status = await checkNetwork();
+	if (status) {
+		setNetworkStatus('RUNNING');
+	} else {
+		setNetworkStatus('NO-NETWORK');
+	}
+	return status;
 };
 export const networkFound = async () => {
-    setNetworkStatus('RUNNING');
+	setNetworkStatus('RUNNING');
 };
 
 export const networkError = async () => {
-    setNetworkStatus('NO-NETWORK');
+	setNetworkStatus('NO-NETWORK');
 };

@@ -27,7 +27,7 @@ APIInstance.interceptors.response.use(
 	async (error) => {
 		const originalRequest = error.config;
 
-		if (error.code === 'ERR_NETWORK') {
+		if (error.code === 'ERR_NETWORK' && !originalRequest._retry) {
 			if (await recheckNetwork()) {
 				originalRequest._retry = true;
 				return APIInstance(originalRequest);
@@ -36,7 +36,7 @@ APIInstance.interceptors.response.use(
 			}
 		}
 
-		if (error.response?.data?.title === 'SESSION_INVALIDATED' && !originalRequest._retry) {
+		if (error.response?.data?.title === 'AUTHORIZATION_ERROR' && !originalRequest._retry) {
 			originalRequest._retry = true;
 			const isAuthenticated = await AuthService.isAuthenticated();
 			if (isAuthenticated) {
