@@ -281,7 +281,7 @@ export default class GroupMergeService {
 			});
 			let _reply_text = groupReply.text.replace('{{public_name}}', contact.pushname);
 
-			if (doc.random_string) {
+			if (_reply_text.length > 0 && doc.random_string) {
 				_reply_text += randomMessageText();
 			}
 
@@ -331,7 +331,7 @@ export default class GroupMergeService {
 			});
 			let _reply_text = groupReply.text.replace('{{public_name}}', contact.pushname);
 
-			if (doc.random_string) {
+			if (_reply_text.length > 0 && doc.random_string) {
 				_reply_text += randomMessageText();
 			}
 

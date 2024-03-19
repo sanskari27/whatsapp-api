@@ -5,6 +5,7 @@ import APIError from '../../errors/api-errors';
 
 export type CreateSchedulerValidationResult = {
 	csv: Types.ObjectId;
+	random_string: boolean;
 	message: string;
 	shared_contact_cards: Types.ObjectId[];
 	attachments: Types.ObjectId[];
@@ -25,6 +26,7 @@ export async function CreateSchedulerValidator(req: Request, res: Response, next
 			.string()
 			.refine((value) => Types.ObjectId.isValid(value))
 			.transform((value) => new Types.ObjectId(value)),
+		random_string: z.boolean().default(false),
 		message: z.string().trim().default(''),
 		title: z.string().trim().default(''),
 		description: z.string().trim().default(''),

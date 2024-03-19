@@ -28,6 +28,7 @@ export type ScheduleMessageValidationResult = {
 	max_delay: number;
 	batch_delay: number;
 	batch_size: number;
+	random_string: boolean;
 };
 
 export async function ScheduleMessageValidator(req: Request, res: Response, next: NextFunction) {
@@ -42,6 +43,7 @@ export async function ScheduleMessageValidator(req: Request, res: Response, next
 				.optional(),
 			group_ids: z.string().array().default([]),
 			label_ids: z.string().array().default([]),
+			random_string: z.boolean().default(false),
 			message: z.string().default(''),
 			variables: z.string().array().default([]),
 			shared_contact_cards: z

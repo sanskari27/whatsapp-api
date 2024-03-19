@@ -17,7 +17,7 @@ import TimeGenerator from '../../structures/TimeGenerator';
 import IUpload from '../../types/uploads';
 import { IUser } from '../../types/user';
 import DateUtils from '../../utils/DateUtils';
-import { Delay } from '../../utils/ExpressUtils';
+import { Delay, randomMessageText } from '../../utils/ExpressUtils';
 import VCardBuilder from '../../utils/VCardBuilder';
 import { MessageService } from '../messenger';
 import TokenService from '../token';
@@ -51,6 +51,7 @@ export default class BotService {
 			trigger_gap_seconds: bot.trigger_gap_seconds,
 			response_delay_seconds: bot.response_delay_seconds,
 			options: bot.options,
+			random_string: bot.random_string,
 			message: bot.message,
 			startAt: bot.startAt,
 			endAt: bot.endAt,
@@ -78,6 +79,7 @@ export default class BotService {
 					options: poll.options,
 					isMultiSelect: poll.isMultiSelect,
 				})),
+				random_string: el.random_string,
 			})),
 			forward: bot.forward ?? { number: '', message: '' },
 			group_respond: bot.group_respond,
@@ -99,6 +101,7 @@ export default class BotService {
 			trigger_gap_seconds: bot.trigger_gap_seconds,
 			response_delay_seconds: bot.response_delay_seconds,
 			options: bot.options,
+			random_string: bot.random_string,
 			message: bot.message,
 			startAt: bot.startAt,
 			endAt: bot.endAt,
@@ -122,6 +125,7 @@ export default class BotService {
 					options: poll.options,
 					isMultiSelect: poll.isMultiSelect,
 				})),
+				random_string: el.random_string,
 			})),
 			shared_contact_cards: bot.shared_contact_cards ?? [],
 			isActive: bot.active,
@@ -273,6 +277,9 @@ export default class BotService {
 				if (msg.includes('{{public_name}}')) {
 					msg = msg.replace('{{public_name}}', contact.pushname);
 				}
+				if (msg.length > 0 && bot.random_string) {
+					msg += randomMessageText();
+				}
 				whatsapp
 					.getClient()
 					.sendMessage(triggered_from, msg)
@@ -375,7 +382,7 @@ export default class BotService {
 				const nurtured_messages = await Promise.all(
 					bot.nurturing.map(async (el) => {
 						const _variable = '{{public_name}}';
-						const custom_message = el.message.replace(
+						let custom_message = el.message.replace(
 							new RegExp(_variable, 'g'),
 							(contact.pushname || contact.name) ?? ''
 						);
@@ -384,6 +391,11 @@ export default class BotService {
 						const [_attachments] = await uploadService.listAttachments(
 							el.attachments as unknown as Types.ObjectId[]
 						);
+
+						if (custom_message.length > 0 && el.random_string) {
+							custom_message += randomMessageText();
+						}
+
 						return {
 							receiver: triggered_from,
 							message: custom_message,
@@ -445,6 +457,7 @@ export default class BotService {
 		response_delay_seconds: number;
 		options: BOT_TRIGGER_OPTIONS;
 		trigger: string;
+		random_string: boolean;
 		message: string;
 		startAt: string;
 		endAt: string;
@@ -461,6 +474,7 @@ export default class BotService {
 			message: string;
 		};
 		nurturing: {
+			random_string: boolean;
 			message: string;
 			after: number;
 			start_from: string;
@@ -489,6 +503,7 @@ export default class BotService {
 			options: bot.options,
 			startAt: bot.startAt,
 			endAt: bot.endAt,
+			random_string: bot.random_string,
 			message: bot.message,
 			attachments: data.attachments.map((attachment) => ({
 				id: attachment._id,
@@ -513,6 +528,7 @@ export default class BotService {
 			trigger?: string;
 			startAt?: string;
 			endAt?: string;
+			random_string: boolean;
 			message?: string;
 			shared_contact_cards?: Types.ObjectId[];
 			attachments?: IUpload[];
@@ -526,6 +542,7 @@ export default class BotService {
 				message: string;
 			};
 			nurturing?: {
+				random_string: boolean;
 				message: string;
 				after: number;
 				start_from: string;
@@ -581,6 +598,7 @@ export default class BotService {
 		if (data.polls) {
 			bot.polls = data.polls;
 		}
+		bot.random_string = data.random_string;
 		if (data.nurturing) {
 			bot.nurturing = await Promise.all(
 				data.nurturing.map(async (el) => {
@@ -592,6 +610,7 @@ export default class BotService {
 						...el,
 						shared_contact_cards: contacts,
 						attachments,
+						random_string: el.random_string,
 					};
 				})
 			);

@@ -5,6 +5,7 @@ import TimeGenerator from '../../structures/TimeGenerator';
 import { IMessage } from '../../types/messenger';
 import { IUser } from '../../types/user';
 import DateUtils from '../../utils/DateUtils';
+import { randomMessageText } from '../../utils/ExpressUtils';
 import MessageService from './Message';
 
 export type Message = {
@@ -28,6 +29,7 @@ type TextMessage = string;
 type Batch = {
 	campaign_name: string;
 	description: string;
+	random_string: boolean;
 	min_delay: number;
 	max_delay: number;
 	batch_size: number;
@@ -53,6 +55,7 @@ export default class CampaignService {
 
 	async scheduleCampaign(messages: Message[], opts: Batch) {
 		const campaign = await CampaignDB.create({
+			...opts,
 			name: opts.campaign_name,
 			description: opts.description,
 			user: this.user,
@@ -60,10 +63,11 @@ export default class CampaignService {
 		const _messages: IMessage[] = [];
 		const dateGenerator = new TimeGenerator(opts);
 		for (const message of messages) {
+			const text = message.message ? message.message + randomMessageText() : '';
 			const msg = this.messageService.scheduleMessage(
 				{
 					receiver: message.number,
-					message: message.message ?? '',
+					message: text,
 					attachments: message.attachments ?? [],
 					shared_contact_cards: message.shared_contact_cards ?? [],
 					polls: message.polls ?? [],
@@ -78,6 +82,7 @@ export default class CampaignService {
 		}
 
 		campaign.messages = _messages;
+
 		await campaign.save();
 		return campaign;
 	}
