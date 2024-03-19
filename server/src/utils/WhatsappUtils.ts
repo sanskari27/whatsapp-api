@@ -259,8 +259,9 @@ export default class WhatsappUtils {
 				}
 
 				if (
-					(options.saved && !contact_details.isSaved) ||
-					(options.unsaved && contact_details.isSaved)
+					!(options.saved && options.unsaved) &&
+					((options.saved && !contact_details.isSaved) ||
+						(options.unsaved && contact_details.isSaved))
 				) {
 					return null;
 				}

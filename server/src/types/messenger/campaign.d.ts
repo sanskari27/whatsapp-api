@@ -11,7 +11,8 @@ export default interface ICampaign extends Document {
 	messages: IMessage[];
 
 	createdAt: Date;
-
+	
+	random_string: boolean;
 	min_delay: number;
 	max_delay: number;
 	batch_size: number;

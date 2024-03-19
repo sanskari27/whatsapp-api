@@ -18,6 +18,7 @@ export default interface IScheduler extends Document {
 	}[];
 
 	active: boolean;
+	random_string: boolean;
 
 	title: string;
 	description: string;

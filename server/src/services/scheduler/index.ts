@@ -7,6 +7,7 @@ import SchedulerDB from '../../repository/scheduler';
 import IUpload from '../../types/uploads';
 import { IUser } from '../../types/user';
 import DateUtils from '../../utils/DateUtils';
+import { randomMessageText } from '../../utils/ExpressUtils';
 import { FileUtils } from '../../utils/files';
 import { MessageService } from '../messenger';
 
@@ -26,6 +27,7 @@ export default class SchedulerService {
 			title: e.title,
 			description: e.description,
 			csv: e.csv,
+			random_string: e.random_string,
 			message: e.message,
 			attachments: e.attachments,
 			shared_contact_cards: e.shared_contact_cards ?? [],
@@ -48,6 +50,7 @@ export default class SchedulerService {
 			title: scheduler.title,
 			description: scheduler.description,
 			csv: scheduler.csv,
+			random_string: scheduler.random_string,
 			message: scheduler.message,
 			attachments: scheduler.attachments,
 			shared_contact_cards: scheduler.shared_contact_cards ?? [],
@@ -61,6 +64,7 @@ export default class SchedulerService {
 	public createScheduler(data: {
 		title: string;
 		description: string;
+		random_string: boolean;
 		message: string;
 		start_from: string;
 		end_at: string;
@@ -84,6 +88,7 @@ export default class SchedulerService {
 			title: scheduler.title,
 			description: scheduler.description,
 			csv: scheduler.csv,
+			random_string: scheduler.random_string,
 			message: scheduler.message,
 			attachments: scheduler.attachments,
 			shared_contact_cards: scheduler.shared_contact_cards ?? [],
@@ -99,6 +104,7 @@ export default class SchedulerService {
 		data: {
 			title: string;
 			description: string;
+			random_string: boolean;
 			message: string;
 			start_from: string;
 			end_at: string;
@@ -137,6 +143,7 @@ export default class SchedulerService {
 		if (data.polls) {
 			scheduler.polls = data.polls;
 		}
+		scheduler.random_string = data.random_string;
 		scheduler.shared_contact_cards = await ContactCardDB.find({
 			_id: { $in: data.shared_contact_cards },
 		});
@@ -148,6 +155,7 @@ export default class SchedulerService {
 			title: scheduler.title,
 			description: scheduler.description,
 			csv: scheduler.csv,
+			random_string: scheduler.random_string,
 			message: scheduler.message,
 			attachments: scheduler.attachments,
 			shared_contact_cards: scheduler.shared_contact_cards ?? [],
@@ -170,6 +178,7 @@ export default class SchedulerService {
 			title: scheduler.title,
 			description: scheduler.description,
 			csv: scheduler.csv.filename,
+			random_string: scheduler.random_string,
 			message: scheduler.message,
 			attachments: scheduler.attachments,
 			shared_contact_cards: scheduler.shared_contact_cards ?? [],
@@ -241,6 +250,9 @@ export default class SchedulerService {
 
 				for (const variable of scheduler.csv.headers) {
 					_message = _message.replace(`{{${variable}}}`, row[variable] ?? '');
+				}
+				if (_message.length > 0 && scheduler.random_string) {
+					_message += randomMessageText();
 				}
 
 				schedulerService.scheduleMessage(

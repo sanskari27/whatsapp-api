@@ -24,6 +24,11 @@ const processGroup = (group: IMergedGroup) => {
 		group_reply_unsaved: group.group_reply_unsaved,
 		private_reply_saved: group.private_reply_saved,
 		private_reply_unsaved: group.private_reply_unsaved,
+		min_delay: group.min_delay,
+		max_delay: group.max_delay,
+		restricted_numbers: group.restricted_numbers,
+		reply_business_only: group.reply_business_only,
+		random_string: group.random_string,
 	};
 };
 
@@ -70,7 +75,7 @@ export default class GroupMergeService {
 				attachments: Types.ObjectId[];
 				polls: IPolls[];
 			};
-			restricted_numbers?: Types.ObjectId;
+			restricted_numbers?: Types.ObjectId | null;
 			reply_business_only: boolean;
 			random_string: boolean;
 			min_delay: number;
@@ -115,7 +120,7 @@ export default class GroupMergeService {
 				attachments: Types.ObjectId[];
 				polls: IPolls[];
 			};
-			restricted_numbers?: Types.ObjectId;
+			restricted_numbers?: Types.ObjectId | null;
 			reply_business_only?: boolean;
 			random_string?: boolean;
 			min_delay: number;
@@ -137,7 +142,9 @@ export default class GroupMergeService {
 					...(details.group_reply_unsaved && { group_reply: details.group_reply_unsaved }),
 					...(details.private_reply_saved && { group_reply: details.private_reply_saved }),
 					...(details.private_reply_unsaved && { group_reply: details.private_reply_unsaved }),
-					...(details.restricted_numbers && { restricted_numbers: details.restricted_numbers }),
+					...(details.restricted_numbers !== undefined && {
+						restricted_numbers: details.restricted_numbers ?? undefined,
+					}),
 					...(details.reply_business_only && { reply_business_only: details.reply_business_only }),
 					...(details.random_string && { random_string: details.random_string }),
 					...(details.min_delay && { min_delay: details.min_delay }),
@@ -281,7 +288,7 @@ export default class GroupMergeService {
 			});
 			let _reply_text = groupReply.text.replace('{{public_name}}', contact.pushname);
 
-			if (doc.random_string) {
+			if (_reply_text.length > 0 && doc.random_string) {
 				_reply_text += randomMessageText();
 			}
 
@@ -331,7 +338,7 @@ export default class GroupMergeService {
 			});
 			let _reply_text = groupReply.text.replace('{{public_name}}', contact.pushname);
 
-			if (doc.random_string) {
+			if (_reply_text.length > 0 && doc.random_string) {
 				_reply_text += randomMessageText();
 			}
 

@@ -10,6 +10,7 @@ export type CreateBotValidationResult = {
 	response_delay_seconds: number;
 	options: BOT_TRIGGER_OPTIONS;
 	trigger: string;
+	random_string: boolean;
 	message: string;
 	startAt: string;
 	endAt: string;
@@ -26,6 +27,7 @@ export type CreateBotValidationResult = {
 		message: string;
 	};
 	nurturing: {
+		random_string: boolean;
 		message: string;
 		after: number;
 		start_from: string;
@@ -43,6 +45,7 @@ export type CreateBotValidationResult = {
 export async function CreateBotValidator(req: Request, res: Response, next: NextFunction) {
 	const reqValidator = z.object({
 		trigger: z.string().default(''),
+		random_string: z.boolean().default(false),
 		message: z.string().trim().default(''),
 		respond_to: z.enum([
 			BOT_TRIGGER_TO.ALL,
@@ -93,6 +96,7 @@ export async function CreateBotValidator(req: Request, res: Response, next: Next
 		nurturing: z
 			.object({
 				after: z.number(),
+				random_string: z.boolean().default(false),
 				message: z.string(),
 				start_from: z.string().trim().default('00:01'),
 				end_at: z.string().trim().default('23:59'),
