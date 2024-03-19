@@ -180,7 +180,7 @@ export async function MergeGroupValidator(req: Request, res: Response, next: Nex
 			}),
 			restricted_numbers: z
 				.string()
-				.refine((value) => !Types.ObjectId.isValid(value))
+				.refine((value) => Types.ObjectId.isValid(value))
 				.transform((value) => new Types.ObjectId(value))
 				.or(z.null()),
 			reply_business_only: z.boolean().default(false),
