@@ -23,7 +23,7 @@ async function addMessageTemplate(req: Request, res: Response, next: NextFunctio
 	const { name, message } = req.locals.data as MessageTemplateValidationResult;
 
 	const templateService = new TemplateService(req.locals.account);
-	const template = templateService.addMessageTemplate(name, message);
+	const template = await templateService.addMessageTemplate(name, message);
 
 	return Respond({
 		res,
@@ -76,7 +76,7 @@ async function addPollTemplate(req: Request, res: Response, next: NextFunction) 
 	const { name, poll } = req.locals.data as PollTemplateValidationResult;
 
 	const templateService = new TemplateService(req.locals.account);
-	const template = templateService.addPollTemplate(name, poll);
+	const template = await templateService.addPollTemplate(name, poll);
 
 	return Respond({
 		res,
