@@ -70,7 +70,7 @@ export default class GroupMergeService {
 				attachments: Types.ObjectId[];
 				polls: IPolls[];
 			};
-			restricted_numbers?: Types.ObjectId;
+			restricted_numbers?: Types.ObjectId | null;
 			reply_business_only: boolean;
 			random_string: boolean;
 			min_delay: number;
@@ -115,7 +115,7 @@ export default class GroupMergeService {
 				attachments: Types.ObjectId[];
 				polls: IPolls[];
 			};
-			restricted_numbers?: Types.ObjectId;
+			restricted_numbers?: Types.ObjectId | null;
 			reply_business_only?: boolean;
 			random_string?: boolean;
 			min_delay: number;
@@ -137,7 +137,9 @@ export default class GroupMergeService {
 					...(details.group_reply_unsaved && { group_reply: details.group_reply_unsaved }),
 					...(details.private_reply_saved && { group_reply: details.private_reply_saved }),
 					...(details.private_reply_unsaved && { group_reply: details.private_reply_unsaved }),
-					...(details.restricted_numbers && { restricted_numbers: details.restricted_numbers }),
+					...(details.restricted_numbers !== undefined && {
+						restricted_numbers: details.restricted_numbers ?? undefined,
+					}),
 					...(details.reply_business_only && { reply_business_only: details.reply_business_only }),
 					...(details.random_string && { random_string: details.random_string }),
 					...(details.min_delay && { min_delay: details.min_delay }),
