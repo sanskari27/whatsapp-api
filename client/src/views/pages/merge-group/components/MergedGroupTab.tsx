@@ -20,10 +20,10 @@ import {
 	addSelectedGroups,
 	editSelectedGroup,
 	removeSelectedGroups,
-	setGroupReplySaved,
-	setGroupReplyUnsaved,
-	setPrivateReplySaved,
-	setPrivateReplyUnsaved,
+	setGroupReplySavedText,
+	setGroupReplyUnsavedText,
+	setPrivateReplySavedText,
+	setPrivateReplyUnsavedText,
 } from '../../../../store/reducers/MergeGroupReducer';
 import GroupMerge from './group-merge-dialog';
 
@@ -39,6 +39,8 @@ export default function MergedGroupTab() {
 	} = useSelector((state: StoreState) => state[StoreNames.MERGE_GROUP]);
 
 	const filtered = useFilteredList(list, { name: 1 });
+
+	console.log(filtered, list);
 
 	return (
 		<>
@@ -106,10 +108,10 @@ export default function MergedGroupTab() {
 												colorScheme='gray'
 												onClick={() => {
 													dispatch(editSelectedGroup(group.id));
-													dispatch(setGroupReplySaved(group.group_reply.saved));
-													dispatch(setGroupReplyUnsaved(group.group_reply.unsaved));
-													dispatch(setPrivateReplySaved(group.private_reply.saved));
-													dispatch(setPrivateReplyUnsaved(group.private_reply.unsaved));
+													dispatch(setGroupReplySavedText(group.group_reply_saved.text));
+													dispatch(setGroupReplyUnsavedText(group.group_reply_unsaved.text));
+													dispatch(setPrivateReplySavedText(group.private_reply_saved.text));
+													dispatch(setPrivateReplyUnsavedText(group.private_reply_unsaved.text));
 													onOpen();
 												}}
 											/>

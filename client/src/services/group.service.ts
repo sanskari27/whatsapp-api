@@ -1,5 +1,86 @@
 import APIInstance from '../config/APIInstance';
 
+type MergedGroupsDetails={
+	id: string;
+	name: string;
+	groups: string[];
+	group_reply_saved: {
+		text: string;
+		shared_contact_cards: string[];
+		attachments: string[];
+		polls: {
+			title: string;
+			options: string[];
+			isMultiSelect: boolean;
+		}[];
+	};
+	group_reply_unsaved: {
+		text: string;
+		shared_contact_cards: string[];
+		attachments: string[];
+		polls: {
+			title: string;
+			options: string[];
+			isMultiSelect: boolean;
+		}[];
+	};
+	private_reply_saved: {
+		text: string;
+		shared_contact_cards: string[];
+		attachments: string[];
+		polls: {
+			title: string;
+			options: string[];
+			isMultiSelect: boolean;
+		}[];
+	};
+	private_reply_unsaved: {
+		text: string;
+		shared_contact_cards: string[];
+		attachments: string[];
+		polls: {
+			title: string;
+			options: string[];
+			isMultiSelect: boolean;
+		}[];
+	};
+	restricted_numbers: string;
+
+}
+
+function processMergedGroup(group:any){
+	return {
+		id: group.id as string,
+		name: group.name as string,
+		groups: group.groups as string[],
+		group_reply_saved: {
+			text: group.group_reply_saved.text ?? '',
+			shared_contact_cards: group.group_reply_saved.shared_contact_cards ?? [],
+			attachments: group.group_reply_saved.attachments ?? [],
+			polls: group.group_reply_saved.polls ?? [],
+		},
+		group_reply_unsaved: {
+			text: group.group_reply_unsaved.text ?? '',
+			shared_contact_cards: group.group_reply_unsaved.shared_contact_cards ?? [],
+			attachments: group.group_reply_unsaved.attachments ?? [],
+			polls: group.group_reply_unsaved.polls ?? [],
+		},
+		private_reply_saved: {
+			text: group.private_reply_saved.text ?? '',
+			shared_contact_cards: group.private_reply_saved.shared_contact_cards ?? [],
+			attachments: group.private_reply_saved.attachments ?? [],
+			polls: group.private_reply_saved.polls ?? [],
+		},
+		private_reply_unsaved: {
+			text: group.private_reply_unsaved.text ?? '',
+			shared_contact_cards: group.private_reply_unsaved.shared_contact_cards ?? [],
+			attachments: group.private_reply_unsaved.attachments ?? [],
+			polls: group.private_reply_unsaved.polls ?? [],
+		},
+		restricted_numbers: group.restricted_numbers ?? '',
+	};
+}
+
 export default class GroupService {
 	static async listGroups() {
 		try {
@@ -62,43 +143,63 @@ export default class GroupService {
 		}
 	}
 
-	static async mergeGroups(
-		group_name: string,
-		group_ids: string[],
-		{
-			group_reply,
-			private_reply,
-		}: {
-			group_reply: {
-				saved: string;
-				unsaved: string;
-			};
-			private_reply: {
-				saved: string;
-				unsaved: string;
-			};
-		}
-	) {
+	static async mergeGroups(details: {
+		group_name: string;
+		group_ids: string[];
+		group_reply_saved: {
+			text: string;
+			shared_contact_cards: string[];
+			attachments: string[];
+			polls: {
+				title: string;
+				options: string[];
+				isMultiSelect: boolean;
+			}[];
+		};
+		group_reply_unsaved: {
+			text: string;
+			shared_contact_cards: string[];
+			attachments: string[];
+			polls: {
+				title: string;
+				options: string[];
+				isMultiSelect: boolean;
+			}[];
+		};
+		private_reply_saved: {
+			text: string;
+			shared_contact_cards: string[];
+			attachments: string[];
+			polls: {
+				title: string;
+				options: string[];
+				isMultiSelect: boolean;
+			}[];
+		};
+		private_reply_unsaved: {
+			text: string;
+			shared_contact_cards: string[];
+			attachments: string[];
+			polls: {
+				title: string;
+				options: string[];
+				isMultiSelect: boolean;
+			}[];
+		};
+		restricted_numbers: string;
+	}) {
 		try {
 			const { data } = await APIInstance.post(`/whatsapp/groups/merge`, {
-				group_name,
-				group_ids,
-				group_reply: group_reply,
-				private_reply: private_reply,
+				group_name: details.group_name,
+				group_ids: details.group_ids,
+				group_reply_saved: details.group_reply_saved,
+				group_reply_unsaved: details.group_reply_unsaved,
+				private_reply_saved: details.private_reply_saved,
+				private_reply_unsaved: details.private_reply_unsaved,
+				restricted_numbers: '65f9c4211bcf06e245da1071',
 			});
-			return {
-				id: data.group.id as string,
-				name: data.group.name as string,
-				groups: data.group.groups as string[],
-				group_reply: (data.group.group_reply ?? { saved: '', unsaved: '' }) as {
-					saved: string;
-					unsaved: string;
-				},
-				private_reply: (data.group.private_reply ?? { saved: '', unsaved: '' }) as {
-					saved: string;
-					unsaved: string;
-				},
-			};
+			return processMergedGroup(data.group);
+			
 		} catch (err) {
 			throw new Error('Error Saving group');
 		}
@@ -108,62 +209,69 @@ export default class GroupService {
 		try {
 			const { data } = await APIInstance.get(`/whatsapp/groups/merge`);
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			return data.groups.map((group: any) => ({
-				id: group.id as string,
-				name: group.name as string,
-				groups: group.groups as string[],
-				group_reply: (group.group_reply ?? { saved: '', unsaved: '' }) as {
-					saved: string;
-					unsaved: string;
-				},
-				private_reply: (group.private_reply ?? { saved: '', unsaved: '' }) as {
-					saved: string;
-					unsaved: string;
-				},
-			}));
+			return data.groups.map(processMergedGroup);
 		} catch (err) {
 			return [];
 		}
 	}
 
 	static async editMergedGroup(
-		id: string,
+		id: string,details:{
 		name: string,
 		groups: string[],
-		{
-			group_reply,
-			private_reply,
-		}: {
-			group_reply: {
-				saved: string;
-				unsaved: string;
-			};
-			private_reply: {
-				saved: string;
-				unsaved: string;
-			};
-		}
-	) {
+		group_reply_saved: {
+			text: string;
+			shared_contact_cards: string[];
+			attachments: string[];
+			polls: {
+				title: string;
+				options: string[];
+				isMultiSelect: boolean;
+			}[];
+		},
+		group_reply_unsaved: {
+			text: string;
+			shared_contact_cards: string[];
+			attachments: string[];
+			polls: {
+				title: string;
+				options: string[];
+				isMultiSelect: boolean;
+			}[];
+		},
+		private_reply_saved: {
+			text: string;
+			shared_contact_cards: string[];
+			attachments: string[];
+			polls: {
+				title: string;
+				options: string[];
+				isMultiSelect: boolean;
+			}[];
+		},
+		private_reply_unsaved: {
+			text: string;
+			shared_contact_cards: string[];
+			attachments: string[];
+			polls: {
+				title: string;
+				options: string[];
+				isMultiSelect: boolean;
+			}[];
+		},
+		restricted_numbers: string
+	}) {
 		try {
 			const { data } = await APIInstance.patch(`/whatsapp/groups/merge/${id}`, {
-				group_name: name,
-				group_ids: groups,
-				group_reply: group_reply,
-				private_reply: private_reply,
+				group_name: details.name,
+				group_ids: details.groups,
+				group_reply_saved: details.group_reply_saved,
+				group_reply_unsaved: details.group_reply_unsaved,
+				private_reply_saved: details.private_reply_saved,
+				private_reply_unsaved: details.private_reply_unsaved,
+				restricted_numbers: '65f9c4211bcf06e245da1071',
 			});
-			return {
-				id: data.group.id as string,
-				name: data.group.name as string,
-				groups: data.group.groups as string[],
-				group_reply: (data.group.group_reply ?? { saved: '', unsaved: '' }) as {
-					saved: string;
-					unsaved: string;
-				},
-				private_reply: (data.group.private_reply ?? { saved: '', unsaved: '' }) as {
-					saved: string;
-					unsaved: string;
-				},
-			};
+			return processMergedGroup(data.group);
 		} catch (err) {
 			throw new Error('Error Saving group');
 		}

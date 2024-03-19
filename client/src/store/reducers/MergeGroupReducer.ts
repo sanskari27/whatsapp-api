@@ -9,14 +9,31 @@ const initialState: MergeGroupState = {
 		id: '',
 		name: '',
 		groups: [],
-		group_reply: {
-			saved: '',
-			unsaved: '',
+		group_reply_saved: {
+			text: '',
+			shared_contact_cards: [],
+			attachments: [],
+			polls: [],
 		},
-		private_reply: {
-			saved: '',
-			unsaved: '',
+		group_reply_unsaved: {
+			text: '',
+			shared_contact_cards: [],
+			attachments: [],
+			polls: [],
 		},
+		private_reply_saved: {
+			text: '',
+			shared_contact_cards: [],
+			attachments: [],
+			polls: [],
+		},
+		private_reply_unsaved: {
+			text: '',
+			shared_contact_cards: [],
+			attachments: [],
+			polls: [],
+		},
+		restricted_numbers: '',
 	},
 	uiDetails: {
 		isSaving: false,
@@ -38,6 +55,7 @@ const MergeGroupSlice = createSlice({
 			state.uiDetails = initialState.uiDetails;
 		},
 		setMergedGroupList: (state, action: PayloadAction<typeof initialState.list>) => {
+			console.log(action.payload)
 			state.list = action.payload;
 		},
 		addMergedGroup: (state, action: PayloadAction<(typeof initialState.list)[0]>) => {
@@ -78,18 +96,8 @@ const MergeGroupSlice = createSlice({
 			}
 		},
 		updateMergeGroupsList: (state, action: PayloadAction<(typeof initialState.list)[0]>) => {
-			state.list = state.list.map((group) => {
-				if (group.id === action.payload.id) {
-					return {
-						id: action.payload.id,
-						name: action.payload.name,
-						groups: action.payload.groups,
-						group_reply: action.payload.group_reply ?? { saved: '', unsaved: '' },
-						private_reply: action.payload.private_reply ?? { saved: '', unsaved: '' },
-					};
-				}
-				return group;
-			});
+			const index = state.list.findIndex((group) => group.id === action.payload.id);
+			state.list[index] = action.payload;
 			state.uiDetails.isUpdating = false;
 		},
 		setName: (state, action: PayloadAction<string>) => {
@@ -98,17 +106,53 @@ const MergeGroupSlice = createSlice({
 		setGroups: (state, action: PayloadAction<string>) => {
 			state.editSelectedGroup.groups.push(action.payload);
 		},
-		setGroupReplySaved: (state, action: PayloadAction<string>) => {
-			state.editSelectedGroup.group_reply.saved = action.payload;
+		setGroupReplySavedText: (state, action: PayloadAction<string>) => {
+			state.editSelectedGroup.group_reply_saved.text = action.payload;
 		},
-		setGroupReplyUnsaved: (state, action: PayloadAction<string>) => {
-			state.editSelectedGroup.group_reply.unsaved = action.payload;
+		setGroupReplyUnsavedText: (state, action: PayloadAction<string>) => {
+			state.editSelectedGroup.group_reply_unsaved.text = action.payload;
 		},
-		setPrivateReplySaved: (state, action: PayloadAction<string>) => {
-			state.editSelectedGroup.private_reply.saved = action.payload;
+		setPrivateReplySavedText: (state, action: PayloadAction<string>) => {
+			state.editSelectedGroup.private_reply_saved.text = action.payload;
 		},
-		setPrivateReplyUnsaved: (state, action: PayloadAction<string>) => {
-			state.editSelectedGroup.private_reply.unsaved = action.payload;
+		setPrivateReplyUnsavedText: (state, action: PayloadAction<string>) => {
+			state.editSelectedGroup.private_reply_unsaved.text = action.payload;
+		},
+		setGroupReplySavedSharedContactCards: (state, action: PayloadAction<string>) => {
+			state.editSelectedGroup.group_reply_saved.shared_contact_cards.push(action.payload);
+		},
+		setGroupReplyUnsavedSharedContactCards: (state, action: PayloadAction<string>) => {
+			state.editSelectedGroup.group_reply_unsaved.shared_contact_cards.push(action.payload);
+		},
+		setPrivateReplySavedSharedContactCards: (state, action: PayloadAction<string>) => {
+			state.editSelectedGroup.private_reply_saved.shared_contact_cards.push(action.payload);
+		},
+		setPrivateReplyUnsavedSharedContactCards: (state, action: PayloadAction<string>) => {
+			state.editSelectedGroup.private_reply_unsaved.shared_contact_cards.push(action.payload);
+		},
+		setGroupReplySavedAttachments: (state, action: PayloadAction<string>) => {
+			state.editSelectedGroup.group_reply_saved.attachments.push(action.payload);
+		},
+		setGroupReplyUnsavedAttachments: (state, action: PayloadAction<string>) => {
+			state.editSelectedGroup.group_reply_unsaved.attachments.push(action.payload);
+		},
+		setPrivateReplySavedAttachments: (state, action: PayloadAction<string>) => {
+			state.editSelectedGroup.private_reply_saved.attachments.push(action.payload);
+		},
+		setPrivateReplyUnsavedAttachments: (state, action: PayloadAction<string>) => {
+			state.editSelectedGroup.private_reply_unsaved.attachments.push(action.payload);
+		},
+		setGroupReplySavedPolls: (state, action: PayloadAction<(typeof initialState.editSelectedGroup.group_reply_saved.polls)[0]>) => {
+			state.editSelectedGroup.group_reply_saved.polls.push(action.payload);
+		},
+		setGroupReplyUnsavedPolls: (state, action: PayloadAction<(typeof initialState.editSelectedGroup.group_reply_unsaved.polls)[0]>) => {
+			state.editSelectedGroup.group_reply_unsaved.polls.push(action.payload);
+		},
+		setPrivateReplySavedPolls: (state, action: PayloadAction<(typeof initialState.editSelectedGroup.private_reply_saved.polls)[0]>) => {
+			state.editSelectedGroup.private_reply_saved.polls.push(action.payload);
+		},
+		setPrivateReplyUnsavedPolls: (state, action: PayloadAction<(typeof initialState.editSelectedGroup.private_reply_unsaved.polls)[0]>) => {
+			state.editSelectedGroup.private_reply_unsaved.polls.push(action.payload);
 		},
 		clearEditMergeGroup: (state) => {
 			state.editSelectedGroup = initialState.editSelectedGroup;
@@ -160,10 +204,22 @@ export const {
 	setIsCreating,
 	setIsUpdating,
 	setError,
-	setGroupReplySaved,
-	setGroupReplyUnsaved,
-	setPrivateReplySaved,
-	setPrivateReplyUnsaved,
+	setGroupReplySavedText,
+	setGroupReplyUnsavedText,
+	setPrivateReplySavedText,
+	setPrivateReplyUnsavedText,
+	setGroupReplySavedSharedContactCards,
+	setGroupReplyUnsavedSharedContactCards,
+	setPrivateReplySavedSharedContactCards,
+	setPrivateReplyUnsavedSharedContactCards,
+	setGroupReplySavedAttachments,
+	setGroupReplyUnsavedAttachments,
+	setPrivateReplySavedAttachments,
+	setPrivateReplyUnsavedAttachments,
+	setGroupReplySavedPolls,
+	setGroupReplyUnsavedPolls,
+	setPrivateReplySavedPolls,
+	setPrivateReplyUnsavedPolls,
 } = MergeGroupSlice.actions;
 
 export default MergeGroupSlice.reducer;

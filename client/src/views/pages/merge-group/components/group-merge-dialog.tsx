@@ -1,10 +1,12 @@
 import { SearchIcon } from '@chakra-ui/icons';
 import {
+	Box,
 	Button,
 	Checkbox,
 	Flex,
 	FormControl,
 	FormLabel,
+	HStack,
 	Icon,
 	IconButton,
 	Input,
@@ -16,6 +18,7 @@ import {
 	ModalFooter,
 	ModalHeader,
 	ModalOverlay,
+	Select,
 	Table,
 	TableContainer,
 	Tbody,
@@ -38,11 +41,11 @@ import {
 	addSelectedGroup,
 	clearEditMergeGroup,
 	removeSelectedGroup,
-	setGroupReplySaved,
-	setGroupReplyUnsaved,
+	setGroupReplySavedText,
+	setGroupReplyUnsavedText,
 	setName,
-	setPrivateReplySaved,
-	setPrivateReplyUnsaved,
+	setPrivateReplySavedText,
+	setPrivateReplyUnsavedText,
 	updateMergeGroupsList,
 } from '../../../../store/reducers/MergeGroupReducer';
 import { setGroups } from '../../../../store/reducers/UserDetailsReducers';
@@ -69,11 +72,17 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 		if (editSelectedGroup.groups.length === 0) {
 			return;
 		}
-		const { id, name, groups, group_reply, private_reply } = editSelectedGroup;
+		const { id, name, groups } = editSelectedGroup;
+
+		const _editSelectedGroup = {
+			...editSelectedGroup,
+			group_name: name,
+			group_ids: groups,
+		};
 
 		const promise = id
-			? GroupService.editMergedGroup(id, name, groups, { group_reply, private_reply })
-			: GroupService.mergeGroups(name, groups, { group_reply, private_reply });
+			? GroupService.editMergedGroup(id, _editSelectedGroup)
+			: GroupService.mergeGroups(_editSelectedGroup);
 		toast.promise(promise, {
 			success: (data) => {
 				const acton = id ? updateMergeGroupsList(data) : addMergedGroup(data);
@@ -83,8 +92,11 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 					title: 'Data saved successfully',
 				};
 			},
-			error: {
-				title: 'Failed to save data',
+			error: (error) => {
+				console.log(error);
+				return {
+					title: 'Failed to save data',
+				};
 			},
 			loading: { title: 'Saving Data', description: 'Please wait' },
 		});
@@ -115,7 +127,7 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 	);
 
 	return (
-		<Modal isOpen={isOpen} onClose={onClose} size={'2xl'} scrollBehavior='inside'>
+		<Modal isOpen={isOpen} onClose={onClose} size={'5xl'} scrollBehavior='inside'>
 			<ModalOverlay />
 			<ModalContent>
 				<ModalHeader>Merge Group</ModalHeader>
@@ -144,8 +156,8 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 								color: 'inherit',
 							}}
 							_focus={{ border: 'none', outline: 'none' }}
-							value={editSelectedGroup.group_reply.saved ?? ''}
-							onChange={(e) => dispatch(setGroupReplySaved(e.target.value))}
+							value={editSelectedGroup.group_reply_saved.text ?? ''}
+							onChange={(e) => dispatch(setGroupReplySavedText(e.target.value))}
 						/>
 					</FormControl>
 					<FormControl marginTop={'0.5rem'}>
@@ -163,8 +175,8 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 								color: 'inherit',
 							}}
 							_focus={{ border: 'none', outline: 'none' }}
-							value={editSelectedGroup.group_reply.unsaved ?? ''}
-							onChange={(e) => dispatch(setGroupReplyUnsaved(e.target.value))}
+							value={editSelectedGroup.group_reply_unsaved.text ?? ''}
+							onChange={(e) => dispatch(setGroupReplyUnsavedText(e.target.value))}
 						/>
 					</FormControl>
 					<FormControl marginTop={'0.5rem'}>
@@ -182,8 +194,8 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 								color: 'inherit',
 							}}
 							_focus={{ border: 'none', outline: 'none' }}
-							value={editSelectedGroup.private_reply.saved ?? ''}
-							onChange={(e) => dispatch(setPrivateReplySaved(e.target.value))}
+							value={editSelectedGroup.private_reply_saved.text ?? ''}
+							onChange={(e) => dispatch(setPrivateReplySavedText(e.target.value))}
 						/>
 					</FormControl>
 					<FormControl marginTop={'0.5rem'}>
@@ -201,11 +213,60 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 								color: 'inherit',
 							}}
 							_focus={{ border: 'none', outline: 'none' }}
-							value={editSelectedGroup.private_reply.unsaved ?? ''}
-							onChange={(e) => dispatch(setPrivateReplyUnsaved(e.target.value))}
+							value={editSelectedGroup.private_reply_unsaved.text ?? ''}
+							onChange={(e) => dispatch(setPrivateReplyUnsavedText(e.target.value))}
 						/>
 					</FormControl>
-
+					<HStack>
+						<Box flex={1}>
+							<Text fontSize={'large'}>Max Delay</Text>
+							<HStack>
+								<NumberInput value={1} onChangeText={(text) => console.log(text)} />
+								<SelectElement
+									value={'SEC'}
+									onChangeText={(text) => console.log(text)}
+									options={[
+										{
+											value: 'SEC',
+											title: 'Second',
+										},
+										{
+											value: 'MINUTE',
+											title: 'Min',
+										},
+										{
+											value: 'HOUR',
+											title: 'Hour',
+										},
+									]}
+								/>
+							</HStack>
+						</Box>
+						<Box flex={1}>
+							<Text fontSize={'large'}>Max Delay</Text>
+							<HStack>
+								<NumberInput value={1} onChangeText={(text) => console.log(text)} />
+								<SelectElement
+									value={'SEC'}
+									onChangeText={(text) => console.log(text)}
+									options={[
+										{
+											value: 'SEC',
+											title: 'Second',
+										},
+										{
+											value: 'MINUTE',
+											title: 'Min',
+										},
+										{
+											value: 'HOUR',
+											title: 'Hour',
+										},
+									]}
+								/>
+							</HStack>
+						</Box>
+					</HStack>
 					<TableContainer>
 						<Table>
 							<Thead>
@@ -276,5 +337,63 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 		</Modal>
 	);
 };
+
+export function NumberInput({
+	value,
+	onChangeText,
+}: {
+	value: number;
+	onChangeText: (value: number) => void;
+}) {
+	return (
+		<Input
+			type='number'
+			placeholder='10'
+			size={'md'}
+			rounded={'md'}
+			border={'none'}
+			className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353]'
+			_focus={{
+				border: 'none',
+				outline: 'none',
+			}}
+			value={value}
+			onChange={(e) => onChangeText(Number(e.target.value))}
+		/>
+	);
+}
+
+export function SelectElement({
+	options,
+	value,
+	onChangeText,
+	size = 'md',
+}: {
+	options: { title: string; value: string }[];
+	value: string;
+	onChangeText: (text: string) => void;
+	size?: string;
+}) {
+	return (
+		<Select
+			className={'!bg-[#ECECEC] dark:!bg-[#535353] rounded-md w-full  text-black dark:text-white'}
+			border={'none'}
+			value={value}
+			rounded={'md'}
+			size={size}
+			onChange={(e) => onChangeText(e.target.value)}
+		>
+			{options.map((option, index) => (
+				<option
+					key={index}
+					className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] '
+					value={option.value}
+				>
+					{option.title}
+				</option>
+			))}
+		</Select>
+	);
+}
 
 export default GroupMerge;

@@ -73,7 +73,7 @@ export default function AddOns({
 					colorScheme='green'
 					onClick={() => attachmentRef.current?.open(attachments)}
 				>
-					Select Attachment ({attachments.length})
+					Attachment ({attachments.length})
 				</Button>
 				<Button
 					width={'full'}
@@ -81,7 +81,7 @@ export default function AddOns({
 					colorScheme='green'
 					onClick={() => contactRef.current?.open(shared_contact_cards)}
 				>
-					Select Contact ({shared_contact_cards.length})
+					Contact ({shared_contact_cards.length})
 				</Button>
 				<Button
 					width={'full'}
@@ -89,7 +89,7 @@ export default function AddOns({
 					colorScheme='green'
 					onClick={() => pollInputRef.current?.open(polls.length === 0 ? DEFAULT_POLL : polls)}
 				>
-					Add Polls ({polls.length}) added
+					Polls ({polls.length})
 				</Button>
 				{nurturing && (
 					<Button
