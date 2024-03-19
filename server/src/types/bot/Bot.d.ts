@@ -34,7 +34,6 @@ export default interface IBot extends Document {
 	};
 	group_respond: boolean;
 	nurturing: {
-		random_string: boolean;
 		message: string;
 		after: number;
 		start_from: string;
