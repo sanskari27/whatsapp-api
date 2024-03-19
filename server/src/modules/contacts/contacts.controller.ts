@@ -85,8 +85,9 @@ async function contacts(req: Request, res: Response, next: NextFunction) {
 
 		listed_contacts = listed_contacts.filter(
 			(c) =>
-				((options.saved && c.isMyContact) || (options.unsaved && !c.isMyContact)) &&
-				(!options.business_contacts_only || (options.business_contacts_only && c.isBusiness))
+				(options.saved && options.unsaved) ||
+				(((options.saved && c.isMyContact) || (options.unsaved && !c.isMyContact)) &&
+					(!options.business_contacts_only || (options.business_contacts_only && c.isBusiness)))
 		);
 
 		const contacts = await whatsappUtils.contactsWithCountry(listed_contacts);
