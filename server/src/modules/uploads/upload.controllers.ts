@@ -108,7 +108,7 @@ export async function addAttachment(req: Request, res: Response, next: NextFunct
 		const caption = req.body.caption as string;
 		const custom_caption = Boolean(req.body.custom_caption);
 
-		const attachment =await  new UploadService(req.locals.account).addAttachment(
+		const attachment = await new UploadService(req.locals.account).addAttachment(
 			name,
 			caption,
 			uploadedFile.filename,
@@ -182,7 +182,22 @@ export async function updateAttachment(req: Request, res: Response, next: NextFu
 	}
 }
 
-export async function download(req: Request, res: Response, next: NextFunction) {
+export async function downloadCSV(req: Request, res: Response, next: NextFunction) {
+	const { account, id } = req.locals;
+	try {
+		const attachment = await new UploadService(account).getAttachment(id);
+		const path = __basedir + CSV_PATH + attachment.filename;
+		return RespondFile({
+			res,
+			filename: attachment.name,
+			filepath: path,
+		});
+	} catch (err: unknown) {
+		return next(new APIError(COMMON_ERRORS.NOT_FOUND));
+	}
+}
+
+export async function downloadAttachment(req: Request, res: Response, next: NextFunction) {
 	const { account, id } = req.locals;
 	try {
 		const attachment = await new UploadService(account).getAttachment(id);
@@ -247,7 +262,8 @@ const UploadsController = {
 	deleteAttachment,
 	updateAttachment,
 	updateAttachmentFile,
-	download,
+	downloadAttachment,
+	downloadCSV,
 };
 
 export default UploadsController;

@@ -103,7 +103,7 @@ async function login(req: Request, res: Response, next: NextFunction) {
 		);
 
 		res.cookie(JWT_COOKIE, service.token, {
-			sameSite: 'strict',
+			sameSite: 'none',
 			expires: new Date(Date.now() + JWT_EXPIRE_TIME),
 			httpOnly: IS_PRODUCTION,
 			secure: IS_PRODUCTION,
@@ -113,7 +113,7 @@ async function login(req: Request, res: Response, next: NextFunction) {
 		saveRefreshTokens(t, service.username);
 
 		res.cookie(JWT_REFRESH_COOKIE, t, {
-			sameSite: 'strict',
+			sameSite: 'none',
 			expires: new Date(Date.now() + REFRESH_EXPIRE_TIME),
 			httpOnly: IS_PRODUCTION,
 			secure: IS_PRODUCTION,

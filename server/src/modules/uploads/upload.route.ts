@@ -5,7 +5,10 @@ import UploadsController from './upload.controllers';
 
 const router = express.Router();
 
-router.route('/csv/:id/download').all(VerifyAccount, IDValidator).get(UploadsController.download);
+router
+	.route('/csv/:id/download')
+	.all(VerifyAccount, IDValidator)
+	.get(UploadsController.downloadCSV);
 router.route('/csv/:id').all(VerifyAccount, IDValidator).delete(UploadsController.deleteCSV);
 router
 	.route('/csv')
@@ -16,7 +19,7 @@ router
 router
 	.route('/attachment/:id/download')
 	.all(VerifyAccount, IDValidator)
-	.get(UploadsController.download);
+	.get(UploadsController.downloadAttachment);
 
 router
 	.route('/attachment/:id')

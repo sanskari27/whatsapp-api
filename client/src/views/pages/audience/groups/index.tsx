@@ -46,6 +46,7 @@ const Groups = () => {
 								variant='outline'
 								size={'sm'}
 								colorScheme='green'
+								hidden={userType === 'BUSINESS'}
 								onClick={() => assignLabelDialogRef.current?.open()}
 								leftIcon={<BiSolidLabel />}
 							>

@@ -263,7 +263,7 @@ async function createGroup(req: Request, res: Response, next: NextFunction) {
 			res,
 			status: 200,
 			data: {
-				message: 'Group created successfully',
+				message: `Group created successfully with ${numberIds.length} participants.`,
 			},
 		});
 	} catch (err) {
