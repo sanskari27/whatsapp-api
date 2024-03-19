@@ -671,6 +671,7 @@ export default class CSVParser {
 	static exportBotResponses(
 		records: {
 			trigger: string;
+			recipient: string;
 			triggered_at: string;
 			triggered_by: string;
 		}[]
@@ -691,6 +692,34 @@ export default class CSVParser {
 			{
 				field: 'triggered_by',
 				title: 'Triggered By',
+			},
+		];
+
+		return json2csv(records, {
+			keys: keys,
+			emptyFieldValue: '',
+		});
+	}
+
+	static exportMergedResponses(
+		records: {
+			recipient: string;
+			group_name: string;
+			reply_type: string;
+		}[]
+	) {
+		const keys = [
+			{
+				field: 'recipient',
+				title: 'Recipient',
+			},
+			{
+				field: 'group_name',
+				title: 'Group Name',
+			},
+			{
+				field: 'reply_type',
+				title: 'Replied As',
 			},
 		];
 

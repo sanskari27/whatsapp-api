@@ -19,7 +19,7 @@ import {
 	TGroupContact,
 } from '../../types/whatsapp';
 import CSVParser from '../../utils/CSVParser';
-import { Respond, idValidator } from '../../utils/ExpressUtils';
+import { Respond, RespondCSV, idValidator } from '../../utils/ExpressUtils';
 import VCFParser from '../../utils/VCFParser';
 import WhatsappUtils, { MappedContacts } from '../../utils/WhatsappUtils';
 import {
@@ -262,8 +262,7 @@ async function createGroup(req: Request, res: Response, next: NextFunction) {
 async function mergeGroup(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
 
-	const { group_ids, group_name, group_reply, private_reply } = req.locals
-		.data as MergeGroupValidationResult;
+	const { group_ids, group_name, ...req_data } = req.locals.data as MergeGroupValidationResult;
 
 	const whatsapp = WhatsappProvider.getInstance(client_id);
 	const whatsappUtils = new WhatsappUtils(whatsapp);
@@ -281,10 +280,11 @@ async function mergeGroup(req: Request, res: Response, next: NextFunction) {
 		)
 	).filter((chat) => chat !== null) as string[];
 
-	const group = await new GroupMergeService(req.locals.user).mergeGroup(group_name, chat_ids, {
-		group_reply,
-		private_reply,
-	});
+	const group = await new GroupMergeService(req.locals.user).mergeGroup(
+		group_name,
+		chat_ids,
+		req_data
+	);
 
 	return Respond({
 		res,
@@ -297,8 +297,7 @@ async function mergeGroup(req: Request, res: Response, next: NextFunction) {
 
 async function updateMergedGroup(req: Request, res: Response, next: NextFunction) {
 	const client_id = req.locals.client_id;
-	const { group_ids, group_name, group_reply, private_reply } = req.locals
-		.data as MergeGroupValidationResult;
+	const { group_ids, group_name, ...req_data } = req.locals.data as MergeGroupValidationResult;
 
 	const whatsapp = WhatsappProvider.getInstance(client_id);
 	const whatsappUtils = new WhatsappUtils(whatsapp);
@@ -322,10 +321,7 @@ async function updateMergedGroup(req: Request, res: Response, next: NextFunction
 			group_ids: chat_ids,
 			name: group_name,
 		},
-		{
-			group_reply,
-			private_reply,
-		}
+		req_data
 	);
 
 	return Respond({
@@ -334,6 +330,38 @@ async function updateMergedGroup(req: Request, res: Response, next: NextFunction
 		data: {
 			group,
 		},
+	});
+}
+
+async function toggleActive(req: Request, res: Response, next: NextFunction) {
+	const active = await new GroupMergeService(req.locals.user).toggleActive(req.locals.id);
+
+	return Respond({
+		res,
+		status: 200,
+		data: {
+			active,
+		},
+	});
+}
+
+async function clearResponses(req: Request, res: Response, next: NextFunction) {
+	await new GroupMergeService(req.locals.user).clear(req.locals.id);
+
+	return Respond({
+		res,
+		status: 200,
+		data: {},
+	});
+}
+
+async function generateReport(req: Request, res: Response, next: NextFunction) {
+	const data = await new GroupMergeService(req.locals.user).generateReport(req.locals.id);
+
+	return RespondCSV({
+		res,
+		filename: 'Exported Merged Group Responses',
+		data: CSVParser.exportMergedResponses(data),
 	});
 }
 
@@ -491,6 +519,9 @@ const GroupsController = {
 	exportGroups,
 	createGroup,
 	mergeGroup,
+	toggleActive,
+	generateReport,
+	clearResponses,
 	deleteMergedGroup,
 	mergedGroups,
 	refreshGroup,

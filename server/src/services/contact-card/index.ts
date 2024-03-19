@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
+import InternalError, { COMMON_ERRORS, INTERNAL_ERRORS } from '../../errors/internal-errors';
 import ContactCardDB from '../../repository/contact-cards';
 import { IUser } from '../../types/user';
 
@@ -129,5 +129,33 @@ export default class ContactCardService {
 			contact_details_other: contact_card.contact_details_other,
 			base64: contact_card.qrString,
 		}));
+	}
+
+	async getContact(id: Types.ObjectId) {
+		const contact_card = await ContactCardDB.findOne({ user: this.user.id, _id: id });
+		if (!contact_card) {
+			throw new InternalError(COMMON_ERRORS.NOT_FOUND);
+		}
+		return {
+			id: contact_card._id as string,
+			first_name: contact_card.first_name,
+			middle_name: contact_card.middle_name,
+			last_name: contact_card.last_name,
+			title: contact_card.title,
+			organization: contact_card.organization,
+			email_personal: contact_card.email_personal,
+			email_work: contact_card.email_work,
+			links: contact_card.links,
+			street: contact_card.street,
+			city: contact_card.city,
+			state: contact_card.state,
+			country: contact_card.country,
+			pincode: contact_card.pincode,
+			contact_details_phone: contact_card.contact_details_phone,
+			contact_details_work: contact_card.contact_details_work,
+			contact_details_other: contact_card.contact_details_other,
+			base64: contact_card.qrString,
+			vCardString: contact_card.vCardString,
+		};
 	}
 }

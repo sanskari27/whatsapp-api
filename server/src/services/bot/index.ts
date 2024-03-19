@@ -450,12 +450,12 @@ export default class BotService {
 		endAt: string;
 		shared_contact_cards: Types.ObjectId[];
 		attachments: IUpload[];
-		group_respond: boolean;
 		polls: {
 			title: string;
 			options: string[];
 			isMultiSelect: boolean;
 		}[];
+		group_respond: boolean;
 		forward: {
 			number: string;
 			message: string;

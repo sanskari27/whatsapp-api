@@ -1,6 +1,7 @@
 import { Document } from 'mongoose';
 import { BOT_TRIGGER_OPTIONS, BOT_TRIGGER_TO } from '../../config/const';
 import IContactCard from '../contact-cards';
+import IPolls from '../polls';
 import IUpload from '../uploads';
 import { IUser } from '../users';
 
@@ -18,6 +19,7 @@ export default interface IBot extends Document {
 	startAt: string;
 	endAt: string;
 
+	random_string: boolean;
 	message: string;
 	attachments: IUpload[];
 	shared_contact_cards: IContactCard[];
@@ -32,17 +34,14 @@ export default interface IBot extends Document {
 	};
 	group_respond: boolean;
 	nurturing: {
+		random_string: boolean;
 		message: string;
 		after: number;
 		start_from: string;
 		end_at: string;
 		attachments?: IUpload[];
 		shared_contact_cards?: IContactCard[];
-		polls?: {
-			title: string;
-			options: string[];
-			isMultiSelect: boolean;
-		}[];
+		polls?: IPolls[];
 	}[];
 	active: boolean;
 }

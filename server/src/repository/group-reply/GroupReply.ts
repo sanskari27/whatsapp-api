@@ -10,6 +10,11 @@ const schema = new mongoose.Schema<IGroupReply>(
 		from: {
 			type: String,
 		},
+		mergedGroup: {
+			type: Schema.Types.ObjectId,
+			ref: 'MergedGroup',
+		},
+		group_name: String,
 	},
 	{ timestamps: true }
 );

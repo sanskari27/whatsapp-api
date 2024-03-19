@@ -69,8 +69,13 @@ export const getRequestIP = (req: Request) => {
 export function generateClientID() {
 	return crypto.randomUUID();
 }
+
 export function generateBatchID() {
 	return crypto.randomBytes(6).toString('hex');
+}
+
+export function randomMessageText() {
+	return `\n\n\n${crypto.randomBytes(6).toString('hex')}`;
 }
 
 export function generateInvoiceID(id: string) {
@@ -102,11 +107,7 @@ export function idValidator(id: string): IDValidatorResult {
 }
 
 export function getRandomNumber(min: number, max: number) {
-	const randomDecimal = Math.random();
-
-	const randomInRange = min + randomDecimal * (max - min);
-
-	return randomInRange;
+	return min + Math.random() * (max - min);
 }
 
 export function parseSubscriptionStatus(text: string) {

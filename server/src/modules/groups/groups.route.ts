@@ -12,6 +12,10 @@ const router = express.Router();
 
 router.route('/export').all(PaymentValidator.isSubscribed).post(GroupsController.exportGroups);
 
+router.route('/merge/:id/clear-responses').all(IDValidator).post(GroupsController.clearResponses);
+router.route('/merge/:id/download-responses').all(IDValidator).get(GroupsController.generateReport);
+router.route('/merge/:id/toggle-active').all(IDValidator).post(GroupsController.toggleActive);
+
 router
 	.route('/merge/:id')
 	.all(IDValidator)

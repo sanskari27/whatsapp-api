@@ -1,10 +1,31 @@
-import { Model, Types } from 'mongoose';
-import Logger from 'n23-logger';
-import WAWebJS from 'whatsapp-web.js';
+import fs from 'fs';
+import { Types } from 'mongoose';
+import WAWebJS, { MessageMedia, Poll } from 'whatsapp-web.js';
+import { ATTACHMENTS_PATH } from '../../config/const';
 import { GroupPrivateReplyDB, GroupReplyDB } from '../../repository/group-reply';
 import MergedGroupDB from '../../repository/merged-groups';
+import IMergedGroup from '../../types/merged-group';
+import IPolls from '../../types/polls';
 import { IUser } from '../../types/user';
-import { Delay, idValidator } from '../../utils/ExpressUtils';
+import { Delay, getRandomNumber, idValidator, randomMessageText } from '../../utils/ExpressUtils';
+import { FileUtils } from '../../utils/files';
+import ContactCardService from '../contact-card';
+import TokenService from '../token';
+import UploadService from '../uploads';
+import UserService from '../user';
+
+const processGroup = (group: IMergedGroup) => {
+	return {
+		id: group._id as string,
+		name: (group.name as string) ?? '',
+		isMergedGroup: true,
+		groups: group.groups,
+		group_reply_saved: group.group_reply_saved,
+		group_reply_unsaved: group.group_reply_unsaved,
+		private_reply_saved: group.private_reply_saved,
+		private_reply_unsaved: group.private_reply_unsaved,
+	};
+};
 
 export default class GroupMergeService {
 	private user: IUser;
@@ -18,99 +39,154 @@ export default class GroupMergeService {
 			user: this.user,
 		});
 
-		return merged_groups.map((group) => ({
-			id: group._id as string,
-			name: (group.name as string) ?? '',
-			isMergedGroup: true,
-			groups: group.groups,
-			group_reply: group.group_reply,
-			private_reply: group.private_reply,
-		}));
+		return merged_groups.map(processGroup);
 	}
 
 	async mergeGroup(
 		name: string,
 		group_ids: string[],
-		{
-			group_reply,
-			private_reply,
-		}: {
-			group_reply?: {
-				saved: string;
-				unsaved: string;
-			} | null;
-			private_reply?: {
-				saved: string;
-				unsaved: string;
-			} | null;
+		details: {
+			group_reply_saved: {
+				text: string;
+				shared_contact_cards: Types.ObjectId[];
+				attachments: Types.ObjectId[];
+				polls: IPolls[];
+			};
+			group_reply_unsaved: {
+				text: string;
+				shared_contact_cards: Types.ObjectId[];
+				attachments: Types.ObjectId[];
+				polls: IPolls[];
+			};
+			private_reply_saved: {
+				text: string;
+				shared_contact_cards: Types.ObjectId[];
+				attachments: Types.ObjectId[];
+				polls: IPolls[];
+			};
+			private_reply_unsaved: {
+				text: string;
+				shared_contact_cards: Types.ObjectId[];
+				attachments: Types.ObjectId[];
+				polls: IPolls[];
+			};
+			restricted_numbers?: Types.ObjectId;
+			reply_business_only: boolean;
+			random_string: boolean;
+			min_delay: number;
+			max_delay: number;
 		}
 	) {
 		const group = await MergedGroupDB.create({
 			user: this.user,
 			name,
 			groups: group_ids,
-			group_reply,
-			private_reply,
+			...details,
 		});
 
-		return {
-			id: group._id as string,
-			name: group.name as string,
-			isMergedGroup: true,
-			groups: group.groups,
-			group_reply: group.group_reply,
-			private_reply: group.private_reply,
-		};
+		return processGroup(group);
 	}
 
 	async updateGroup(
 		id: Types.ObjectId,
 		{ name, group_ids }: { name?: string; group_ids?: string[] },
-		{
-			group_reply,
-			private_reply,
-		}: {
-			group_reply?: {
-				saved: string;
-				unsaved: string;
-			} | null;
-			private_reply?: {
-				saved: string;
-				unsaved: string;
-			} | null;
+		details: {
+			group_reply_saved: {
+				text: string;
+				shared_contact_cards: Types.ObjectId[];
+				attachments: Types.ObjectId[];
+				polls: IPolls[];
+			};
+			group_reply_unsaved: {
+				text: string;
+				shared_contact_cards: Types.ObjectId[];
+				attachments: Types.ObjectId[];
+				polls: IPolls[];
+			};
+			private_reply_saved: {
+				text: string;
+				shared_contact_cards: Types.ObjectId[];
+				attachments: Types.ObjectId[];
+				polls: IPolls[];
+			};
+			private_reply_unsaved: {
+				text: string;
+				shared_contact_cards: Types.ObjectId[];
+				attachments: Types.ObjectId[];
+				polls: IPolls[];
+			};
+			restricted_numbers?: Types.ObjectId;
+			reply_business_only?: boolean;
+			random_string?: boolean;
+			min_delay: number;
+			max_delay: number;
 		}
 	) {
 		const merged_group = await MergedGroupDB.findById(id);
 
 		if (!merged_group) {
-			return false;
+			return null;
 		}
-		if (name) {
-			merged_group.name = name;
-		}
-		if (group_ids) {
-			merged_group.groups = group_ids;
-		}
-		if (group_reply !== undefined) {
-			merged_group.group_reply = group_reply;
-		}
-		if (private_reply !== undefined) {
-			merged_group.private_reply = private_reply;
-		}
+		await MergedGroupDB.updateOne(
+			{ _id: id },
+			{
+				$set: {
+					...(name && { name }),
+					...(group_ids && { groups: group_ids }),
+					...(details.group_reply_saved && { group_reply: details.group_reply_saved }),
+					...(details.group_reply_unsaved && { group_reply: details.group_reply_unsaved }),
+					...(details.private_reply_saved && { group_reply: details.private_reply_saved }),
+					...(details.private_reply_unsaved && { group_reply: details.private_reply_unsaved }),
+					...(details.restricted_numbers && { restricted_numbers: details.restricted_numbers }),
+					...(details.reply_business_only && { reply_business_only: details.reply_business_only }),
+					...(details.random_string && { random_string: details.random_string }),
+					...(details.min_delay && { min_delay: details.min_delay }),
+					...(details.max_delay && { max_delay: details.max_delay }),
+				},
+			}
+		);
 
 		await merged_group.save();
-		return {
-			id: merged_group._id as string,
-			name: merged_group.name as string,
-			isMergedGroup: true,
-			groups: merged_group.groups,
-			group_reply: merged_group.group_reply,
-			private_reply: merged_group.private_reply,
-		};
+		return processGroup(merged_group);
 	}
+
+	async toggleActive(id: Types.ObjectId) {
+		const merged_group = await MergedGroupDB.findById(id);
+
+		if (!merged_group) {
+			return false;
+		}
+		await MergedGroupDB.updateOne({ _id: id }, { $set: { active: !merged_group.active } });
+		return !merged_group.active;
+	}
+
+	async clear(id: Types.ObjectId) {
+		await GroupPrivateReplyDB.deleteMany({ mergedGroup: id });
+		await GroupReplyDB.deleteMany({ mergedGroup: id });
+	}
+
+	async generateReport(id: Types.ObjectId) {
+		const private_replies = await GroupPrivateReplyDB.find({ mergedGroup: id });
+		const group_replies = await GroupReplyDB.find({ mergedGroup: id });
+
+		return [
+			...private_replies.map((doc) => ({
+				recipient: doc.from.split('@')[0],
+				group_name: doc.group_name,
+				reply_type: 'Private Reply',
+			})),
+			...group_replies.map((doc) => ({
+				recipient: doc.from.split('@')[0],
+				group_name: doc.group_name,
+				reply_type: 'In Chat Reply',
+			})),
+		];
+	}
+
 	async deleteGroup(group_id: Types.ObjectId) {
 		await MergedGroupDB.deleteOne({ _id: group_id });
 	}
+
 	async removeFromGroup(id: Types.ObjectId, group_ids: string[]) {
 		const mergedGroup = await MergedGroupDB.findById(id);
 		if (!mergedGroup) return;
@@ -159,18 +235,18 @@ export default class GroupMergeService {
 	) {
 		const group_id = chat.id._serialized;
 
-		const group_reply_docs = await MergedGroupDB.findOne({
+		const doc = await MergedGroupDB.findOne({
 			user: this.user,
 			groups: group_id,
-			group_reply: { $exists: true, $ne: null },
-		});
-		const private_reply_docs = await MergedGroupDB.findOne({
-			user: this.user,
-			groups: group_id,
-			private_reply: { $exists: true, $ne: null },
-		});
+		}).populate('restricted_numbers');
 
-		if (!group_reply_docs && !private_reply_docs) {
+		if (
+			!doc ||
+			!doc.group_reply_saved ||
+			!doc.group_reply_unsaved ||
+			!doc.private_reply_saved ||
+			!doc.private_reply_unsaved
+		) {
 			return;
 		}
 
@@ -178,57 +254,123 @@ export default class GroupMergeService {
 		if (admin && (admin.isAdmin || admin.isSuperAdmin)) {
 			return;
 		}
-
-		const create_docs_data = { user: this.user, from: contact.id._serialized };
-
-		const sendReply = async (
-			model: Model<any, {}, {}, {}, any>,
-			to: string,
-			reply_text: string,
-			message: WAWebJS.Message,
-			private_reply: boolean = false
-		) => {
-			if (!reply_text) {
+		if (doc.reply_business_only && !contact.isBusiness) {
+			return;
+		}
+		if (doc.restricted_numbers) {
+			const parsed_csv = await FileUtils.readCSV(doc.restricted_numbers.filename);
+			if (parsed_csv && parsed_csv.findIndex((el) => el.number === contact.id.user)) {
 				return;
 			}
-			await Delay(Math.random() * 5 + 2);
-			model
-				.create(create_docs_data)
-				.then(() => {
-					if (private_reply) {
-						whatsapp
-							.sendMessage(to, reply_text, {
-								quotedMessageId: message.id._serialized,
-							})
-							.catch((err) => Logger.error('Error sending message:', err));
-					} else {
-						message.reply(reply_text).catch((err) => Logger.error('Error sending message:', err));
-					}
-				})
-				.catch(() => {});
-		};
-
-		if (group_reply_docs && group_reply_docs.group_reply !== null) {
-			sendReply(
-				GroupReplyDB,
-				contact.id._serialized,
-				contact.isMyContact
-					? group_reply_docs.group_reply.saved
-					: group_reply_docs.group_reply.unsaved,
-				message
-			);
 		}
 
-		if (private_reply_docs && private_reply_docs.private_reply !== null) {
-			sendReply(
-				GroupPrivateReplyDB,
-				contact.id._serialized,
-				contact.isMyContact
-					? private_reply_docs.private_reply.saved
-					: private_reply_docs.private_reply.unsaved,
-				message,
-				true
-			);
-		}
+		const { message_1: PROMOTIONAL_MESSAGE_1, message_2: PROMOTIONAL_MESSAGE_2 } =
+			await TokenService.getPromotionalMessage();
+		const { isSubscribed, isNew } = new UserService(this.user).isSubscribed();
+
+		const groupReply = contact.isMyContact ? doc.group_reply_saved : doc.group_reply_unsaved;
+		const privateReply = contact.isMyContact ? doc.private_reply_saved : doc.private_reply_unsaved;
+
+		await Delay(getRandomNumber(doc.min_delay, doc.max_delay));
+		try {
+			await GroupReplyDB.create({
+				user: this.user,
+				from: contact.id._serialized,
+				mergedGroup: doc,
+				group_name: chat.name,
+			});
+			let _reply_text = groupReply.text.replace('{{public_name}}', contact.pushname);
+
+			if (doc.random_string) {
+				_reply_text += randomMessageText();
+			}
+
+			message.reply(_reply_text);
+
+			groupReply.shared_contact_cards?.forEach(async (id) => {
+				const contact_service = new ContactCardService(this.user);
+				const contact = await contact_service.getContact(id as unknown as Types.ObjectId);
+				if (!contact) return;
+				message.reply(contact.vCardString);
+			});
+
+			groupReply.attachments?.forEach(async (id) => {
+				const attachment_service = new UploadService(this.user);
+				const attachment = await attachment_service.getAttachment(id as unknown as Types.ObjectId);
+				if (!attachment) return;
+				const { filename, caption, name } = attachment;
+				const path = __basedir + ATTACHMENTS_PATH + filename;
+				if (!fs.existsSync(path)) {
+					return null;
+				}
+				const media = MessageMedia.fromFilePath(path);
+				if (name) {
+					media.filename = name + path.substring(path.lastIndexOf('.'));
+				}
+				message.reply(media, undefined, { caption: caption });
+			});
+
+			groupReply.polls?.forEach(async (poll) => {
+				const { title, options, isMultiSelect } = poll;
+				message.reply(new Poll(title, options, { allowMultipleAnswers: isMultiSelect }));
+			});
+
+			if (groupReply.shared_contact_cards && groupReply.shared_contact_cards.length > 0) {
+				message.reply(PROMOTIONAL_MESSAGE_2);
+			} else if (!isSubscribed && isNew) {
+				message.reply(PROMOTIONAL_MESSAGE_1);
+			}
+		} catch (err) {}
+
+		try {
+			await GroupPrivateReplyDB.create({
+				user: this.user,
+				from: contact.id._serialized,
+				mergedGroup: doc,
+				group_name: chat.name,
+			});
+			let _reply_text = groupReply.text.replace('{{public_name}}', contact.pushname);
+
+			if (doc.random_string) {
+				_reply_text += randomMessageText();
+			}
+
+			const to = contact.id._serialized;
+			whatsapp.sendMessage(to, _reply_text);
+
+			privateReply.shared_contact_cards?.forEach(async (id) => {
+				const contact_service = new ContactCardService(this.user);
+				const contact = await contact_service.getContact(id as unknown as Types.ObjectId);
+				if (!contact) return;
+				whatsapp.sendMessage(to, contact.vCardString);
+			});
+
+			privateReply.attachments?.forEach(async (id) => {
+				const attachment_service = new UploadService(this.user);
+				const attachment = await attachment_service.getAttachment(id as unknown as Types.ObjectId);
+				if (!attachment) return;
+				const { filename, caption, name } = attachment;
+				const path = __basedir + ATTACHMENTS_PATH + filename;
+				if (!fs.existsSync(path)) {
+					return null;
+				}
+				const media = MessageMedia.fromFilePath(path);
+				if (name) {
+					media.filename = name + path.substring(path.lastIndexOf('.'));
+				}
+				whatsapp.sendMessage(to, media, { caption: caption });
+			});
+
+			groupReply.polls?.forEach(async (poll) => {
+				const { title, options, isMultiSelect } = poll;
+				whatsapp.sendMessage(to, new Poll(title, options, { allowMultipleAnswers: isMultiSelect }));
+			});
+
+			if (groupReply.shared_contact_cards && groupReply.shared_contact_cards.length > 0) {
+				whatsapp.sendMessage(to, PROMOTIONAL_MESSAGE_2);
+			} else if (!isSubscribed && isNew) {
+				whatsapp.sendMessage(to, PROMOTIONAL_MESSAGE_1);
+			}
+		} catch (err) {}
 	}
 }
