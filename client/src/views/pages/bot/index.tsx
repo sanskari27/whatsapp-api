@@ -164,7 +164,6 @@ export default function Bot() {
 			errorPayload.error = '';
 			dispatch(setError(errorPayload));
 		}
-		console.log(response_delay_seconds)
 
 		if (response_delay_seconds <= 0) {
 			errorPayload.type = 'responseGapError';
@@ -176,7 +175,6 @@ export default function Bot() {
 			errorPayload.error = '';
 			dispatch(setError(errorPayload));
 		}
-		console.log(trigger_gap_seconds)
 
 		if (trigger_gap_seconds <= 0) {
 			errorPayload.type = 'triggerGapError';

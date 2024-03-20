@@ -7,6 +7,7 @@ import {
 	AccordionPanel,
 	Box,
 	Button,
+	Checkbox,
 	Flex,
 	FormControl,
 	HStack,
@@ -44,10 +45,12 @@ const initialState = [
 		shared_contact_cards: [],
 		attachments: [],
 		polls: [],
+		random_string: false,
 	},
 ];
 const blankNurturing = {
 	message: '',
+	random_string: false,
 	delay: '1',
 	unit: 'MINUTES' as 'MINUTES' | 'HOURS' | 'DAYS',
 	start_from: '10:00',
@@ -67,6 +70,7 @@ export type InputLeadsNurturingDialogHandle = {
 			shared_contact_cards: string[];
 			attachments: string[];
 			polls: Poll[];
+			random_string: boolean;
 		}[]
 	) => void;
 	close: () => void;
@@ -82,6 +86,7 @@ type Props = {
 			shared_contact_cards: string[];
 			attachments: string[];
 			polls: Poll[];
+			random_string: boolean;
 		}[]
 	) => void;
 };
@@ -120,7 +125,11 @@ const InputLeadsNurturingDialog = forwardRef<InputLeadsNurturingDialogHandle, Pr
 
 		const handleClose = () => setOpen(false);
 
-		const handleChange = (type: string, value: string | string[] | Poll[], index: number) => {
+		const handleChange = (
+			type: string,
+			value: string | string[] | Poll[] | boolean,
+			index: number
+		) => {
 			setError({ message: '', type: '', index: -1 });
 			setNurturing((prev) => [
 				...prev.slice(0, index),
@@ -163,6 +172,7 @@ const InputLeadsNurturingDialog = forwardRef<InputLeadsNurturingDialogHandle, Pr
 					shared_contact_cards: nurturing.shared_contact_cards,
 					attachments: nurturing.attachments,
 					polls: nurturing.polls,
+					random_string: nurturing.random_string,
 				}))
 			);
 			handleClose();
@@ -277,19 +287,31 @@ const InputLeadsNurturingDialog = forwardRef<InputLeadsNurturingDialogHandle, Pr
 														onChange={(e) => handleChange('message', e.target.value, index)}
 													/>
 												</FormControl>
-												<Tag
-													size={'sm'}
-													m={'0.25rem'}
-													p={'0.5rem'}
-													width={'fit-content'}
-													borderRadius='md'
-													variant='solid'
-													colorScheme='gray'
-													_hover={{ cursor: 'pointer' }}
-													onClick={() => insertVariablesToMessage('{{public_name}}', index)}
-												>
-													<TagLabel>{'{{public_name}}'}</TagLabel>
-												</Tag>
+												<HStack width={'full'} justifyContent={'space-between'}>
+													<Tag
+														size={'sm'}
+														m={'0.25rem'}
+														p={'0.5rem'}
+														width={'fit-content'}
+														borderRadius='md'
+														variant='solid'
+														colorScheme='gray'
+														_hover={{ cursor: 'pointer' }}
+														onClick={() => insertVariablesToMessage('{{public_name}}', index)}
+													>
+														<TagLabel>{'{{public_name}}'}</TagLabel>
+													</Tag>
+													<Checkbox
+														colorScheme='green'
+														size='md'
+														isChecked={nurturing.random_string}
+														onChange={() =>
+															handleChange('random_string', !nurturing.random_string, index)
+														}
+													>
+														Append Random Text
+													</Checkbox>
+												</HStack>
 												<HStack width={'full'}>
 													<Box flex={1}>
 														<Text className='text-gray-700 dark:text-gray-400'>Attachments</Text>

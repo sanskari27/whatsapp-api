@@ -56,5 +56,6 @@ export type Bot = {
 		shared_contact_cards: string[];
 		attachments: string[];
 		polls: Poll[];
+		random_string: boolean;
 	}[];
 };
