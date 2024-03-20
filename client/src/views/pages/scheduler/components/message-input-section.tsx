@@ -197,6 +197,7 @@ export default function MessageSection(props: Props) {
 					colorScheme='gray'
 					_hover={{ cursor: 'pointer' }}
 					onClick={() => insertVariablesToMessage('{{public_name}}')}
+					hidden={true}
 				>
 					<TagLabel>{'{{public_name}}'}</TagLabel>
 				</Tag>
