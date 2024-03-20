@@ -5,6 +5,7 @@ export default class BotService {
 	static async createBot(data: {
 		trigger: string;
 		message: string;
+		random_string: boolean;
 		respond_to: string;
 		trigger_gap_seconds: number;
 		response_delay_seconds: number;
@@ -38,6 +39,7 @@ export default class BotService {
 				endAt: res.endAt ?? '',
 				respond_to: res.respond_to ?? '',
 				message: res.message ?? '',
+				random_string: res.random_string ?? false,
 				attachments: res.attachments ?? [],
 				shared_contact_cards: res.shared_contact_cards ?? [],
 				trigger_gap_seconds: res.trigger_gap_seconds ?? 0,
@@ -65,6 +67,7 @@ export default class BotService {
 				endAt: res.endAt ?? '',
 				respond_to: res.respond_to ?? '',
 				message: res.message ?? '',
+				random_string: res.random_string ?? false,
 				attachments: res.attachments ?? [],
 				shared_contact_cards: res.shared_contact_cards ?? [],
 				trigger_gap_seconds: res.trigger_gap_seconds ?? 0,
@@ -90,6 +93,7 @@ export default class BotService {
 				endAt: res.endAt ?? '',
 				respond_to: res.respond_to ?? '',
 				message: res.message ?? '',
+				random_string: res.random_string ?? false,
 				attachments: res.attachments ?? [],
 				shared_contact_cards: res.shared_contact_cards ?? [],
 				trigger_gap_seconds: res.trigger_gap_seconds ?? 0,
@@ -118,6 +122,7 @@ export default class BotService {
 		data: {
 			trigger: string;
 			message: string;
+			random_string: boolean;
 			respond_to: string;
 			trigger_gap_seconds: number;
 			options: string;
@@ -150,6 +155,7 @@ export default class BotService {
 				endAt: string;
 				respond_to: string;
 				message: string;
+				random_string: boolean;
 				attachments: string[];
 				shared_contact_cards: string[];
 				trigger_gap_seconds: number;
@@ -181,6 +187,7 @@ export default class BotService {
 				endAt: res.endAt ?? '',
 				respond_to: res.respond_to ?? '',
 				message: res.message ?? '',
+				random_string: res.random_string ?? false,
 				attachments: res.attachments ?? [],
 				shared_contact_cards: res.shared_contact_cards ?? [],
 				trigger_gap_seconds: res.trigger_gap_seconds ?? 0,

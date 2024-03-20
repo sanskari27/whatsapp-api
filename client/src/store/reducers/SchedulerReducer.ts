@@ -13,6 +13,7 @@ const initialState: SchedulerState = {
 		group_ids: [],
 		label_ids: [],
 		message: '',
+		random_string: false,
 		variables: [],
 		shared_contact_cards: [],
 		attachments: [],
@@ -136,6 +137,9 @@ const SchedulerSlice = createSlice({
 		setMessage: (state, action: PayloadAction<typeof initialState.details.message>) => {
 			state.details.message = action.payload;
 		},
+		toggleRandomString: (state) => {
+			state.details.random_string = !state.details.random_string;
+		},
 		setAttachments: (state, action: PayloadAction<typeof initialState.details.attachments>) => {
 			state.details.attachments = action.payload;
 		},
@@ -225,6 +229,7 @@ export const {
 	setGroupRecipients,
 	setLabelRecipients,
 	setMessage,
+	toggleRandomString,
 	setAttachments,
 	setContactCards,
 	setMinDelay,

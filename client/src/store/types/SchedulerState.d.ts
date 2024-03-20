@@ -60,6 +60,7 @@ export type SchedulerDetails = {
 	group_ids: string[];
 	label_ids: string[];
 	message: string;
+	random_string: boolean;
 	variables: string[];
 	shared_contact_cards: string[];
 	attachments: string[];

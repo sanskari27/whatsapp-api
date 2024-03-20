@@ -246,6 +246,7 @@ export default function Scheduler() {
 			polls: details.polls,
 			start_from: details.startTime,
 			end_at: details.endTime,
+			random_string: details.random_string,
 		})
 			.then((res) => {
 				if (!res) {
@@ -314,6 +315,7 @@ export default function Scheduler() {
 			start_from: details.startDate,
 			title: details.campaign_name,
 			csv: csvList.find((csv) => csv.fileName === details.csv_file)?.id ?? '',
+			random_string: details.random_string,
 		})
 			.then((res) => {
 				if (res) dispatch(editSelectedScheduler(res));

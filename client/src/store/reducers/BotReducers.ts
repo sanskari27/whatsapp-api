@@ -8,6 +8,7 @@ const initialState: BotState = {
 		bot_id: '',
 		trigger: '',
 		message: '',
+		random_string: false,
 		respond_to: 'ALL',
 		options: 'INCLUDES_IGNORE_CASE',
 		startAt: '00:01',
@@ -15,8 +16,8 @@ const initialState: BotState = {
 		attachments: [],
 		shared_contact_cards: [],
 		isActive: false,
-		response_delay_seconds: 0,
-		trigger_gap_seconds: 0,
+		response_delay_seconds: 1,
+		trigger_gap_seconds: 1,
 		polls: [],
 		forward: {
 			number: '',
@@ -129,6 +130,9 @@ const BotSlice = createSlice({
 			state.details.message = action.payload;
 			state.ui.messageError = '';
 		},
+		toggleRandomString: (state) => {
+			state.details.random_string = !state.details.random_string;
+		},
 		setRespondTo: (state, action: PayloadAction<typeof initialState.details.respond_to>) => {
 			state.details.respond_to = action.payload;
 			state.ui.respondToError = '';
@@ -239,6 +243,7 @@ export const {
 	setSelectedBot,
 	setTrigger,
 	setMessage,
+	toggleRandomString,
 	setRespondTo,
 	setOptions,
 	setAttachments,
