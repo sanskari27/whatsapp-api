@@ -29,6 +29,7 @@ const campaignSchema = new mongoose.Schema<ICampaign>(
 				ref: 'Message',
 			},
 		],
+		random_string: Boolean,
 		min_delay: Number,
 		max_delay: Number,
 		batch_size: Number,

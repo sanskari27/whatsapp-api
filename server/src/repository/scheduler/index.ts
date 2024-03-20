@@ -37,6 +37,7 @@ const schedulerSchema = new mongoose.Schema<IScheduler>({
 		default: true,
 	},
 
+	random_string: Boolean,
 	title: String,
 	description: String,
 	start_from: String,

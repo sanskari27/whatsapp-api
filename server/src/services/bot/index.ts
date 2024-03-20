@@ -630,6 +630,7 @@ export default class BotService {
 			options: bot.options,
 			startAt: bot.startAt,
 			endAt: bot.endAt,
+			random_string: bot.random_string,
 			message: bot.message,
 			attachments: bot.attachments.map((attachment) => ({
 				id: attachment._id,
@@ -661,6 +662,7 @@ export default class BotService {
 			options: bot.options,
 			startAt: bot.startAt,
 			endAt: bot.endAt,
+			random_string: bot.random_string,
 			message: bot.message,
 			attachments: bot.attachments.map((attachment) => ({
 				id: attachment._id,
