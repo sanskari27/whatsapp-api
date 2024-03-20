@@ -21,6 +21,7 @@ const botSchema = new mongoose.Schema<IBot>({
 		type: String,
 		enum: Object.values(BOT_TRIGGER_OPTIONS),
 	},
+	random_string: Boolean,
 	message: String,
 	group_respond: {
 		type: Boolean,
@@ -47,6 +48,7 @@ const botSchema = new mongoose.Schema<IBot>({
 	],
 	nurturing: [
 		{
+			random_string: Boolean,
 			message: String,
 			after: Number,
 			start_from: String,

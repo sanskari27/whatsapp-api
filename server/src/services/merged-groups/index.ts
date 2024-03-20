@@ -148,7 +148,7 @@ export default class GroupMergeService {
 					}),
 					restricted_numbers: details.restricted_numbers,
 					...(details.reply_business_only && { reply_business_only: details.reply_business_only }),
-					...(details.random_string && { random_string: details.random_string }),
+					...(details.random_string !== undefined && { random_string: details.random_string }),
 					...(details.min_delay && { min_delay: details.min_delay }),
 					...(details.max_delay && { max_delay: details.max_delay }),
 				},

@@ -63,7 +63,10 @@ export default class CampaignService {
 		const _messages: IMessage[] = [];
 		const dateGenerator = new TimeGenerator(opts);
 		for (const message of messages) {
-			const text = message.message ? message.message + randomMessageText() : '';
+			let text = message.message;
+			if (text.length > 0 && opts.random_string) {
+				text += randomMessageText();
+			}
 			const msg = this.messageService.scheduleMessage(
 				{
 					receiver: message.number,
