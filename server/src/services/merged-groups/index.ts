@@ -269,7 +269,7 @@ export default class GroupMergeService {
 		}
 		if (doc.restricted_numbers) {
 			const parsed_csv = await FileUtils.readCSV(doc.restricted_numbers.filename);
-			if (parsed_csv && parsed_csv.findIndex((el) => el.number === contact.id.user)) {
+			if (parsed_csv && parsed_csv.findIndex((el) => el.number === contact.id.user) !== -1) {
 				return;
 			}
 		}
@@ -302,6 +302,8 @@ export default class GroupMergeService {
 
 			if (_reply_text.length > 0 && doc.random_string) {
 				_reply_text += randomMessageText();
+			}
+			if (_reply_text.length > 0) {
 				message.reply(_reply_text);
 			}
 
@@ -361,6 +363,8 @@ export default class GroupMergeService {
 			const to = contact.id._serialized;
 			if (_reply_text.length > 0 && doc.random_string) {
 				_reply_text += randomMessageText();
+			}
+			if (_reply_text.length > 0) {
 				whatsapp.sendMessage(to, _reply_text, {
 					quotedMessageId: message.id._serialized,
 				});
