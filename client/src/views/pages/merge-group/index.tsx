@@ -15,6 +15,7 @@ import { useEffect, useRef, useState } from 'react';
 import { MdGroupAdd, MdGroups3 } from 'react-icons/md';
 import { useDispatch, useSelector } from 'react-redux';
 import { popFromNavbar, pushToNavbar } from '../../../hooks/useNavbar';
+import { useTheme } from '../../../hooks/useTheme';
 import GroupService from '../../../services/group.service';
 import { StoreNames, StoreState } from '../../../store';
 import {
@@ -48,6 +49,7 @@ const GroupMergePage = () => {
 	const [tabIndex, setTabIndex] = useState(0);
 
 	const dispatch = useDispatch();
+	const theme = useTheme();
 	const {
 		selectedGroups,
 		uiDetails: { isDeleting },
@@ -76,9 +78,13 @@ const GroupMergePage = () => {
 			actions: (
 				<HStack>
 					<FormControl width={'fit-content'} display='flex' alignItems='center' gap='0.5rem'>
-						<FormLabel mb='0'>Merged Groups</FormLabel>
+						<FormLabel mb='0' color={theme === 'dark' ? 'gray.300' : 'gray.700'}>
+							Merged Groups
+						</FormLabel>
 						<Switch id='merged-groups' onChange={(e) => handleSwitchChange(e.target.checked)} />
-						<FormLabel mb='0'>Whatsapp Groups</FormLabel>
+						<FormLabel mb='0' color={theme === 'dark' ? 'gray.300' : 'gray.700'}>
+							Whatsapp Groups
+						</FormLabel>
 					</FormControl>
 					<NavbarSearchElement />
 					<NavbarDeleteElement

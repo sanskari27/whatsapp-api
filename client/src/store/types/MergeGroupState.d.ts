@@ -57,4 +57,9 @@ type MergedGroup = {
 		}[];
 	};
 	restricted_numbers: string;
+	min_delay: number;
+	max_delay: number;
+	reply_business_only: boolean;
+	random_string: boolean;
+	active: boolean;
 };

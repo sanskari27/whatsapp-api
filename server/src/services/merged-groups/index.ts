@@ -29,6 +29,7 @@ const processGroup = (group: IMergedGroup) => {
 		restricted_numbers: group.restricted_numbers,
 		reply_business_only: group.reply_business_only,
 		random_string: group.random_string,
+		active: group.active,
 	};
 };
 
@@ -132,19 +133,20 @@ export default class GroupMergeService {
 		if (!merged_group) {
 			return null;
 		}
+
 		await MergedGroupDB.updateOne(
 			{ _id: id },
 			{
 				$set: {
 					...(name && { name }),
 					...(group_ids && { groups: group_ids }),
-					...(details.group_reply_saved && { group_reply: details.group_reply_saved }),
-					...(details.group_reply_unsaved && { group_reply: details.group_reply_unsaved }),
-					...(details.private_reply_saved && { group_reply: details.private_reply_saved }),
-					...(details.private_reply_unsaved && { group_reply: details.private_reply_unsaved }),
-					...(details.restricted_numbers !== undefined && {
-						restricted_numbers: details.restricted_numbers ?? undefined,
+					...(details.group_reply_saved && { group_reply_saved: details.group_reply_saved }),
+					...(details.group_reply_unsaved && { group_reply_unsaved: details.group_reply_unsaved }),
+					...(details.private_reply_saved && { private_reply_saved: details.private_reply_saved }),
+					...(details.private_reply_unsaved && {
+						private_reply_unsaved: details.private_reply_unsaved,
 					}),
+					restricted_numbers: details.restricted_numbers,
 					...(details.reply_business_only && { reply_business_only: details.reply_business_only }),
 					...(details.random_string && { random_string: details.random_string }),
 					...(details.min_delay && { min_delay: details.min_delay }),
@@ -245,6 +247,7 @@ export default class GroupMergeService {
 		const doc = await MergedGroupDB.findOne({
 			user: this.user,
 			groups: group_id,
+			active: true,
 		}).populate('restricted_numbers');
 
 		if (
@@ -279,7 +282,16 @@ export default class GroupMergeService {
 		const privateReply = contact.isMyContact ? doc.private_reply_saved : doc.private_reply_unsaved;
 
 		await Delay(getRandomNumber(doc.min_delay, doc.max_delay));
+
 		try {
+			if (
+				groupReply.text.length === 0 &&
+				groupReply.attachments?.length === 0 &&
+				groupReply.shared_contact_cards?.length === 0 &&
+				groupReply.polls?.length === 0
+			) {
+				return;
+			}
 			await GroupReplyDB.create({
 				user: this.user,
 				from: contact.id._serialized,
@@ -290,9 +302,8 @@ export default class GroupMergeService {
 
 			if (_reply_text.length > 0 && doc.random_string) {
 				_reply_text += randomMessageText();
+				message.reply(_reply_text);
 			}
-
-			message.reply(_reply_text);
 
 			groupReply.shared_contact_cards?.forEach(async (id) => {
 				const contact_service = new ContactCardService(this.user);
@@ -330,26 +341,37 @@ export default class GroupMergeService {
 		} catch (err) {}
 
 		try {
+			if (
+				privateReply.text.length === 0 &&
+				privateReply.attachments?.length === 0 &&
+				privateReply.shared_contact_cards?.length === 0 &&
+				privateReply.polls?.length === 0
+			) {
+				return;
+			}
+
 			await GroupPrivateReplyDB.create({
 				user: this.user,
 				from: contact.id._serialized,
 				mergedGroup: doc,
 				group_name: chat.name,
 			});
-			let _reply_text = groupReply.text.replace('{{public_name}}', contact.pushname);
-
-			if (_reply_text.length > 0 && doc.random_string) {
-				_reply_text += randomMessageText();
-			}
+			let _reply_text = privateReply.text.replace('{{public_name}}', contact.pushname);
 
 			const to = contact.id._serialized;
-			whatsapp.sendMessage(to, _reply_text);
-
+			if (_reply_text.length > 0 && doc.random_string) {
+				_reply_text += randomMessageText();
+				whatsapp.sendMessage(to, _reply_text, {
+					quotedMessageId: message.id._serialized,
+				});
+			}
 			privateReply.shared_contact_cards?.forEach(async (id) => {
 				const contact_service = new ContactCardService(this.user);
 				const contact = await contact_service.getContact(id as unknown as Types.ObjectId);
 				if (!contact) return;
-				whatsapp.sendMessage(to, contact.vCardString);
+				whatsapp.sendMessage(to, contact.vCardString, {
+					quotedMessageId: message.id._serialized,
+				});
 			});
 
 			privateReply.attachments?.forEach(async (id) => {
@@ -365,18 +387,31 @@ export default class GroupMergeService {
 				if (name) {
 					media.filename = name + path.substring(path.lastIndexOf('.'));
 				}
-				whatsapp.sendMessage(to, media, { caption: caption });
+				whatsapp.sendMessage(to, media, {
+					caption: caption,
+					quotedMessageId: message.id._serialized,
+				});
 			});
 
-			groupReply.polls?.forEach(async (poll) => {
+			privateReply.polls?.forEach(async (poll) => {
 				const { title, options, isMultiSelect } = poll;
-				whatsapp.sendMessage(to, new Poll(title, options, { allowMultipleAnswers: isMultiSelect }));
+				whatsapp.sendMessage(
+					to,
+					new Poll(title, options, { allowMultipleAnswers: isMultiSelect }),
+					{
+						quotedMessageId: message.id._serialized,
+					}
+				);
 			});
 
-			if (groupReply.shared_contact_cards && groupReply.shared_contact_cards.length > 0) {
-				whatsapp.sendMessage(to, PROMOTIONAL_MESSAGE_2);
+			if (privateReply.shared_contact_cards && privateReply.shared_contact_cards.length > 0) {
+				whatsapp.sendMessage(to, PROMOTIONAL_MESSAGE_2, {
+					quotedMessageId: message.id._serialized,
+				});
 			} else if (!isSubscribed && isNew) {
-				whatsapp.sendMessage(to, PROMOTIONAL_MESSAGE_1);
+				whatsapp.sendMessage(to, PROMOTIONAL_MESSAGE_1, {
+					quotedMessageId: message.id._serialized,
+				});
 			}
 		} catch (err) {}
 	}

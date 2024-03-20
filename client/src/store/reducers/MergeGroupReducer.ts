@@ -34,6 +34,11 @@ const initialState: MergeGroupState = {
 			polls: [],
 		},
 		restricted_numbers: '',
+		min_delay: 2,
+		max_delay: 7,
+		random_string: false,
+		reply_business_only: false,
+		active: true,
 	},
 	uiDetails: {
 		isSaving: false,
@@ -55,7 +60,6 @@ const MergeGroupSlice = createSlice({
 			state.uiDetails = initialState.uiDetails;
 		},
 		setMergedGroupList: (state, action: PayloadAction<typeof initialState.list>) => {
-			console.log(action.payload)
 			state.list = action.payload;
 		},
 		addMergedGroup: (state, action: PayloadAction<(typeof initialState.list)[0]>) => {
@@ -93,7 +97,30 @@ const MergeGroupSlice = createSlice({
 				state.editSelectedGroup.id = group.id;
 				state.editSelectedGroup.name = group.name;
 				state.editSelectedGroup.groups = group.groups;
+				state.editSelectedGroup.group_reply_saved = group.group_reply_saved;
+				state.editSelectedGroup.group_reply_unsaved = group.group_reply_unsaved;
+				state.editSelectedGroup.private_reply_saved = group.private_reply_saved;
+				state.editSelectedGroup.private_reply_unsaved = group.private_reply_unsaved;
+				state.editSelectedGroup.restricted_numbers = group.restricted_numbers;
+				state.editSelectedGroup.min_delay = group.min_delay;
+				state.editSelectedGroup.max_delay = group.max_delay;
+				state.editSelectedGroup.reply_business_only = group.reply_business_only;
+				state.editSelectedGroup.random_string = group.random_string;
 			}
+		},
+		setActive: (
+			state,
+			action: PayloadAction<{
+				id: string;
+				active: boolean;
+			}>
+		) => {
+			state.list = state.list.map((g) => {
+				if (g.id === action.payload.id) {
+					g.active = action.payload.active;
+				}
+				return g;
+			});
 		},
 		updateMergeGroupsList: (state, action: PayloadAction<(typeof initialState.list)[0]>) => {
 			const index = state.list.findIndex((group) => group.id === action.payload.id);
@@ -142,16 +169,28 @@ const MergeGroupSlice = createSlice({
 		setPrivateReplyUnsavedAttachments: (state, action: PayloadAction<string>) => {
 			state.editSelectedGroup.private_reply_unsaved.attachments.push(action.payload);
 		},
-		setGroupReplySavedPolls: (state, action: PayloadAction<(typeof initialState.editSelectedGroup.group_reply_saved.polls)[0]>) => {
+		setGroupReplySavedPolls: (
+			state,
+			action: PayloadAction<(typeof initialState.editSelectedGroup.group_reply_saved.polls)[0]>
+		) => {
 			state.editSelectedGroup.group_reply_saved.polls.push(action.payload);
 		},
-		setGroupReplyUnsavedPolls: (state, action: PayloadAction<(typeof initialState.editSelectedGroup.group_reply_unsaved.polls)[0]>) => {
+		setGroupReplyUnsavedPolls: (
+			state,
+			action: PayloadAction<(typeof initialState.editSelectedGroup.group_reply_unsaved.polls)[0]>
+		) => {
 			state.editSelectedGroup.group_reply_unsaved.polls.push(action.payload);
 		},
-		setPrivateReplySavedPolls: (state, action: PayloadAction<(typeof initialState.editSelectedGroup.private_reply_saved.polls)[0]>) => {
+		setPrivateReplySavedPolls: (
+			state,
+			action: PayloadAction<(typeof initialState.editSelectedGroup.private_reply_saved.polls)[0]>
+		) => {
 			state.editSelectedGroup.private_reply_saved.polls.push(action.payload);
 		},
-		setPrivateReplyUnsavedPolls: (state, action: PayloadAction<(typeof initialState.editSelectedGroup.private_reply_unsaved.polls)[0]>) => {
+		setPrivateReplyUnsavedPolls: (
+			state,
+			action: PayloadAction<(typeof initialState.editSelectedGroup.private_reply_unsaved.polls)[0]>
+		) => {
 			state.editSelectedGroup.private_reply_unsaved.polls.push(action.payload);
 		},
 		clearEditMergeGroup: (state) => {
@@ -177,6 +216,30 @@ const MergeGroupSlice = createSlice({
 		},
 		setError: (state, action: PayloadAction<typeof initialState.uiDetails.error>) => {
 			state.uiDetails.error = action.payload;
+		},
+		setMinDelay: (
+			state,
+			action: PayloadAction<typeof initialState.editSelectedGroup.min_delay>
+		) => {
+			state.editSelectedGroup.min_delay = action.payload;
+		},
+		setMaxDelay: (
+			state,
+			action: PayloadAction<typeof initialState.editSelectedGroup.max_delay>
+		) => {
+			state.editSelectedGroup.max_delay = action.payload;
+		},
+		toggleRandomString: (state) => {
+			state.editSelectedGroup.random_string = !state.editSelectedGroup.random_string;
+		},
+		toggleReplyBusinessOnly: (state) => {
+			state.editSelectedGroup.reply_business_only = !state.editSelectedGroup.reply_business_only;
+		},
+		setRestrictedNumbers: (
+			state,
+			action: PayloadAction<typeof initialState.editSelectedGroup.restricted_numbers>
+		) => {
+			state.editSelectedGroup.restricted_numbers = action.payload;
 		},
 	},
 });
@@ -220,6 +283,12 @@ export const {
 	setGroupReplyUnsavedPolls,
 	setPrivateReplySavedPolls,
 	setPrivateReplyUnsavedPolls,
+	setMaxDelay,
+	setMinDelay,
+	toggleRandomString,
+	toggleReplyBusinessOnly,
+	setRestrictedNumbers,
+	setActive,
 } = MergeGroupSlice.actions;
 
 export default MergeGroupSlice.reducer;
