@@ -8,6 +8,8 @@ import {
 	HStack,
 	IconButton,
 	Select,
+	Tag,
+	TagLabel,
 	Text,
 	Textarea,
 	TextareaProps,
@@ -179,7 +181,21 @@ export default function MessageSection(props: Props) {
 			{messageError && (
 				<FormErrorMessage>Message, attachment, contact card or poll is required </FormErrorMessage>
 			)}
-
+			<Box>
+				<Tag
+					size={'sm'}
+					m={'0.25rem'}
+					p={'0.5rem'}
+					width={'fit-content'}
+					borderRadius='md'
+					variant='solid'
+					colorScheme='gray'
+					_hover={{ cursor: 'pointer' }}
+					onClick={() => insertVariablesToMessage('{{public_name}}')}
+				>
+					<TagLabel>{'{{public_name}}'}</TagLabel>
+				</Tag>
+			</Box>
 			<Box hidden={details.type !== 'CSV'}>
 				<Text className='text-gray-700 dark:text-white' hidden={details.variables.length === 0}>
 					Variables
