@@ -212,7 +212,6 @@ export default function Bot() {
 		toast.promise(promise, {
 			success: (data) => {
 				const acton = isEditingBot ? updateBot({ id: data.bot_id, data }) : addBot(data);
-				console.log(acton);
 				dispatch(acton);
 				dispatch(reset());
 				return {

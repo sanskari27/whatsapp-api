@@ -1,54 +1,7 @@
 import APIInstance from '../config/APIInstance';
 
-type MergedGroupsDetails={
-	id: string;
-	name: string;
-	groups: string[];
-	group_reply_saved: {
-		text: string;
-		shared_contact_cards: string[];
-		attachments: string[];
-		polls: {
-			title: string;
-			options: string[];
-			isMultiSelect: boolean;
-		}[];
-	};
-	group_reply_unsaved: {
-		text: string;
-		shared_contact_cards: string[];
-		attachments: string[];
-		polls: {
-			title: string;
-			options: string[];
-			isMultiSelect: boolean;
-		}[];
-	};
-	private_reply_saved: {
-		text: string;
-		shared_contact_cards: string[];
-		attachments: string[];
-		polls: {
-			title: string;
-			options: string[];
-			isMultiSelect: boolean;
-		}[];
-	};
-	private_reply_unsaved: {
-		text: string;
-		shared_contact_cards: string[];
-		attachments: string[];
-		polls: {
-			title: string;
-			options: string[];
-			isMultiSelect: boolean;
-		}[];
-	};
-	restricted_numbers: string;
-
-}
-
-function processMergedGroup(group:any){
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function processMergedGroup(group: any) {
 	return {
 		id: group.id as string,
 		name: group.name as string,
@@ -78,6 +31,11 @@ function processMergedGroup(group:any){
 			polls: group.private_reply_unsaved.polls ?? [],
 		},
 		restricted_numbers: group.restricted_numbers ?? '',
+		min_delay: group.min_delay,
+		max_delay: group.max_delay,
+		reply_business_only: group.reply_business_only,
+		random_string: group.random_string,
+		active: group.active,
 	};
 }
 
@@ -186,6 +144,10 @@ export default class GroupService {
 				isMultiSelect: boolean;
 			}[];
 		};
+		min_delay: number;
+		max_delay: number;
+		reply_business_only: boolean;
+		random_string: boolean;
 		restricted_numbers: string;
 	}) {
 		try {
@@ -196,10 +158,13 @@ export default class GroupService {
 				group_reply_unsaved: details.group_reply_unsaved,
 				private_reply_saved: details.private_reply_saved,
 				private_reply_unsaved: details.private_reply_unsaved,
-				restricted_numbers: '65f9c4211bcf06e245da1071',
+				restricted_numbers: details.restricted_numbers || null,
+				min_delay: details.min_delay,
+				max_delay: details.max_delay,
+				reply_business_only: details.reply_business_only,
+				random_string: details.random_string,
 			});
 			return processMergedGroup(data.group);
-			
 		} catch (err) {
 			throw new Error('Error Saving group');
 		}
@@ -216,51 +181,57 @@ export default class GroupService {
 	}
 
 	static async editMergedGroup(
-		id: string,details:{
-		name: string,
-		groups: string[],
-		group_reply_saved: {
-			text: string;
-			shared_contact_cards: string[];
-			attachments: string[];
-			polls: {
-				title: string;
-				options: string[];
-				isMultiSelect: boolean;
-			}[];
-		},
-		group_reply_unsaved: {
-			text: string;
-			shared_contact_cards: string[];
-			attachments: string[];
-			polls: {
-				title: string;
-				options: string[];
-				isMultiSelect: boolean;
-			}[];
-		},
-		private_reply_saved: {
-			text: string;
-			shared_contact_cards: string[];
-			attachments: string[];
-			polls: {
-				title: string;
-				options: string[];
-				isMultiSelect: boolean;
-			}[];
-		},
-		private_reply_unsaved: {
-			text: string;
-			shared_contact_cards: string[];
-			attachments: string[];
-			polls: {
-				title: string;
-				options: string[];
-				isMultiSelect: boolean;
-			}[];
-		},
-		restricted_numbers: string
-	}) {
+		id: string,
+		details: {
+			name: string;
+			groups: string[];
+			group_reply_saved: {
+				text: string;
+				shared_contact_cards: string[];
+				attachments: string[];
+				polls: {
+					title: string;
+					options: string[];
+					isMultiSelect: boolean;
+				}[];
+			};
+			group_reply_unsaved: {
+				text: string;
+				shared_contact_cards: string[];
+				attachments: string[];
+				polls: {
+					title: string;
+					options: string[];
+					isMultiSelect: boolean;
+				}[];
+			};
+			private_reply_saved: {
+				text: string;
+				shared_contact_cards: string[];
+				attachments: string[];
+				polls: {
+					title: string;
+					options: string[];
+					isMultiSelect: boolean;
+				}[];
+			};
+			private_reply_unsaved: {
+				text: string;
+				shared_contact_cards: string[];
+				attachments: string[];
+				polls: {
+					title: string;
+					options: string[];
+					isMultiSelect: boolean;
+				}[];
+			};
+			restricted_numbers: string;
+			min_delay: number;
+			max_delay: number;
+			reply_business_only: boolean;
+			random_string: boolean;
+		}
+	) {
 		try {
 			const { data } = await APIInstance.patch(`/whatsapp/groups/merge/${id}`, {
 				group_name: details.name,
@@ -269,11 +240,63 @@ export default class GroupService {
 				group_reply_unsaved: details.group_reply_unsaved,
 				private_reply_saved: details.private_reply_saved,
 				private_reply_unsaved: details.private_reply_unsaved,
-				restricted_numbers: '65f9c4211bcf06e245da1071',
+				restricted_numbers: details.restricted_numbers || null,
+				min_delay: details.min_delay,
+				max_delay: details.max_delay,
+				reply_business_only: details.reply_business_only,
+				random_string: details.random_string,
 			});
 			return processMergedGroup(data.group);
 		} catch (err) {
 			throw new Error('Error Saving group');
+		}
+	}
+
+	static async toggleActiveMergeGroup(id: string): Promise<boolean | null> {
+		try {
+			const { data } = await APIInstance.post(`/whatsapp/groups/merge/${id}/toggle-active`);
+			return data.active;
+		} catch (err) {
+			return null;
+		}
+	}
+
+	static async clearHistory(id: string): Promise<boolean> {
+		try {
+			await APIInstance.post(`/whatsapp/groups/merge/${id}/clear-responses`);
+			return true;
+		} catch (err) {
+			return false;
+		}
+	}
+
+	static async downloadResponses(id: string) {
+		try {
+			const response = await APIInstance.get(`/whatsapp/groups/merge/${id}/download-responses`, {
+				responseType: 'blob',
+			});
+
+			const contentType = response.headers['content-type'];
+			const blob = new Blob([response.data], { type: contentType });
+
+			// Create a temporary link element
+			const downloadLink = document.createElement('a');
+			downloadLink.href = window.URL.createObjectURL(blob);
+
+			const contentDispositionHeader = response.headers['content-disposition'];
+			const fileNameMatch = contentDispositionHeader.match(/filename="(.+)"/);
+			const fileName = fileNameMatch ? fileNameMatch[1] : 'download.csv';
+
+			downloadLink.download = fileName; // Specify the filename
+
+			// Append the link to the body and trigger the download
+			document.body.appendChild(downloadLink);
+			downloadLink.click();
+
+			// Clean up - remove the link
+			document.body.removeChild(downloadLink);
+		} catch (err) {
+			//ignore
 		}
 	}
 

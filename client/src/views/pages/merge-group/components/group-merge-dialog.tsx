@@ -6,7 +6,6 @@ import {
 	Flex,
 	FormControl,
 	FormLabel,
-	HStack,
 	Icon,
 	IconButton,
 	Input,
@@ -28,6 +27,7 @@ import {
 	Th,
 	Thead,
 	Tr,
+	VStack,
 	useBoolean,
 	useToast,
 } from '@chakra-ui/react';
@@ -43,9 +43,14 @@ import {
 	removeSelectedGroup,
 	setGroupReplySavedText,
 	setGroupReplyUnsavedText,
+	setMaxDelay,
+	setMinDelay,
 	setName,
 	setPrivateReplySavedText,
 	setPrivateReplyUnsavedText,
+	setRestrictedNumbers,
+	toggleRandomString,
+	toggleReplyBusinessOnly,
 	updateMergeGroupsList,
 } from '../../../../store/reducers/MergeGroupReducer';
 import { setGroups } from '../../../../store/reducers/UserDetailsReducers';
@@ -64,6 +69,7 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 
 	const { editSelectedGroup } = useSelector((store: StoreState) => store[StoreNames.MERGE_GROUP]);
 	const { groups } = useSelector((store: StoreState) => store[StoreNames.USER]);
+	const { list: csvList } = useSelector((store: StoreState) => store[StoreNames.CSV]);
 
 	const handleMergeGroup = () => {
 		if (editSelectedGroup.name === '') {
@@ -92,11 +98,8 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 					title: 'Data saved successfully',
 				};
 			},
-			error: (error) => {
-				console.log(error);
-				return {
-					title: 'Failed to save data',
-				};
+			error: {
+				title: 'Failed to save data',
 			},
 			loading: { title: 'Saving Data', description: 'Please wait' },
 		});
@@ -141,6 +144,63 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 						/>
 					</FormControl>
 					<Text fontSize={'large'}>Reply Settings</Text>
+					<Box flex={1}>
+						<Flex gap={4}>
+							<DelayInput
+								placeholder='Min Delay (in sec)'
+								value={editSelectedGroup.min_delay}
+								onChange={(num) => dispatch(setMinDelay(num))}
+							/>
+							<DelayInput
+								placeholder='Max Delay (in sec)'
+								value={editSelectedGroup.max_delay}
+								onChange={(num) => dispatch(setMaxDelay(num))}
+							/>
+							<VStack flex={1} justifyContent={'flex-end'} alignItems={'flex-start'} gap={'0'}>
+								<Checkbox
+									colorScheme='green'
+									size='sm'
+									isChecked={editSelectedGroup.reply_business_only}
+									onChange={() => dispatch(toggleReplyBusinessOnly())}
+								>
+									Reply Businesses Only
+								</Checkbox>
+								<Checkbox
+									colorScheme='green'
+									size='sm'
+									isChecked={editSelectedGroup.random_string}
+									onChange={() => dispatch(toggleRandomString())}
+								>
+									Append Random Text
+								</Checkbox>
+							</VStack>
+						</Flex>
+					</Box>
+					<Box mt={'0.5rem'}>
+						<Text>Restricted Numbers</Text>
+						<Flex direction={'column'} gap={2}>
+							<Select
+								className='!bg-[#ECECEC]  rounded-md w-full text-black'
+								border={'none'}
+								value={editSelectedGroup.restricted_numbers}
+								onChange={(e) => dispatch(setRestrictedNumbers(e.target.value))}
+							>
+								<option value={''} className='text-black   !bg-[#ECECEC]  '>
+									Select one!
+								</option>
+								{csvList.map(({ id, name }) => (
+									<option
+										className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] '
+										value={id}
+										key={id}
+									>
+										{name}
+									</option>
+								))}
+							</Select>
+						</Flex>
+					</Box>
+
 					<FormControl marginTop={'1rem'}>
 						<FormLabel>Saved In-Chat Reply</FormLabel>
 						<Textarea
@@ -217,56 +277,6 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 							onChange={(e) => dispatch(setPrivateReplyUnsavedText(e.target.value))}
 						/>
 					</FormControl>
-					<HStack>
-						<Box flex={1}>
-							<Text fontSize={'large'}>Max Delay</Text>
-							<HStack>
-								<NumberInput value={1} onChangeText={(text) => console.log(text)} />
-								<SelectElement
-									value={'SEC'}
-									onChangeText={(text) => console.log(text)}
-									options={[
-										{
-											value: 'SEC',
-											title: 'Second',
-										},
-										{
-											value: 'MINUTE',
-											title: 'Min',
-										},
-										{
-											value: 'HOUR',
-											title: 'Hour',
-										},
-									]}
-								/>
-							</HStack>
-						</Box>
-						<Box flex={1}>
-							<Text fontSize={'large'}>Max Delay</Text>
-							<HStack>
-								<NumberInput value={1} onChangeText={(text) => console.log(text)} />
-								<SelectElement
-									value={'SEC'}
-									onChangeText={(text) => console.log(text)}
-									options={[
-										{
-											value: 'SEC',
-											title: 'Second',
-										},
-										{
-											value: 'MINUTE',
-											title: 'Min',
-										},
-										{
-											value: 'HOUR',
-											title: 'Hour',
-										},
-									]}
-								/>
-							</HStack>
-						</Box>
-					</HStack>
 					<TableContainer>
 						<Table>
 							<Thead>
@@ -393,6 +403,41 @@ export function SelectElement({
 				</option>
 			))}
 		</Select>
+	);
+}
+
+function DelayInput({
+	onChange,
+	placeholder,
+	value,
+	invalid,
+}: {
+	placeholder: string;
+	value: number;
+	onChange: (num: number) => void;
+	invalid?: boolean;
+}) {
+	return (
+		<FormControl flex={1} isInvalid={invalid}>
+			<Text fontSize='sm' className='text-gray-700'>
+				{placeholder}
+			</Text>
+			<Input
+				width={'full'}
+				placeholder='5'
+				rounded={'md'}
+				border={'none'}
+				className='text-black  !bg-[#ECECEC] '
+				_focus={{
+					border: 'none',
+					outline: 'none',
+				}}
+				type='number'
+				min={1}
+				value={value.toString()}
+				onChange={(e) => onChange(Number(e.target.value))}
+			/>
+		</FormControl>
 	);
 }
 

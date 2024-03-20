@@ -1,6 +1,7 @@
 import { EditIcon } from '@chakra-ui/icons';
 import {
 	Checkbox,
+	HStack,
 	IconButton,
 	SkeletonText,
 	Table,
@@ -12,22 +13,33 @@ import {
 	Tr,
 	useDisclosure,
 } from '@chakra-ui/react';
+import { useRef } from 'react';
+import { AiOutlineClear } from 'react-icons/ai';
+import { IoIosCloudDownload } from 'react-icons/io';
+import { PiPause, PiPlay } from 'react-icons/pi';
 import { useDispatch, useSelector } from 'react-redux';
 import useFilteredList from '../../../../hooks/useFilteredList';
 import { useTheme } from '../../../../hooks/useTheme';
+import GroupService from '../../../../services/group.service';
 import { StoreNames, StoreState } from '../../../../store';
 import {
 	addSelectedGroups,
 	editSelectedGroup,
 	removeSelectedGroups,
+	setActive,
 	setGroupReplySavedText,
 	setGroupReplyUnsavedText,
 	setPrivateReplySavedText,
 	setPrivateReplyUnsavedText,
 } from '../../../../store/reducers/MergeGroupReducer';
+import ConfirmationDialog, {
+	ConfirmationDialogHandle,
+} from '../../../components/confirmation-alert';
 import GroupMerge from './group-merge-dialog';
 
 export default function MergedGroupTab() {
+	const confirmationDialogRef = useRef<ConfirmationDialogHandle>(null);
+
 	const { isOpen, onOpen, onClose } = useDisclosure();
 	const theme = useTheme();
 
@@ -40,7 +52,21 @@ export default function MergedGroupTab() {
 
 	const filtered = useFilteredList(list, { name: 1 });
 
-	console.log(filtered, list);
+	const toggleActive = (id: string) => {
+		GroupService.toggleActiveMergeGroup(id).then((res) => {
+			if (res !== null) {
+				dispatch(setActive({ id, active: res }));
+			}
+		});
+	};
+
+	const clearHistory = (id: string) => {
+		GroupService.clearHistory(id);
+	};
+
+	const download = (id: string) => {
+		GroupService.downloadResponses(id);
+	};
 
 	return (
 		<>
@@ -58,7 +84,7 @@ export default function MergedGroupTab() {
 								No of Whatsapp Groups
 							</Th>
 							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'5%'}>
-								Edit
+								Action
 							</Th>
 						</Tr>
 					</Thead>
@@ -102,19 +128,41 @@ export default function MergedGroupTab() {
 										<Td>{group.name}</Td>
 										<Td isNumeric>{group.groups.length}</Td>
 										<Td>
-											<IconButton
-												aria-label='edit merge group'
-												icon={<EditIcon />}
-												colorScheme='gray'
-												onClick={() => {
-													dispatch(editSelectedGroup(group.id));
-													dispatch(setGroupReplySavedText(group.group_reply_saved.text));
-													dispatch(setGroupReplyUnsavedText(group.group_reply_unsaved.text));
-													dispatch(setPrivateReplySavedText(group.private_reply_saved.text));
-													dispatch(setPrivateReplyUnsavedText(group.private_reply_unsaved.text));
-													onOpen();
-												}}
-											/>
+											<HStack>
+												<IconButton
+													aria-label='toggle'
+													icon={group.active ? <PiPause /> : <PiPlay />}
+													color={group.active ? 'blue.400' : 'green.400'}
+													onClick={() => toggleActive(group.id)}
+													outline='none'
+													border='none'
+												/>
+												<IconButton
+													aria-label='edit merge group'
+													icon={<EditIcon />}
+													colorScheme='gray'
+													onClick={() => {
+														dispatch(editSelectedGroup(group.id));
+														dispatch(setGroupReplySavedText(group.group_reply_saved.text));
+														dispatch(setGroupReplyUnsavedText(group.group_reply_unsaved.text));
+														dispatch(setPrivateReplySavedText(group.private_reply_saved.text));
+														dispatch(setPrivateReplyUnsavedText(group.private_reply_unsaved.text));
+														onOpen();
+													}}
+												/>
+												<IconButton
+													aria-label='clear'
+													icon={<AiOutlineClear />}
+													colorScheme='gray'
+													onClick={() => confirmationDialogRef.current?.open(group.id)}
+												/>
+												<IconButton
+													aria-label='download'
+													icon={<IoIosCloudDownload />}
+													colorScheme='gray'
+													onClick={() => download(group.id)}
+												/>
+											</HStack>
 										</Td>
 									</Tr>
 								);
@@ -123,6 +171,11 @@ export default function MergedGroupTab() {
 					</Tbody>
 				</Table>
 			</TableContainer>
+			<ConfirmationDialog
+				ref={confirmationDialogRef}
+				onConfirm={clearHistory}
+				type={'Previous Responses'}
+			/>
 			<GroupMerge isOpen={isOpen} onClose={onClose} />
 		</>
 	);

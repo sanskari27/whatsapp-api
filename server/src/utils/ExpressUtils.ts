@@ -75,7 +75,7 @@ export function generateBatchID() {
 }
 
 export function randomMessageText() {
-	return `\n\n\n${crypto.randomBytes(6).toString('hex')}`;
+	return `\n\n\n${crypto.randomBytes(3).toString('hex')}`;
 }
 
 export function generateInvoiceID(id: string) {
