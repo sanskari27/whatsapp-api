@@ -378,6 +378,9 @@ export default class BotService {
 			if (bot.nurturing.length > 0) {
 				const dateGenerator = new TimeGenerator({
 					batch_size: 1,
+					min_delay: 1,
+					max_delay: 5,
+					batch_delay: 2,
 				});
 				const nurtured_messages = await Promise.all(
 					bot.nurturing.map(async (el) => {
