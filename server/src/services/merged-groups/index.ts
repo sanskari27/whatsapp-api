@@ -127,7 +127,7 @@ export default class GroupMergeService {
 			max_delay: number;
 		}
 	) {
-		const merged_group = await MergedGroupDB.findById(id);
+		let merged_group = await MergedGroupDB.findById(id);
 
 		if (!merged_group) {
 			return null;
@@ -153,8 +153,8 @@ export default class GroupMergeService {
 			}
 		);
 
-		await merged_group.save();
-		return processGroup(merged_group);
+		merged_group = await MergedGroupDB.findById(id);
+		return processGroup(merged_group!);
 	}
 
 	async toggleActive(id: Types.ObjectId) {
