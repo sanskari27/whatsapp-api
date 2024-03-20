@@ -3,6 +3,7 @@ import {
 	AbsoluteCenter,
 	Box,
 	Button,
+	Checkbox,
 	Divider,
 	Flex,
 	FormControl,
@@ -45,6 +46,7 @@ import {
 	setTrigger,
 	setTriggerGapTime,
 	setTriggerGapType,
+	toggleRandomString,
 	updateBot,
 } from '../../../store/reducers/BotReducers';
 import AddOns from '../../components/add-ons';
@@ -350,19 +352,29 @@ export default function Bot() {
 						/>
 						{ui.messageError && <FormErrorMessage>{ui.messageError}</FormErrorMessage>}
 					</FormControl>
-					<Tag
-						size={'sm'}
-						m={'0.25rem'}
-						p={'0.5rem'}
-						width={'fit-content'}
-						borderRadius='md'
-						variant='solid'
-						colorScheme='gray'
-						_hover={{ cursor: 'pointer' }}
-						onClick={() => insertVariablesToMessage('{{public_name}}')}
-					>
-						<TagLabel>{'{{public_name}}'}</TagLabel>
-					</Tag>
+					<HStack width={'full'} justifyContent={'space-between'}>
+						<Tag
+							size={'sm'}
+							m={'0.25rem'}
+							p={'0.5rem'}
+							width={'fit-content'}
+							borderRadius='md'
+							variant='solid'
+							colorScheme='gray'
+							_hover={{ cursor: 'pointer' }}
+							onClick={() => insertVariablesToMessage('{{public_name}}')}
+						>
+							<TagLabel>{'{{public_name}}'}</TagLabel>
+						</Tag>
+						<Checkbox
+							colorScheme='green'
+							size='md'
+							isChecked={details.random_string}
+							onChange={() => dispatch(toggleRandomString())}
+						>
+							Append Random Text
+						</Checkbox>
+					</HStack>
 
 					<HStack alignItems={'start'}>
 						{/*--------------------------------- GAP & DELAY SECTION--------------------------- */}

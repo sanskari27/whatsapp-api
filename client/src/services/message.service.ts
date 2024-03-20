@@ -4,6 +4,7 @@ type Scheduler = {
 	id: string;
 	title: string;
 	message: string;
+	random_string: boolean;
 	attachments: string[];
 	shared_contact_cards: string[];
 	polls: {
@@ -25,6 +26,7 @@ export default class MessageService {
 		group_ids?: string[];
 		label_ids?: string[];
 		message?: string;
+		random_string?: boolean;
 		variables?: string[];
 		shared_contact_cards?: string[];
 		attachments?: string[];
@@ -54,6 +56,7 @@ export default class MessageService {
 				id: response.data.scheduler.id ?? '',
 				title: response.data.scheduler.title ?? '',
 				message: response.data.scheduler.message ?? '',
+				random_string: response.data.scheduler.random_string,
 				attachments: response.data.scheduler.attachments ?? [],
 				shared_contact_cards: response.data.scheduler.shared_contact_cards ?? [],
 				polls: response.data.scheduler.polls ?? [],
@@ -75,6 +78,7 @@ export default class MessageService {
 				id: scheduler.id ?? '',
 				title: scheduler.title ?? '',
 				message: scheduler.message ?? '',
+				random_string: scheduler.random_string ?? false,
 				attachments: scheduler.attachments ?? [],
 				shared_contact_cards: scheduler.shared_contact_cards ?? [],
 				polls: scheduler.polls ?? [],
@@ -128,6 +132,7 @@ export default class MessageService {
 				id: data.bot.id ?? '',
 				title: data.bot.title ?? '',
 				message: data.bot.message ?? '',
+				random_string: data.bot.random_string,
 				attachments: data.bot.attachments ?? [],
 				shared_contact_cards: data.bot.shared_contact_cards ?? [],
 				polls: data.bot.polls ?? [],
@@ -148,6 +153,7 @@ export default class MessageService {
 				id: data.scheduler.id ?? '',
 				title: data.scheduler.title ?? '',
 				message: data.scheduler.message ?? '',
+				random_string: data.scheduler.random_string,
 				attachments: data.scheduler.attachments ?? [],
 				shared_contact_cards: data.scheduler.shared_contact_cards ?? [],
 				polls: data.scheduler.polls ?? [],

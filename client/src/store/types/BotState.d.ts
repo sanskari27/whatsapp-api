@@ -35,6 +35,7 @@ export type Bot = {
 	startAt: string;
 	endAt: string;
 	message: string;
+	random_string:boolean;
 	attachments: string[];
 	shared_contact_cards: string[];
 	isActive: boolean;
@@ -55,5 +56,6 @@ export type Bot = {
 		shared_contact_cards: string[];
 		attachments: string[];
 		polls: Poll[];
+		random_string: boolean;
 	}[];
 };

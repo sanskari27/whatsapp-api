@@ -2,12 +2,15 @@ import { AddIcon, EditIcon } from '@chakra-ui/icons';
 import {
 	Box,
 	Button,
+	Checkbox,
 	Flex,
 	FormControl,
 	FormErrorMessage,
 	HStack,
 	IconButton,
 	Select,
+	Tag,
+	TagLabel,
 	Text,
 	Textarea,
 	TextareaProps,
@@ -19,7 +22,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { TemplateNameInputDialog } from '.';
 import useTemplate from '../../../../hooks/useTemplate';
 import { StoreNames, StoreState } from '../../../../store';
-import { setMessage, setMessageError } from '../../../../store/reducers/SchedulerReducer';
+import {
+	setMessage,
+	setMessageError,
+	toggleRandomString,
+} from '../../../../store/reducers/SchedulerReducer';
 import Variables from '../../../components/variables';
 
 type Props = {
@@ -179,7 +186,29 @@ export default function MessageSection(props: Props) {
 			{messageError && (
 				<FormErrorMessage>Message, attachment, contact card or poll is required </FormErrorMessage>
 			)}
-
+			<HStack justifyContent={'space-between'}>
+				<Tag
+					size={'sm'}
+					m={'0.25rem'}
+					p={'0.5rem'}
+					width={'fit-content'}
+					borderRadius='md'
+					variant='solid'
+					colorScheme='gray'
+					_hover={{ cursor: 'pointer' }}
+					onClick={() => insertVariablesToMessage('{{public_name}}')}
+				>
+					<TagLabel>{'{{public_name}}'}</TagLabel>
+				</Tag>
+				<Checkbox
+					colorScheme='green'
+					size='md'
+					isChecked={details.random_string}
+					onChange={() => dispatch(toggleRandomString())}
+				>
+					Append Random Text
+				</Checkbox>
+			</HStack>
 			<Box hidden={details.type !== 'CSV'}>
 				<Text className='text-gray-700 dark:text-white' hidden={details.variables.length === 0}>
 					Variables
