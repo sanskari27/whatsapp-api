@@ -363,7 +363,7 @@ export default class BotService {
 				if (bot.forward.message) {
 					const _variable = '{{public_name}}';
 					const custom_message = bot.forward.message.replace(
-						_variable,
+						new RegExp(_variable, 'g'),
 						(contact.pushname || contact.name) ?? ''
 					);
 					whatsapp

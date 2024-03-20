@@ -249,7 +249,7 @@ export default class SchedulerService {
 				let _message = scheduler.message;
 
 				for (const variable of scheduler.csv.headers) {
-					_message = _message.replace(`{{${variable}}}`, row[variable] ?? '');
+					_message = _message.replace(new RegExp(`{{${variable}}}`, 'g'), row[variable] ?? '');
 				}
 				if (_message.length > 0 && scheduler.random_string) {
 					_message += randomMessageText();

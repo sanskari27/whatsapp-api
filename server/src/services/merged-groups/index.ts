@@ -298,7 +298,10 @@ export default class GroupMergeService {
 				mergedGroup: doc,
 				group_name: chat.name,
 			});
-			let _reply_text = groupReply.text.replace('{{public_name}}', contact.pushname);
+			let _reply_text = groupReply.text.replace(
+				new RegExp('{{public_name}}', 'g'),
+				contact.pushname
+			);
 
 			if (_reply_text.length > 0 && doc.random_string) {
 				_reply_text += randomMessageText();
@@ -358,7 +361,10 @@ export default class GroupMergeService {
 				mergedGroup: doc,
 				group_name: chat.name,
 			});
-			let _reply_text = privateReply.text.replace('{{public_name}}', contact.pushname);
+			let _reply_text = privateReply.text.replace(
+				new RegExp('{{public_name}}', 'g'),
+				contact.pushname
+			);
 
 			const to = contact.id._serialized;
 			if (_reply_text.length > 0 && doc.random_string) {
