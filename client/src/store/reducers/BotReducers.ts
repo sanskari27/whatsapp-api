@@ -74,6 +74,7 @@ const BotSlice = createSlice({
 			state.details.bot_id = state.all_bots[index].bot_id;
 			state.details.trigger = state.all_bots[index].trigger;
 			state.details.message = state.all_bots[index].message;
+			state.details.random_string = state.all_bots[index].random_string;
 			state.details.respond_to = state.all_bots[index].respond_to;
 			state.details.options = state.all_bots[index].options;
 			state.details.attachments = state.all_bots[index].attachments;

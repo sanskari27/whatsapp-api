@@ -26,6 +26,14 @@ export default class BotService {
 		nurturing: {
 			message: string;
 			after: number;
+			random_string: boolean;
+			attachments: string[];
+			shared_contact_cards: string[];
+			polls: {
+				title: string;
+				options: string[];
+				isMultiSelect: boolean;
+			}[];
 		}[];
 	}) {
 		try {
@@ -142,6 +150,14 @@ export default class BotService {
 			nurturing: {
 				message: string;
 				after: number;
+				random_string: boolean;
+				attachments: string[];
+				shared_contact_cards: string[];
+				polls: {
+					title: string;
+					options: string[];
+					isMultiSelect: boolean;
+				}[];
 			}[];
 		}
 	) {
@@ -171,6 +187,7 @@ export default class BotService {
 					message: string;
 				};
 				nurturing: {
+					random_string: boolean;
 					message: string;
 					after: number;
 					attachments: { _id: string }[];
@@ -178,7 +195,7 @@ export default class BotService {
 					polls: { title: string; options: string[]; isMultiSelect: boolean }[];
 				}[];
 			};
-			
+
 			return {
 				bot_id: res.bot_id ?? '',
 				trigger: res.trigger ?? '',
@@ -195,17 +212,21 @@ export default class BotService {
 				isActive: res.isActive ?? false,
 				polls: res.polls ?? [],
 				forward: res.forward ?? { number: '', message: '' },
-				nurturing: (res.nurturing ?? []).map((nurturing) => {
-					return {
-						message: nurturing.message ?? '',
-						after: nurturing.after ?? '',
-						attachments: (nurturing.attachments ?? []).map((attachment) => attachment._id as string),
-						shared_contact_cards: (nurturing ?? []).shared_contact_cards.map(
-							(contact) => contact._id as string
-						),
-						polls: nurturing.polls ?? [],
-					};
-				}) ?? [],
+				nurturing:
+					(res.nurturing ?? []).map((nurturing) => {
+						return {
+							message: nurturing.message ?? '',
+							random_string: nurturing.random_string ?? false,
+							after: nurturing.after ?? '',
+							attachments: (nurturing.attachments ?? []).map(
+								(attachment) => attachment._id as string
+							),
+							shared_contact_cards: (nurturing ?? []).shared_contact_cards.map(
+								(contact) => contact._id as string
+							),
+							polls: nurturing.polls ?? [],
+						};
+					}) ?? [],
 			} as Bot;
 		} catch (err) {
 			throw new Error('Error Saving group');
