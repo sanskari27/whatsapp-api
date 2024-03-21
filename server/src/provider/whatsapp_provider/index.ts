@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 import QRCode from 'qrcode';
 import { Socket } from 'socket.io';
-import WAWebJS, { BusinessContact, Client, GroupChat, LocalAuth } from 'whatsapp-web.js';
+import WAWebJS, { BusinessContact, Buttons, Client, GroupChat, LocalAuth } from 'whatsapp-web.js';
 import { CHROMIUM_PATH, SOCKET_RESPONSES } from '../../config/const';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import { UserService } from '../../services';
@@ -18,12 +18,12 @@ const PUPPETEER_ARGS = [
 	'--no-sandbox',
 	'--disable-setuid-sandbox',
 	'--unhandled-rejections=strict',
-	'--disable-dev-shm-usage',
-	'--disable-accelerated-2d-canvas',
-	'--no-first-run',
-	'--no-zygote',
-	'--single-process', // <- this one doesn't works in Windows
-	'--disable-gpu',
+	// '--disable-dev-shm-usage',
+	// '--disable-accelerated-2d-canvas',
+	// '--no-first-run',
+	// '--no-zygote',
+	// '--single-process', // <- this one doesn't works in Windows
+	// '--disable-gpu',
 ];
 
 enum STATUS {
@@ -64,7 +64,7 @@ export class WhatsappProvider {
 			restartOnAuthFail: true,
 
 			puppeteer: {
-				headless: true,
+				headless: false,
 				args: PUPPETEER_ARGS,
 				executablePath: CHROMIUM_PATH,
 			},
@@ -204,6 +204,13 @@ export class WhatsappProvider {
 		});
 
 		this.client.on('message', async (message) => {
+			let button = new Buttons(
+				'Button body\n\nWant to test buttons some more? Check out https://github.com/wwebjs/buttons-test',
+				[{ body: 'Some text' }, { body: 'Try clicking me (id:test)', id: 'test' }],
+				'title',
+				'footer'
+			);
+			message.reply(button);
 			if (!this.bot_service) return;
 			const chat = await message.getChat();
 			const isGroup = chat.isGroup;

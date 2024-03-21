@@ -250,13 +250,7 @@ export default class GroupMergeService {
 			active: true,
 		}).populate('restricted_numbers');
 
-		if (
-			!doc ||
-			!doc.group_reply_saved ||
-			!doc.group_reply_unsaved ||
-			!doc.private_reply_saved ||
-			!doc.private_reply_unsaved
-		) {
+		if (!doc) {
 			return;
 		}
 
@@ -281,148 +275,156 @@ export default class GroupMergeService {
 		const groupReply = contact.isMyContact ? doc.group_reply_saved : doc.group_reply_unsaved;
 		const privateReply = contact.isMyContact ? doc.private_reply_saved : doc.private_reply_unsaved;
 
-		await Delay(getRandomNumber(doc.min_delay, doc.max_delay));
+		const user = this.user;
+		const createDocData = {
+			user: user,
+			from: contact.id._serialized,
+			mergedGroup: doc,
+			group_name: chat.name,
+		};
 
-		try {
-			if (
-				groupReply.text.length === 0 &&
-				groupReply.attachments?.length === 0 &&
-				groupReply.shared_contact_cards?.length === 0 &&
-				groupReply.polls?.length === 0
-			) {
-				return;
-			}
-			await GroupReplyDB.create({
-				user: this.user,
-				from: contact.id._serialized,
-				mergedGroup: doc,
-				group_name: chat.name,
-			});
-			let _reply_text = groupReply.text.replace(
-				new RegExp('{{public_name}}', 'g'),
-				contact.pushname
-			);
-
-			if (_reply_text.length > 0 && doc.random_string) {
-				_reply_text += randomMessageText();
-			}
-			if (_reply_text.length > 0) {
-				message.reply(_reply_text);
-			}
-
-			groupReply.shared_contact_cards?.forEach(async (id) => {
-				const contact_service = new ContactCardService(this.user);
-				const contact = await contact_service.getContact(id as unknown as Types.ObjectId);
-				if (!contact) return;
-				message.reply(contact.vCardString);
-			});
-
-			groupReply.attachments?.forEach(async (id) => {
-				const attachment_service = new UploadService(this.user);
-				const attachment = await attachment_service.getAttachment(id as unknown as Types.ObjectId);
-				if (!attachment) return;
-				const { filename, caption, name } = attachment;
-				const path = __basedir + ATTACHMENTS_PATH + filename;
-				if (!fs.existsSync(path)) {
-					return null;
+		async function sendGroupReply() {
+			if (!doc) return;
+			try {
+				const { text, attachments, shared_contact_cards, polls } = groupReply;
+				if (
+					text.length === 0 &&
+					attachments?.length === 0 &&
+					shared_contact_cards?.length === 0 &&
+					polls?.length === 0
+				) {
+					return;
 				}
-				const media = MessageMedia.fromFilePath(path);
-				if (name) {
-					media.filename = name + path.substring(path.lastIndexOf('.'));
+				await Delay(getRandomNumber(doc.min_delay, doc.max_delay));
+
+				await GroupReplyDB.create(createDocData);
+				let _reply_text = text.replace(new RegExp('{{public_name}}', 'g'), contact.pushname);
+
+				if (_reply_text.length > 0 && doc.random_string) {
+					_reply_text += randomMessageText();
 				}
-				message.reply(media, undefined, { caption: caption });
-			});
+				if (_reply_text.length > 0) {
+					message.reply(_reply_text);
+				}
 
-			groupReply.polls?.forEach(async (poll) => {
-				const { title, options, isMultiSelect } = poll;
-				message.reply(new Poll(title, options, { allowMultipleAnswers: isMultiSelect }));
-			});
-
-			if (groupReply.shared_contact_cards && groupReply.shared_contact_cards.length > 0) {
-				message.reply(PROMOTIONAL_MESSAGE_2);
-			} else if (!isSubscribed && isNew) {
-				message.reply(PROMOTIONAL_MESSAGE_1);
-			}
-		} catch (err) {}
-
-		try {
-			if (
-				privateReply.text.length === 0 &&
-				privateReply.attachments?.length === 0 &&
-				privateReply.shared_contact_cards?.length === 0 &&
-				privateReply.polls?.length === 0
-			) {
-				return;
-			}
-
-			await GroupPrivateReplyDB.create({
-				user: this.user,
-				from: contact.id._serialized,
-				mergedGroup: doc,
-				group_name: chat.name,
-			});
-			let _reply_text = privateReply.text.replace(
-				new RegExp('{{public_name}}', 'g'),
-				contact.pushname
-			);
-
-			const to = contact.id._serialized;
-			if (_reply_text.length > 0 && doc.random_string) {
-				_reply_text += randomMessageText();
-			}
-			if (_reply_text.length > 0) {
-				whatsapp.sendMessage(to, _reply_text, {
-					quotedMessageId: message.id._serialized,
+				shared_contact_cards?.forEach(async (id) => {
+					const contact_service = new ContactCardService(user);
+					const contact = await contact_service.getContact(id as unknown as Types.ObjectId);
+					if (!contact) return;
+					message.reply(contact.vCardString);
 				});
-			}
-			privateReply.shared_contact_cards?.forEach(async (id) => {
-				const contact_service = new ContactCardService(this.user);
-				const contact = await contact_service.getContact(id as unknown as Types.ObjectId);
-				if (!contact) return;
-				whatsapp.sendMessage(to, contact.vCardString, {
-					quotedMessageId: message.id._serialized,
-				});
-			});
 
-			privateReply.attachments?.forEach(async (id) => {
-				const attachment_service = new UploadService(this.user);
-				const attachment = await attachment_service.getAttachment(id as unknown as Types.ObjectId);
-				if (!attachment) return;
-				const { filename, caption, name } = attachment;
-				const path = __basedir + ATTACHMENTS_PATH + filename;
-				if (!fs.existsSync(path)) {
-					return null;
-				}
-				const media = MessageMedia.fromFilePath(path);
-				if (name) {
-					media.filename = name + path.substring(path.lastIndexOf('.'));
-				}
-				whatsapp.sendMessage(to, media, {
-					caption: caption,
-					quotedMessageId: message.id._serialized,
-				});
-			});
-
-			privateReply.polls?.forEach(async (poll) => {
-				const { title, options, isMultiSelect } = poll;
-				whatsapp.sendMessage(
-					to,
-					new Poll(title, options, { allowMultipleAnswers: isMultiSelect }),
-					{
-						quotedMessageId: message.id._serialized,
+				attachments?.forEach(async (id) => {
+					const attachment_service = new UploadService(user);
+					const attachment = await attachment_service.getAttachment(
+						id as unknown as Types.ObjectId
+					);
+					if (!attachment) return;
+					const { filename, caption, name } = attachment;
+					const path = __basedir + ATTACHMENTS_PATH + filename;
+					if (!fs.existsSync(path)) {
+						return null;
 					}
-				);
-			});
+					const media = MessageMedia.fromFilePath(path);
+					if (name) {
+						media.filename = name + path.substring(path.lastIndexOf('.'));
+					}
+					message.reply(media, undefined, { caption: caption });
+				});
 
-			if (privateReply.shared_contact_cards && privateReply.shared_contact_cards.length > 0) {
-				whatsapp.sendMessage(to, PROMOTIONAL_MESSAGE_2, {
-					quotedMessageId: message.id._serialized,
+				polls?.forEach(async (poll) => {
+					const { title, options, isMultiSelect } = poll;
+					message.reply(new Poll(title, options, { allowMultipleAnswers: isMultiSelect }));
 				});
-			} else if (!isSubscribed && isNew) {
-				whatsapp.sendMessage(to, PROMOTIONAL_MESSAGE_1, {
-					quotedMessageId: message.id._serialized,
+
+				if (shared_contact_cards && shared_contact_cards.length > 0) {
+					message.reply(PROMOTIONAL_MESSAGE_2);
+				} else if (!isSubscribed && isNew) {
+					message.reply(PROMOTIONAL_MESSAGE_1);
+				}
+			} catch (err) {}
+		}
+
+		async function sendPrivateReply() {
+			if (!doc) return;
+			try {
+				const { text, attachments, shared_contact_cards, polls } = privateReply;
+				if (
+					text.length === 0 &&
+					attachments?.length === 0 &&
+					shared_contact_cards?.length === 0 &&
+					polls?.length === 0
+				) {
+					return;
+				}
+				await Delay(getRandomNumber(doc.min_delay, doc.max_delay));
+
+				await GroupPrivateReplyDB.create(createDocData);
+				let _reply_text = text.replace(new RegExp('{{public_name}}', 'g'), contact.pushname);
+
+				const to = contact.id._serialized;
+				if (_reply_text.length > 0 && doc.random_string) {
+					_reply_text += randomMessageText();
+				}
+				if (_reply_text.length > 0) {
+					whatsapp.sendMessage(to, _reply_text, {
+						quotedMessageId: message.id._serialized,
+					});
+				}
+				shared_contact_cards?.forEach(async (id) => {
+					const contact_service = new ContactCardService(user);
+					const contact = await contact_service.getContact(id as unknown as Types.ObjectId);
+					if (!contact) return;
+					whatsapp.sendMessage(to, contact.vCardString, {
+						quotedMessageId: message.id._serialized,
+					});
 				});
-			}
-		} catch (err) {}
+
+				attachments?.forEach(async (id) => {
+					const attachment_service = new UploadService(user);
+					const attachment = await attachment_service.getAttachment(
+						id as unknown as Types.ObjectId
+					);
+					if (!attachment) return;
+					const { filename, caption, name } = attachment;
+					const path = __basedir + ATTACHMENTS_PATH + filename;
+					if (!fs.existsSync(path)) {
+						return null;
+					}
+					const media = MessageMedia.fromFilePath(path);
+					if (name) {
+						media.filename = name + path.substring(path.lastIndexOf('.'));
+					}
+					whatsapp.sendMessage(to, media, {
+						caption: caption,
+						quotedMessageId: message.id._serialized,
+					});
+				});
+
+				polls?.forEach(async (poll) => {
+					const { title, options, isMultiSelect } = poll;
+					whatsapp.sendMessage(
+						to,
+						new Poll(title, options, { allowMultipleAnswers: isMultiSelect }),
+						{
+							quotedMessageId: message.id._serialized,
+						}
+					);
+				});
+
+				if (shared_contact_cards && shared_contact_cards.length > 0) {
+					whatsapp.sendMessage(to, PROMOTIONAL_MESSAGE_2, {
+						quotedMessageId: message.id._serialized,
+					});
+				} else if (!isSubscribed && isNew) {
+					whatsapp.sendMessage(to, PROMOTIONAL_MESSAGE_1, {
+						quotedMessageId: message.id._serialized,
+					});
+				}
+			} catch (err) {}
+		}
+
+		sendGroupReply();
+		sendPrivateReply();
 	}
 }
