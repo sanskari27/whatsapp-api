@@ -24,12 +24,12 @@ const processGroup = (group: IMergedGroup) => {
 		group_reply_unsaved: group.group_reply_unsaved,
 		private_reply_saved: group.private_reply_saved,
 		private_reply_unsaved: group.private_reply_unsaved,
-		min_delay: group.min_delay,
-		max_delay: group.max_delay,
-		restricted_numbers: group.restricted_numbers,
-		reply_business_only: group.reply_business_only,
-		random_string: group.random_string,
-		active: group.active,
+		min_delay: group.min_delay ?? 2,
+		max_delay: group.max_delay ?? 7,
+		restricted_numbers: group.restricted_numbers ?? null,
+		reply_business_only: group.reply_business_only ?? false,
+		random_string: group.random_string ?? false,
+		active: group.active ?? true,
 	};
 };
 
