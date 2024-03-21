@@ -225,7 +225,11 @@ export default class SchedulerService {
 		const today = DateUtils.getMomentNow().format('MM-DD');
 
 		for (const scheduler of schedulers) {
-			if (!scheduler.csv.headers.includes('date') || !scheduler.csv.headers.includes('month')) {
+			if (
+				!scheduler.csv ||
+				!scheduler.csv.headers.includes('date') ||
+				!scheduler.csv.headers.includes('month')
+			) {
 				continue;
 			}
 			const parsed_csv:
