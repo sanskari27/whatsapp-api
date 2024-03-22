@@ -4,14 +4,11 @@ export default class LabelService {
 	static async listLabels() {
 		try {
 			const { data } = await APIInstance.get(`/whatsapp/labels`);
-			return data.labels as {
-				id: string;
-				name: string;
-			}[];
+			return data.labels.map((label: { id: string; name: string }) => ({
+				id: label.id ?? '',
+				name: label.name ?? '',
+			}));
 		} catch (err) {
-			// if (axios.isAxiosError(err) && err.response?.data?.title === 'BUSINESS_ACCOUNT_REQUIRED') {
-			// 	throw 'BUSINESS_ACCOUNT_REQUIRED';
-			// }
 			return [];
 		}
 	}

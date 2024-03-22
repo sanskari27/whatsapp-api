@@ -46,8 +46,8 @@ export default class GroupService {
 			return data.groups.map(
 				(group: { id: string; name: string; isMergedGroup: boolean; participants: number }) => ({
 					id: group.id,
-					name: group.name,
-					isMergedGroup: group.isMergedGroup,
+					name: group.name ?? '',
+					isMergedGroup: group.isMergedGroup ?? false,
 					participants: group.participants ?? 0,
 				})
 			) as { id: string; name: string; isMergedGroup: boolean; participants: number }[];
