@@ -17,4 +17,5 @@ type User = {
 	phone: string;
 	type: 'BUSINESS' | 'PERSONAL';
 	subscription_expiry: string;
+	isOnline:boolean;
 };

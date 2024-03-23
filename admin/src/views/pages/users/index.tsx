@@ -154,6 +154,7 @@ const UsersPage = () => {
 							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'20%'}>
 								Actions
 							</Th>
+							<Th color={theme === 'dark' ? 'whitesmoke' : 'gray'} width={'20%'}></Th>
 						</Tr>
 					</Thead>
 					<Tbody>
@@ -167,6 +168,9 @@ const UsersPage = () => {
 									<LineSkeleton />
 								</Td>
 
+								<Td>
+									<LineSkeleton />
+								</Td>
 								<Td>
 									<LineSkeleton />
 								</Td>
@@ -219,6 +223,15 @@ const UsersPage = () => {
 													Logout User
 												</option>
 											</Select>
+										</Td>
+										<Td>
+											{user.isOnline ? (
+												<Box className='online-indicator'>
+													<Box as='span' className='blink'></Box>
+												</Box>
+											) : (
+												<Box className='offline'></Box>
+											)}
 										</Td>
 									</Tr>
 								);
