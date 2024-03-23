@@ -1,5 +1,5 @@
 import { Types } from 'mongoose';
-import { MESSAGE_SCHEDULER_TYPE } from '../../config/const';
+import { MESSAGE_SCHEDULER_TYPE, MESSAGE_STATUS } from '../../config/const';
 import InternalError, { INTERNAL_ERRORS } from '../../errors/internal-errors';
 import ContactCardDB from '../../repository/contact-cards';
 import { MessageDB } from '../../repository/messenger';
@@ -172,6 +172,29 @@ export default class SchedulerService {
 			throw new InternalError(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND);
 		}
 		scheduler.active = !scheduler.active;
+		if (scheduler.active) {
+			await MessageDB.updateMany(
+				{
+					'scheduled_by.id': id,
+				},
+				{
+					$set: {
+						status: MESSAGE_STATUS.PENDING,
+					},
+				}
+			);
+		} else {
+			await MessageDB.updateMany(
+				{
+					'scheduled_by.id': id,
+				},
+				{
+					$set: {
+						status: MESSAGE_STATUS.PAUSED,
+					},
+				}
+			);
+		}
 		scheduler.save();
 		return {
 			id: scheduler._id as Types.ObjectId,
@@ -216,6 +239,71 @@ export default class SchedulerService {
 				? DateUtils.getMoment(message.sendAt).format('DD/MM/YYYY HH:mm:ss')
 				: '',
 		}));
+	}
+
+	public async scheduleMessagesByID(id: Types.ObjectId) {
+		const scheduler = await SchedulerDB.findOne({
+			_id: id,
+			active: true,
+		}).populate('attachments shared_contact_cards csv');
+		const today = DateUtils.getMomentNow().format('MM-DD');
+
+		if (
+			!scheduler ||
+			!scheduler.csv ||
+			!scheduler.csv.headers.includes('date') ||
+			!scheduler.csv.headers.includes('month')
+		) {
+			return;
+		}
+		const parsed_csv:
+			| {
+					[key: string]: string;
+					date: string;
+					month: string;
+					number: string;
+			  }[]
+			| null = await FileUtils.readCSV(scheduler.csv.filename);
+		if (!parsed_csv) {
+			return;
+		}
+		const schedulerService = new MessageService(scheduler.user);
+
+		for (const row of parsed_csv) {
+			if (DateUtils.getMoment(row.month + '-' + row.date, 'MM-DD').format('MM-DD') !== today) {
+				continue;
+			}
+			const time = DateUtils.getBetween(scheduler.start_from, scheduler.end_at);
+			let _message = scheduler.message;
+
+			for (const variable of scheduler.csv.headers) {
+				_message = _message.replace(new RegExp(`{{${variable}}}`, 'g'), row[variable] ?? '');
+			}
+			if (_message.length > 0 && scheduler.random_string) {
+				_message += randomMessageText();
+			}
+
+			schedulerService.scheduleMessage(
+				{
+					receiver: `${row.number}@c.us`,
+					sendAt: time.toDate(),
+					attachments: scheduler.attachments.map((attachment) => ({
+						name: attachment.name,
+						filename: attachment.filename,
+						caption: attachment.caption,
+					})),
+					polls: scheduler.polls,
+					shared_contact_cards: scheduler.shared_contact_cards.map(
+						({ _id }) => new Types.ObjectId(_id)
+					),
+					message: _message,
+				},
+				{
+					scheduled_by: MESSAGE_SCHEDULER_TYPE.SCHEDULER,
+					scheduler_id: scheduler._id,
+				}
+			);
+		}
 	}
 
 	public static async scheduleDailyMessages() {

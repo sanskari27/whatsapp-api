@@ -122,6 +122,27 @@ async function toggleActive(req: Request, res: Response, next: NextFunction) {
 	}
 }
 
+async function reschedule(req: Request, res: Response, next: NextFunction) {
+	try {
+		const schedulerService = new SchedulerService(req.locals.user);
+
+		await schedulerService.scheduleMessagesByID(req.locals.id);
+
+		return Respond({
+			res,
+			status: 200,
+			data: {},
+		});
+	} catch (err) {
+		if (err instanceof InternalError) {
+			if (err.isSameInstanceof(INTERNAL_ERRORS.COMMON_ERRORS.NOT_FOUND)) {
+				return next(new APIError(API_ERRORS.COMMON_ERRORS.NOT_FOUND));
+			}
+		}
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.INTERNAL_SERVER_ERROR));
+	}
+}
+
 async function deleteScheduler(req: Request, res: Response, next: NextFunction) {
 	const schedulerService = new SchedulerService(req.locals.user);
 	schedulerService.deleteBot(req.locals.id);
@@ -156,6 +177,7 @@ const BotController = {
 	toggleActive,
 	schedulerById,
 	downloadSchedulerReport,
+	reschedule
 };
 
 export default BotController;
