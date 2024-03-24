@@ -4,8 +4,10 @@ import WAWebJS, { MessageMedia, Poll } from 'whatsapp-web.js';
 import { ATTACHMENTS_PATH } from '../../config/const';
 import { GroupPrivateReplyDB, GroupReplyDB } from '../../repository/group-reply';
 import MergedGroupDB from '../../repository/merged-groups';
+import IContactCard from '../../types/contact-cards';
 import IMergedGroup from '../../types/merged-group';
 import IPolls from '../../types/polls';
+import IUpload from '../../types/uploads';
 import { IUser } from '../../types/user';
 import { Delay, getRandomNumber, idValidator, randomMessageText } from '../../utils/ExpressUtils';
 import { FileUtils } from '../../utils/files';
@@ -243,50 +245,60 @@ export default class GroupMergeService {
 		}
 	) {
 		const group_id = chat.id._serialized;
+		const user = this.user;
 
-		const doc = await MergedGroupDB.findOne({
+		const docs = await MergedGroupDB.find({
 			user: this.user,
 			groups: group_id,
 			active: true,
 		}).populate('restricted_numbers');
 
-		if (!doc) {
-			return;
-		}
-
-		const admin = chat.participants.find((chatObj) => chatObj.id._serialized === message.from);
-		if (admin && (admin.isAdmin || admin.isSuperAdmin)) {
-			return;
-		}
-		if (doc.reply_business_only && !contact.isBusiness) {
-			return;
-		}
-		for (const restricted_numbers of doc.restricted_numbers) {
-			const parsed_csv = await FileUtils.readCSV(restricted_numbers.filename);
-			if (parsed_csv && parsed_csv.findIndex((el) => el.number === contact.id.user) !== -1) {
-				return;
-			}
-		}
+		const { isSubscribed, isNew } = new UserService(this.user).isSubscribed();
 
 		const { message_1: PROMOTIONAL_MESSAGE_1, message_2: PROMOTIONAL_MESSAGE_2 } =
 			await TokenService.getPromotionalMessage();
-		const { isSubscribed, isNew } = new UserService(this.user).isSubscribed();
 
-		const groupReply = contact.isMyContact ? doc.group_reply_saved : doc.group_reply_unsaved;
-		const privateReply = contact.isMyContact ? doc.private_reply_saved : doc.private_reply_unsaved;
-
-		const user = this.user;
 		const createDocData = {
-			user: user,
+			user: this.user,
 			from: contact.id._serialized,
-			mergedGroup: doc,
 			group_name: chat.name,
 		};
+		for (const doc of docs) {
+			const admin = chat.participants.find((chatObj) => chatObj.id._serialized === message.from);
+			if (admin && (admin.isAdmin || admin.isSuperAdmin)) {
+				return;
+			}
+			if (doc.reply_business_only && !contact.isBusiness) {
+				return;
+			}
+			for (const restricted_numbers of doc.restricted_numbers) {
+				const parsed_csv = await FileUtils.readCSV(restricted_numbers.filename);
+				if (parsed_csv && parsed_csv.findIndex((el) => el.number === contact.id.user) !== -1) {
+					return;
+				}
+			}
 
-		async function sendGroupReply() {
+			const groupReply = contact.isMyContact ? doc.group_reply_saved : doc.group_reply_unsaved;
+			const privateReply = contact.isMyContact
+				? doc.private_reply_saved
+				: doc.private_reply_unsaved;
+
+			sendGroupReply(doc, groupReply);
+			sendPrivateReply(doc, privateReply);
+		}
+
+		async function sendGroupReply(
+			doc: IMergedGroup,
+			reply: {
+				text: string;
+				attachments?: IUpload[] | undefined;
+				shared_contact_cards?: IContactCard[] | undefined;
+				polls?: IPolls[] | undefined;
+			}
+		) {
 			if (!doc) return;
 			try {
-				const { text, attachments, shared_contact_cards, polls } = groupReply;
+				const { text, attachments, shared_contact_cards, polls } = reply;
 				if (
 					text.length === 0 &&
 					attachments?.length === 0 &&
@@ -297,7 +309,7 @@ export default class GroupMergeService {
 				}
 				await Delay(getRandomNumber(doc.min_delay, doc.max_delay));
 
-				await GroupReplyDB.create(createDocData);
+				await GroupReplyDB.create({ ...createDocData, mergedGroup: doc._id });
 				let _reply_text = text.replace(new RegExp('{{public_name}}', 'g'), contact.pushname);
 
 				if (_reply_text.length > 0 && doc.random_string) {
@@ -345,10 +357,18 @@ export default class GroupMergeService {
 			} catch (err) {}
 		}
 
-		async function sendPrivateReply() {
+		async function sendPrivateReply(
+			doc: IMergedGroup,
+			reply: {
+				text: string;
+				attachments?: IUpload[] | undefined;
+				shared_contact_cards?: IContactCard[] | undefined;
+				polls?: IPolls[] | undefined;
+			}
+		) {
 			if (!doc) return;
 			try {
-				const { text, attachments, shared_contact_cards, polls } = privateReply;
+				const { text, attachments, shared_contact_cards, polls } = reply;
 				if (
 					text.length === 0 &&
 					attachments?.length === 0 &&
@@ -359,7 +379,8 @@ export default class GroupMergeService {
 				}
 				await Delay(getRandomNumber(doc.min_delay, doc.max_delay));
 
-				await GroupPrivateReplyDB.create(createDocData);
+				await GroupReplyDB.create({ ...createDocData, mergedGroup: doc._id });
+
 				let _reply_text = text.replace(new RegExp('{{public_name}}', 'g'), contact.pushname);
 
 				const to = contact.id._serialized;
@@ -423,8 +444,5 @@ export default class GroupMergeService {
 				}
 			} catch (err) {}
 		}
-
-		sendGroupReply();
-		sendPrivateReply();
 	}
 }

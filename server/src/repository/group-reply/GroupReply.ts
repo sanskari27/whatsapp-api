@@ -18,8 +18,7 @@ const schema = new mongoose.Schema<IGroupReply>(
 	},
 	{ timestamps: true }
 );
-
-schema.index({ user: 1, from: 1 }, { unique: true });
+schema.index({ user: 1, from: 1, mergedGroup: 1 }, { unique: true });
 
 const GroupReplyDB = mongoose.model<IGroupReply>('GroupReply', schema);
 
