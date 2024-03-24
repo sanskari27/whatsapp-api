@@ -10,9 +10,10 @@ import {
 	Th,
 	Thead,
 	Tr,
+	useToast,
 } from '@chakra-ui/react';
 import { FiEdit, FiPause, FiPlay } from 'react-icons/fi';
-import { MdDelete } from 'react-icons/md';
+import { MdDelete, MdScheduleSend } from 'react-icons/md';
 import { useDispatch, useSelector } from 'react-redux';
 import MessageService from '../../../../services/message.service';
 import { StoreNames, StoreState } from '../../../../store';
@@ -24,6 +25,7 @@ import {
 
 const MessageSchedulerList = () => {
 	const dispatch = useDispatch();
+	const toast = useToast();
 	const { all_schedulers } = useSelector((state: StoreState) => state[StoreNames.SCHEDULER]);
 
 	const handleSchedulerToggleActive = (id: string) => {
@@ -43,6 +45,22 @@ const MessageSchedulerList = () => {
 	const downloadSchedulerReport = (id: string) => {
 		MessageService.generateScheduledMessagesReport(id);
 	};
+	const reschedule = async (id: string) => {
+		const rescheduled = await MessageService.reschedule(id);
+		if (rescheduled) {
+			toast({
+				title: 'Messages Scheduled.',
+				duration: 1500,
+				status: 'success',
+			});
+		} else {
+			toast({
+				title: 'Messages Scheduling Failed.',
+				duration: 1500,
+				status: 'error',
+			});
+		}
+	};
 
 	return (
 		<TableContainer mt={'1rem'}>
@@ -50,11 +68,11 @@ const MessageSchedulerList = () => {
 				<Thead>
 					<Tr>
 						<Th>Title</Th>
-						<Th width={'60%'}>Message</Th>
-						<Th width={'10%'}>Start Time</Th>
-						<Th width={'10%'}>End Time</Th>
-						<Th width={'10%'}>Attachments/Contacts/Polls</Th>
-						<Th width={'10%'}>Action</Th>
+						<Th>Message</Th>
+						<Th>Start Time</Th>
+						<Th>End Time</Th>
+						<Th>Attachments/Contacts/Polls</Th>
+						<Th>Action</Th>
 					</Tr>
 				</Thead>
 				<Tbody>
@@ -94,6 +112,14 @@ const MessageSchedulerList = () => {
 										icon={<FiEdit />}
 										onClick={() => {
 											dispatch(setSelectedScheduler(scheduler));
+										}}
+										colorScheme='gray'
+									/>
+									<IconButton
+										aria-label='re-schedule'
+										icon={<MdScheduleSend />}
+										onClick={() => {
+											reschedule(scheduler.id);
 										}}
 										colorScheme='gray'
 									/>

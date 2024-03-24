@@ -167,6 +167,15 @@ export default class MessageService {
 		}
 	}
 
+	static async reschedule(id: string) {
+		try {
+			await APIInstance.put(`/scheduler/${id}/reschedule`);
+			return true;
+		} catch (err: unknown) {
+			return false;
+		}
+	}
+
 	static async deleteScheduledMessage(id: string) {
 		try {
 			const { data } = await APIInstance.delete(`/scheduler/${id}`);

@@ -44,7 +44,7 @@ export type MergeGroupValidationResult = {
 		attachments: Types.ObjectId[];
 		polls: IPolls[];
 	};
-	restricted_numbers: Types.ObjectId | null;
+	restricted_numbers: Types.ObjectId[];
 	reply_business_only: boolean;
 	random_string: boolean;
 	min_delay: number;
@@ -180,9 +180,10 @@ export async function MergeGroupValidator(req: Request, res: Response, next: Nex
 			}),
 			restricted_numbers: z
 				.string()
-				.refine((value) => Types.ObjectId.isValid(value))
-				.transform((value) => new Types.ObjectId(value))
-				.or(z.null()),
+				.array()
+				.default([])
+				.refine((r) => !r.some((value) => !Types.ObjectId.isValid(value)))
+				.transform((r) => r.map((value) => new Types.ObjectId(value))),
 			reply_business_only: z.boolean().default(false),
 			random_string: z.boolean().default(false),
 			min_delay: z.number().positive().default(2),

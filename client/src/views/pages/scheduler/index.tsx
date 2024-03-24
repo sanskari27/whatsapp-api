@@ -479,6 +479,9 @@ export default function Scheduler() {
 								>
 									Schedule
 								</Button>
+								<Text textAlign={'center'} color={'red.400'} marginTop={'0.25rem'}>
+									Please ensure not to spam using this tool
+								</Text>
 							</Box>
 						</Flex>
 						<SubscriptionAlert />
@@ -598,6 +601,9 @@ export default function Scheduler() {
 											{editingMessage ? 'Edit Message' : 'Schedule Message'}
 										</Button>
 									</HStack>
+									<Text width={'full'} textAlign={'center'} color={'red.400'}>
+										Please ensure not to spam using this tool
+									</Text>
 								</VStack>
 								<MessageInputSection
 									textAreaProps={{

@@ -26,7 +26,7 @@ const processGroup = (group: IMergedGroup) => {
 		private_reply_unsaved: group.private_reply_unsaved,
 		min_delay: group.min_delay ?? 2,
 		max_delay: group.max_delay ?? 7,
-		restricted_numbers: group.restricted_numbers ?? null,
+		restricted_numbers: group.restricted_numbers ?? [],
 		reply_business_only: group.reply_business_only ?? false,
 		random_string: group.random_string ?? false,
 		active: group.active ?? true,
@@ -76,7 +76,7 @@ export default class GroupMergeService {
 				attachments: Types.ObjectId[];
 				polls: IPolls[];
 			};
-			restricted_numbers?: Types.ObjectId | null;
+			restricted_numbers?: Types.ObjectId[];
 			reply_business_only: boolean;
 			random_string: boolean;
 			min_delay: number;
@@ -121,7 +121,7 @@ export default class GroupMergeService {
 				attachments: Types.ObjectId[];
 				polls: IPolls[];
 			};
-			restricted_numbers?: Types.ObjectId | null;
+			restricted_numbers?: Types.ObjectId[];
 			reply_business_only?: boolean;
 			random_string?: boolean;
 			min_delay: number;
@@ -261,8 +261,8 @@ export default class GroupMergeService {
 		if (doc.reply_business_only && !contact.isBusiness) {
 			return;
 		}
-		if (doc.restricted_numbers) {
-			const parsed_csv = await FileUtils.readCSV(doc.restricted_numbers.filename);
+		for (const restricted_numbers of doc.restricted_numbers) {
+			const parsed_csv = await FileUtils.readCSV(restricted_numbers.filename);
 			if (parsed_csv && parsed_csv.findIndex((el) => el.number === contact.id.user) !== -1) {
 				return;
 			}

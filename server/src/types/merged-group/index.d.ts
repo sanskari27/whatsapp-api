@@ -31,7 +31,7 @@ export default interface IMergedGroup extends Document {
 		shared_contact_cards?: IContactCard[];
 		polls?: IPolls[];
 	};
-	restricted_numbers?: IUpload;
+	restricted_numbers: IUpload[];
 	reply_business_only: boolean;
 	random_string: boolean;
 	active: boolean;

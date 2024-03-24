@@ -96,10 +96,12 @@ const mergedGroupSchema = new mongoose.Schema<IMergedGroup>({
 			},
 		],
 	},
-	restricted_numbers: {
-		type: Schema.Types.ObjectId,
-		ref: 'Upload',
-	},
+	restricted_numbers: [
+		{
+			type: Schema.Types.ObjectId,
+			ref: 'Upload',
+		},
+	],
 	reply_business_only: Boolean,
 	random_string: Boolean,
 	active: { type: Boolean, default: true },

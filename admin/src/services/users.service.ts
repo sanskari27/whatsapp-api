@@ -39,6 +39,7 @@ export default class UsersService {
 					name: (user.name as string) ?? '',
 					phone: (user.phone as string) ?? '',
 					type: (user.type as string) ?? 'PERSONAL',
+					isOnline: (user.isOnline as boolean) ?? false,
 					subscription_expiry: (user.subscription_expiry as string) ?? '',
 				}));
 			}

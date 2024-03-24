@@ -30,7 +30,7 @@ function processMergedGroup(group: any) {
 			attachments: group.private_reply_unsaved.attachments ?? [],
 			polls: group.private_reply_unsaved.polls ?? [],
 		},
-		restricted_numbers: group.restricted_numbers ?? '',
+		restricted_numbers: group.restricted_numbers.length > 0 ? group.restricted_numbers[0] : '',
 		min_delay: group.min_delay,
 		max_delay: group.max_delay,
 		reply_business_only: group.reply_business_only,

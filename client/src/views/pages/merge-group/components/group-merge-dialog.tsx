@@ -31,13 +31,14 @@ import {
 	useBoolean,
 	useToast,
 } from '@chakra-ui/react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { BiRefresh } from 'react-icons/bi';
 import { useDispatch, useSelector } from 'react-redux';
 import GroupService from '../../../../services/group.service';
 import { StoreNames, StoreState } from '../../../../store';
 import {
 	addMergedGroup,
+	addMultipleSelectedGroup,
 	addSelectedGroup,
 	clearEditMergeGroup,
 	removeSelectedGroup,
@@ -138,12 +139,30 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 		groupsLoading.off();
 	};
 
+	const allChecked = useMemo(() => {
+		const selectedSet = new Set(editSelectedGroup.groups);
+		return groups.every((item) => selectedSet.has(item.id));
+	}, [groups, editSelectedGroup.groups]);
+
+	const isIndeterminate = useMemo(() => {
+		const selectedSet = new Set(editSelectedGroup.groups);
+		return groups.some((item) => selectedSet.has(item.id));
+	}, [groups, editSelectedGroup.groups]);
+
+	const handleSelectAll = (allSelected: boolean) => {
+		if (allSelected) {
+			dispatch(addMultipleSelectedGroup(groups.map((g) => g.id)));
+		} else {
+			dispatch(addMultipleSelectedGroup([]));
+		}
+	};
+
 	const filtered = groups.filter((group) =>
 		group.name?.toLowerCase().startsWith(searchText.toLowerCase())
 	);
 
 	return (
-		<Modal isOpen={isOpen} onClose={onClose} size={'5xl'} scrollBehavior='inside'>
+		<Modal isOpen={isOpen} onClose={onClose} size={'6xl'} scrollBehavior='inside'>
 			<ModalOverlay />
 			<ModalContent>
 				<ModalHeader>Merge Group</ModalHeader>
@@ -215,129 +234,167 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 							</Flex>
 						</Box>
 
-						<FormControl>
-							<FormLabel>Saved In-Chat Reply</FormLabel>
-							<Textarea
-								width={'full'}
-								minHeight={'80px'}
-								size={'sm'}
-								rounded={'md'}
-								placeholder={'eg. Hello there!'}
-								border={'none'}
-								className='text-black !bg-[#ECECEC] '
-								_placeholder={{
-									opacity: 0.4,
-									color: 'inherit',
-								}}
-								_focus={{ border: 'none', outline: 'none' }}
-								value={editSelectedGroup.group_reply_saved.text ?? ''}
-								onChange={(e) => dispatch(setGroupReplySavedText(e.target.value))}
-							/>
-						</FormControl>
-						<Box>
-							<AddOns
-								attachments={editSelectedGroup.group_reply_saved.attachments}
-								shared_contact_cards={editSelectedGroup.group_reply_saved.shared_contact_cards}
-								polls={editSelectedGroup.group_reply_saved.polls}
-								onAttachmentsSelected={(ids) => dispatch(setGroupReplySavedAttachments(ids))}
-								onContactsSelected={(ids) => dispatch(setGroupReplySavedSharedContactCards(ids))}
-								onPollsSelected={(ids) => dispatch(setGroupReplySavedPolls(ids))}
-							/>
-						</Box>
-						<FormControl>
-							<FormLabel>Unsaved In-Chat Reply</FormLabel>
-							<Textarea
-								width={'full'}
-								minHeight={'80px'}
-								size={'sm'}
-								rounded={'md'}
-								placeholder={'eg. Hello there!'}
-								border={'none'}
-								className='text-black !bg-[#ECECEC] '
-								_placeholder={{
-									opacity: 0.4,
-									color: 'inherit',
-								}}
-								_focus={{ border: 'none', outline: 'none' }}
-								value={editSelectedGroup.group_reply_unsaved.text ?? ''}
-								onChange={(e) => dispatch(setGroupReplyUnsavedText(e.target.value))}
-							/>
-						</FormControl>
-						<Box>
-							<AddOns
-								attachments={editSelectedGroup.group_reply_unsaved.attachments}
-								shared_contact_cards={editSelectedGroup.group_reply_unsaved.shared_contact_cards}
-								polls={editSelectedGroup.group_reply_unsaved.polls}
-								onAttachmentsSelected={(ids) => dispatch(setGroupReplyUnsavedAttachments(ids))}
-								onContactsSelected={(ids) => dispatch(setGroupReplyUnsavedSharedContactCards(ids))}
-								onPollsSelected={(ids) => dispatch(setGroupReplyUnsavedPolls(ids))}
-							/>
-						</Box>
-						<FormControl>
-							<FormLabel>Saved Private Reply</FormLabel>
-							<Textarea
-								width={'full'}
-								minHeight={'80px'}
-								size={'sm'}
-								rounded={'md'}
-								placeholder={'eg. Hello there!'}
-								border={'none'}
-								className='text-black !bg-[#ECECEC] '
-								_placeholder={{
-									opacity: 0.4,
-									color: 'inherit',
-								}}
-								_focus={{ border: 'none', outline: 'none' }}
-								value={editSelectedGroup.private_reply_saved.text ?? ''}
-								onChange={(e) => dispatch(setPrivateReplySavedText(e.target.value))}
-							/>
-						</FormControl>
-						<Box>
-							<AddOns
-								attachments={editSelectedGroup.private_reply_saved.attachments}
-								shared_contact_cards={editSelectedGroup.private_reply_saved.shared_contact_cards}
-								polls={editSelectedGroup.private_reply_saved.polls}
-								onAttachmentsSelected={(ids) => dispatch(setPrivateReplySavedAttachments(ids))}
-								onContactsSelected={(ids) => dispatch(setPrivateReplySavedSharedContactCards(ids))}
-								onPollsSelected={(ids) => dispatch(setPrivateReplySavedPolls(ids))}
-							/>
-						</Box>
-						<FormControl>
-							<FormLabel>Unsaved Private Reply</FormLabel>
-							<Textarea
-								width={'full'}
-								minHeight={'80px'}
-								size={'sm'}
-								rounded={'md'}
-								placeholder={'eg. Hello there!'}
-								border={'none'}
-								className='text-black !bg-[#ECECEC] '
-								_placeholder={{
-									opacity: 0.4,
-									color: 'inherit',
-								}}
-								_focus={{ border: 'none', outline: 'none' }}
-								value={editSelectedGroup.private_reply_unsaved.text ?? ''}
-								onChange={(e) => dispatch(setPrivateReplyUnsavedText(e.target.value))}
-							/>
-						</FormControl>
-						<Box>
-							<AddOns
-								attachments={editSelectedGroup.private_reply_unsaved.attachments}
-								shared_contact_cards={editSelectedGroup.private_reply_unsaved.shared_contact_cards}
-								polls={editSelectedGroup.private_reply_unsaved.polls}
-								onAttachmentsSelected={(ids) => dispatch(setPrivateReplyUnsavedAttachments(ids))}
-								onContactsSelected={(ids) =>
-									dispatch(setPrivateReplyUnsavedSharedContactCards(ids))
-								}
-								onPollsSelected={(ids) => dispatch(setPrivateReplyUnsavedPolls(ids))}
-							/>
-						</Box>
+						<Flex gap={'1rem'}>
+							<VStack flexGrow={1} alignItems={'stretch'}>
+								<FormControl>
+									<FormLabel>Saved In-Chat Reply</FormLabel>
+									<Textarea
+										width={'full'}
+										minHeight={'130px'}
+										size={'sm'}
+										rounded={'md'}
+										marginTop={'-0.5rem'}
+										placeholder={'eg. Hello there!'}
+										border={'none'}
+										className='text-black !bg-[#ECECEC] '
+										_placeholder={{
+											opacity: 0.4,
+											color: 'inherit',
+										}}
+										_focus={{ border: 'none', outline: 'none' }}
+										value={editSelectedGroup.group_reply_saved.text ?? ''}
+										onChange={(e) => dispatch(setGroupReplySavedText(e.target.value))}
+									/>
+								</FormControl>
+								<Box>
+									<AddOns
+										attachments={editSelectedGroup.group_reply_saved.attachments}
+										shared_contact_cards={editSelectedGroup.group_reply_saved.shared_contact_cards}
+										polls={editSelectedGroup.group_reply_saved.polls}
+										onAttachmentsSelected={(ids) => dispatch(setGroupReplySavedAttachments(ids))}
+										onContactsSelected={(ids) =>
+											dispatch(setGroupReplySavedSharedContactCards(ids))
+										}
+										onPollsSelected={(ids) => dispatch(setGroupReplySavedPolls(ids))}
+									/>
+								</Box>
+							</VStack>
+
+							<VStack flexGrow={1} alignItems={'stretch'}>
+								<FormControl>
+									<FormLabel>Unsaved In-Chat Reply</FormLabel>
+									<Textarea
+										width={'full'}
+										minHeight={'130px'}
+										marginTop={'-0.5rem'}
+										size={'sm'}
+										rounded={'md'}
+										placeholder={'eg. Hello there!'}
+										border={'none'}
+										className='text-black !bg-[#ECECEC] '
+										_placeholder={{
+											opacity: 0.4,
+											color: 'inherit',
+										}}
+										_focus={{ border: 'none', outline: 'none' }}
+										value={editSelectedGroup.group_reply_unsaved.text ?? ''}
+										onChange={(e) => dispatch(setGroupReplyUnsavedText(e.target.value))}
+									/>
+								</FormControl>
+								<Box>
+									<AddOns
+										attachments={editSelectedGroup.group_reply_unsaved.attachments}
+										shared_contact_cards={
+											editSelectedGroup.group_reply_unsaved.shared_contact_cards
+										}
+										polls={editSelectedGroup.group_reply_unsaved.polls}
+										onAttachmentsSelected={(ids) => dispatch(setGroupReplyUnsavedAttachments(ids))}
+										onContactsSelected={(ids) =>
+											dispatch(setGroupReplyUnsavedSharedContactCards(ids))
+										}
+										onPollsSelected={(ids) => dispatch(setGroupReplyUnsavedPolls(ids))}
+									/>
+								</Box>
+							</VStack>
+						</Flex>
+						<Flex gap={'1rem'}>
+							<VStack flexGrow={1} alignItems={'stretch'}>
+								<FormControl>
+									<FormLabel>Saved Private Reply</FormLabel>
+									<Textarea
+										width={'full'}
+										minHeight={'130px'}
+										size={'sm'}
+										marginTop={'-0.5rem'}
+										rounded={'md'}
+										placeholder={'eg. Hello there!'}
+										border={'none'}
+										className='text-black !bg-[#ECECEC] '
+										_placeholder={{
+											opacity: 0.4,
+											color: 'inherit',
+										}}
+										_focus={{ border: 'none', outline: 'none' }}
+										value={editSelectedGroup.private_reply_saved.text ?? ''}
+										onChange={(e) => dispatch(setPrivateReplySavedText(e.target.value))}
+									/>
+								</FormControl>
+								<Box>
+									<AddOns
+										attachments={editSelectedGroup.private_reply_saved.attachments}
+										shared_contact_cards={
+											editSelectedGroup.private_reply_saved.shared_contact_cards
+										}
+										polls={editSelectedGroup.private_reply_saved.polls}
+										onAttachmentsSelected={(ids) => dispatch(setPrivateReplySavedAttachments(ids))}
+										onContactsSelected={(ids) =>
+											dispatch(setPrivateReplySavedSharedContactCards(ids))
+										}
+										onPollsSelected={(ids) => dispatch(setPrivateReplySavedPolls(ids))}
+									/>
+								</Box>
+							</VStack>
+
+							<VStack flexGrow={1} alignItems={'stretch'}>
+								<FormControl>
+									<FormLabel>Unsaved Private Reply</FormLabel>
+									<Textarea
+										width={'full'}
+										minHeight={'130px'}
+										size={'sm'}
+										marginTop={'-0.5rem'}
+										rounded={'md'}
+										placeholder={'eg. Hello there!'}
+										border={'none'}
+										className='text-black !bg-[#ECECEC] '
+										_placeholder={{
+											opacity: 0.4,
+											color: 'inherit',
+										}}
+										_focus={{ border: 'none', outline: 'none' }}
+										value={editSelectedGroup.private_reply_unsaved.text ?? ''}
+										onChange={(e) => dispatch(setPrivateReplyUnsavedText(e.target.value))}
+									/>
+								</FormControl>
+								<Box>
+									<AddOns
+										attachments={editSelectedGroup.private_reply_unsaved.attachments}
+										shared_contact_cards={
+											editSelectedGroup.private_reply_unsaved.shared_contact_cards
+										}
+										polls={editSelectedGroup.private_reply_unsaved.polls}
+										onAttachmentsSelected={(ids) =>
+											dispatch(setPrivateReplyUnsavedAttachments(ids))
+										}
+										onContactsSelected={(ids) =>
+											dispatch(setPrivateReplyUnsavedSharedContactCards(ids))
+										}
+										onPollsSelected={(ids) => dispatch(setPrivateReplyUnsavedPolls(ids))}
+									/>
+								</Box>
+							</VStack>
+						</Flex>
 						<TableContainer>
 							<Table>
 								<Thead>
 									<Tr>
-										<Th width={'5%'}>Select</Th>
+										<Th width={'2%'}>
+											<Checkbox
+												isChecked={allChecked}
+												isIndeterminate={isIndeterminate && !allChecked}
+												onChange={(e) => handleSelectAll(e.target.checked)}
+											/>
+										</Th>
 										<Th>
 											<Flex
 												alignItems={'center'}

@@ -132,9 +132,10 @@ async function exportGroups(req: Request, res: Response, next: NextFunction) {
 			merged_group_ids
 		);
 
-		const ids_to_export = [...group_ids, ...merged_group_whatsapp_ids].filter(
+		let ids_to_export = [...group_ids, ...merged_group_whatsapp_ids].filter(
 			(id) => !idValidator(id)[0] // check if all ids is valid whatsapp group ids
 		);
+		ids_to_export = [...new Set(ids_to_export)];
 
 		const saved_contacts = (
 			await Promise.all(
