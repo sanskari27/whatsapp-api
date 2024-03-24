@@ -37,7 +37,7 @@ import {
 	setLinkCopied,
 	updateShortenLink,
 } from '../../../store/reducers/LinkShortnerReducers';
-import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
+import DeleteAlert, { DeleteAlertHandle } from '../../components/delete-alert';
 import { NavbarSearchElement } from '../../components/navbar';
 import QRImage from '../../components/qr-image/QRImage';
 import CreateLinkDrawer, { CreateLinkDrawerHandle } from './components/CreateLinkDrawer';
@@ -48,7 +48,7 @@ const LinkShortner = () => {
 	const dispatch = useDispatch();
 	const theme = useTheme();
 	const toast = useToast();
-	const confirmationDialogRef = useRef<ConfirmationDialogHandle>(null);
+	const deleteAlertRef = useRef<DeleteAlertHandle>(null);
 	const editLinkDialogRef = useRef<EditLinkDialogHandle>(null);
 	const drawerRef = useRef<CreateLinkDrawerHandle>(null);
 
@@ -223,7 +223,7 @@ const LinkShortner = () => {
 											activeBackgroundColor='red.100'
 											icon={DeleteIcon}
 											onClick={() => {
-												confirmationDialogRef.current?.open(item.id);
+												deleteAlertRef.current?.open(item.id);
 											}}
 											color={'red.500'}
 										/>
@@ -240,7 +240,7 @@ const LinkShortner = () => {
 				image={generated_image}
 				link={generated_link}
 			/>
-			<ConfirmationDialog ref={confirmationDialogRef} type={'Link'} onConfirm={deleteLink} />
+			<DeleteAlert ref={deleteAlertRef} type={'Link'} onConfirm={deleteLink} />
 			<EditLinkDialog ref={editLinkDialogRef} onConfirm={editLink} />
 		</Box>
 	);
@@ -251,9 +251,15 @@ type ActionButtonProps = {
 	onClick: () => void;
 	activeBackgroundColor: string;
 	color: string;
-	isHidden?:boolean
+	isHidden?: boolean;
 };
-function ActionButton({ icon, onClick, color, activeBackgroundColor, isHidden = false }: ActionButtonProps) {
+function ActionButton({
+	icon,
+	onClick,
+	color,
+	activeBackgroundColor,
+	isHidden = false,
+}: ActionButtonProps) {
 	return (
 		<IconButton
 			backgroundColor={'transparent'}

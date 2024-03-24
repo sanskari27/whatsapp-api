@@ -34,7 +34,7 @@ import {
 	selectAllContacts,
 	updatingContactCard,
 } from '../../../store/reducers/ContactCardReducers';
-import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
+import DeleteAlert, { DeleteAlertHandle } from '../../components/delete-alert';
 import ExporterModal, { ExportsModalHandler } from '../../components/exporter';
 import { NavbarDeleteElement, NavbarSearchElement } from '../../components/navbar';
 import QRImage from '../../components/qr-image/QRImage';
@@ -43,7 +43,7 @@ import ContactInputDialog, { ContactInputDialogHandle } from './components/conta
 const ContactsPage = () => {
 	const theme = useTheme();
 	const dispatch = useDispatch();
-	const confirmationDialogRef = useRef<ConfirmationDialogHandle>(null);
+	const deleteAlertRef = useRef<DeleteAlertHandle>(null);
 
 	const { list, selectedContacts } = useSelector(
 		(state: StoreState) => state[StoreNames.CONTACT_CARD]
@@ -84,7 +84,7 @@ const ContactsPage = () => {
 					</Button>
 					<NavbarDeleteElement
 						isDisabled={selectedContacts.length === 0}
-						onClick={() => confirmationDialogRef.current?.open('')}
+						onClick={() => deleteAlertRef.current?.open('')}
 					/>
 					<Button
 						leftIcon={<Icon as={MdContactPage} height={5} width={5} />}
@@ -165,11 +165,7 @@ const ContactsPage = () => {
 			</TableContainer>
 			<ContactInputDialog ref={drawerRef} />
 			<ExporterModal ref={exporterRef} />
-			<ConfirmationDialog
-				type={'Contacts'}
-				ref={confirmationDialogRef}
-				onConfirm={handleDeleteContacts}
-			/>
+			<DeleteAlert type={'Contacts'} ref={deleteAlertRef} onConfirm={handleDeleteContacts} />
 		</Box>
 	);
 };

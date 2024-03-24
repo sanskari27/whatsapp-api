@@ -25,7 +25,7 @@ import {
 	deleteMergedGroup,
 	setIsDeleting,
 } from '../../../store/reducers/MergeGroupReducer';
-import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
+import DeleteAlert, { DeleteAlertHandle } from '../../components/delete-alert';
 import { NavbarDeleteElement, NavbarSearchElement } from '../../components/navbar';
 import {
 	GroupMergeDialog,
@@ -45,7 +45,7 @@ const GroupMergePage = () => {
 		onOpen: openSettingDialog,
 		onClose: closeSettingDialog,
 	} = useDisclosure();
-	const confirmationDialogRef = useRef<ConfirmationDialogHandle>(null);
+	const deleteAlertRef = useRef<DeleteAlertHandle>(null);
 	const [tabIndex, setTabIndex] = useState(0);
 
 	const dispatch = useDispatch();
@@ -89,7 +89,7 @@ const GroupMergePage = () => {
 					<NavbarSearchElement />
 					<NavbarDeleteElement
 						isDisabled={selectedGroups.length === 0 || tabIndex !== 0}
-						onClick={() => confirmationDialogRef.current?.open('')}
+						onClick={() => deleteAlertRef.current?.open('')}
 					/>
 					{
 						tabIndex === 0 ? (
@@ -126,7 +126,7 @@ const GroupMergePage = () => {
 		return () => {
 			popFromNavbar();
 		};
-	}, [openMergeDialog, selectedGroups.length, isDeleting, dispatch, tabIndex, openSettingDialog]);
+	}, [openMergeDialog, selectedGroups.length, isDeleting, dispatch, tabIndex, openSettingDialog, theme]);
 
 	return (
 		<Box>
@@ -140,11 +140,7 @@ const GroupMergePage = () => {
 					</TabPanel>
 				</TabPanels>
 			</Tabs>
-			<ConfirmationDialog
-				ref={confirmationDialogRef}
-				onConfirm={deleteGroup}
-				type={'Merged Groups'}
-			/>
+			<DeleteAlert ref={deleteAlertRef} onConfirm={deleteGroup} type={'Merged Groups'} />
 			<GroupMergeDialog isOpen={isMergeDialogOpen} onClose={closeMergeDialog} />
 			<GroupSettingDialog isOpen={isSettingDialogOpen} onClose={closeSettingDialog} />
 		</Box>

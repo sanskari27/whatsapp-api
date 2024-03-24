@@ -29,7 +29,7 @@ import {
 	deleteSelectedCSVFile,
 	setIsDeleting,
 } from '../../../store/reducers/CSVFileReducers';
-import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
+import DeleteAlert, { DeleteAlertHandle } from '../../components/delete-alert';
 import { NavbarDeleteElement, NavbarSearchElement } from '../../components/navbar';
 import CSVNameInputDialog, { CSVNameInputDialogHandle } from './components/CSV-name-input-dialog';
 import AssignLabelDialog, { AssignLabelDialogHandler } from './components/assign-label-dialog';
@@ -37,7 +37,7 @@ import CreateGroupDialog, { CreateGroupDialogHandler } from './components/create
 
 const CSVUpload = () => {
 	const csvFileInputRef = useRef<CSVNameInputDialogHandle>(null);
-	const confirmationDialogRef = useRef<ConfirmationDialogHandle>(null);
+	const deleteAlertRef = useRef<DeleteAlertHandle>(null);
 	const createGroupDialogRef = useRef<CreateGroupDialogHandler>(null);
 	const assignLabelDialogRef = useRef<AssignLabelDialogHandler>(null);
 
@@ -95,7 +95,7 @@ const CSVUpload = () => {
 					)}
 					<NavbarDeleteElement
 						isDisabled={selectedFiles.length === 0}
-						onClick={() => confirmationDialogRef.current?.open('')}
+						onClick={() => deleteAlertRef.current?.open('')}
 					/>
 					<Button
 						leftIcon={<Icon as={TbCsv} height={5} width={5} />}
@@ -182,7 +182,7 @@ const CSVUpload = () => {
 				</Table>
 			</TableContainer>
 			<CSVNameInputDialog ref={csvFileInputRef} />
-			<ConfirmationDialog ref={confirmationDialogRef} onConfirm={deleteCSVFile} type={'CSV'} />
+			<DeleteAlert ref={deleteAlertRef} onConfirm={deleteCSVFile} type={'CSV'} />
 			<CreateGroupDialog ref={createGroupDialogRef} />
 			{userType === 'BUSINESS' && <AssignLabelDialog ref={assignLabelDialogRef} />}
 		</Box>

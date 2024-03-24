@@ -32,13 +32,13 @@ import {
 	setPrivateReplySavedText,
 	setPrivateReplyUnsavedText,
 } from '../../../../store/reducers/MergeGroupReducer';
-import ConfirmationDialog, {
-	ConfirmationDialogHandle,
-} from '../../../components/confirmation-alert';
+import DeleteAlert, { DeleteAlertHandle } from '../../../components/delete-alert';
 import GroupMerge from './group-merge-dialog';
+import ConfirmationAlert, { ConfirmationAlertHandle } from '../../../components/confirmation-alert';
 
 export default function MergedGroupTab() {
-	const confirmationDialogRef = useRef<ConfirmationDialogHandle>(null);
+	const deleteAlertRef = useRef<DeleteAlertHandle>(null);
+	const confirmationRef = useRef<ConfirmationAlertHandle>(null);
 
 	const { isOpen, onOpen, onClose } = useDisclosure();
 	const theme = useTheme();
@@ -133,7 +133,13 @@ export default function MergedGroupTab() {
 													aria-label='toggle'
 													icon={group.active ? <PiPause /> : <PiPlay />}
 													color={group.active ? 'blue.400' : 'green.400'}
-													onClick={() => toggleActive(group.id)}
+													onClick={() => 
+														confirmationRef.current?.open({
+															id: group.id,
+															type: 'Group',
+															disclaimer: 'Are you sure you want to toggle this group?',
+														})
+													}
 													outline='none'
 													border='none'
 												/>
@@ -154,7 +160,7 @@ export default function MergedGroupTab() {
 													aria-label='clear'
 													icon={<AiOutlineClear />}
 													colorScheme='gray'
-													onClick={() => confirmationDialogRef.current?.open(group.id)}
+													onClick={() => deleteAlertRef.current?.open(group.id)}
 												/>
 												<IconButton
 													aria-label='download'
@@ -171,11 +177,8 @@ export default function MergedGroupTab() {
 					</Tbody>
 				</Table>
 			</TableContainer>
-			<ConfirmationDialog
-				ref={confirmationDialogRef}
-				onConfirm={clearHistory}
-				type={'Previous Responses'}
-			/>
+			<DeleteAlert ref={deleteAlertRef} onConfirm={clearHistory} type={'Previous Responses'} />
+			<ConfirmationAlert ref={confirmationRef} onConfirm={toggleActive} disclaimer='' />
 			<GroupMerge isOpen={isOpen} onClose={onClose} />
 		</>
 	);

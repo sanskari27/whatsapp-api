@@ -33,7 +33,7 @@ const initialState: MergeGroupState = {
 			attachments: [],
 			polls: [],
 		},
-		restricted_numbers: '',
+		restricted_numbers: [],
 		min_delay: 2,
 		max_delay: 7,
 		random_string: false,
