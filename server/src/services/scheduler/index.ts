@@ -176,6 +176,7 @@ export default class SchedulerService {
 			await MessageDB.updateMany(
 				{
 					'scheduled_by.id': id,
+					status: MESSAGE_STATUS.PAUSED,
 				},
 				{
 					$set: {
@@ -186,6 +187,7 @@ export default class SchedulerService {
 		} else {
 			await MessageDB.updateMany(
 				{
+					status: MESSAGE_STATUS.PENDING,
 					'scheduled_by.id': id,
 				},
 				{
