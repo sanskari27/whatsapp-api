@@ -263,11 +263,12 @@ export default class GroupMergeService {
 			from: contact.id._serialized,
 			group_name: chat.name,
 		};
-		for (const doc of docs) {
-			const admin = chat.participants.find((chatObj) => chatObj.id._serialized === message.from);
-			if (admin && (admin.isAdmin || admin.isSuperAdmin)) {
-				return;
-			}
+		const admin = chat.participants.find((chatObj) => chatObj.id._serialized === message.from);
+		if (admin && (admin.isAdmin || admin.isSuperAdmin)) {
+			return;
+		}
+
+		docs.forEach(async (doc) => {
 			if (doc.reply_business_only && !contact.isBusiness) {
 				return;
 			}
@@ -285,7 +286,7 @@ export default class GroupMergeService {
 
 			sendGroupReply(doc, groupReply);
 			sendPrivateReply(doc, privateReply);
-		}
+		});
 
 		async function sendGroupReply(
 			doc: IMergedGroup,
@@ -369,6 +370,8 @@ export default class GroupMergeService {
 			if (!doc) return;
 			try {
 				const { text, attachments, shared_contact_cards, polls } = reply;
+				console.log(contact.id._serialized, reply);
+
 				if (
 					text.length === 0 &&
 					attachments?.length === 0 &&
