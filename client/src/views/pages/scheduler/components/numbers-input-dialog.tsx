@@ -12,7 +12,7 @@ import {
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { StoreNames, StoreState } from '../../../../store';
-import { setNumbers } from '../../../../store/reducers/SchedulerReducer';
+import { setNumbers as setPrefilledNumbers } from '../../../../store/reducers/SchedulerReducer';
 
 type Props = {
 	isOpen: boolean;
@@ -20,26 +20,52 @@ type Props = {
 };
 export default function NumberInputDialog({ isOpen, onClose }: Props) {
 	const {
-		details: { numbers },
+		details: { numbers: prefilledNumbers },
 	} = useSelector((state: StoreState) => state[StoreNames.SCHEDULER]);
 	const dispatch = useDispatch();
 
 	const [numberInput, setNumberInput] = useState('');
+	const [numbers, setNumbers] = useState<string[]>([]);
+	const [isChanged, setChanged] = useState(false);
+
+	const handleTextChange = (text: string) => {
+		if (text.length === 0) {
+			setChanged(true);
+			return setNumberInput('');
+		}
+		setNumberInput(text);
+		setChanged(true);
+	};
+
+	const handleFormatClicked = () => {
+		const lines = numberInput.split('\n');
+		const res_lines = [];
+		const res_numbers: string[] = [];
+		for (const line of lines) {
+			if (!line) continue;
+			const _numbers = line
+				.split(/[ ,]+/)
+				.map((number) => number.trim())
+				.filter((number) => number && !isNaN(Number(number)));
+			res_numbers.push(..._numbers);
+			res_lines.push(_numbers.join(', '));
+		}
+
+		setNumberInput(res_lines.join('\n'));
+		setNumbers(res_numbers);
+		setChanged(false);
+	};
 
 	const handleClose = () => {
-		const number = numberInput
-			.split(',')
-			.filter((number) => number && !isNaN(Number(number)))
-			.map((number) => number.trim());
-		dispatch(setNumbers(number));
+		dispatch(setPrefilledNumbers(numbers));
 		onClose();
 		setNumberInput('');
 	};
 
 	useEffect(() => {
-		if (!numbers) return;
-		setNumberInput(numbers.join(', '));
-	}, [numbers]);
+		if (!prefilledNumbers) return;
+		setNumberInput(prefilledNumbers.join(', '));
+	}, [prefilledNumbers]);
 
 	return (
 		<Modal isOpen={isOpen} onClose={onClose} size={'3xl'}>
@@ -66,16 +92,44 @@ export default function NumberInputDialog({ isOpen, onClose }: Props) {
 							}}
 							_focus={{ border: 'none', outline: 'none' }}
 							value={numberInput}
-							onChange={(e) => setNumberInput(e.target.value)}
+							onChange={(e) => handleTextChange(e.target.value)}
 							resize={'vertical'}
 						/>
 					</VStack>
 				</ModalBody>
 
 				<ModalFooter>
-					<Button colorScheme='green' variant='solid' width='full' onClick={handleClose}>
-						Done
-					</Button>
+					<VStack width={'full'}>
+						{isChanged ? (
+							<Text
+								alignSelf={'center'}
+								cursor={'pointer'}
+								textDecoration={'underline'}
+								textUnderlineOffset={'3px'}
+								onClick={handleFormatClicked}
+							>
+								Format Numbers
+							</Text>
+						) : (
+							<Text
+								alignSelf={'center'}
+								cursor={'pointer'}
+								textDecoration={'underline'}
+								textUnderlineOffset={'3px'}
+							>
+								{numbers.length} numbers provided.
+							</Text>
+						)}
+						<Button
+							colorScheme='green'
+							variant='solid'
+							width='full'
+							onClick={handleClose}
+							isDisabled={isChanged}
+						>
+							Done
+						</Button>
+					</VStack>
 				</ModalFooter>
 			</ModalContent>
 		</Modal>

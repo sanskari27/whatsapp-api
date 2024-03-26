@@ -2,9 +2,8 @@ import { NextFunction, Request, Response } from 'express';
 import { SOCKET_RESPONSES, TASK_RESULT_TYPE, TASK_TYPE } from '../../config/const';
 import APIError, { API_ERRORS } from '../../errors/api-errors';
 import { WhatsappProvider } from '../../provider/whatsapp_provider';
-import { UserService } from '../../services';
+import { CampaignService, UserService } from '../../services';
 import GroupMergeService from '../../services/merged-groups';
-import CampaignService from '../../services/messenger/Campaign';
 import TaskService from '../../services/task';
 import UploadService from '../../services/uploads';
 import { Respond } from '../../utils/ExpressUtils';
@@ -56,6 +55,11 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 	const task_id = await taskService.createTask(TASK_TYPE.SCHEDULE_CAMPAIGN, TASK_RESULT_TYPE.NONE, {
 		description: req_data.campaign_name,
 	});
+	const campaignService = new CampaignService(req.locals.user);
+	const campaign_exists = await campaignService.alreadyExists(req_data.campaign_name);
+	if (campaign_exists) {
+		return next(new APIError(API_ERRORS.COMMON_ERRORS.ALREADY_EXISTS));
+	}
 
 	Respond({
 		res,
@@ -132,8 +136,6 @@ export async function scheduleMessage(req: Request, res: Response, next: NextFun
 	});
 
 	try {
-		const campaignService = new CampaignService(req.locals.user);
-		const campaign_exists = await campaignService.alreadyExists(req_data.campaign_name);
 		if (campaign_exists) {
 			return taskService.markFailed(task_id);
 		}

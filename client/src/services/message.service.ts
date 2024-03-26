@@ -45,7 +45,9 @@ export default class MessageService {
 				...details,
 				...(csv_file ? { csv_file } : {}),
 			});
+			return true;
 		} catch (err: unknown) {
+			return false;
 			//ignored
 		}
 	}

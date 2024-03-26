@@ -210,7 +210,16 @@ export default function Scheduler() {
 			schedulingMessages: true,
 		}));
 		MessageService.scheduleCampaign(details)
-			.then(() => {
+			.then((success) => {
+				if (!success) {
+					return toast({
+						title: 'Campaign scheduler.',
+						description: 'Campaign name already exists',
+						status: 'error',
+						duration: 3000,
+						isClosable: true,
+					});
+				}
 				dispatch(reset());
 				toast({
 					title: 'Campaign scheduler.',

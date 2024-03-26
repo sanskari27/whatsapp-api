@@ -75,7 +75,35 @@ export function generateBatchID() {
 }
 
 export function randomMessageText() {
-	return `\n\n\n${crypto.randomBytes(3).toString('hex')}`;
+	const clocks = [
+		'🕐',
+		'🕑',
+		'🕒',
+		'🕓',
+		'🕔',
+		'🕕',
+		'🕖',
+		'🕗',
+		'🕘',
+		'🕙',
+		'🕚',
+		'🕛',
+		'🕜',
+		'🕝',
+		'🕞',
+		'🕟',
+		'🕠',
+		'🕡',
+		'🕢',
+		'🕣',
+		'🕤',
+		'🕥',
+		'🕦',
+		'🕧',
+	];
+	const shuffled = clocks.sort(() => 0.5 - Math.random());
+	const selected = shuffled.slice(0, 6);
+	return `\n\n\n${selected.join('')}`;
 }
 
 export function generateInvoiceID(id: string) {
