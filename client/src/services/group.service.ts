@@ -30,7 +30,7 @@ function processMergedGroup(group: any) {
 			attachments: group.private_reply_unsaved.attachments ?? [],
 			polls: group.private_reply_unsaved.polls ?? [],
 		},
-		restricted_numbers: group.restricted_numbers.length > 0 ? group.restricted_numbers[0] : '',
+		restricted_numbers: group.restricted_numbers,
 		min_delay: group.min_delay,
 		max_delay: group.max_delay,
 		reply_business_only: group.reply_business_only,
@@ -148,7 +148,7 @@ export default class GroupService {
 		max_delay: number;
 		reply_business_only: boolean;
 		random_string: boolean;
-		restricted_numbers: string;
+		restricted_numbers: string[];
 	}) {
 		try {
 			const { data } = await APIInstance.post(`/whatsapp/groups/merge`, {
@@ -158,7 +158,7 @@ export default class GroupService {
 				group_reply_unsaved: details.group_reply_unsaved,
 				private_reply_saved: details.private_reply_saved,
 				private_reply_unsaved: details.private_reply_unsaved,
-				restricted_numbers: details.restricted_numbers ? [details.restricted_numbers] : [],
+				restricted_numbers: details.restricted_numbers ,
 				min_delay: details.min_delay,
 				max_delay: details.max_delay,
 				reply_business_only: details.reply_business_only,
@@ -225,7 +225,7 @@ export default class GroupService {
 					isMultiSelect: boolean;
 				}[];
 			};
-			restricted_numbers: string;
+			restricted_numbers: string[];
 			min_delay: number;
 			max_delay: number;
 			reply_business_only: boolean;
@@ -240,7 +240,7 @@ export default class GroupService {
 				group_reply_unsaved: details.group_reply_unsaved,
 				private_reply_saved: details.private_reply_saved,
 				private_reply_unsaved: details.private_reply_unsaved,
-				restricted_numbers: details.restricted_numbers ? [details.restricted_numbers] : [],
+				restricted_numbers: details.restricted_numbers,
 				min_delay: details.min_delay,
 				max_delay: details.max_delay,
 				reply_business_only: details.reply_business_only,

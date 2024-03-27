@@ -56,7 +56,7 @@ type MergedGroup = {
 			isMultiSelect: boolean;
 		}[];
 	};
-	restricted_numbers: string;
+	restricted_numbers: string[];
 	min_delay: number;
 	max_delay: number;
 	reply_business_only: boolean;

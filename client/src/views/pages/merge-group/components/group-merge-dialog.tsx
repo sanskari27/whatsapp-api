@@ -31,6 +31,7 @@ import {
 	useBoolean,
 	useToast,
 } from '@chakra-ui/react';
+import Multiselect from 'multiselect-react-dropdown';
 import { useMemo, useState } from 'react';
 import { BiRefresh } from 'react-icons/bi';
 import { useDispatch, useSelector } from 'react-redux';
@@ -212,25 +213,30 @@ const GroupMerge = ({ onClose, isOpen }: GroupMergeProps) => {
 						<Box>
 							<Text>Restricted Numbers</Text>
 							<Flex direction={'column'} gap={2}>
-								<Select
-									className='!bg-[#ECECEC]  rounded-md w-full text-black'
-									border={'none'}
-									value={editSelectedGroup.restricted_numbers}
-									onChange={(e) => dispatch(setRestrictedNumbers(e.target.value))}
-								>
-									<option value={''} className='text-black   !bg-[#ECECEC]  '>
-										Select one!
-									</option>
-									{csvList.map(({ id, name }) => (
-										<option
-											className='text-black dark:text-white  !bg-[#ECECEC] dark:!bg-[#535353] '
-											value={id}
-											key={id}
-										>
-											{name}
-										</option>
-									))}
-								</Select>
+								<Multiselect
+									selectedValues={csvList.filter((csv) =>
+										editSelectedGroup.restricted_numbers.includes(csv.id)
+									)}
+									displayValue='name'
+									placeholder={'Select restricted list'}
+									onRemove={(selectedList: { id: string }[]) =>
+										dispatch(setRestrictedNumbers(selectedList.map((csv) => csv.id)))
+									}
+									onSelect={(selectedList: { id: string }[]) => {
+										dispatch(setRestrictedNumbers(selectedList.map((csv) => csv.id)));
+									}}
+									showCheckbox={true}
+									options={csvList}
+									style={{
+										searchBox: {
+											border: 'none',
+										},
+										inputField: {
+											width: '100%',
+										},
+									}}
+									className='  bg-[#ECECEC] rounded-md border-none '
+								/>
 							</Flex>
 						</Box>
 

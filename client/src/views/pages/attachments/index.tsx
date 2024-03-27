@@ -35,7 +35,7 @@ import {
 	startAttachmentUpdating,
 	toggleSelected,
 } from '../../../store/reducers/AttachmentReducers';
-import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
+import DeleteAlert, { DeleteAlertHandle } from '../../components/delete-alert';
 import { NavbarDeleteElement, NavbarSearchElement } from '../../components/navbar';
 import AttachmentDetailsInputDialog, {
 	AttachmentDetailsInputDialogHandle,
@@ -45,8 +45,7 @@ const AttachmentPage = () => {
 	const dispatch = useDispatch();
 	const theme = useTheme();
 	const AttachmentDetailsInputRef = React.useRef<AttachmentDetailsInputDialogHandle>(null);
-	const confirmationDialogRef = React.useRef<ConfirmationDialogHandle>(null);
-
+	const deleteAlertRef = React.useRef<DeleteAlertHandle>(null);
 	const {
 		attachments,
 		uiDetails: { isDeleting },
@@ -66,7 +65,7 @@ const AttachmentPage = () => {
 					<NavbarDeleteElement
 						isLoading={isDeleting}
 						isDisabled={selectedAttachments.length === 0}
-						onClick={() => confirmationDialogRef.current?.open('')}
+						onClick={() => deleteAlertRef.current?.open('')}
 					/>
 					<Button
 						leftIcon={<Icon as={MdOutlineAttachment} height={5} width={5} />}
@@ -78,7 +77,7 @@ const AttachmentPage = () => {
 					>
 						ADD
 					</Button>
-					<Button colorScheme='blue' size={'sm'} onClick={()=>dispatch(selectAllAttachments())}>
+					<Button colorScheme='blue' size={'sm'} onClick={() => dispatch(selectAllAttachments())}>
 						Select All
 					</Button>
 				</HStack>
@@ -173,11 +172,7 @@ const AttachmentPage = () => {
 					</Tbody>
 				</Table>
 			</TableContainer>
-			<ConfirmationDialog
-				type={'Attachments'}
-				ref={confirmationDialogRef}
-				onConfirm={handleDeleteAttachments}
-			/>
+			<DeleteAlert type={'Attachments'} ref={deleteAlertRef} onConfirm={handleDeleteAttachments} />
 		</Box>
 	);
 };

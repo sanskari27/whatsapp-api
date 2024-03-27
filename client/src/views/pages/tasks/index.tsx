@@ -21,11 +21,11 @@ import useFilteredList from '../../../hooks/useFilteredList';
 import { popFromNavbar, pushToNavbar } from '../../../hooks/useNavbar';
 import useTask, { TASK_RESULT_TYPE, TASK_STATUS } from '../../../hooks/useTask';
 import { useTheme } from '../../../hooks/useTheme';
-import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
+import DeleteAlert, { DeleteAlertHandle } from '../../components/delete-alert';
 import { NavbarDeleteElement, NavbarSearchElement } from '../../components/navbar';
 
 const Tasks = () => {
-	const confirmationDialogRef = useRef<ConfirmationDialogHandle>(null);
+	const deleteAlertRef = useRef<DeleteAlertHandle>(null);
 
 	const { tasks, removeTask, downloadTask } = useTask();
 
@@ -50,7 +50,7 @@ const Tasks = () => {
 					<NavbarSearchElement />
 					<NavbarDeleteElement
 						isDisabled={selectedTasks.length === 0}
-						onClick={() => confirmationDialogRef.current?.open('')}
+						onClick={() => deleteAlertRef.current?.open('')}
 					/>
 					<Button
 						colorScheme='blue'
@@ -129,11 +129,7 @@ const Tasks = () => {
 					</Tbody>
 				</Table>
 			</TableContainer>
-			<ConfirmationDialog
-				ref={confirmationDialogRef}
-				onConfirm={deleteTasks}
-				type={'Background Task'}
-			/>
+			<DeleteAlert ref={deleteAlertRef} onConfirm={deleteTasks} type={'Background Task'} />
 		</Box>
 	);
 };

@@ -19,15 +19,15 @@ import { useTheme } from '../../../../hooks/useTheme';
 import BotService from '../../../../services/bot.service';
 import { StoreNames, StoreState } from '../../../../store';
 import { removeBot, setSelectedBot, updateBot } from '../../../../store/reducers/BotReducers';
-import ConfirmationDialog, {
-	ConfirmationDialogHandle,
-} from '../../../components/confirmation-alert';
+import ConfirmationAlert, { ConfirmationAlertHandle } from '../../../components/confirmation-alert';
+import DeleteAlert, { DeleteAlertHandle } from '../../../components/delete-alert';
 
 export default function AllResponders() {
 	const theme = useTheme();
 	const dispatch = useDispatch();
 	const { all_bots } = useSelector((state: StoreState) => state[StoreNames.CHATBOT]);
-	const confirmationDialogRef = useRef<ConfirmationDialogHandle>(null);
+	const deleteAlertRef = useRef<DeleteAlertHandle>(null);
+	const confirmationAlertRef = useRef<ConfirmationAlertHandle>(null);
 
 	const deleteBot = (id: string) => {
 		BotService.deleteBot(id).then((res) => {
@@ -114,7 +114,7 @@ export default function AllResponders() {
 										icon={<MdDelete />}
 										color={'red.400'}
 										onClick={() => {
-											confirmationDialogRef.current?.open(bot.bot_id);
+											deleteAlertRef.current?.open(bot.bot_id);
 										}}
 										bgColor={'transparent'}
 										_hover={{
@@ -140,7 +140,11 @@ export default function AllResponders() {
 										icon={bot.isActive ? <PiPause /> : <PiPlay />}
 										color={bot.isActive ? 'blue.400' : 'green.400'}
 										onClick={() => {
-											toggleBot(bot.bot_id);
+											confirmationAlertRef.current?.open({
+												id: bot.bot_id,
+												disclaimer: 'Are you sure you want to change running status?',
+												type: 'TOGGLE_BOT',
+											});
 										}}
 										bgColor={'transparent'}
 										_hover={{
@@ -169,7 +173,8 @@ export default function AllResponders() {
 					</Tbody>
 				</Table>
 			</TableContainer>
-			<ConfirmationDialog type={'Responder'} ref={confirmationDialogRef} onConfirm={deleteBot} />
+			<DeleteAlert type={'Responder'} ref={deleteAlertRef} onConfirm={deleteBot} />
+			<ConfirmationAlert ref={confirmationAlertRef} onConfirm={toggleBot} disclaimer='' />
 		</>
 	);
 }

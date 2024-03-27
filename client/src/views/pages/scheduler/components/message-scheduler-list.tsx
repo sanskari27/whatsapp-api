@@ -12,6 +12,7 @@ import {
 	Tr,
 	useToast,
 } from '@chakra-ui/react';
+import React from 'react';
 import { FiEdit, FiPause, FiPlay } from 'react-icons/fi';
 import { MdDelete, MdScheduleSend } from 'react-icons/md';
 import { useDispatch, useSelector } from 'react-redux';
@@ -22,11 +23,16 @@ import {
 	editSelectedScheduler,
 	setSelectedScheduler,
 } from '../../../../store/reducers/SchedulerReducer';
+import ConfirmationAlert, { ConfirmationAlertHandle } from '../../../components/confirmation-alert';
+import DeleteAlert, { DeleteAlertHandle } from '../../../components/delete-alert';
 
 const MessageSchedulerList = () => {
 	const dispatch = useDispatch();
 	const toast = useToast();
 	const { all_schedulers } = useSelector((state: StoreState) => state[StoreNames.SCHEDULER]);
+
+	const confirmationAlertRef = React.useRef<ConfirmationAlertHandle>(null);
+	const deleteAlertRef = React.useRef<DeleteAlertHandle>(null);
 
 	const handleSchedulerToggleActive = (id: string) => {
 		MessageService.toggleScheduledMessage(id).then((res) => {
@@ -62,6 +68,14 @@ const MessageSchedulerList = () => {
 		}
 	};
 
+	const handleConfirmation = (id: string, type: string) => {
+		if (type === 'TOGGLE_SCHEDULER') {
+			handleSchedulerToggleActive(id);
+		} else if (type === 'RESCHEDULE') {
+			reschedule(id);
+		}
+	};
+
 	return (
 		<TableContainer mt={'1rem'}>
 			<Table>
@@ -81,7 +95,9 @@ const MessageSchedulerList = () => {
 							<Td>{scheduler.title}</Td>
 							<Td>
 								{scheduler.message.split('\n').map((message, index) => (
-									<Box key={index}>{message}</Box>
+									<Box key={index} className='whitespace-break-spaces'>
+										{message}
+									</Box>
 								))}
 							</Td>
 							<Td>{scheduler.start_from}</Td>
@@ -103,7 +119,11 @@ const MessageSchedulerList = () => {
 										aria-label='toggle-scheduler'
 										icon={scheduler.isActive ? <FiPause /> : <FiPlay />}
 										onClick={() => {
-											handleSchedulerToggleActive(scheduler.id);
+											confirmationAlertRef.current?.open({
+												id: scheduler.id,
+												disclaimer: 'Are you change you want to change running status?',
+												type: 'TOGGLE_SCHEDULER',
+											});
 										}}
 										colorScheme={scheduler.isActive ? 'yellow' : 'blue'}
 									/>
@@ -119,7 +139,11 @@ const MessageSchedulerList = () => {
 										aria-label='re-schedule'
 										icon={<MdScheduleSend />}
 										onClick={() => {
-											reschedule(scheduler.id);
+											confirmationAlertRef.current?.open({
+												id: scheduler.id,
+												disclaimer: 'Are you sure you want to forcefully schedule the messages?',
+												type: 'RESCHEDULE',
+											});
 										}}
 										colorScheme='gray'
 									/>
@@ -127,7 +151,7 @@ const MessageSchedulerList = () => {
 									<IconButton
 										aria-label='delete-scheduler'
 										icon={<MdDelete />}
-										onClick={() => handleDeleteScheduledMessage(scheduler.id)}
+										onClick={() => deleteAlertRef.current?.open(scheduler.id)}
 										colorScheme='red'
 									/>
 								</HStack>
@@ -136,6 +160,12 @@ const MessageSchedulerList = () => {
 					))}
 				</Tbody>
 			</Table>
+			<ConfirmationAlert disclaimer='' ref={confirmationAlertRef} onConfirm={handleConfirmation} />
+			<DeleteAlert
+				ref={deleteAlertRef}
+				onConfirm={handleDeleteScheduledMessage}
+				type='Daily Schedule Message'
+			/>
 		</TableContainer>
 	);
 };

@@ -29,13 +29,13 @@ import {
 	setDeletingCampaign,
 	setExportingCampaign,
 } from '../../../store/reducers/SchedulerReducer';
-import ConfirmationDialog, { ConfirmationDialogHandle } from '../../components/confirmation-alert';
+import DeleteAlert, { DeleteAlertHandle } from '../../components/delete-alert';
 import { NavbarDeleteElement, NavbarSearchElement } from '../../components/navbar';
 
 const Reports = () => {
 	const dispatch = useDispatch();
 	const theme = useTheme();
-	const confirmationDialogRef = useRef<ConfirmationDialogHandle>(null);
+	const deleteAlertRef = useRef<DeleteAlertHandle>(null);
 
 	const {
 		all_campaigns,
@@ -69,7 +69,7 @@ const Reports = () => {
 					<NavbarSearchElement />
 					<NavbarDeleteElement
 						isDisabled={selectedCampaign.length === 0}
-						onClick={() => confirmationDialogRef.current?.open('')}
+						onClick={() => deleteAlertRef.current?.open('')}
 					/>
 					<Button
 						colorScheme={'green'}
@@ -259,9 +259,9 @@ const Reports = () => {
 					</Tbody>
 				</Table>
 			</TableContainer>
-			<ConfirmationDialog
+			<DeleteAlert
 				type={'Campaign'}
-				ref={confirmationDialogRef}
+				ref={deleteAlertRef}
 				disclaimer={'This will pause the campaign.'}
 				onConfirm={deleteCampaign}
 			/>
