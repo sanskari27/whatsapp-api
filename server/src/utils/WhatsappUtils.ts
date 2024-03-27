@@ -172,6 +172,7 @@ export default class WhatsappUtils {
 			isBusiness: (contact.isBusiness ? 'Business' : 'Personal') as 'Business' | 'Personal',
 			country,
 			public_name: contact.pushname ?? '',
+			isSaved: contact.isMyContact,
 		};
 	}
 	static getBusinessDetails(contact: Contact) {
@@ -319,11 +320,12 @@ export default class WhatsappUtils {
 						})) as (TLabelContact | TLabelBusinessContact)[];
 					} else {
 						const contact = await this.whatsapp.getClient().getContactById(chat.id._serialized);
-						const contacts_details = await this.getContactDetails(contact);
+						const contact_details = await this.getContactDetails(contact);
 
 						if (
-							(options.saved && !contact.isMyContact) ||
-							(options.unsaved && contact.isMyContact)
+							!(options.saved && options.unsaved) &&
+							((options.saved && !contact_details.isSaved) ||
+								(options.unsaved && contact_details.isSaved))
 						) {
 							return [];
 						}
@@ -331,7 +333,7 @@ export default class WhatsappUtils {
 						if (!options.business_details) {
 							return [
 								{
-									...contacts_details,
+									...contact_details,
 									group_name: chat.name,
 									label: label_name,
 								} as TLabelContact,
@@ -343,7 +345,7 @@ export default class WhatsappUtils {
 						const business_details = WhatsappUtils.getBusinessDetails(contact as BusinessContact);
 						return [
 							{
-								...contacts_details,
+								...contact_details,
 								...business_details,
 								group_name: chat.name,
 								label: label_name,
