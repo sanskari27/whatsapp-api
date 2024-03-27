@@ -370,7 +370,6 @@ export default class GroupMergeService {
 			if (!doc) return;
 			try {
 				const { text, attachments, shared_contact_cards, polls } = reply;
-				console.log(contact.id._serialized, reply);
 
 				if (
 					text.length === 0 &&
